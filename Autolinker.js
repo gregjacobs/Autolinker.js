@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * Version 0.1
+ * Version 0.2
  * 
  * Copyright(c) 2012 Gregory Jacobs.
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
