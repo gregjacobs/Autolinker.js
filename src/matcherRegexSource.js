@@ -13,6 +13,8 @@
 (function() {
 	var anchorTagRegex = /<a\b[^<>]*>[\s\S]*?<\/a>/,        // for matching an anchor tag from <a> to </a>, so we don't auto-link any urls found within text that is already linked
 	    
+	    twitterRegex = /@\w{1,15}/,                         // For matching a twitter handle. Ex: @gregory_jacobs
+	    
 	    protocolRegex = /([A-Za-z]{3,9}:(?:\/\/)?)/,        // match protocol, allow in format http:// or mailto:
 	    emailRegex = /(?:[\-;:&=\+\$,\w]+@)?/,              // allow something@ for email addresses
 	    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
@@ -31,6 +33,12 @@
 		'|',  // An anchor tag including its innerHTML text (above), OR a real match. We'll text the $1 variable in code to see if we got an actual match from the first capturing group
 		
 		'(',  // *** Capturing group $1, which will be checked to see if we have a legitimate match
+			'(',   // *** Capturing group $2, which can be used to check for a twitter handle
+				twitterRegex.source,
+			')',
+			
+			'|',
+			
 			'(?:', // parens to cover match for protocol (optional), and domain
 				'(?:',  // non-capturing paren for a protocol or email address url 
 					protocolRegex.source,

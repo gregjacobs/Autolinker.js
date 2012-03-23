@@ -101,9 +101,24 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a>', result );
 			},
 			
+			"link() should automatically link email addresses in the middle of the string" : function() {
+				var result = Autolinker.link( "Joe's email is joe@joe.com because he is great" );
+				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because he is great', result );
+			},
+			
 			"link() should automatically link email addresses, even if it already starts with 'mailto:'" : function() {
 				var result = Autolinker.link( "Joe's email is mailto:joe@joe.com" );
 				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">mailto:joe@joe.com</a>', result );
+			},
+			
+			
+			// --------------------------
+			
+			// Test with twitter handles
+			
+			"link() should automatically link twitter handles" : function() {
+				var result = Autolinker.link( "Joe's twitter is @joe_the_man12" );
+				Y.Assert.areSame( 'Joe\'s twitter is <a href="https://twitter.com/#!/joe_the_man12" target="_blank">@joe_the_man12</a>', result );
 			},
 			
 			

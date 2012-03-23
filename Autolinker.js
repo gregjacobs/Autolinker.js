@@ -61,8 +61,9 @@ var Autolinker = {
 		// Function to process the text that lies between HTML tags. This function does the actual wrapping of
 		// URLs with anchor tags.
 		function autolinkText( text ) {
-			text = text.replace( matcherRegex, function( match, $1 ) {
-				var actualMatch = $1;
+			text = text.replace( matcherRegex, function( match, $1, $2 ) {
+				var actualMatch = $1,
+				    twitterHandle = $2;  // in the form @twitterUser
 				
 				if( !actualMatch ) {
 					// If this is not an actual match (i.e. the regular expression matched an anchor tag with
@@ -75,7 +76,11 @@ var Autolinker = {
 					
 					// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 					// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
-					if( !/^(https?|ftp|mailto):/i.test( anchorUrl ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
+					if( twitterHandle ) {
+						twitterHandle = twitterHandle.substr( 1 );  // remove the preceding @ character
+							anchorUrl = 'https://twitter.com/#!/' + twitterHandle;
+					
+					} else if( !/^(https?|ftp|mailto):/i.test( anchorUrl ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
 						if( anchorUrl.indexOf( '@' ) > -1 ) {
 							anchorUrl = 'mailto:' + anchorUrl;   // handle the url being an email address by prefixing 'mailto:'
 						} else {
@@ -132,5 +137,5 @@ var Autolinker = {
  *    so we check this to see if it is defined to see if the match is legitimate.
  */
 /*global Autolinker*/
-Autolinker.matcherRegex = /<a\b[^<>]*>[\s\S]*?<\/a>|((?:(?:([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/[\+~%\/\.\w\-]*)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
+Autolinker.matcherRegex = /<a\b[^<>]*>[\s\S]*?<\/a>|((@\w{1,15})|(?:(?:([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/[\+~%\/\.\w\-]*)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
 

@@ -37,6 +37,10 @@ One could update a DOM element that has unlinked text as such:
 
 ## Changelog:
 
+### 0.2
+
+- Implement autolinking Twitter handles.
+
 ### 0.1
 
 * Initial implementation, which autolinks URLs and email addresses. Working on linking Twitter handles.
