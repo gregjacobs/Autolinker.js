@@ -1,0 +1,14 @@
+{
+	projectName: "Autolinker",
+	licenseText: "Autolinker.js\nVersion 0.1\n\nCopyright(c) 2012 Gregory Jacobs.\nMIT Licensed. http://www.opensource.org/licenses/mit-license.php\n\nhttps://github.com/gregjacobs/Autolinker.js",
+	pkgs: [
+		{
+			name: "Autolinker JS",
+			filename: "../Autolinker.js",
+			includes: [
+				{ file: "../src/Autolinker.js" },
+				{ file: "../src/matcherRegexCompiled.js" }
+			]
+		}
+	]
+}

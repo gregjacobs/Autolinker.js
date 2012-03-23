@@ -1,0 +1,7 @@
+/*!
+ * Ext.Test
+ * GPL Licensed (unfortunately...)
+ * 
+ * https://github.com/gregjacobs/Ext.test
+ */
+.x-test-logger .x-grid3-scroller{background-color:#1E1E1E;}.x-test-logger .x-grid3-row{border-color:#1E1E1E;}.x-test-logger-state-pass{color:#0F0;}.x-test-logger-state-fail{font-weight:bold;color:#F00;}.x-test-logger-state-testsuitecomplete,.x-test-logger-state-testsuitebegin,.x-test-logger-state-complete,.x-test-logger-state-begin,.x-test-logger-state-testcasecomplete,.x-test-logger-state-testcasebegin{color:#FF0;}.testsuite-failed,.testsuite-passed,.testsuite-running,.testcase-failed,.testcase-passed,.testcase-running{background-image:url("http://extjs.cachefly.net/ext-3.2.1/resources/images/default/tree/drop-yes.gif");background-position:center center;background-repeat:no-repeat;border:0 none;height:18px;margin:0;padding:0;vertical-align:top;width:16px;line-height:18px;}.testsuite-passed,.testcase-passed{background-image:url("http://extjs.cachefly.net/ext-3.2.1/resources/images/default/tree/drop-yes.gif");}.testsuite-failed,.testcase-failed{background-image:url("http://extjs.cachefly.net/ext-3.2.1/resources/images/default/tree/drop-no.gif");}.testsuite-running,.testcase-running{background-image:url("http://extjs.cachefly.net/ext-3.2.1/resources/images/default/tree/loading.gif");}.x-tree-col{height:18px;}
