@@ -21,12 +21,13 @@ Ex:
 	var linkedText = Autolinker.link( "The sky is falling from google.com" );
 	// Produces: "The sky is falling from <a href="http://google.com" target="_blank">google.com</a>"
 	
-There are options which may be specified for the linking. The only one at this time however is the 'newWindow' option, which allows you to specify if the link should open in a new window or not. It defaults to true, but if you wanted to disable this, you could do:
+### Options
+There are options which may be specified for the linking. The only one at this time however is the `newWindow` option, which allows you to specify if the link should open in a new window or not. It defaults to true, but if you wanted to disable this, you could do:
 
 	var linkedText = Autolinker.link( "The sky is falling from google.com", { newWindow: false } );
 	// Produces: "The sky is falling from <a href="http://google.com">google.com</a>"
 
-
+### More Examples
 One could update a DOM element that has unlinked text as such:
 
 	var myTextEl = document.getElementById( 'text' );
