@@ -86,7 +86,7 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			// Test that the hash anchor part pulls all needed characters in complex URLs
 			
-			"link() should automatically link a URL with a complex hash" : function() {
+			"link() should automatically link a URL with a complex hash (such as a Google Analytics url)" : function() {
 				var result = Autolinker.link( "Joe went to https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics" );
 				Y.Assert.areSame( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/</a> and analyzed his analytics', result );
 			},
@@ -138,6 +138,16 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			"link() should automatically link URLs past the last HTML tag" : function() {
 				var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com' );
 				Y.Assert.areSame( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com" target="_blank">http://google.com</a>', result );
+			},
+			
+			"link() should NOT automatically link a URL found within the inner text of a pre-existing anchor tag" : function() {
+				var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.' );
+				Y.Assert.areSame( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.', result );
+			},
+			
+			"link() should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others" : function() {
+				var result = Autolinker.link( '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.' );
+				Y.Assert.areSame( '<p>Joe went to <a href="http://google.com" target="_blank">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com" target="_blank">weather.com</a></p> yesterday.', result );
 			},
 			
 			

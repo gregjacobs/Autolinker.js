@@ -7,7 +7,7 @@ Because I had so much trouble finding a **GOOD** autolinking implementation, I d
 - Not properly handling URLs with query parameters or a named anchor (i.e. hash)
 - Not autolinking email addresses.
 - Not autolinking Twitter handles.
-- Not properly handling HTML, or not handling HTML at all, such as autolinking the href attribute inside anchor (&lt;a&gt;) tags (which caused doubly nested anchor tags...). 
+- Not properly handling HTML, or not handling HTML at all, such as either autolinking the `href` attribute inside anchor (&lt;a&gt;) tags (which caused invalid HTML), or wrapping the inner text of an anchor tag if it also looked like a URL (which causes doubly nested anchor tags...). 
 
 Other implementations that I found were just plain limited as well (such as jQuery-only solutions), or did things which one shouldn't (like adding methods to `String.prototype`).
 

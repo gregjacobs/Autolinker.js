@@ -16,8 +16,12 @@ var Autolinker = {
 	 * @property {RegExp} htmlRegex
 	 * 
 	 * A regular expression used to pull out HTML tags from a string.
+	 * 
+	 * Capturing groups:
+	 * 
+	 * 1. The tag name.
 	 */
-	htmlRegex : /<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
+	htmlRegex : /<\/?(\w+)((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
 	
 	
 	
@@ -48,25 +52,35 @@ var Autolinker = {
 		// Function to process the text that lies between HTML tags. This function does the actual wrapping of
 		// URLs with anchor tags.
 		function autolinkText( text ) {
-			text = text.replace( matcherRegex, function( url ) {
-				var anchorUrl = url,
-				    additionalAttributes = [];
+			text = text.replace( matcherRegex, function( match, $1 ) {
+				var actualMatch = $1;
 				
-				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
-				// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
-				if( !/^(https?|ftp|mailto):/i.test( anchorUrl ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
-					if( anchorUrl.indexOf( '@' ) > -1 ) {
-						anchorUrl = 'mailto:' + anchorUrl;   // handle the url being an email address by prefixing 'mailto:'
-					} else {
-						anchorUrl = 'http://' + anchorUrl;   // handle all other urls by prefixing 'http://'
+				if( !actualMatch ) {
+					// If this is not an actual match (i.e. the regular expression matched an anchor tag with
+					// its inner text), then ignore it. Simply return the anchor tag from <a> to </a> unchanged.
+					return match;
+					
+				} else {
+					var anchorUrl = match,
+					    anchorAttributes = [];
+					
+					// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
+					// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+					if( !/^(https?|ftp|mailto):/i.test( anchorUrl ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
+						if( anchorUrl.indexOf( '@' ) > -1 ) {
+							anchorUrl = 'mailto:' + anchorUrl;   // handle the url being an email address by prefixing 'mailto:'
+						} else {
+							anchorUrl = 'http://' + anchorUrl;   // handle all other urls by prefixing 'http://'
+						}
 					}
+					
+					anchorAttributes.push( 'href="' + anchorUrl + '"' );
+					if( newWindow ) {
+						anchorAttributes.push( 'target="_blank"' );
+					}
+					
+					return '<a ' + anchorAttributes.join( " " ) + '>' + match + '</a>';  // wrap the match in an anchor tag
 				}
-				
-				if( newWindow ) {
-					additionalAttributes.push( 'target="_blank"' );
-				}
-				
-				return '<a href="' + anchorUrl + '" ' + additionalAttributes.join( " " ) + '>' + url + '</a>';  // wrap the url in an anchor tag
 			} );
 			
 			return text;
@@ -76,11 +90,14 @@ var Autolinker = {
 		// Loop over the HTML string, ignoring HTML tags, and processing the text that lies between them,
 		// wrapping the URLs in anchor tags 
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
-			// Pull the string from this match's index to the last index we got
-			inBetweenTagsText = html.substring( lastIndex, currentResult.index );
-			lastIndex = currentResult.index + currentResult[ 0 ].length;
-			
-			resultHtml += autolinkText( inBetweenTagsText ) + currentResult[ 0 ];  // link the text between tags, and then add the tag back to the resulting string
+			var tagName = currentResult[ 1 ];
+			if( tagName !== 'a' ) {  // leave anchor tags in there. The regular expression that autolinks will handle it, not linking anything between the start <a> and end </a> tags 
+				// Pull the string from this match's index to the last index we got
+				inBetweenTagsText = html.substring( lastIndex, currentResult.index );
+				lastIndex = currentResult.index + currentResult[ 0 ].length;
+				
+				resultHtml += autolinkText( inBetweenTagsText ) + currentResult[ 0 ];  // link the text between tags, and then add the tag back to the resulting string
+			}
 		}
 		
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
@@ -90,6 +107,5 @@ var Autolinker = {
 		
 		return resultHtml;
 	}
-	
 
 };
