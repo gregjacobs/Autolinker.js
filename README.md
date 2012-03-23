@@ -14,16 +14,23 @@ Other implementations that I found were just plain limited as well (such as jQue
 
 This utility is very easy to use. Simply copy the Autolinker.js (or Autolinker.min.js) file into your project, link to it, and then run it as such:
 
-	Autolinker.link( myText[, options] );
+	var linkedText = Autolinker.link( text[, options] );
 	
 Ex:
 
-	Autolinker.link( "The sky is falling from google.com" );
+	var linkedText = Autolinker.link( "The sky is falling from google.com" );
+	// Produces: "The sky is falling from <a href="http://google.com" target="_blank">google.com</a>"
 	
 There are options which may be specified for the linking. The only one at this time however is the 'newWindow' option, which allows you to specify if the link should open in a new window or not. It defaults to true, but if you wanted to disable this, you could do:
 
-	Autolinker.link( "The sky is falling from google.com", { newWindow: false } );
+	var linkedText = Autolinker.link( "The sky is falling from google.com", { newWindow: false } );
+	// Produces: "The sky is falling from <a href="http://google.com">google.com</a>"
 
+
+One could update a DOM element that has unlinked text as such:
+
+	var myTextEl = document.getElementById( 'text' );
+	myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 
 ## Changelog:
 
