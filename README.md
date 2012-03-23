@@ -3,6 +3,8 @@
 Because I had so much trouble finding a **GOOD** autolinking implementation, I decided to roll my own. Everything that I found out there was either a naive implementation, or just didn't cover every case. I saw deficiencies like:
 
 - Not autolinking URLs that didn't start with a protocol (i.e. http://). They would not link the string "google.com".
+- Not properly handling URLs with certain (but allowable) characters
+- Not properly handling URLs with query parameters or a named anchor (i.e. hash)
 - Not autolinking email addresses.
 - Not autolinking Twitter handles.
 - Not properly handling HTML, or not handling HTML at all, such as autolinking the href attribute inside anchor (&lt;a&gt;) tags (which caused doubly nested anchor tags...). 
