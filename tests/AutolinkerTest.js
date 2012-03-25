@@ -96,26 +96,30 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			// Test with email addresses
 			
-			"link() should automatically link email addresses" : function() {
+			"link() should automatically link an email address which is the only text in the string" : function() {
+				var result = Autolinker.link( "joe@joe.com" );
+				Y.Assert.areSame( '<a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a>', result );
+			},
+			
+			"link() should automatically link email addresses at the start of the string" : function() {
+				var result = Autolinker.link( "joe@joe.com is Joe's email" );
+				Y.Assert.areSame( '<a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> is Joe\'s email', result );
+			},
+			
+			"link() should automatically link an email address in the middle of the string" : function() {
+				var result = Autolinker.link( "Joe's email is joe@joe.com because it is" );
+				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is', result );
+			},
+			
+			"link() should automatically link email addresses at the end of the string" : function() {
 				var result = Autolinker.link( "Joe's email is joe@joe.com" );
 				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a>', result );
 			},
 			
-			"link() should automatically link email addresses in the middle of the string" : function() {
-				var result = Autolinker.link( "Joe's email is joe@joe.com because he is great" );
-				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because he is great', result );
+			"link() should NOT automatically link any old word with an @ character in it" : function() {
+				var result = Autolinker.link( "Hi there@stuff" );
+				Y.Assert.areSame( 'Hi there@stuff', result );
 			},
-			
-			"link() should automatically link email addresses, even if it already starts with 'mailto:'" : function() {
-				var result = Autolinker.link( "Joe's email is mailto:joe@joe.com" );
-				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">mailto:joe@joe.com</a>', result );
-			},
-			
-			
-			//"link() should NOT automatically link any old word with an @ character in it" : function() {
-			//	var result = Autolinker.link( "Hi there@stuff" );
-			//	Y.Assert.areSame( 'Hi there@stuff', result );
-			//},
 			
 			
 			// --------------------------
