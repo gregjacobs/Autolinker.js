@@ -112,13 +112,39 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			},
 			
 			
+			//"link() should NOT automatically link any old word with an @ character in it" : function() {
+			//	var result = Autolinker.link( "Hi there@stuff" );
+			//	Y.Assert.areSame( 'Hi there@stuff', result );
+			//},
+			
+			
 			// --------------------------
 			
 			// Test with twitter handles
 			
-			"link() should automatically link twitter handles" : function() {
+			"link() should automatically link a twitter handle which is the only thing in the string" : function() {
+				var result = Autolinker.link( "@joe_the_man12" );
+				Y.Assert.areSame( '<a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>', result );
+			},
+			
+			"link() should automatically link twitter handles at the beginning of a string" : function() {
+				var result = Autolinker.link( "@greg is my twitter handle" );
+				Y.Assert.areSame( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is my twitter handle', result );
+			},
+			
+			"link() should automatically link twitter handles in the middle of a string" : function() {
+				var result = Autolinker.link( "Joe's twitter is @joe_the_man12 today, but what will it be tomorrow?" );
+				Y.Assert.areSame( 'Joe\'s twitter is <a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a> today, but what will it be tomorrow?', result );
+			},
+			
+			"link() should automatically link twitter handles at the end of a string" : function() {
 				var result = Autolinker.link( "Joe's twitter is @joe_the_man12" );
-				Y.Assert.areSame( 'Joe\'s twitter is <a href="https://twitter.com/#!/joe_the_man12" target="_blank">@joe_the_man12</a>', result );
+				Y.Assert.areSame( 'Joe\'s twitter is <a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>', result );
+			},
+			
+			"link() should automatically link multiple twitter handles in a string" : function() {
+				var result = Autolinker.link( "@greg is tweeting @joe with @josh" );
+				Y.Assert.areSame( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>', result );
 			},
 			
 			

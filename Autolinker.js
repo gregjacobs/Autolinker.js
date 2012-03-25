@@ -61,9 +61,22 @@ var Autolinker = {
 		// Function to process the text that lies between HTML tags. This function does the actual wrapping of
 		// URLs with anchor tags.
 		function autolinkText( text ) {
-			text = text.replace( matcherRegex, function( match, $1, $2 ) {
+			text = text.replace( matcherRegex, function( match, $1, $2, $3, $4 ) {
 				var actualMatch = $1,
-				    twitterHandle = $2;  // in the form @twitterUser
+				    twitterHandlePrefixWhitespaceChar = $3,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
+				    twitterHandle = $4, // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
+				    
+				    prefixStr = "",     // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+				    anchorHref = "",
+				    anchorText = "";
+				
+				if( window.a ) {
+					console.log( 'match: ' + match );
+					console.log( '$1: ' + $1 );
+					console.log( '$2: ' + $2 );
+					console.log( '$3: ' + $3 );
+					console.log( '$4: ' + $4 );
+				}
 				
 				if( !actualMatch ) {
 					// If this is not an actual match (i.e. the regular expression matched an anchor tag with
@@ -71,29 +84,31 @@ var Autolinker = {
 					return match;
 					
 				} else {
-					var anchorUrl = match,
-					    anchorAttributes = [];
+					var anchorAttributes = [];
+					anchorHref = match;
+					anchorText = match;
 					
 					// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 					// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
 					if( twitterHandle ) {
-						twitterHandle = twitterHandle.substr( 1 );  // remove the preceding @ character
-							anchorUrl = 'https://twitter.com/#!/' + twitterHandle;
+						prefixStr = twitterHandlePrefixWhitespaceChar;
+						anchorHref = 'https://twitter.com/' + twitterHandle;
+						anchorText = '@' + twitterHandle;
 					
-					} else if( !/^(https?|ftp|mailto):/i.test( anchorUrl ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
-						if( anchorUrl.indexOf( '@' ) > -1 ) {
-							anchorUrl = 'mailto:' + anchorUrl;   // handle the url being an email address by prefixing 'mailto:'
+					} else if( !/^(https?|ftp|mailto):/i.test( anchorHref ) ) {  // string doesn't begin with http:, https:, ftp:, or mailto: ...
+						if( anchorHref.indexOf( '@' ) > -1 ) {
+							anchorHref = 'mailto:' + anchorHref;   // handle the url being an email address by prefixing 'mailto:'
 						} else {
-							anchorUrl = 'http://' + anchorUrl;   // handle all other urls by prefixing 'http://'
+							anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
 						}
 					}
 					
-					anchorAttributes.push( 'href="' + anchorUrl + '"' );
+					anchorAttributes.push( 'href="' + anchorHref + '"' );
 					if( newWindow ) {
 						anchorAttributes.push( 'target="_blank"' );
 					}
 					
-					return '<a ' + anchorAttributes.join( " " ) + '>' + match + '</a>';  // wrap the match in an anchor tag
+					return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
 				}
 			} );
 			
@@ -135,7 +150,13 @@ var Autolinker = {
  * 
  * 1. Group that is used to determine if there is a match at all. The regex ignores anchor tags including their innerHTML,
  *    so we check this to see if it is defined to see if the match is legitimate.
+ * 2. Group that is used to determine if there is a Twitter handle match (i.e. @someTwitterUser). Simply check for its existence
+ *    to determine if there is a Twitter handle match. The next couple of capturing groups give information about the Twitter 
+ *    handle match.
+ * 3. The whitespace character before the @sign in a Twitter handle. This is needed because there are no lookbehinds in JS regular
+ *    expressions.
+ * 4. The Twitter handle itself in a Twitter handle match.
  */
 /*global Autolinker*/
-Autolinker.matcherRegex = /<a\b[^<>]*>[\s\S]*?<\/a>|((@\w{1,15})|(?:(?:([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/[\+~%\/\.\w\-]*)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
+Autolinker.matcherRegex = /<a\b[^<>]*>[\s\S]*?<\/a>|(((^|\s)@(\w{1,15}))|(?:(?:(?:[A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(?:com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/[\+~%\/\.\w\-]*)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
 
