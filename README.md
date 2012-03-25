@@ -2,23 +2,23 @@
 
 Because I had so much trouble finding a **GOOD** autolinking implementation, I decided to roll my own. Everything that I found out there was either a naive implementation, or just didn't cover every case. I saw deficiencies like:
 
-- Not autolinking URLs that didn't start with a protocol (i.e. http://). They would not link the string "google.com".
-- Not properly handling URLs with certain (but allowable) characters
+- Not autolinking URLs that didn't start with a protocol (i.e. http://). In other words, they would not link the string "google.com", but would link "http://google.com".
+- Not properly handling URLs with special (but allowable) characters
 - Not properly handling URLs with query parameters or a named anchor (i.e. hash)
 - Not autolinking email addresses.
 - Not autolinking Twitter handles.
 - Not properly handling HTML, or not handling HTML at all, such as either autolinking the `href` attribute inside anchor (&lt;a&gt;) tags (which caused invalid HTML), or wrapping the inner text of an anchor tag if it also looked like a URL (which causes doubly nested anchor tags...). 
 
-Other implementations that I found were just plain limited as well (such as jQuery-only solutions), or did things which one shouldn't (like adding methods to `String.prototype`).
+Other implementations that I found were just plain limited as well, such as jQuery-only solutions, or did things which one shouldn't (like adding methods to `String.prototype`).
 
 
 ## Usage
 
-This utility is very easy to use. Simply copy the Autolinker.js (or Autolinker.min.js) file into your project, link to it, and then run it as such:
+This utility is very easy to use. Simply copy the Autolinker.js (or Autolinker.min.js) file into your project, link to it with a script tag, and then run it as such:
 
-	var linkedText = Autolinker.link( text[, options] );
+	var linkedText = Autolinker.link( textToAutolink[, options] );
 	
-Ex:
+Example:
 
 	var linkedText = Autolinker.link( "The sky is falling from google.com" );
 	// Produces: "The sky is falling from <a href="http://google.com" target="_blank">google.com</a>"
@@ -30,7 +30,7 @@ There are options which may be specified for the linking. The only one at this t
 	// Produces: "The sky is falling from <a href="http://google.com">google.com</a>"
 
 ### More Examples
-One could update a DOM element that has unlinked text as such:
+One could update a DOM element that has unlinked text to autolink them as such:
 
 	var myTextEl = document.getElementById( 'text' );
 	myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
