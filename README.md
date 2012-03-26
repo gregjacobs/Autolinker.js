@@ -41,7 +41,7 @@ If you wanted to disable links opening in new windows, you could do:
 And if you wanted to truncate the length of URLs (while also not opening in a new window), you could do:
 
 	var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { truncate: 25, newWindow: false } );
-	// Produces: "The sky is falling from <a href="http://www.yahoo.com/some/long/path/to/a/file">http://www...th/to/a/file</a>"
+	// Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">http://www...th/to/a/file</a>"
 
 
 ### More Examples
