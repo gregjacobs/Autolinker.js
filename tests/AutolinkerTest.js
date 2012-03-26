@@ -94,6 +94,36 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			// --------------------------
 			
+			// Sanity check: test that multiple URLs in a string are autolinked (basically making sure that we never forget the 'g' RegExp flag)
+			
+			"link() should automatically link multiple URLs" : function() {
+				var result = Autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a> and <a href="http://google.com" target="_blank">http://google.com</a>', result );
+			},
+			
+			
+			// -----------------------------
+			
+			// Test that trailing periods are not included in the url
+			
+			"link() should automatically link URLs in the form of 'http://yahoo.com.', without including the trailing period" : function() {
+				var result = Autolinker.link( "Joe went to http://yahoo.com." );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a>.', result );
+			},
+			
+			"link() should automatically link URLs in the form of 'www.yahoo.com.', without including the trailing period" : function() {
+				var result = Autolinker.link( "Joe went to www.yahoo.com." );
+				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">www.yahoo.com</a>.', result );
+			},
+			
+			"link() should automatically link URLs in the form of 'yahoo.com.', without including the trailing period" : function() {
+				var result = Autolinker.link( "Joe went to yahoo.com." );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a>.', result );
+			},
+			
+			
+			// --------------------------
+			
 			// Test with email addresses
 			
 			"link() should automatically link an email address which is the only text in the string" : function() {
@@ -152,25 +182,6 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			},
 			
 			
-			// -----------------------------
-			
-			// Test that trailing periods are not included in the url
-			
-			"link() should automatically link URLs in the form of 'http://yahoo.com.', without including the trailing period" : function() {
-				var result = Autolinker.link( "Joe went to http://yahoo.com." );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a>.', result );
-			},
-			
-			"link() should automatically link URLs in the form of 'www.yahoo.com.', without including the trailing period" : function() {
-				var result = Autolinker.link( "Joe went to www.yahoo.com." );
-				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">www.yahoo.com</a>.', result );
-			},
-			
-			"link() should automatically link URLs in the form of 'yahoo.com.', without including the trailing period" : function() {
-				var result = Autolinker.link( "Joe went to yahoo.com." );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a>.', result );
-			},
-			
 			// --------------------------
 			
 			// Test that URLs within HTML tags are not autolinked
@@ -198,11 +209,36 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			// --------------------------
 			
-			// Sanity check: test that multiple URLs in a string are autolinked (basically making sure that we never forget the 'g' RegExp flag)
+			// Test the 'newWindow' option
 			
-			"link() should automatically link multiple URLs" : function() {
-				var result = Autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a> and <a href="http://google.com" target="_blank">http://google.com</a>', result );
+			"link() should not add target=\"_blank\" when the 'newWindow' option is set to false" : function() {
+				var result = Autolinker.link( "Test http://url.com", { newWindow: false } );
+				Y.Assert.areSame( 'Test <a href="http://url.com">http://url.com</a>', result );
+			},
+			
+			
+			// --------------------------
+			
+			// Test the 'truncate' option
+			
+			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified" : function() {
+				var result = Autolinker.link( "Test http://url.com", { truncate: 10 } );
+				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http...com</a>', result );
+			},
+			
+			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified, given an odd numbered truncate length, by giving one extra character to the 'end' part of the full string" : function() {
+				var result = Autolinker.link( "Test http://url.com", { truncate: 11 } );
+				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http..l.com</a>', result );
+			},
+			
+			"link() should leave a url/email/twitter alone if the length of the url is exactly equal to the length of the 'truncate' option" : function() {	
+				var result = Autolinker.link( "Test http://url.com", { truncate: 'http://url.com'.length } );  // the exact length of the link
+				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http://url.com</a>', result );
+			},
+			
+			"link() should leave a url/email/twitter alone if it does not exceed the given number of characters provided in the 'truncate' option" : function() {
+				var result = Autolinker.link( "Test http://url.com", { truncate: 25 } );  // just a random high number
+				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http://url.com</a>', result );
 			}
 		}
 	]

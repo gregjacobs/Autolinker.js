@@ -24,10 +24,25 @@ Example:
 	// Produces: "The sky is falling from <a href="http://google.com" target="_blank">google.com</a>"
 	
 ### Options
-There are options which may be specified for the linking. The only one at this time however is the `newWindow` option, which allows you to specify if the link should open in a new window or not. It defaults to true, but if you wanted to disable this, you could do:
+There are options which may be specified for the linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. Options include:
+
+- **newWindow** : Boolean
+  `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.
+- **truncate** : Number
+  A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by adding a two period ellipsis ('..') into the middle of the string.
+  Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'http://www...th/to/a/file'
+   
+
+If you wanted to disable links opening in new windows, you could do:
 
 	var linkedText = Autolinker.link( "The sky is falling from google.com", { newWindow: false } );
 	// Produces: "The sky is falling from <a href="http://google.com">google.com</a>"
+
+And if you wanted to truncate the length of URLs (while also not opening in a new window), you could do:
+
+	var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { truncate: 25, newWindow: false } );
+	// Produces: "The sky is falling from <a href="http://www.yahoo.com/some/long/path/to/a/file">http://www...th/to/a/file</a>"
+
 
 ### More Examples
 One could update a DOM element that has unlinked text to autolink them as such:
@@ -37,9 +52,13 @@ One could update a DOM element that has unlinked text to autolink them as such:
 
 ## Changelog:
 
+### 0.3
+
+- Implemented the `truncate` option.
+
 ### 0.2
 
-- Implement autolinking Twitter handles.
+- Implemented autolinking Twitter handles.
 
 ### 0.1
 

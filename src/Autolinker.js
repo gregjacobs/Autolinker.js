@@ -36,6 +36,10 @@ var Autolinker = {
 	 * @param {String} html The HTML text to link URLs within.
 	 * @param {Object} [options] Any options for the autolinking, specified in an object. It may have the following properties:
 	 * @param {Boolean} [options.newWindow=true] True if the links should open in a new window, false otherwise.
+	 * @param {Number} [options.truncate] A number for how many characters long URLs/emails/twitter handles should be truncated to
+	 *   inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by 
+	 *   adding a two period ellipsis ('..') into the middle of the string.
+	 *   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look like this: 'http://www...th/to/a/file'
 	 * @return {String} The HTML text, with URLs automatically linked
 	 */
 	link : function( html, options ) {
@@ -44,6 +48,7 @@ var Autolinker = {
 		var htmlRegex = Autolinker.htmlRegex,         // full path for friendly
 		    matcherRegex = Autolinker.matcherRegex,   // out-of-scope calls
 		    newWindow = ( 'newWindow' in options ) ? options.newWindow : true,  // defaults to true
+		    truncate = options.truncate,
 		    currentResult, 
 		    lastIndex = 0,
 		    inBetweenTagsText,
@@ -92,6 +97,17 @@ var Autolinker = {
 					anchorAttributes.push( 'href="' + anchorHref + '"' );
 					if( newWindow ) {
 						anchorAttributes.push( 'target="_blank"' );
+					}
+					
+					// Truncate the anchor text if it is longer than the provided 'truncate' option
+					if( truncate && anchorText.length > truncate ) {
+						var startStrTruncateLength = Math.floor( truncate / 2 ) - 1,  // -1 for one of the two dots in the '..' ellipsis
+						    endStrTruncateLength = Math.ceil( truncate / 2 ) - 1;     // -1 for one of the two dots in the '..' ellipsis
+						
+						anchorText = 
+							anchorText.substring( 0, startStrTruncateLength ) +                // take the beginning part of the full string
+							'..' +    // add the ellipsis in the middle
+							anchorText.substring( anchorText.length - endStrTruncateLength );  // take the end part of the full string
 					}
 					
 					return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
