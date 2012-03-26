@@ -26,9 +26,9 @@ Example:
 ### Options
 There are options which may be specified for the linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. Options include:
 
-- **newWindow** : Boolean
+- **newWindow** : Boolean<br />
   `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.
-- **truncate** : Number
+- **truncate** : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by adding a two period ellipsis ('..') into the middle of the string.
   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'http://www...th/to/a/file'
    
