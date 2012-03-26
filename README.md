@@ -1,15 +1,15 @@
 # Autolinker.js
 
-Because I had so much trouble finding a **GOOD** autolinking implementation, I decided to roll my own. Everything that I found out there was either a naive implementation, or just didn't cover every case. I saw deficiencies like:
+Because I had so much trouble finding a **good** autolinking implementation out in the wild, I decided to roll my own. Everything that I found out there was either a naive implementation, or just didn't cover every case. 
 
-- Not autolinking URLs that didn't start with a protocol (i.e. http://). In other words, they would not link the string "google.com", but would link "http://google.com".
-- Not properly handling URLs with special (but allowable) characters
-- Not properly handling URLs with query parameters or a named anchor (i.e. hash)
-- Not autolinking email addresses.
-- Not autolinking Twitter handles.
-- Not properly handling HTML, or not handling HTML at all, such as either autolinking the `href` attribute inside anchor (&lt;a&gt;) tags (which caused invalid HTML), or wrapping the inner text of an anchor tag if it also looked like a URL (which causes doubly nested anchor tags...). 
+So, this utility attempts to handle everything! It:
 
-Other implementations that I found were just plain limited as well, such as jQuery-only solutions, or did things which one shouldn't (like adding methods to `String.prototype`).
+- Autolinks URLs, whether or not they start with a protocol (i.e. 'http://'). In other words, it will automatically link the text "google.com", as well "http://google.com".
+- Will properly handle URLs with special characters
+- Will properly handle URLs with query parameters or a named anchor (i.e. hash)
+- Will autolink email addresses.
+- Will autolink Twitter handles.
+- Will properly handle HTML input. The utility will not change the `href` attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that matter), and will not accidentally wrap the inner text of an anchor tag with a new one (which would cause doubly nested anchor tags, and would not be expected behavior as the inner text of an anchor is already linked). 
 
 
 ## Usage
