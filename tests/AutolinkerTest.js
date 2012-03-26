@@ -206,6 +206,16 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 				Y.Assert.areSame( '<p>Joe went to <a href="http://google.com" target="_blank">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com" target="_blank">weather.com</a></p> yesterday.', result );
 			},
 			
+			"link() should NOT automatically link an image tag with a URL inside it, inside an anchor tag" : function() {
+				var result = Autolinker.link( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
+				Y.Assert.areSame( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>', result );
+			},
+			
+			"link() should NOT automatically link an image tag with a URL inside it, inside an anchor tag, but match urls around the tags" : function() {
+				var result = Autolinker.link( 'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)' );
+				Y.Assert.areSame( '<a href="http://google.com" target="_blank">google.com</a> looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at <a href="http://google.com" target="_blank">google.com</a>)', result );
+			},
+			
 			
 			// --------------------------
 			

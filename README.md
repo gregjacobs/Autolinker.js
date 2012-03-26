@@ -52,6 +52,10 @@ One could update a DOM element that has unlinked text to autolink them as such:
 
 ## Changelog:
 
+### 0.3.1
+
+- Fixed handling of nested HTML tags within anchor tags in the input string.
+
 ### 0.3
 
 - Implemented the `truncate` option.

@@ -19,9 +19,10 @@ var Autolinker = {
 	 * 
 	 * Capturing groups:
 	 * 
-	 * 1. The tag name.
+	 * 1. If it is an end tag, this group will have the '/'.
+	 * 2. The tag name.
 	 */
-	htmlRegex : /<\/?(\w+)((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
+	htmlRegex : /<(\/)?(\w+)(?:(?:\s+\w+(?:\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
 	
 	
 	
@@ -52,66 +53,60 @@ var Autolinker = {
 		    currentResult, 
 		    lastIndex = 0,
 		    inBetweenTagsText,
-		    resultHtml = "";
+		    resultHtml = "",
+		    anchorTagStackCount = 0;
 		
 		// Function to process the text that lies between HTML tags. This function does the actual wrapping of
 		// URLs with anchor tags.
 		function autolinkText( text ) {
 			text = text.replace( matcherRegex, function( match, $1, $2, $3, $4, $5 ) {
-				var actualMatch = $1,
-				    twitterHandlePrefixWhitespaceChar = $3,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
-				    twitterHandle = $4, // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
-				    emailAddress = $5,   // For both determining if it is an email address, and stores the actual email address
+				var twitterMatch = $1,
+				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
+				    twitterHandle = $3, // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
+				    emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
 				    
 				    prefixStr = "",     // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
 				    anchorHref = "",
 				    anchorText = "";
 				
 				
-				if( !actualMatch ) {
-					// If this is not an actual match (i.e. the regular expression matched an anchor tag with
-					// its inner text), then ignore it. Simply return the anchor tag from <a> to </a> unchanged.
-					return match;
-					
-				} else {
-					var anchorAttributes = [];
-					anchorHref = match;  // initialize both of these
-					anchorText = match;  // values as the full match
-					
-					// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
-					// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
-					if( twitterHandle ) {
-						prefixStr = twitterHandlePrefixWhitespaceChar;
-						anchorHref = 'https://twitter.com/' + twitterHandle;
-						anchorText = '@' + twitterHandle;
-					
-					} else if( emailAddress ) {
-						anchorHref = 'mailto:' + emailAddress;
-						anchorText = emailAddress;
-					
-					} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
-						anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
-					}
-					
-					// Set the attributes for the anchor tag
-					anchorAttributes.push( 'href="' + anchorHref + '"' );
-					if( newWindow ) {
-						anchorAttributes.push( 'target="_blank"' );
-					}
-					
-					// Truncate the anchor text if it is longer than the provided 'truncate' option
-					if( truncate && anchorText.length > truncate ) {
-						var startStrTruncateLength = Math.floor( truncate / 2 ) - 1,  // -1 for one of the two dots in the '..' ellipsis
-						    endStrTruncateLength = Math.ceil( truncate / 2 ) - 1;     // -1 for one of the two dots in the '..' ellipsis
-						
-						anchorText = 
-							anchorText.substring( 0, startStrTruncateLength ) +                // take the beginning part of the full string
-							'..' +    // add the ellipsis in the middle
-							anchorText.substring( anchorText.length - endStrTruncateLength );  // take the end part of the full string
-					}
-					
-					return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
+				var anchorAttributes = [];
+				anchorHref = match;  // initialize both of these
+				anchorText = match;  // values as the full match
+				
+				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
+				// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+				if( twitterMatch ) {
+					prefixStr = twitterHandlePrefixWhitespaceChar;
+					anchorHref = 'https://twitter.com/' + twitterHandle;
+					anchorText = '@' + twitterHandle;
+				
+				} else if( emailAddress ) {
+					anchorHref = 'mailto:' + emailAddress;
+					anchorText = emailAddress;
+				
+				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
+					anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
 				}
+				
+				// Set the attributes for the anchor tag
+				anchorAttributes.push( 'href="' + anchorHref + '"' );
+				if( newWindow ) {
+					anchorAttributes.push( 'target="_blank"' );
+				}
+				
+				// Truncate the anchor text if it is longer than the provided 'truncate' option
+				if( truncate && anchorText.length > truncate ) {
+					var startStrTruncateLength = Math.floor( truncate / 2 ) - 1,  // -1 for one of the two dots in the '..' ellipsis
+					    endStrTruncateLength = Math.ceil( truncate / 2 ) - 1;     // -1 for one of the two dots in the '..' ellipsis
+					
+					anchorText = 
+						anchorText.substring( 0, startStrTruncateLength ) +                // take the beginning part of the full string
+						'..' +    // add the ellipsis in the middle
+						anchorText.substring( anchorText.length - endStrTruncateLength );  // take the end part of the full string
+				}
+				
+				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
 			} );
 			
 			return text;
@@ -121,14 +116,31 @@ var Autolinker = {
 		// Loop over the HTML string, ignoring HTML tags, and processing the text that lies between them,
 		// wrapping the URLs in anchor tags 
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
-			var tagName = currentResult[ 1 ];
-			if( tagName !== 'a' ) {  // leave anchor tags in there. The regular expression that autolinks will handle it, not linking anything between the start <a> and end </a> tags 
-				// Pull the string from this match's index to the last index we got
-				inBetweenTagsText = html.substring( lastIndex, currentResult.index );
-				lastIndex = currentResult.index + currentResult[ 0 ].length;
+			var tagText = currentResult[ 0 ],
+			    tagName = currentResult[ 2 ],
+			    isClosingTag = !!currentResult[ 1 ];
+			
+			inBetweenTagsText = html.substring( lastIndex, currentResult.index );
+			lastIndex = currentResult.index + tagText.length;
+			
+			// Process around anchor tags, and any inner text / html they may have
+			if( tagName === 'a' ) {
+				if( !isClosingTag ) {  // it's the start <a> tag
+					anchorTagStackCount++;
+					resultHtml += autolinkText( inBetweenTagsText );
+					
+				} else {     // it's the end </a> tag
+					anchorTagStackCount--;	
+					if( anchorTagStackCount === 0 ) {
+						resultHtml += inBetweenTagsText;  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
+					}
+				}
 				
-				resultHtml += autolinkText( inBetweenTagsText ) + currentResult[ 0 ];  // link the text between tags, and then add the tag back to the resulting string
+			} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
+				resultHtml += autolinkText( inBetweenTagsText );
 			}
+			
+			resultHtml += tagText;  // now add the text of the tag itself verbatim
 		}
 		
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
