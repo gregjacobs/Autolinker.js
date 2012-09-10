@@ -111,13 +111,7 @@ var Autolinker = {
 				
 				// Truncate the anchor text if it is longer than the provided 'truncate' option
 				if( truncate && anchorText.length > truncate ) {
-					var startStrTruncateLength = Math.floor( truncate / 2 ) - 1,  // -1 for one of the two dots in the '..' ellipsis
-					    endStrTruncateLength = Math.ceil( truncate / 2 ) - 1;     // -1 for one of the two dots in the '..' ellipsis
-					
-					anchorText = 
-						anchorText.substring( 0, startStrTruncateLength ) +                // take the beginning part of the full string
-						'..' +    // add the ellipsis in the middle
-						anchorText.substring( anchorText.length - endStrTruncateLength );  // take the end part of the full string
+					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
 				}
 				
 				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
