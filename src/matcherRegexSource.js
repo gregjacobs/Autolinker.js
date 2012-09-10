@@ -18,7 +18,7 @@
  * 5. Group that matches a URL in the input text. Ex: 'http://google.com', 'www.google.com', or just 'google.com'.
  *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
  */
-(function() {
+Autolinker.matcherRegex = (function() {
 	var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 	    
 	    emailRegex = /(?:[\-;:&=\+\$,\w]+@)/,               // something@ for email addresses
