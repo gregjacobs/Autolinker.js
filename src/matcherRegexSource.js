@@ -21,7 +21,7 @@
 (function() {
 	var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 	    
-	    emailRegex = /(?:[\-;:&=\+\$,\w]+@)/,               // something@ for email addresses
+	    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 	    
 	    protocolRegex = /(?:[A-Za-z]{3,9}:(?:\/\/)?)/,      // match protocol, allow in format http:// or mailto:
 	    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
