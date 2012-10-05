@@ -22,7 +22,6 @@ Autolinker.matcherRegex = (function() {
 	var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 	    
 	    emailRegex = /(?:[\-;:&=\+\$,\w]+@)/,               // something@ for email addresses
-	    domainNameWithDot = /[A-Za-z0-9\.\-]+\.[A-Za-z0-9\.\-]+/,  // a regex to check for a domain name with at least one '.' in it, for the section after the '@' sign of an email address (so we don't just link any old "hi@you" kind of text)
 	    
 	    protocolRegex = /(?:[A-Za-z]{3,9}:(?:\/\/)?)/,      // match protocol, allow in format http:// or mailto:
 	    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
@@ -45,7 +44,8 @@ Autolinker.matcherRegex = (function() {
 		
 		'(',  // *** Capturing group $4, which is used to determine an email match
 			emailRegex.source,
-			domainNameWithDot.source,
+			domainNameRegex.source,
+			tldRegex.source,
 		')',
 		
 		'|',
