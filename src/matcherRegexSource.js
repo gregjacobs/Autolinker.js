@@ -21,7 +21,7 @@
 Autolinker.matcherRegex = (function() {
 	var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 	    
-	    emailRegex = /(?:[A-Za-z0-9!#$%&'*+\/=?\^_`{|}~\-]+(\.[A-Za-z0-9!#$%&'*+\/=?\^_`{|}~\-]+)*@)/,  // something@ for email addresses (a.k.a. local-part), taken from https://github.com/tolsen/email-validator/blob/9f571290d1a7c2d3db35b5da86b8a310f245f48f/lib/email_validator.rb#L35
+	    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 	    
 	    protocolRegex = /(?:[A-Za-z]{3,9}:(?:\/\/)?)/,      // match protocol, allow in format http:// or mailto:
 	    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
