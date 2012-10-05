@@ -93,7 +93,7 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link a URL with a complex hash (such as a Google Analytics url)" : function() {
 				var result = Autolinker.link( "Joe went to https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics" );
-				Y.Assert.areSame( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/</a> and analyzed his analytics', result );
+				Y.Assert.areSame( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25</a> and analyzed his analytics', result );
 			},
 			
 			
@@ -125,8 +125,28 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 				var result = Autolinker.link( "Joe went to yahoo.com." );
 				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a>.', result );
 			},
-			
-			
+
+			"link() should automatically link URLs in the form of 'http://yahoo.com/sports.', without including the trailing period" : function() {
+				var result = Autolinker.link( "Joe went to http://yahoo.com/sports." );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com/sports" target="_blank">yahoo.com/sports</a>.', result );
+			},
+
+
+			// -----------------------------
+
+			// Test that trailing slashes are removed
+
+			"link() should remove trailing slash from 'http://yahoo.com/'" : function() {
+				var result = Autolinker.link( "Joe went to http://yahoo.com/." );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com/" target="_blank">yahoo.com</a>.', result );
+			},
+
+			"link() should remove trailing slash from 'http://yahoo.com/sports/'" : function() {
+				var result = Autolinker.link( "Joe went to http://yahoo.com/sports/." );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com/sports/" target="_blank">yahoo.com/sports</a>.', result );
+			},
+
+
 			// --------------------------
 			
 			// Test with email addresses

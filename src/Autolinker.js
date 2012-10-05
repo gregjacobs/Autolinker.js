@@ -102,6 +102,11 @@ var Autolinker = {
 				if ( stripPrefix ) {
 					anchorText = anchorText.replace( Autolinker.prefixRegex, '' );
 				}
+
+				// remove trailing slash
+				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+					anchorText = anchorText.slice( 0, -1 );
+				}
 				
 				// Set the attributes for the anchor tag
 				anchorAttributes.push( 'href="' + anchorHref + '"' );
