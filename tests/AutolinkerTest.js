@@ -170,6 +170,11 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 				var result = Autolinker.link( "Joe's email is joe@joe.com" );
 				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a>', result );
 			},
+
+			"link() should automatically link email addresses with a period in the 'local part'" : function() {
+				var result = Autolinker.link( "Joe's email is joe.smith@joe.com" );
+				Y.Assert.areSame( 'Joe\'s email is <a href="mailto:joe.smith@joe.com" target="_blank">joe.smith@joe.com</a>', result );
+			},
 			
 			"link() should NOT automatically link any old word with an @ character in it" : function() {
 				var result = Autolinker.link( "Hi there@stuff" );
