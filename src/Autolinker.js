@@ -88,6 +88,11 @@ var Autolinker = {
 				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
 					anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
 				}
+
+				// remove trailing slash
+				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+					anchorText = anchorText.slice( 0, -1 );
+				}
 				
 				// Set the attributes for the anchor tag
 				anchorAttributes.push( 'href="' + anchorHref + '"' );
