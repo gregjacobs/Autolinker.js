@@ -27,11 +27,11 @@ var Autolinker = {
 
 	/**
 	 * @private
-	 * @property {RegExp} httpRegex
+	 * @property {RegExp} prefixRegex
 	 * 
 	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
 	 */
-	httpRegex: /(https?:\/\/)?(www\.)?/g,
+	prefixRegex: /^(https?:\/\/)?(www\.)?/,
 	
 	
 	/**
@@ -100,7 +100,7 @@ var Autolinker = {
 				}
 
 				if ( stripPrefix ) {
-					anchorText = anchorText.replace( Autolinker.httpRegex, '' );
+					anchorText = anchorText.replace( Autolinker.prefixRegex, '' );
 				}
 				
 				// Set the attributes for the anchor tag
