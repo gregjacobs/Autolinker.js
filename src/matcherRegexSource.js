@@ -21,15 +21,14 @@
 Autolinker.matcherRegex = (function() {
 	var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 	    
-	    emailRegex = /(?:[\-;:&=\+\$,\w]+@)/,               // something@ for email addresses
-	    domainNameWithDot = /[A-Za-z0-9\.\-]+\.[A-Za-z0-9\.\-]+/,  // a regex to check for a domain name with at least one '.' in it, for the section after the '@' sign of an email address (so we don't just link any old "hi@you" kind of text)
+	    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 	    
 	    protocolRegex = /(?:[A-Za-z]{3,9}:(?:\/\/)?)/,      // match protocol, allow in format http:// or mailto:
 	    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
 	    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
-	    tldRegex = /\.(?:com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)/,   // match our known top level domains (TLDs)
+	    tldRegex = /\.(?:biz|br|cc|co\.uk|com|de|edu|fr|gov|hu|info|io|me|mil|mobi|name|net|org|ru|tv|us|ws)/,   // match our known top level domains (TLDs)
 	    
-	    pathRegex = /(?:\/[\+~%\/\.\w\-]*)?/,               // allow optional /path
+	    pathRegex = /(?:\/(?:[\+~%\/\.\w\-]*[\+~%\/\w\-])?)?/,  // allow optional /path
 	    queryStringRegex = /(?:\?[\-\+=&;%@\.\w]*)?/,       // allow optional query string starting with ? 
 	    hashRegex = /(?:#[\-\.\!\/\\\w%]*)?/;               // allow optional hash anchor #anchor 
 	
@@ -45,7 +44,8 @@ Autolinker.matcherRegex = (function() {
 		
 		'(',  // *** Capturing group $4, which is used to determine an email match
 			emailRegex.source,
-			domainNameWithDot.source,
+			domainNameRegex.source,
+			tldRegex.source,
 		')',
 		
 		'|',
