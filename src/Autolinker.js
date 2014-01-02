@@ -23,7 +23,15 @@ var Autolinker = {
 	 * 2. The tag name.
 	 */
 	htmlRegex : /<(\/)?(\w+)(?:(?:\s+\w+(?:\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
-	
+
+
+	/**
+	 * @private
+	 * @property {RegExp} httpRegex
+	 * 
+	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+	 */
+	httpRegex: /(https?:\/\/)?(www\.)?/g,
 	
 	
 	/**
@@ -37,6 +45,7 @@ var Autolinker = {
 	 * @param {String} html The HTML text to link URLs within.
 	 * @param {Object} [options] Any options for the autolinking, specified in an object. It may have the following properties:
 	 * @param {Boolean} [options.newWindow=true] True if the links should open in a new window, false otherwise.
+	 * @param {Boolean} [options.stripPrefix=true] True if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of links, false otherwise.
 	 * @param {Number} [options.truncate] A number for how many characters long URLs/emails/twitter handles should be truncated to
 	 *   inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by 
 	 *   adding a two period ellipsis ('..') into the middle of the string.
@@ -49,6 +58,7 @@ var Autolinker = {
 		var htmlRegex = Autolinker.htmlRegex,         // full path for friendly
 		    matcherRegex = Autolinker.matcherRegex,   // out-of-scope calls
 		    newWindow = ( 'newWindow' in options ) ? options.newWindow : true,  // defaults to true
+		    stripPrefix = ( 'stripPrefix' in options ) ? options.stripPrefix : true,  // defaults to true
 		    truncate = options.truncate,
 		    currentResult, 
 		    lastIndex = 0,
@@ -87,6 +97,10 @@ var Autolinker = {
 				
 				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
 					anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
+				}
+
+				if ( stripPrefix ) {
+					anchorText = anchorText.replace( Autolinker.httpRegex, '' );
 				}
 				
 				// Set the attributes for the anchor tag

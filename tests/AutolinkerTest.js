@@ -13,17 +13,22 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link URLs in the form of http://www.yahoo.com" : function() {
 				var result = Autolinker.link( "Joe went to http://www.yahoo.com" );
-				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">http://www.yahoo.com</a>', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>', result );
 			},
 			
 			"link() should automatically link URLs in the form of http://yahoo.com" : function() {
 				var result = Autolinker.link( "Joe went to http://yahoo.com" );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a>', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a>', result );
 			},
 			
 			"link() should automatically link URLs in the form of www.yahoo.com, prepending the http:// in this case" : function() {
 				var result = Autolinker.link( "Joe went to www.yahoo.com" );
-				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">www.yahoo.com</a>', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>', result );
+			},
+
+			"link() should automatically link URLs in the form of subdomain.yahoo.com" : function() {
+				var result = Autolinker.link( "Joe went to subdomain.yahoo.com" );
+				Y.Assert.areSame( 'Joe went to <a href="http://subdomain.yahoo.com" target="_blank">subdomain.yahoo.com</a>', result );
 			},
 			
 			
@@ -88,7 +93,7 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link a URL with a complex hash (such as a Google Analytics url)" : function() {
 				var result = Autolinker.link( "Joe went to https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics" );
-				Y.Assert.areSame( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/</a> and analyzed his analytics', result );
+				Y.Assert.areSame( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/</a> and analyzed his analytics', result );
 			},
 			
 			
@@ -98,7 +103,7 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link multiple URLs" : function() {
 				var result = Autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a> and <a href="http://google.com" target="_blank">http://google.com</a>', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a> and <a href="http://google.com" target="_blank">google.com</a>', result );
 			},
 			
 			
@@ -108,12 +113,12 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link URLs in the form of 'http://yahoo.com.', without including the trailing period" : function() {
 				var result = Autolinker.link( "Joe went to http://yahoo.com." );
-				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">http://yahoo.com</a>.', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a>.', result );
 			},
 			
 			"link() should automatically link URLs in the form of 'www.yahoo.com.', without including the trailing period" : function() {
 				var result = Autolinker.link( "Joe went to www.yahoo.com." );
-				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">www.yahoo.com</a>.', result );
+				Y.Assert.areSame( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>.', result );
 			},
 			
 			"link() should automatically link URLs in the form of 'yahoo.com.', without including the trailing period" : function() {
@@ -193,7 +198,7 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should automatically link URLs past the last HTML tag" : function() {
 				var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com' );
-				Y.Assert.areSame( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com" target="_blank">http://google.com</a>', result );
+				Y.Assert.areSame( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com" target="_blank">google.com</a>', result );
 			},
 			
 			"link() should NOT automatically link a URL found within the inner text of a pre-existing anchor tag" : function() {
@@ -223,32 +228,37 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			"link() should not add target=\"_blank\" when the 'newWindow' option is set to false" : function() {
 				var result = Autolinker.link( "Test http://url.com", { newWindow: false } );
-				Y.Assert.areSame( 'Test <a href="http://url.com">http://url.com</a>', result );
+				Y.Assert.areSame( 'Test <a href="http://url.com">url.com</a>', result );
 			},
+
+
+			// --------------------------
 			
+			// Test the 'stripPrefix' option
+			
+			"link() should not remove 'http://www.' when the 'stripPrefix' option is set to false" : function() {
+				var result = Autolinker.link( "Test http://www.url.com", { stripPrefix: false } );
+				Y.Assert.areSame( 'Test <a href="http://www.url.com" target="_blank">http://www.url.com</a>', result );
+			},
+
 			
 			// --------------------------
 			
 			// Test the 'truncate' option
 			
 			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified" : function() {
-				var result = Autolinker.link( "Test http://url.com", { truncate: 10 } );
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http...com</a>', result );
-			},
-			
-			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified, given an odd numbered truncate length, by giving one extra character to the 'end' part of the full string" : function() {
-				var result = Autolinker.link( "Test http://url.com", { truncate: 11 } );
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http..l.com</a>', result );
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12 } );
+				Y.Assert.areSame( 'Test <a href="http://url.com/with/path" target="_blank">url.c../path</a>', result );
 			},
 			
 			"link() should leave a url/email/twitter alone if the length of the url is exactly equal to the length of the 'truncate' option" : function() {	
-				var result = Autolinker.link( "Test http://url.com", { truncate: 'http://url.com'.length } );  // the exact length of the link
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http://url.com</a>', result );
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 'url.com/with/path'.length } );  // the exact length of the link
+				Y.Assert.areSame( 'Test <a href="http://url.com/with/path" target="_blank">url.com/with/path</a>', result );
 			},
 			
 			"link() should leave a url/email/twitter alone if it does not exceed the given number of characters provided in the 'truncate' option" : function() {
-				var result = Autolinker.link( "Test http://url.com", { truncate: 25 } );  // just a random high number
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http://url.com</a>', result );
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 25 } );  // just a random high number
+				Y.Assert.areSame( 'Test <a href="http://url.com/with/path" target="_blank">url.com/with/path</a>', result );
 			}
 		}
 	]
