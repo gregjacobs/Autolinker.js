@@ -97,6 +97,11 @@ var Autolinker = {
 				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
 					anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
 				}
+
+				// remove trailing slash
+				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+					anchorText = anchorText.slice( 0, -1 );
+				}
 				
 				// Set the attributes for the anchor tag
 				anchorAttributes.push( 'href="' + anchorHref + '"' );
@@ -106,13 +111,7 @@ var Autolinker = {
 				
 				// Truncate the anchor text if it is longer than the provided 'truncate' option
 				if( truncate && anchorText.length > truncate ) {
-					var startStrTruncateLength = Math.floor( truncate / 2 ) - 1,  // -1 for one of the two dots in the '..' ellipsis
-					    endStrTruncateLength = Math.ceil( truncate / 2 ) - 1;     // -1 for one of the two dots in the '..' ellipsis
-					
-					anchorText = 
-						anchorText.substring( 0, startStrTruncateLength ) +                // take the beginning part of the full string
-						'..' +    // add the ellipsis in the middle
-						anchorText.substring( anchorText.length - endStrTruncateLength );  // take the end part of the full string
+					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
 				}
 				
 				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
@@ -183,5 +182,5 @@ var Autolinker = {
  *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
  */
 /*global Autolinker*/
-Autolinker.matcherRegex = /((^|\s)@(\w{1,15}))|((?:[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+\.[A-Za-z0-9\.\-]+)|((?:(?:(?:[A-Za-z]{3,9}:(?:\/\/)?)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(?:com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/[\+~%\/\.\w\-]*)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
+Autolinker.matcherRegex = /((^|\s)@(\w{1,15}))|((?:[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+\.[A-Za-z0-9\.\-]+)|((?:(?:(?:[A-Za-z]{3,9}:(?:\/\/)?)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:(?:www\.)[A-Za-z0-9\.\-]*[A-Za-z0-9\-])|(?:[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.(?:com|org|net|gov|edu|mil|us|info|biz|ws|name|mobi|cc|tv|co\.uk|de|ru|hu|fr|br)))(?:(?:\/(?:[\+~%\/\.\w\-]*[\+~%\/\w\-])?)?(?:\?[\-\+=&;%@\.\w]*)?(?:#[\-\.\!\/\\\w%]*)?)?)/g;
 
