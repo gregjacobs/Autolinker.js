@@ -261,6 +261,11 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			
 			// Test the 'stripPrefix' option
 			
+			"link() should not remove the prefix for non-http protocols" : function() {
+				var result = Autolinker.link( "Test file://execute-virus.com" );
+				Y.Assert.areSame( 'Test <a href="file://execute-virus.com" target="_blank">file://execute-virus.com</a>', result );
+			},
+
 			"link() should not remove 'http://www.' when the 'stripPrefix' option is set to false" : function() {
 				var result = Autolinker.link( "Test http://www.url.com", { stripPrefix: false } );
 				Y.Assert.areSame( 'Test <a href="http://www.url.com" target="_blank">http://www.url.com</a>', result );
