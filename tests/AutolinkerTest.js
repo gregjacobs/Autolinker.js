@@ -232,13 +232,8 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 			// Test the 'truncate' option
 			
 			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified" : function() {
-				var result = Autolinker.link( "Test http://url.com", { truncate: 10 } );
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http...com</a>', result );
-			},
-			
-			"link() should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified, given an odd numbered truncate length, by giving one extra character to the 'end' part of the full string" : function() {
-				var result = Autolinker.link( "Test http://url.com", { truncate: 11 } );
-				Y.Assert.areSame( 'Test <a href="http://url.com" target="_blank">http..l.com</a>', result );
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12 } );
+				Y.Assert.areSame( 'Test <a href="http://url.com/with/path" target="_blank">http://url..</a>', result );
 			},
 			
 			"link() should leave a url/email/twitter alone if the length of the url is exactly equal to the length of the 'truncate' option" : function() {	
