@@ -52,8 +52,10 @@ if( phantom.args.length !== 2 ) {
 	var docHeader = fileContents.match( /\/\*\*[\s\S]*?\*\// )[ 0 ];
 	
 	// Now evaluate the code, which returns the compiled regular expression
-	var regex = eval( fileContents );
-	
+	Autolinker = {};
+	eval( fileContents );
+	var regex = Autolinker.matcherRegex;
+
 	
 	// ------------------------------
 	
