@@ -50,9 +50,48 @@ Ext.test.Session.addSuite( new Ext.test.Suite( {
 				var result = Autolinker.link( "Joe went to yahoo.ru" );
 				Y.Assert.areSame( 'Joe went to <a href="http://yahoo.ru" target="_blank">yahoo.ru</a>', result );
 			},
-			
-			
-			// -----------------------------
+
+
+      // -----------------------------
+
+      // Test against real TLDs per http://data.iana.org/TLD/tlds-alpha-by-domain.txt; more at http://www.swcs.com.au/tld.htm
+
+      "yahoo.xyz should be linked, sencha.etc should not" : function() {
+        var result = Autolinker.link( "yahoo.xyz is valid, sencha.etc is not", { newWindow: false } );
+        Y.Assert.areSame( '<a href="http://yahoo.xyz">yahoo.xyz</a> should be linked, sencha.etc should not', result );
+      },
+
+      "a.museum should be linked, abc.123 should not" : function() {
+        var result = Autolinker.link( "a.museum is valid, abc.123 is not", { newWindow: false } );
+        Y.Assert.areSame( '<a href="http://a.museum">a.museum</a> should be linked, abc.123 should not, ', result );
+      },
+
+      "IDNs" : function() {
+        var result = Autolinker.link( "ஒலிம்பிக்விளையாட்டுகள்.சிங்கப்பூர் is Tamil for xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd", { newWindow: false } );
+        Y.Assert.areSame( '<a href="http://ஒலிம்பிக்விளையாட்டுகள்.சிங்கப்பூர்">ஒலிம்பிக்விளையாட்டுகள்.சிங்கப்பூர்</a> is Tamil for <a href="http://xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd">xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd</a>', result );
+      },
+
+
+      // -----------------------------
+
+      // Parentheses are legal in URLs but should not be parsed at the end of URLs
+
+      "Parentheses should be included in URLs" : function() {
+        var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki/IANA_(disambiguation).", { newWindow: false } );
+        Y.Assert.areSame( 'TLDs come from <a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>.', result );
+      },
+
+      "An opening or final closing paren should NOT be included in the URL" : function() {
+        var result = Autolinker.link( "Click here (google.com) for more details" );
+        Y.Assert.areSame( 'Click here (<a href="http://google.com">google.com</a>) for more details', result );
+      },
+
+      "Escaped parentheses should be included" : function() {
+        var result = Autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" );
+        Y.Assert.areSame( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29">http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29</a>', result );
+      },
+
+      // -----------------------------
 			
 			// Test that the path, query string, and hash are captured
 			
