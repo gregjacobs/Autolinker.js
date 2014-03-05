@@ -46,14 +46,14 @@ describe( "Autolinker", function() {
 		
 		
 		it( "should automatically link 'yahoo.xyz', but not 'sencha.etc'", function() {
-			var result = Autolinker.link( "yahoo.xyz is valid, sencha.etc is not", { newWindow: false } );
+			var result = Autolinker.link( "yahoo.xyz should be linked, sencha.etc should not", { newWindow: false } );
 			expect( result ).toBe( '<a href="http://yahoo.xyz">yahoo.xyz</a> should be linked, sencha.etc should not' );
 		} );
 		
 		
 		it( "should automatically link 'a.museum', but not 'abc.123'", function() {
-			var result = Autolinker.link( "a.museum is valid, abc.123 is not", { newWindow: false } );
-			expect( result ).toBe( '<a href="http://a.museum">a.museum</a> should be linked, abc.123 should not, ' );
+			var result = Autolinker.link( "a.museum should be linked, but abc.123 should not", { newWindow: false } );
+			expect( result ).toBe( '<a href="http://a.museum">a.museum</a> should be linked, but abc.123 should not' );
 		} );
 		
 		
@@ -71,13 +71,13 @@ describe( "Autolinker", function() {
 		
 		it( "should not include an opening or final closing paren in the URL", function() {
 			var result = Autolinker.link( "Click here (google.com) for more details" );
-			expect( result ).toBe( 'Click here (<a href="http://google.com">google.com</a>) for more details' );
+			expect( result ).toBe( 'Click here (<a href="http://google.com" target="_blank">google.com</a>) for more details' );
 		} );
 		
 		
 		it( "should include escaped parentheses in the URL", function() {
 			var result = Autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" );
-			expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29">http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29</a>' );
+			expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" target="_blank">en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29</a>' );
 		} );
 		
 		
