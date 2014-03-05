@@ -69,20 +69,37 @@ var Autolinker = {
 		// Function to process the text that lies between HTML tags. This function does the actual wrapping of
 		// URLs with anchor tags.
 		function autolinkText( text ) {
-			text = text.replace( matcherRegex, function( match, $1, $2, $3, $4, $5 ) {
+			text = text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5 ) {
 				var twitterMatch = $1,
 				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
-				    twitterHandle = $3, // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
+				    twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
 				    emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
 				    
-				    prefixStr = "",     // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
-				    anchorHref = "",
-				    anchorText = "";
+				    prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+				    suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+				    
+				    anchorAttributes = [];
+				
+				// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
+				// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
+				// linked, and when it is enclosed in parenthesis itself, such as: "(wikipedia.com/something_(disambiguation))" (in
+				// which the outer parens should *not* be auto-linked.
+				var lastChar = matchStr.charAt( matchStr.length - 1 );
+				if( lastChar === ')' ) {
+					var openParensMatch = matchStr.match( /\(/g ),
+					    closeParensMatch = matchStr.match( /\)/g ),
+					    numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
+					    numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
+					
+					if( numOpenParens < numCloseParens ) {
+						matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+						suffixStr = ")";  // this will be added after the <a> tag
+					}
+				}
 				
 				
-				var anchorAttributes = [];
-				anchorHref = match;  // initialize both of these
-				anchorText = match;  // values as the full match
+				var anchorHref = matchStr,  // initialize both of these
+				    anchorText = matchStr;  // values as the full match
 				
 				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 				// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
@@ -96,10 +113,10 @@ var Autolinker = {
 					anchorText = emailAddress;
 				
 				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
-					anchorHref = 'http://' + anchorHref;   // handle all other urls by prefixing 'http://'
+					anchorHref = 'http://' + anchorHref;
 				}
 
-				if ( stripPrefix ) {
+				if( stripPrefix ) {
 					anchorText = anchorText.replace( Autolinker.prefixRegex, '' );
 				}
 
@@ -119,7 +136,7 @@ var Autolinker = {
 					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
 				}
 				
-				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>';  // wrap the match in an anchor tag
+				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
 			} );
 			
 			return text;

@@ -57,27 +57,73 @@ describe( "Autolinker", function() {
 		} );
 		
 		
-		it( "IDNs", function() {
-			var result = Autolinker.link( "à®’à®²à®¿à®®à¯�à®ªà®¿à®•à¯�à®µà®¿à®³à¯ˆà®¯à®¾à®Ÿà¯�à®Ÿà¯�à®•à®³à¯�.à®šà®¿à®™à¯�à®•à®ªà¯�à®ªà¯‚à®°à¯� is Tamil for xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd", { newWindow: false } );
-			expect( result ).toBe( '<a href="http://à®’à®²à®¿à®®à¯�à®ªà®¿à®•à¯�à®µà®¿à®³à¯ˆà®¯à®¾à®Ÿà¯�à®Ÿà¯�à®•à®³à¯�.à®šà®¿à®™à¯�à®•à®ªà¯�à®ªà¯‚à®°à¯�">à®’à®²à®¿à®®à¯�à®ªà®¿à®•à¯�à®µà®¿à®³à¯ˆà®¯à®¾à®Ÿà¯�à®Ÿà¯�à®•à®³à¯�.à®šà®¿à®™à¯�à®•à®ªà¯�à®ªà¯‚à®°à¯�</a> is Tamil for <a href="http://xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd">xn--8kcga3ba7d1akxnes3jhcc3bziwddhe.xn--clchc0ea0b2g2a9gcd</a>' );
-		} );
-		
-		
-		it( "should include parentheses in URLs", function() {
-			var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki/IANA_(disambiguation).", { newWindow: false } );
-			expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>.' );
-		} );
-		
-		
-		it( "should not include an opening or final closing paren in the URL", function() {
-			var result = Autolinker.link( "Click here (google.com) for more details" );
-			expect( result ).toBe( 'Click here (<a href="http://google.com" target="_blank">google.com</a>) for more details' );
-		} );
-		
-		
-		it( "should include escaped parentheses in the URL", function() {
-			var result = Autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" );
-			expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" target="_blank">en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29</a>' );
+		describe( "parenthesis handling", function() {
+			
+			it( "should include parentheses in URLs", function() {
+				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki/IANA_(disambiguation).", { newWindow: false } );
+				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>.' );
+				
+				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx.", { newWindow: false } );
+				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx</a>.' );
+			} );
+			
+			
+			it( "should include parentheses in URLs with query strings", function() {
+				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki?IANA_(disambiguation).", { newWindow: false } );
+				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki?IANA_(disambiguation)">en.wikipedia.org/wiki?IANA_(disambiguation)</a>.' );
+				
+				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx.", { newWindow: false } );
+				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx</a>.' );
+			} );
+			
+			
+			it( "should include parentheses in URLs with hash anchors", function() {
+				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki#IANA_(disambiguation).", { newWindow: false } );
+				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki#IANA_(disambiguation)">en.wikipedia.org/wiki#IANA_(disambiguation)</a>.' );
+				
+				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx.", { newWindow: false } );
+				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx</a>.' );
+			} );
+			
+			
+			it( "should include parentheses in URLs, when the URL is also in parenthesis itself", function() {
+				var result = Autolinker.link( "TLDs come from (en.wikipedia.org/wiki/IANA_(disambiguation)).", { newWindow: false } );
+				expect( result ).toBe( 'TLDs come from (<a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>).' );
+				
+				var result = Autolinker.link( "MSDN has a great article at (http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx).", { newWindow: false } );
+				expect( result ).toBe( 'MSDN has a great article at (<a href="http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx</a>).' );
+			} );
+			
+			
+			it( "should not include a final closing paren in the URL, if it doesn't match an opening paren in the url", function() {
+				var result = Autolinker.link( "Click here (google.com) for more details" );
+				expect( result ).toBe( 'Click here (<a href="http://google.com" target="_blank">google.com</a>) for more details' );
+			} );
+			
+			
+			it( "should not include a final closing paren in the URL when a path exists", function() {
+				var result = Autolinker.link( "Click here (google.com/abc) for more details" );
+				expect( result ).toBe( 'Click here (<a href="http://google.com/abc" target="_blank">google.com/abc</a>) for more details' );
+			} );
+			
+			
+			it( "should not include a final closing paren in the URL when a query string exists", function() {
+				var result = Autolinker.link( "Click here (google.com?abc=1) for more details" );
+				expect( result ).toBe( 'Click here (<a href="http://google.com?abc=1" target="_blank">google.com?abc=1</a>) for more details' );
+			} );
+			
+			
+			it( "should not include a final closing paren in the URL when a hash anchor exists", function() {
+				var result = Autolinker.link( "Click here (google.com#abc) for more details" );
+				expect( result ).toBe( 'Click here (<a href="http://google.com#abc" target="_blank">google.com#abc</a>) for more details' );
+			} );
+			
+			
+			it( "should include escaped parentheses in the URL", function() {
+				var result = Autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" );
+				expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29" target="_blank">en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29</a>' );
+			} );
+			
 		} );
 		
 		

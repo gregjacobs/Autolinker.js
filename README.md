@@ -1,15 +1,20 @@
 # Autolinker.js
 
-Because I had so much trouble finding a **good** autolinking implementation out in the wild, I decided to roll my own. It seemed that everything I found out there was either a naive implementation that didn't cover every case, or was just limited in one way or another. 
+Because I had so much trouble finding a good autolinking implementation out in the wild, I decided to roll my own. It 
+seemed that everything I found out there was either an implementation that didn't cover every case, or was just limited 
+in one way or another. 
 
-So, this utility attempts to handle everything! It:
+So, this utility attempts to handle everything. It:
 
-- Autolinks URLs, whether or not they start with the protocol (i.e. 'http://'). In other words, it will automatically link the text "google.com", as well as "http://google.com".
+- Autolinks URLs, whether or not they start with the protocol (i.e. 'http://'). In other words, it will automatically link the 
+  text "google.com", as well as "http://google.com".
 - Will properly handle URLs with special characters
 - Will properly handle URLs with query parameters or a named anchor (i.e. hash)
 - Will autolink email addresses.
 - Will autolink Twitter handles.
-- Will properly handle HTML input. The utility will not change the `href` attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that matter), and will not accidentally wrap the inner text of an anchor tag with a new one (which would cause doubly nested anchor tags).
+- Will properly handle HTML input. The utility will not change the `href` attribute inside anchor (&lt;a&gt;) tags (or any other 
+  tag/attribute for that matter), and will not accidentally wrap the inner text of an anchor tag with a new one (which would cause 
+  doubly-nested anchor tags).
 
 Hope that this utility helps you as well!
 
@@ -54,7 +59,14 @@ One could update a DOM element that has unlinked text to autolink them as such:
 	var myTextEl = document.getElementById( 'text' );
 	myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 
+
 ## Changelog:
+
+### 0.4.0
+
+- Simplified the path / query string / hash processing into a single regular expression instead of 3 separate ones.
+- Added support for parenthesis in URLs, such as: `en.wikipedia.org/wiki/IANA_(disambiguation)` (thanks @dandv)
+- Add all known top-level domains (TLDs) (thanks @wouter0100)
 
 ### 0.3.1
 
