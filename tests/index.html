@@ -1,94 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-	<head>
-		<title>Autolinker.js Tests</title>
-		
-		<link rel="stylesheet" href="http://extjs.cachefly.net/ext-3.2.1/resources/css/ext-all.css" />
-		<link rel="stylesheet" href="http://extjs.cachefly.net/ext-3.2.1/examples/ux/css/ColumnNodeUI.css" />
+<head>
+	<title>Autolinker.js Tests</title>
+
+	<!-- Jasmine -->
+	<link rel="shortcut icon" type="image/png" href="../vendor/jasmine/jasmine_favicon.png">
+	<link rel="stylesheet" type="text/css" href="../vendor/jasmine/jasmine.css">
+	<script type="text/javascript" src="../vendor/jasmine/jasmine.js"></script>
+	<script type="text/javascript" src="../vendor/jasmine/jasmine-html.js"></script>
+
+	<!-- Code under test -->
+	<script type="text/javascript" src="../src/Autolinker.js"></script>
+	<script type="text/javascript" src="../src/matcherRegexSource.js"></script>
 	
-		<!-- ExtJS, for the Testing Suite Reporter App -->
-		<script type="text/javascript" src="http://extjs.cachefly.net/ext-3.2.1/adapter/ext/ext-base.js"></script>
-		<script type="text/javascript" src="http://extjs.cachefly.net/ext-3.2.1/ext-all.js"></script>
-		<script type="text/javascript" src="http://extjs.cachefly.net/ext-3.2.1/examples/ux/ColumnNodeUI.js"></script>
-		
-		<!-- YUI 3.4.1 Test -->
-		<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.4.1/build/yui-base/yui-base-min.js&3.4.1/build/oop/oop-min.js&3.4.1/build/event-custom-base/event-custom-base-min.js&3.4.1/build/event-base/event-base-min.js&3.4.1/build/event-simulate/event-simulate-min.js&3.4.1/build/event-custom-complex/event-custom-complex-min.js&3.4.1/build/substitute/substitute-min.js&3.4.1/build/json-stringify/json-stringify-min.js&3.4.1/build/test/test-min.js"></script>
-		
-		<!-- Ext.Test Harness -->
-		<link rel="stylesheet" href="../vendor/ext.test/Ext.Test.min.css" />
-		<script type="text/javascript" src="../vendor/ext.test/Ext.Test.min.js"></script>
-				
-		
-		<!-- Code under test -->
-		<script type="text/javascript" src="../src/Autolinker.js"></script>
-		<script type="text/javascript" src="../src/matcherRegexSource.js"></script>
-		
-		<!-- Tests themselves -->
-		<script type="text/javascript">
-			// The namespace that all tests are under
-			var tests = {};
-		</script>
-		<script type="text/javascript" src="AutolinkerTest.js"></script>
-		
-		
-		<!-- Test Harness Setup -->
-		<script type="text/javascript">
-			/*global Ext */
-			// Variables for PhantomJS runnner
-			var runnerResults,
-			    testsFailed = [];
-			
-			(function() {
-				var startButton = new Ext.test.view.StartButton();
-				
-				var viewer = new Ext.test.view.ColumnTree( {
-					region: 'center',
-					title: document.title,
-					height: 350,
-					tbar: [
-						startButton, 
-						'->', 
-						{
-							xtype: 'testprogressbar',
-							width: 500
-						}
-					]
-				} );
-				
-				var logger = new Ext.test.view.Logger( {
-					region: 'south',
-					height: 200,
-					split: true,
-					minSize: 100
-				} );
-				
-				
-				Ext.onReady( function() {
-					new Ext.Viewport( {
-						layout : 'border',
-						items : [ viewer, logger ]
-					} );
-					
-					// Setup listener for PhantomJS runner
-					Ext.test.Runner.addListener( {
-						'fail' : function( runner, data ) {
-							// global var
-							testsFailed.push( "'" + data.testName + "' : failed.\n" + data.error.toString() );
-						},
-						
-						'complete' : function( runner, data ) {
-							// global var
-							runnerResults = data.results;
-						}
-					} );
-					
-					// Begin the tests immediately
-					startButton.runTests();
-				} );
-			
-			} )();
-		</script>
-	</head>
+	<!-- Tests -->
+	<script type="text/javascript" src="AutolinkerSpec.js"></script>
 	
-	<body>
-	</body>
+	<script type="text/javascript">
+		(function() {
+			var jasmineEnv = jasmine.getEnv();
+			    jasmineEnv.updateInterval = 1000;
+	
+			var htmlReporter = new jasmine.HtmlReporter();
+			jasmineEnv.addReporter(htmlReporter);
+			jasmineEnv.specFilter = function(spec) {
+				return htmlReporter.specFilter(spec);
+			};
+
+			function execJasmine() {
+				jasmineEnv.execute();
+			}
+			
+			window.onload = function() {
+				execJasmine();
+			}
+		})();
+	</script>
+
+</head>
+
+<body>
+</body>
 </html>
