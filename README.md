@@ -21,7 +21,7 @@ Hope that this utility helps you as well!
 
 ## Usage
 
-Simply copy the Autolinker.js (or Autolinker.min.js) file into your project, link to it with a script tag, and then run it as such:
+Simply copy the `dist/Autolinker.js` (or `dist/Autolinker.min.js`) file into your project, link to it with a script tag, and then run it as such:
 
 	var linkedText = Autolinker.link( textToAutolink[, options] );
 	
