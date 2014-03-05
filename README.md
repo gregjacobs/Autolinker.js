@@ -19,16 +19,32 @@ So, this utility attempts to handle everything. It:
 Hope that this utility helps you as well!
 
 
+## Installation
+
+Simply clone or download the zip of the project, and link to either `dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag:
+
+```html
+<script src="path/to/Autolinker.min.js"></script>
+```
+
+Can also download via [Bower](http://bower.io):
+
+```shell
+bower install Autolinker.js --save
+```
+
 ## Usage
 
-Simply copy the `dist/Autolinker.js` (or `dist/Autolinker.min.js`) file into your project, link to it with a script tag, and then run it as such:
-
-	var linkedText = Autolinker.link( textToAutolink[, options] );
+```javascript
+var linkedText = Autolinker.link( textToAutolink[, options] );
+```
 	
 Example:
 
-	var linkedText = Autolinker.link( "The sky is falling from google.com" );
-	// Produces: "The sky is falling from <a href="http://google.com" target="_blank">google.com</a>"
+```javascript
+var linkedText = Autolinker.link( "Check out google.com" );
+// Produces: "Check out <a href="http://google.com" target="_blank">google.com</a>"
+```
 	
 ### Options
 There are options which may be specified for the linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. Options include:
@@ -44,21 +60,25 @@ There are options which may be specified for the linking. These are specified by
 
 If you wanted to disable links opening in new windows, you could do:
 
-	var linkedText = Autolinker.link( "The sky is falling from google.com", { newWindow: false } );
-	// Produces: "The sky is falling from <a href="http://google.com">google.com</a>"
+```javascript
+var linkedText = Autolinker.link( "Check out google.com", { newWindow: false } );
+// Produces: "Check out <a href="http://google.com">google.com</a>"
+```
 
 And if you wanted to truncate the length of URLs (while also not opening in a new window), you could do:
 
-	var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { truncate: 25, newWindow: false } );
-	// Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
-
+```javascript
+var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { truncate: 25, newWindow: false } );
+// Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
+```
 
 ### More Examples
-One could update a DOM element that has unlinked text to autolink them as such:
+One could update an entire DOM element that has unlinked text to auto-link them as such:
 
-	var myTextEl = document.getElementById( 'text' );
-	myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
-
+```javascript
+var myTextEl = document.getElementById( 'text' );
+myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
+```
 
 ## Changelog:
 
@@ -79,7 +99,7 @@ Merged pull requests from @afeld:
 - re-use domain+TLD regexes for email matching
 - add .me and .io to list of TLDs
 
-Thanks Aidan
+Thanks Aidan!
 
 ### 0.3.1
 
