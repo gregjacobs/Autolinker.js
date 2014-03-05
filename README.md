@@ -62,11 +62,24 @@ One could update a DOM element that has unlinked text to autolink them as such:
 
 ## Changelog:
 
-### 0.4.0
+### 0.5.0
 
 - Simplified the path / query string / hash processing into a single regular expression instead of 3 separate ones.
 - Added support for parenthesis in URLs, such as: `en.wikipedia.org/wiki/IANA_(disambiguation)` (thanks @dandv)
 - Add all known top-level domains (TLDs) (thanks @wouter0100)
+
+### 0.4.0
+
+Merged pull requests from @afeld:
+
+- strip protocol and 'www.' by default - fixes #1
+- truncate URLs from the end
+- make simpler regex for detecting prefix
+- remove trailing slashes from URLs, and handle periods at the end of paths
+- re-use domain+TLD regexes for email matching
+- add .me and .io to list of TLDs
+
+Thanks Aidan
 
 ### 0.3.1
 
