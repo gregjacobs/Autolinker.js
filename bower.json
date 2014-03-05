@@ -1,0 +1,28 @@
+{
+  "name": "Autolinker.js",
+  "main": "Autolinker.js",
+  "version": "0.5.0",
+  "homepage": "https://github.com/gregjacobs/Autolinker.js",
+  "authors": [
+    "Gregory Jacobs <greg@greg-jacobs.com>"
+  ],
+  "description": "Automatically links URLs, email addresses, and Twitter handles in a block of text or HTML.",
+  "keywords": [
+    "auto",
+    "link",
+    "autolink",
+    "url",
+    "urls",
+    "anchor"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "build",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "vendor"
+  ]
+}
