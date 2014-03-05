@@ -85,12 +85,12 @@ myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 ### 0.5.0
 
 - Simplified the path / query string / hash processing into a single regular expression instead of 3 separate ones.
-- Added support for parenthesis in URLs, such as: `en.wikipedia.org/wiki/IANA_(disambiguation)` (thanks @dandv)
-- Add all known top-level domains (TLDs) (thanks @wouter0100)
+- Added support for parenthesis in URLs, such as: `en.wikipedia.org/wiki/IANA_(disambiguation)` (thanks [@dandv](https://github.com/dandv))
+- Add all known top-level domains (TLDs) (thanks [@wouter0100](https://github.com/wouter0100))
 
 ### 0.4.0
 
-Merged pull requests from @afeld:
+Merged pull requests from [@afeld](https://github.com/afeld):
 
 - strip protocol and 'www.' by default - fixes #1
 - truncate URLs from the end
@@ -99,7 +99,7 @@ Merged pull requests from @afeld:
 - re-use domain+TLD regexes for email matching
 - add .me and .io to list of TLDs
 
-Thanks Aidan!
+Thanks Aidan :)
 
 ### 0.3.1
 
