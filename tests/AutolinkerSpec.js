@@ -57,6 +57,12 @@ describe( "Autolinker", function() {
 		} );
 
 
+        it( "should NOT automatically link URLs in the form of http://www.yahoo.com if URL support is disabled", function() {
+            var result = Autolinker.link( "Joe went to http://www.yahoo.com", { urls: false } );
+            expect( result ).toBe( 'Joe went to http://www.yahoo.com' );
+        } );
+
+
 		describe( "parenthesis handling", function() {
 
 			it( "should include parentheses in URLs", function() {

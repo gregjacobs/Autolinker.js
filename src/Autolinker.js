@@ -52,6 +52,7 @@ var Autolinker = {
 	 *   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look like this: 'http://www...th/to/a/file'
      * @param {Boolean} [options.twitter=true] True if Twitter handles ("@example") should be automatically linked.
      * @param {Boolean} [options.email=true] True if email addresses should be automatically linked.
+     * @param {Boolean} [options.urls=true] True if miscellaneous URLs should be automatically linked.
 	 * @return {String} The HTML text, with URLs automatically linked
 	 */
 	link : function( html, options ) {
@@ -64,6 +65,7 @@ var Autolinker = {
 		    truncate = options.truncate,
             enableTwitter = ( 'twitter' in options ) ? options.twitter : true,  // defaults to true
             enableEmailAddresses = ( 'email' in options ) ? options.email : true,  // defaults to true
+            enableUrls = ( 'urls' in options ) ? options.urls : true,  // defaults to true
 		    currentResult,
 		    lastIndex = 0,
 		    inBetweenTagsText,
@@ -78,6 +80,7 @@ var Autolinker = {
 				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
 				    twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
 				    emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
+                    urlMatch = $5,       // The matched URL string
 
 				    prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
 				    suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
@@ -105,7 +108,7 @@ var Autolinker = {
 				var anchorHref = matchStr,  // initialize both of these
 				    anchorText = matchStr;  // values as the full match
 
-                if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) ) {
+                if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ) {
                     // A disabled link type
                     return prefixStr + anchorText + suffixStr;
                 }
