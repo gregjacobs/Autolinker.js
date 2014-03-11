@@ -365,6 +365,11 @@ describe( "Autolinker", function() {
                 expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>' );
             } );
 
+            it( "should automatically link an email address in the middle of the string if twitter usage is disabled", function() {
+                var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { twitter: false } );
+                expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is' );
+            } );
+
 
             it( "should NOT automatically link an email address in the middle of the string if email usage is disabled", function() {
                 var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { email: false } );
@@ -381,10 +386,25 @@ describe( "Autolinker", function() {
                 expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>' );
             } );
 
+            it( "should automatically link twitter handles when email usage is disabled", function() {
+                var result = Autolinker.link( "@greg is tweeting @joe with @josh", { email: false } );
+                expect( result ).toBe( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>' );
+            } );
+
 
             it( "should NOT automatically link URLs in the form of http://www.yahoo.com if URL support is disabled", function() {
                 var result = Autolinker.link( "Joe went to http://www.yahoo.com", { urls: false } );
                 expect( result ).toBe( 'Joe went to http://www.yahoo.com' );
+            } );
+
+            it( "should automatically link twitter handles when URL support is disabled", function() {
+                var result = Autolinker.link( "@greg is tweeting @joe with @josh", { urls: false } );
+                expect( result ).toBe( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>' );
+            } );
+
+            it( "should automatically link an email address in the middle of the string if URL support is disabled", function() {
+                var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { urls: false } );
+                expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is' );
             } );
         });
 
