@@ -247,6 +247,22 @@ describe( "Autolinker", function() {
 		} );
 
 
+        it( "should NOT automatically link an email address in the middle of the string if email usage is disabled", function() {
+            var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { email: false } );
+            expect( result ).toBe( 'Joe\'s email is joe@joe.com because it is' );
+        } );
+
+        it( "should automatically link URLs in the form of http://www.yahoo.com if emaiml usage is disabled", function() {
+            var result = Autolinker.link( "Joe went to http://www.yahoo.com", { email: false } );
+            expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>' );
+        } );
+
+        it( "should automatically link URLs in the form of www.yahoo.com, prepending the http:// in this case, if email usage is disabled", function() {
+            var result = Autolinker.link( "Joe went to www.yahoo.com", { email: false } );
+            expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com" target="_blank">yahoo.com</a>' );
+        } );
+
+
 		it( "should automatically link a twitter handle which is the only thing in the string", function() {
 			var result = Autolinker.link( "@joe_the_man12" );
 			expect( result ).toBe( '<a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>' );

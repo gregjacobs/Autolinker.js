@@ -51,6 +51,7 @@ var Autolinker = {
 	 *   adding a two period ellipsis ('..') into the middle of the string.
 	 *   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look like this: 'http://www...th/to/a/file'
      * @param {Boolean} [options.twitter=true] True if Twitter handles ("@example") should be automatically linked.
+     * @param {Boolean} [options.email=true] True if email addresses should be automatically linked.
 	 * @return {String} The HTML text, with URLs automatically linked
 	 */
 	link : function( html, options ) {
@@ -62,6 +63,7 @@ var Autolinker = {
 		    stripPrefix = ( 'stripPrefix' in options ) ? options.stripPrefix : true,  // defaults to true
 		    truncate = options.truncate,
             enableTwitter = ( 'twitter' in options ) ? options.twitter : true,  // defaults to true
+            enableEmailAddresses = ( 'email' in options ) ? options.email : true,  // defaults to true
 		    currentResult,
 		    lastIndex = 0,
 		    inBetweenTagsText,
@@ -103,7 +105,7 @@ var Autolinker = {
 				var anchorHref = matchStr,  // initialize both of these
 				    anchorText = matchStr;  // values as the full match
 
-                if( twitterMatch && !enableTwitter ) {
+                if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) ) {
                     // A disabled link type
                     return prefixStr + anchorText + suffixStr;
                 }
