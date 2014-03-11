@@ -144,17 +144,17 @@ var Autolinker = {
 				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
 					anchorText = anchorText.slice( 0, -1 );
 				}
-
-                // Set the attributes for the anchor tag
-                anchorAttributes.push( 'href="' + anchorHref + '"' );
-                if( newWindow ) {
-                    anchorAttributes.push( 'target="_blank"' );
-                }
-
-                // Truncate the anchor text if it is longer than the provided 'truncate' option
-                if( truncate && anchorText.length > truncate ) {
-                    anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
-                }
+				
+				// Set the attributes for the anchor tag
+				anchorAttributes.push( 'href="' + anchorHref + '"' );
+				if( newWindow ) {
+					anchorAttributes.push( 'target="_blank"' );
+				}
+				
+				// Truncate the anchor text if it is longer than the provided 'truncate' option
+				if( truncate && anchorText.length > truncate ) {
+					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
+				}
 
                 if( callback ) {
                     var callbackArguments = {
@@ -186,7 +186,7 @@ var Autolinker = {
                         suffixStr = callbackResult.linkSuffix;
                     }
                 }
-
+				
 				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
 			} );
 			
