@@ -50,6 +50,24 @@ var Autolinker = {
 	 *   inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by 
 	 *   adding a two period ellipsis ('..') into the middle of the string.
 	 *   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look like this: 'http://www...th/to/a/file'
+     * @param {Callback} [options.callback] A callback that can be used to add/replace/delete attributes for the link if
+     *   needed. The callback function is passed an Object with various properties describing the matched URL/Twitter
+     *   handle/email address, some of which can be modified and included as properties (with the same names) in the
+     *   Object that the callback is expected to return. The callback function will be called at the end of all other
+     *   processing, including truncating the link text (if appropriate). NOTE: You are fully responsible for ensuring
+     *   that any changed properties don't result in broken or otherwise malformed links! The properties in the passed
+     *   Object are:
+     *    - {Boolean} [isTwitter] True if the matched string is a Twitter handle.
+     *    - {Boolean} [isEmail] True if the matched string is an email address.
+     *    - {Boolean} [isUrl] True if the matched string is a "normal" URL.
+     *    - {String} [twitterHandle] The matched Twitter handle (if applicable).
+     *    - {String} [emailAddress] The matched email address (if applicable).
+     *    - {String} [url] The matched URL (if applicable).
+     *    - {Array} [attributes] An Array of HTML <a> attributes for the output link (each element is a full string, e.g. `target="_blank"`). Can be included in the returned Object.
+     *    - {String} [linkHref] The URI that has been set as the value of the "href" attribute in the `attributes` Array.
+     *    - {String} [linkText] The text/HTML to return as the content of the <a> tag. Can be included in the returned Object.
+     *    - {String} [linkPrefix] The string to concatenate to the beginning (outside) of the <a> tag. Can be included in the returned Object.
+     *    - {String} [linkSuffix] The string to concatenate to the end (outside) of the <a> tag. Can be included in the returned Object.
 	 * @return {String} The HTML text, with URLs automatically linked
 	 */
 	link : function( html, options ) {
@@ -60,6 +78,7 @@ var Autolinker = {
 		    newWindow = ( 'newWindow' in options ) ? options.newWindow : true,  // defaults to true
 		    stripPrefix = ( 'stripPrefix' in options ) ? options.stripPrefix : true,  // defaults to true
 		    truncate = options.truncate,
+            callback = options.callback,
 		    currentResult, 
 		    lastIndex = 0,
 		    inBetweenTagsText,
@@ -74,6 +93,7 @@ var Autolinker = {
 				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
 				    twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
 				    emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
+                    urlMatch = $5,       // The matched URL string
 				    
 				    prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
 				    suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
@@ -135,6 +155,37 @@ var Autolinker = {
 				if( truncate && anchorText.length > truncate ) {
 					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
 				}
+
+                if( callback ) {
+                    var callbackArguments = {
+                            isTwitter:      !!twitterMatch,
+                            isEmail:        !!emailAddress,
+                            isUrl:          !!urlMatch,
+                            twitterHandle:  twitterHandle,
+                            emailAddress:   emailAddress,
+                            url:            urlMatch,
+                            attributes:     anchorAttributes,
+                            linkHref:       anchorHref,
+                            linkText:       anchorText,
+                            linkPrefix:     prefixStr,
+                            linkSuffix:     suffixStr
+                        },
+                        callbackResult = callback(callbackArguments);
+
+                    if( typeof callbackResult.attributes == 'object' && 'join' in callbackResult.attributes ) {
+                        // Ensure it's a valid Array
+                        anchorAttributes = callbackResult.attributes;
+                    }
+                    if( 'linkText' in callbackResult ) {
+                        anchorText = callbackResult.linkText;
+                    }
+                    if( 'linkPrefix' in callbackResult ) {
+                        prefixStr = callbackResult.linkPrefix;
+                    }
+                    if( 'linkSuffix' in callbackResult ) {
+                        suffixStr = callbackResult.linkSuffix;
+                    }
+                }
 				
 				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
 			} );
