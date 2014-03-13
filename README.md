@@ -56,9 +56,14 @@ There are options which may be specified for the linking. These are specified by
 - **truncate** : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').
   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'
+- **urls** : Boolean<br />
+  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.
+- **email** : Boolean<br />
+  `true` to have email addresses auto-linked, `false` to skip auto-linking of email addresses. Defaults to `true`.
+- **twitter** : Boolean<br />
+  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of Twitter handles. Defaults to `true`.
 
-
-If you wanted to disable links opening in new windows, you could do:
+For example, if you wanted to disable links from opening in new windows, you could do:
 
 ```javascript
 var linkedText = Autolinker.link( "Check out google.com", { newWindow: false } );
@@ -81,6 +86,11 @@ myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 ```
 
 ## Changelog:
+
+### 0.6.0
+
+- Added options for granular control of which types are linked (urls, email addresses, and/or twitter handles). 
+  (thanks [@aziraphale](https://github.com/aziraphale))
 
 ### 0.5.0
 

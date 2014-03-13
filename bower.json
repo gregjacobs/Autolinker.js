@@ -1,12 +1,12 @@
 {
   "name": "Autolinker.js",
   "main": "Autolinker.js",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "homepage": "https://github.com/gregjacobs/Autolinker.js",
   "authors": [
     "Gregory Jacobs <greg@greg-jacobs.com>"
   ],
-  "description": "Automatically links URLs, email addresses, and Twitter handles in a block of text or HTML.",
+  "description": "Automatically links URLs, email addresses, and Twitter handles in a string of text or HTML.",
   "keywords": [
     "auto",
     "link",
