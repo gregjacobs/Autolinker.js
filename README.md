@@ -87,6 +87,10 @@ myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 
 ## Changelog:
 
+### 0.6.1
+
+- Added LICENSE file to repository.
+
 ### 0.6.0
 
 - Added options for granular control of which types are linked (urls, email addresses, and/or twitter handles). 
