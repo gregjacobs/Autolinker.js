@@ -15,6 +15,19 @@
  * Singleton class which exposes the {@link #link} method, used to process a given string of text,
  * and wrap the URLs, email addresses, and Twitter handles in the appropriate anchor (&lt;a&gt;) tags.
  */
+// Set up Autolinker appropriately for the environment.
+(function(root, factory) {
+	// Start with AMD.
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+	// Next for Node.js or CommonJS.
+	} else if (typeof exports !== 'undefined') {
+		module.exports = factory();
+	// Finally, as a browser global.
+	} else {
+		root.Autolinker = factory();
+	}
+}(this, function(root) {
 var Autolinker = {
 	/**
 	 * @private
@@ -275,3 +288,6 @@ var Autolinker = {
 		].join( "" ), 'g' );
 	})()
 };
+
+	return Autolinker;
+}));
