@@ -22,7 +22,7 @@
     "anchor"
   ],
   "author": "Gregory Jacobs <greg@greg-jacobs.com>",
-  "license": "MIT",
+  "license": "MIT Licensed. http://www.opensource.org/licenses/mit-license.php",
   "bugs": {
     "url": "https://github.com/gregjacobs/Autolinker.js/issues"
   },
@@ -31,6 +31,8 @@
     "grunt": "^0.4.4",
     "grunt-contrib-jasmine": "^0.6.4",
     "grunt-contrib-connect": "^0.7.1",
-    "requirejs": "^2.1.11"
+    "requirejs": "^2.1.11",
+    "grunt-contrib-uglify": "^0.4.0",
+    "grunt-contrib-concat": "^0.4.0"
   }
 }

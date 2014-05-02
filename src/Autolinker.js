@@ -1,12 +1,3 @@
-/*!
- * Autolinker.js
- * Version 0.6.2
- * 
- * Copyright(c) 2014 Gregory Jacobs.
- * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
- * 
- * https://github.com/gregjacobs/Autolinker.js
- */
 /**
  * @class Autolinker
  * @extends Object
