@@ -4,39 +4,17 @@
 	<title>Autolinker.js Tests</title>
 
 	<!-- Jasmine -->
-	<link rel="shortcut icon" type="image/png" href="../vendor/jasmine/jasmine_favicon.png">
-	<link rel="stylesheet" type="text/css" href="../vendor/jasmine/jasmine.css">
-	<script type="text/javascript" src="../vendor/jasmine/jasmine.js"></script>
-	<script type="text/javascript" src="../vendor/jasmine/jasmine-html.js"></script>
+	<link rel="shortcut icon" type="image/png" href="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine_favicon.png">
+	<link rel="stylesheet" type="text/css" href="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine.css">
+	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine.js"></script>
+	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine-html.js"></script>
+	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/boot.js"></script>
 
 	<!-- Code under test -->
 	<script type="text/javascript" src="../src/Autolinker.js"></script>
-	<script type="text/javascript" src="../src/matcherRegexSource.js"></script>
 	
 	<!-- Tests -->
 	<script type="text/javascript" src="AutolinkerSpec.js"></script>
-	
-	<script type="text/javascript">
-		(function() {
-			var jasmineEnv = jasmine.getEnv();
-			    jasmineEnv.updateInterval = 1000;
-	
-			var htmlReporter = new jasmine.HtmlReporter();
-			jasmineEnv.addReporter(htmlReporter);
-			jasmineEnv.specFilter = function(spec) {
-				return htmlReporter.specFilter(spec);
-			};
-
-			function execJasmine() {
-				jasmineEnv.execute();
-			}
-			
-			window.onload = function() {
-				execJasmine();
-			}
-		})();
-	</script>
-
 </head>
 
 <body>
