@@ -87,6 +87,16 @@ myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 
 ## Changelog:
 
+### 0.7.0
+
+- Changed build system to Grunt.
+- Added AMD and CommonJS module loading support (ex: RequireJS, and Node.js's module loader).
+- Added command line Jasmine test runner (`grunt test`)
+- Upgraded Jasmine from 1.3.1 to 2.0
+- Added license header to dist files.
+
+(Thanks to [busticated](https://github.com/busticated)!)
+
 ### 0.6.1
 
 - Added LICENSE file to repository.
