@@ -1,4 +1,5 @@
-src/matcherRegexCompiled.js
 .externalToolBuilders
 .project
 web.config
+.grunt/
+_SpecRunner.html

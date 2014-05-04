@@ -1,0 +1,38 @@
+{
+  "name": "Autolinker.js",
+  "version": "0.6.2",
+  "description": "Simple utility to automatically link the URLs, email addresses, and Twitter handles in a given block of text/HTML",
+  "main": "src/Autolinker.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gregjacobs/Autolinker.js.git"
+  },
+  "keywords": [
+    "auto",
+    "link",
+    "autolink",
+    "url",
+    "urls",
+    "anchor"
+  ],
+  "author": "Gregory Jacobs <greg@greg-jacobs.com>",
+  "license": "MIT Licensed. http://www.opensource.org/licenses/mit-license.php",
+  "bugs": {
+    "url": "https://github.com/gregjacobs/Autolinker.js/issues"
+  },
+  "homepage": "https://github.com/gregjacobs/Autolinker.js",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-jasmine": "^0.6.4",
+    "grunt-contrib-connect": "^0.7.1",
+    "requirejs": "^2.1.11",
+    "grunt-contrib-uglify": "^0.4.0",
+    "grunt-contrib-concat": "^0.4.0"
+  }
+}
