@@ -1,5 +1,5 @@
 {
-  "name": "Autolinker.js",
+  "name": "autolinker.js",
   "version": "0.7.0",
   "description": "Simple utility to automatically link the URLs, email addresses, and Twitter handles in a given block of text/HTML",
   "main": "src/Autolinker.js",
