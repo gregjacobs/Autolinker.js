@@ -70,6 +70,7 @@
 			var htmlRegex = Autolinker.htmlRegex,         // full path for friendly
 				matcherRegex = Autolinker.matcherRegex,   // out-of-scope calls
 				newWindow = ( 'newWindow' in options ) ? options.newWindow : true,  // defaults to true
+				classname = typeof options.classname === 'string' && options.classname.length > 0 ? options.classname : false, // defaults to false
 				stripPrefix = ( 'stripPrefix' in options ) ? options.stripPrefix : true,  // defaults to true
 				truncate = options.truncate,
 				enableTwitter = ( 'twitter' in options ) ? options.twitter : true,  // defaults to true
@@ -128,11 +129,9 @@
 						prefixStr = twitterHandlePrefixWhitespaceChar;
 						anchorHref = 'https://twitter.com/' + twitterHandle;
 						anchorText = '@' + twitterHandle;
-					
 					} else if( emailAddress ) {
 						anchorHref = 'mailto:' + emailAddress;
 						anchorText = emailAddress;
-					
 					} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
 						anchorHref = 'http://' + anchorHref;
 					}
@@ -146,8 +145,16 @@
 						anchorText = anchorText.slice( 0, -1 );
 					}
 					
+
 					// Set the attributes for the anchor tag
+					if ( classname ){
+						twitterMatch && anchorAttributes.push( 'class="' + classname + '-twitter' + '"' );
+						emailAddress && anchorAttributes.push( 'class="' + classname + '-email' + '"' );
+						!twitterMatch && !emailAddress && anchorAttributes.push( 'class="' + classname + '-url' + '"' );
+					}
+
 					anchorAttributes.push( 'href="' + anchorHref + '"' );
+
 					if( newWindow ) {
 						anchorAttributes.push( 'target="_blank"' );
 					}
@@ -156,7 +163,7 @@
 					if( truncate && anchorText.length > truncate ) {
 						anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
 					}
-					
+
 					return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
 				} );
 				
