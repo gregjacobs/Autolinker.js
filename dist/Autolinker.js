@@ -236,122 +236,32 @@
 		 * @param {String} textOrHtml The HTML or text to link URLs within.
 		 * @return {String} The HTML, with URLs automatically linked
 		 */
-		link : function( html ) {
-			var newWindow = this.newWindow,
-			    htmlRegex = this.htmlRegex,
-				matcherRegex = this.matcherRegex,
-				className = this.className,
-				stripPrefix = this.stripPrefix,
-				prefixRegex = this.prefixRegex,
-				truncate = this.truncate,
-				enableTwitter = this.twitter,
-				enableEmailAddresses = this.email,
-				enableUrls = this.urls,
-				
-				currentResult,
-				lastIndex = 0,
-				inBetweenTagsText,
-				resultHtml = "",
-				anchorTagStackCount = 0;
-			
-			// Function to process the text that lies between HTML tags. This function does the actual wrapping of
-			// URLs with anchor tags.
-			function autolinkText( text ) {
-				text = text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5 ) {
-					var twitterMatch = $1,
-						twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
-						twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
-						emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
-						urlMatch = $5,       // The matched URL string
-						
-						prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
-						suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
-						
-						anchorAttributes = [];
-					
-					// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
-					// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
-					// linked, and when it is enclosed in parenthesis itself, such as: "(wikipedia.com/something_(disambiguation))" (in
-					// which the outer parens should *not* be auto-linked.
-					var lastChar = matchStr.charAt( matchStr.length - 1 );
-					if( lastChar === ')' ) {
-						var openParensMatch = matchStr.match( /\(/g ),
-							closeParensMatch = matchStr.match( /\)/g ),
-							numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
-							numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
-						
-						if( numOpenParens < numCloseParens ) {
-							matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
-							suffixStr = ")";  // this will be added after the <a> tag
-						}
-					}
-					
-					
-					var anchorHref = matchStr,  // initialize both of these
-						anchorText = matchStr;  // values as the full match
-
-					if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ) {
-						// A disabled link type
-						return prefixStr + anchorText + suffixStr;
-					}
-					
-					// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
-					// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
-					if( twitterMatch ) {
-						prefixStr = twitterHandlePrefixWhitespaceChar;
-						anchorHref = 'https://twitter.com/' + twitterHandle;
-						anchorText = '@' + twitterHandle;
-					} else if( emailAddress ) {
-						anchorHref = 'mailto:' + emailAddress;
-						anchorText = emailAddress;
-					} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
-						anchorHref = 'http://' + anchorHref;
-					}
-
-					if( stripPrefix ) {
-						anchorText = anchorText.replace( prefixRegex, '' );
-					}
-
-					// remove trailing slash
-					if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
-						anchorText = anchorText.slice( 0, -1 );
-					}
-					
-
-					// Set the attributes for the anchor tag
-					if( className ) {
-						var cls = className + " " + className;  // setup for "myLink myLink-twitter", "myLink myLink-email", etc.
-						
-						if( twitterMatch )
-							cls += "-twitter";
-						else if( emailAddress )
-							cls += "-email";
-						else
-							cls += "-url";
-						
-						anchorAttributes.push( 'class="' + cls + '"' );
-					}
-
-					anchorAttributes.push( 'href="' + anchorHref + '"' );
-
-					if( newWindow ) {
-						anchorAttributes.push( 'target="_blank"' );
-					}
-					
-					// Truncate the anchor text if it is longer than the provided 'truncate' option
-					if( truncate && anchorText.length > truncate ) {
-						anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
-					}
-
-					return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
-				} );
-				
-				return text;
-			}
-			
-			
+		link : function( textOrHtml ) {
+			return this.processHtml( textOrHtml );
+		},
+		
+		
+		/**
+		 * Processes the given HTML to auto-link URLs/emails/Twitter handles.
+		 * 
+		 * Finds the text around any HTML elements in the input `html`, which will be the text that is processed.
+		 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor tags.
+		 * 
+		 * @private
+		 * @method processHtml
+		 * @param {String} html The input text or HTML to process.
+		 * @return {String}
+		 */
+		processHtml : function( html ) {
 			// Loop over the HTML string, ignoring HTML tags, and processing the text that lies between them,
-			// wrapping the URLs in anchor tags 
+			// wrapping the URLs in anchor tags
+			var htmlRegex = this.htmlRegex,
+			    currentResult,
+			    inBetweenTagsText,
+			    lastIndex = 0,
+			    anchorTagStackCount = 0,
+			    resultHtml = [];
+			
 			while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 				var tagText = currentResult[ 0 ],
 					tagName = currentResult[ 2 ],
@@ -364,28 +274,141 @@
 				if( tagName === 'a' ) {
 					if( !isClosingTag ) {  // it's the start <a> tag
 						anchorTagStackCount++;
-						resultHtml += autolinkText( inBetweenTagsText );
+						resultHtml.push( this.processText( inBetweenTagsText ) );
 						
 					} else {     // it's the end </a> tag
 						anchorTagStackCount--;	
 						if( anchorTagStackCount === 0 ) {
-							resultHtml += inBetweenTagsText;  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
+							resultHtml.push( inBetweenTagsText );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
 						}
 					}
 					
 				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
-					resultHtml += autolinkText( inBetweenTagsText );
+					resultHtml.push( this.processText( inBetweenTagsText ) );
 				}
 				
-				resultHtml += tagText;  // now add the text of the tag itself verbatim
+				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
 			}
 			
 			// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 			if( lastIndex < html.length ) {
-				resultHtml += autolinkText( html.substring( lastIndex ) );
+				var txt = this.processText( html.substring( lastIndex ) );
+				resultHtml.push( txt );
 			}
 			
-			return resultHtml;
+			return resultHtml.join( "" );
+		},
+		
+		
+		/**
+		 * Process the text that lies inbetween HTML tags. This method does the actual wrapping of URLs with
+		 * anchor tags.
+		 * 
+		 * @private
+		 * @method processText
+		 * @param {String} text The text to auto-link.
+		 * @return {String} The text with anchor tags auto-filled.
+		 */
+		processText : function( text ) {
+			var newWindow = this.newWindow,
+			    htmlRegex = this.htmlRegex,
+				matcherRegex = this.matcherRegex,
+				className = this.className,
+				stripPrefix = this.stripPrefix,
+				prefixRegex = this.prefixRegex,
+				truncate = this.truncate,
+				enableTwitter = this.twitter,
+				enableEmailAddresses = this.email,
+				enableUrls = this.urls;
+			
+			return text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5 ) {
+				var twitterMatch = $1,
+					twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
+					twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
+					emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
+					urlMatch = $5,       // The matched URL string
+					
+					prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+					suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+					
+					anchorAttributes = [];
+				
+				// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
+				// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
+				// linked, and when it is enclosed in parenthesis itself, such as: "(wikipedia.com/something_(disambiguation))" (in
+				// which the outer parens should *not* be auto-linked.
+				var lastChar = matchStr.charAt( matchStr.length - 1 );
+				if( lastChar === ')' ) {
+					var openParensMatch = matchStr.match( /\(/g ),
+						closeParensMatch = matchStr.match( /\)/g ),
+						numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
+						numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
+					
+					if( numOpenParens < numCloseParens ) {
+						matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+						suffixStr = ")";  // this will be added after the <a> tag
+					}
+				}
+				
+				
+				var anchorHref = matchStr,  // initialize both of these
+					anchorText = matchStr;  // values as the full match
+
+				if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ) {
+					// A disabled link type
+					return prefixStr + anchorText + suffixStr;
+				}
+				
+				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
+				// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+				if( twitterMatch ) {
+					prefixStr = twitterHandlePrefixWhitespaceChar;
+					anchorHref = 'https://twitter.com/' + twitterHandle;
+					anchorText = '@' + twitterHandle;
+				} else if( emailAddress ) {
+					anchorHref = 'mailto:' + emailAddress;
+					anchorText = emailAddress;
+				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
+					anchorHref = 'http://' + anchorHref;
+				}
+
+				if( stripPrefix ) {
+					anchorText = anchorText.replace( prefixRegex, '' );
+				}
+
+				// remove trailing slash
+				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+					anchorText = anchorText.slice( 0, -1 );
+				}
+				
+
+				// Set the attributes for the anchor tag
+				if( className ) {
+					var cls = className + " " + className;  // setup for "myLink myLink-twitter", "myLink myLink-email", etc.
+					
+					if( twitterMatch )
+						cls += "-twitter";
+					else if( emailAddress )
+						cls += "-email";
+					else
+						cls += "-url";
+					
+					anchorAttributes.push( 'class="' + cls + '"' );
+				}
+
+				anchorAttributes.push( 'href="' + anchorHref + '"' );
+
+				if( newWindow ) {
+					anchorAttributes.push( 'target="_blank"' );
+				}
+				
+				// Truncate the anchor text if it is longer than the provided 'truncate' option
+				if( truncate && anchorText.length > truncate ) {
+					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
+				}
+
+				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
+			} );
 		}
 	
 	};
