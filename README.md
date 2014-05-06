@@ -27,19 +27,49 @@ Simply clone or download the zip of the project, and link to either `dist/Autoli
 <script src="path/to/Autolinker.min.js"></script>
 ```
 
-Can also download via [Bower](http://bower.io):
+#### Using with the [Bower](http://bower.io) package manager:
+
+Command line:
 
 ```shell
 bower install Autolinker.js --save
 ```
 
+#### Using with [Node.js](http://nodejs.org) via [npm](https://www.npmjs.org/):
+
+Command Line:
+
+```shell
+npm install autolinker --save
+```
+
+JavaScript:
+
+```javascript
+var Autolinker = require( 'autolinker' );
+// note: npm wants an all-lowercase package name, but the utility is a class and should be 
+// aliased with a captial letter
+```
+
+
 ## Usage
+
+Using the static `link()` method:
 
 ```javascript
 var linkedText = Autolinker.link( textToAutolink[, options] );
 ```
+
+Using as a class:
+
+```javascript
+var autolinker = new Autolinker( [ options ] );
+
+var linkedText = autolinker.link( textToAutoLink );
+```
+
 	
-Example:
+#### Example:
 
 ```javascript
 var linkedText = Autolinker.link( "Check out google.com" );
@@ -56,6 +86,16 @@ There are options which may be specified for the linking. These are specified by
 - **truncate** : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').
   Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'
+- **className** : String<br />
+  A CSS class name to add to the generated anchor tags. This class will be added to all links, as well as this class
+  plus "url"/"email"/"twitter" suffixes for styling url/email/twitter links differently.
+  
+  For example, if this config is provided as "myLink", then:
+  
+  1) URL links will have the CSS classes: "myLink myLink-url"<br />
+  2) Email links will have the CSS classes: "myLink myLink-email", and<br />
+  3) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
+  
 - **urls** : Boolean<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.
 - **email** : Boolean<br />
@@ -85,7 +125,40 @@ var myTextEl = document.getElementById( 'text' );
 myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 ```
 
+Using the same pre-configured Autolinker instance in multiple locations of a codebase (usually by dependency injection):
+
+```javascript
+var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
+
+//...
+
+autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
+// Produces: "Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
+
+
+//...
+
+autolinker.link( "Go to www.google.com" );
+// Produces: "Go to <a href="http://www.google.com">google.com</a>"
+
+```
+
+
 ## Changelog:
+
+### 0.8.0
+
+- Added `className` option for easily styling produced links (thanks [@busticated](https://github.com/busticated))
+- Refactored into a JS class. Autolinker can now be instantiated using:
+
+```javascript
+var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
+
+autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
+// Produces: "Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
+```
+
+This allows options to be set on a single instance, and used throughout a codebase by injecting the `autolinker` instance as a dependency to the modules/classes that use it. (Note: Autolinker may still be used with the static `Autolinker.link()` method as was previously available as well.)
 
 ### 0.7.0
 
@@ -95,7 +168,7 @@ myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 - Upgraded Jasmine from 1.3.1 to 2.0
 - Added license header to dist files.
 
-(Thanks to [busticated](https://github.com/busticated)!)
+(Thanks to [@busticated](https://github.com/busticated)!)
 
 ### 0.6.1
 
