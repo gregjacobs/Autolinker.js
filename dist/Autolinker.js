@@ -218,11 +218,11 @@
 
 		/**
 		 * @private
-		 * @property {RegExp} prefixRegex
+		 * @property {RegExp} urlPrefixRegex
 		 * 
 		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
 		 */
-		prefixRegex: /^(https?:\/\/)?(www\.)?/,
+		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/,
 		
 		
 		/**
@@ -233,8 +233,8 @@
 		 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
 		 * 
 		 * @method link
-		 * @param {String} textOrHtml The HTML or text to link URLs within.
-		 * @return {String} The HTML, with URLs automatically linked
+		 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within.
+		 * @return {String} The HTML, with URLs/emails/twitter handles automatically linked.
 		 */
 		link : function( textOrHtml ) {
 			return this.processHtml( textOrHtml );
@@ -249,7 +249,7 @@
 		 * 
 		 * @private
 		 * @method processHtml
-		 * @param {String} html The input text or HTML to process.
+		 * @param {String} html The input text or HTML to process in order to auto-link.
 		 * @return {String}
 		 */
 		processHtml : function( html ) {
@@ -274,9 +274,9 @@
 				if( tagName === 'a' ) {
 					if( !isClosingTag ) {  // it's the start <a> tag
 						anchorTagStackCount++;
-						resultHtml.push( this.processText( inBetweenTagsText ) );
+						resultHtml.push( this.processTextNode( inBetweenTagsText ) );
 						
-					} else {     // it's the end </a> tag
+					} else {   // it's the end </a> tag
 						anchorTagStackCount--;	
 						if( anchorTagStackCount === 0 ) {
 							resultHtml.push( inBetweenTagsText );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
@@ -284,7 +284,7 @@
 					}
 					
 				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
-					resultHtml.push( this.processText( inBetweenTagsText ) );
+					resultHtml.push( this.processTextNode( inBetweenTagsText ) );
 				}
 				
 				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
@@ -292,8 +292,8 @@
 			
 			// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 			if( lastIndex < html.length ) {
-				var txt = this.processText( html.substring( lastIndex ) );
-				resultHtml.push( txt );
+				var processedTextNode = this.processTextNode( html.substring( lastIndex ) );
+				resultHtml.push( processedTextNode );
 			}
 			
 			return resultHtml.join( "" );
@@ -305,18 +305,12 @@
 		 * anchor tags.
 		 * 
 		 * @private
-		 * @method processText
 		 * @param {String} text The text to auto-link.
 		 * @return {String} The text with anchor tags auto-filled.
 		 */
-		processText : function( text ) {
-			var newWindow = this.newWindow,
-			    htmlRegex = this.htmlRegex,
-				matcherRegex = this.matcherRegex,
-				className = this.className,
-				stripPrefix = this.stripPrefix,
-				prefixRegex = this.prefixRegex,
-				truncate = this.truncate,
+		processTextNode : function( text ) {
+			var me = this,  // for closures
+			    matcherRegex = this.matcherRegex,
 				enableTwitter = this.twitter,
 				enableEmailAddresses = this.email,
 				enableUrls = this.urls;
@@ -329,9 +323,7 @@
 					urlMatch = $5,       // The matched URL string
 					
 					prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
-					suffixStr = "",      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
-					
-					anchorAttributes = [];
+					suffixStr = "";      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 				
 				// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
 				// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
@@ -360,55 +352,151 @@
 				}
 				
 				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
-				// will try to direct the user to "http://jux.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+				// will try to direct the user to "http://current-domain.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+				var linkType = 'url';
 				if( twitterMatch ) {
+					linkType = 'twitter';
 					prefixStr = twitterHandlePrefixWhitespaceChar;
 					anchorHref = 'https://twitter.com/' + twitterHandle;
 					anchorText = '@' + twitterHandle;
 				} else if( emailAddress ) {
+					linkType = 'email';
 					anchorHref = 'mailto:' + emailAddress;
 					anchorText = emailAddress;
-				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // string doesn't begin with a protocol, add http://
+				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // url string doesn't begin with a protocol, assume http://
 					anchorHref = 'http://' + anchorHref;
 				}
 
-				if( stripPrefix ) {
-					anchorText = anchorText.replace( prefixRegex, '' );
-				}
-
-				// remove trailing slash
-				if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
-					anchorText = anchorText.slice( 0, -1 );
-				}
-				
-
-				// Set the attributes for the anchor tag
-				if( className ) {
-					var cls = className + " " + className;  // setup for "myLink myLink-twitter", "myLink myLink-email", etc.
-					
-					if( twitterMatch )
-						cls += "-twitter";
-					else if( emailAddress )
-						cls += "-email";
-					else
-						cls += "-url";
-					
-					anchorAttributes.push( 'class="' + cls + '"' );
-				}
-
-				anchorAttributes.push( 'href="' + anchorHref + '"' );
-
-				if( newWindow ) {
-					anchorAttributes.push( 'target="_blank"' );
-				}
-				
-				// Truncate the anchor text if it is longer than the provided 'truncate' option
-				if( truncate && anchorText.length > truncate ) {
-					anchorText = anchorText.substring( 0, truncate - 2 ) + '..';
-				}
-
-				return prefixStr + '<a ' + anchorAttributes.join( " " ) + '>' + anchorText + '</a>' + suffixStr;  // wrap the match in an anchor tag
+				// wrap the match in an anchor tag
+				var anchorTag = me.createAnchorTag( linkType, anchorHref, anchorText );
+				return prefixStr + anchorTag + suffixStr;
 			} );
+		},
+		
+		
+		/**
+		 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
+		 * 
+		 * @private
+		 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+		 * @param {String} anchorHref The href for the anchor tag.
+		 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
+		 * @return {String} The full HTML for the anchor tag.
+		 */
+		createAnchorTag : function( linkType, anchorHref, anchorText ) {
+			var attributesStr = this.createAnchorAttrsStr( linkType, anchorHref );
+			anchorText = this.processAnchorText( anchorText );
+			
+			return '<a ' + attributesStr + '>' + anchorText + '</a>';
+		},
+		
+		
+		/**
+		 * Creates the string which will be the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
+		 * 
+		 * @private
+		 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+		 * @param {String} href The href for the anchor tag.
+		 * @return {String} The anchor tag's attribute. Ex: `href="http://google.com" class="myLink myLink-url" target="_blank"` 
+		 */
+		createAnchorAttrsStr : function( linkType, anchorHref ) {
+			var attrs = [ 'href="' + anchorHref + '"' ];  // we'll always have the `href` attribute
+			
+			var cssClass = this.createCssClass( linkType );
+			if( cssClass ) {
+				attrs.push( 'class="' + cssClass + '"' );
+			}
+			if( this.newWindow ) {
+				attrs.push( 'target="_blank"' );
+			}
+			
+			return attrs.join( " " );
+		},
+		
+		
+		/**
+		 * Creates the CSS class that will be used for a given anchor tag, based on the `linkType` and the {@link #className}
+		 * config.
+		 * 
+		 * @private
+		 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+		 * @return {String} The CSS class string for the link. Example return: "myLink myLink-url". If no {@link #className}
+		 *   was configured, returns an empty string.
+		 */
+		createCssClass : function( linkType ) {
+			var className = this.className;
+			
+			if( !className ) 
+				return "";
+			else
+				return className + " " + className + "-" + linkType;  // ex: "myLink myLink-url", "myLink myLink-email", or "myLink myLink-twitter"
+		},
+		
+		
+		/**
+		 * Processes the `anchorText` by stripping the URL prefix (if {@link #stripPrefix} is `true`), removing
+		 * any trailing slash, and truncating the text according to the {@link #truncate} config.
+		 * 
+		 * @private
+		 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
+		 * @return {String} The processed `anchorText`.
+		 */
+		processAnchorText : function( anchorText ) {
+			if( this.stripPrefix ) {
+				anchorText = this.stripUrlPrefix( anchorText );
+			}
+			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
+			anchorText = this.doTruncate( anchorText );
+			
+			return anchorText;
+		},
+		
+		
+		/**
+		 * Strips the URL prefix (such as "http://" or "https://") from the given text.
+		 * 
+		 * @private
+		 * @param {String} text The text of the anchor that is being generated, for which to strip off the
+		 *   url prefix (such as stripping off "http://")
+		 * @return {String} The `anchorText`, with the prefix stripped.
+		 */
+		stripUrlPrefix : function( text ) {
+			return text.replace( this.urlPrefixRegex, '' );
+		},
+		
+		
+		/**
+		 * Removes any trailing slash from the given `anchorText`, in prepration for the text to be displayed.
+		 * 
+		 * @private
+		 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
+		 *   slash ('/') that may exist.
+		 * @return {String} The `anchorText`, with the trailing slash removed.
+		 */
+		removeTrailingSlash : function( anchorText ) {
+			if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+				anchorText = anchorText.slice( 0, -1 );
+			}
+			return anchorText;
+		},
+		
+		
+		/**
+		 * Performs the truncation of the `anchorText`, if the `anchorText` is longer than the {@link #truncate} option.
+		 * Truncates the text to 2 characters fewer than the {@link #truncate} option, and adds ".." to the end.
+		 * 
+		 * @private
+		 * @param {String} text The anchor tag's text (i.e. what will be displayed).
+		 * @return {String} The truncated anchor text.
+		 */
+		doTruncate : function( anchorText ) {
+			var truncateLen = this.truncate;
+			
+			// Truncate the anchor text if it is longer than the provided 'truncate' option
+			if( truncateLen && anchorText.length > truncateLen ) {
+				anchorText = anchorText.substring( 0, truncateLen - 2 ) + '..';
+			}
+			return anchorText;
 		}
 	
 	};
@@ -420,6 +508,11 @@
 	 * 
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
 	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+	 * 
+	 * Example:
+	 * 
+	 *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
+	 *     // Produces: "Go to <a href="http://google.com">google.com</a>"
 	 * 
 	 * @static
 	 * @method link
