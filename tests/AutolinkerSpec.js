@@ -433,31 +433,31 @@ describe( "Autolinker", function() {
 			
 		} );
 		
-		describe( "`classname` option", function() {
+		describe( "`className` option", function() {
 		
-			it( "should not add classname when the 'classname' option is not a string with at least 1 character", function() {
+			it( "should not add className when the 'className' option is not a string with at least 1 character", function() {
 				var result = Autolinker.link( "Test http://url.com" );
 				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
 
-				result = Autolinker.link( "Test http://url.com", { classname: null } );
+				result = Autolinker.link( "Test http://url.com", { className: null } );
 				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
 
-				result = Autolinker.link( "Test http://url.com", { classname: "" } );
+				result = Autolinker.link( "Test http://url.com", { className: "" } );
 				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
 			} );
 
-			it( "should add classname to links", function() {
-				var result = Autolinker.link( "Test http://url.com", { classname: 'myLink' } );
+			it( "should add className to links", function() {
+				var result = Autolinker.link( "Test http://url.com", { className: 'myLink' } );
 				expect( result ).toBe( 'Test <a class="myLink myLink-url" href="http://url.com" target="_blank">url.com</a>' );
 			} );
 
-			it( "should add classname to twitter links", function() {
-				var result = Autolinker.link( "hi from @iggypopschest", { twitter: true, classname: 'myLink' } );
+			it( "should add className to twitter links", function() {
+				var result = Autolinker.link( "hi from @iggypopschest", { twitter: true, className: 'myLink' } );
 				expect( result ).toBe( 'hi from <a class="myLink myLink-twitter" href="https://twitter.com/iggypopschest" target="_blank">@iggypopschest</a>' );
 			} );
 
-			it( "should add classname to email links", function() {
-				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { email: true, classname: 'myLink' } );
+			it( "should add className to email links", function() {
+				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { email: true, className: 'myLink' } );
 				expect( result ).toBe( 'Iggy\'s email is <a class="myLink myLink-email" href="mailto:mr@iggypop.com" target="_blank">mr@iggypop.com</a>' );
 			} );
 		} );

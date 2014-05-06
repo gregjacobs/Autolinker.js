@@ -111,7 +111,7 @@
 		urls : true,
 		
 		/**
-		 * @cfg {String} classname
+		 * @cfg {String} className
 		 * 
 		 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
 		 * plus url/email/twitter suffixes for styling url/email/twitter links differently.
@@ -122,7 +122,7 @@
 		 * 2) Email links will have the CSS classes: "myLink myLink-email", and
 		 * 3) Twitter links will have the CSS classes: "myLink myLink-twitter"
 		 */
-		classname : "",
+		className : "",
 		
 		
 		/**
@@ -240,7 +240,7 @@
 			var newWindow = this.newWindow,
 			    htmlRegex = this.htmlRegex,
 				matcherRegex = this.matcherRegex,
-				classname = this.classname,
+				className = this.className,
 				stripPrefix = this.stripPrefix,
 				prefixRegex = this.prefixRegex,
 				truncate = this.truncate,
@@ -319,8 +319,8 @@
 					
 
 					// Set the attributes for the anchor tag
-					if( classname ) {
-						var cls = classname + " " + classname;  // set up for, example, "myLink myLink-twitter"
+					if( className ) {
+						var cls = className + " " + className;  // setup for "myLink myLink-twitter", "myLink myLink-email", etc.
 						
 						if( twitterMatch )
 							cls += "-twitter";
