@@ -21,6 +21,8 @@ Hope that this utility helps you as well!
 
 ## Installation
 
+#### Download
+
 Simply clone or download the zip of the project, and link to either `dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag:
 
 ```html
@@ -72,20 +74,21 @@ var linkedText = autolinker.link( textToAutoLink );
 #### Example:
 
 ```javascript
-var linkedText = Autolinker.link( "Check out google.com" );
-// Produces: "Check out <a href="http://google.com" target="_blank">google.com</a>"
+var linkedText = Autolinker.link( "Check out google.com", { className: "myLink" } );
+// Produces: "Check out <a class="myLink myLink-url" href="http://google.com" target="_blank">google.com</a>"
 ```
-	
-### Options
-There are options which may be specified for the linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. Options include:
+
+## Options
+
+These are the options which may be specified for linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. These include:
 
 - **newWindow** : Boolean<br />
   `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.
 - **stripPrefix** : Boolean<br />
   `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.
 - **truncate** : Number<br />
-  A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').
-  Ex: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'
+  A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').<br /><br />
+  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'
 - **className** : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added to all links, as well as this class
   plus "url"/"email"/"twitter" suffixes for styling url/email/twitter links differently.
@@ -117,7 +120,7 @@ var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file
 // Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
 ```
 
-### More Examples
+## More Examples
 One could update an entire DOM element that has unlinked text to auto-link them as such:
 
 ```javascript
@@ -134,7 +137,6 @@ var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
 
 autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
 // Produces: "Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
-
 
 //...
 
