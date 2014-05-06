@@ -1,7 +1,19 @@
 /*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
 describe( "Autolinker", function() {
 	
-	describe( "link()", function() {
+	describe( "instantiating and using as a class", function() {
+		
+		it( "should configure the instance with configuration options, and then be able to execute the link() method", function() {
+			var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
+		
+			var result = autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
+			expect( result ).toBe( 'Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>' );
+		} );
+		
+	} );
+	
+	
+	describe( "link() method", function() {
 		
 		it( "should automatically link URLs in the form of http://yahoo.com", function() {
 			var result = Autolinker.link( "Joe went to http://yahoo.com" );
@@ -460,6 +472,8 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { email: true, className: 'myLink' } );
 				expect( result ).toBe( 'Iggy\'s email is <a class="myLink myLink-email" href="mailto:mr@iggypop.com" target="_blank">mr@iggypop.com</a>' );
 			} );
+			
 		} );
+		
 	} );
 } );
