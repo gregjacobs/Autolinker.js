@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.9.2
+
+- Fixed an issue with nested tags within an existing &lt;a&gt; tag, where the nested tags' inner text would be accidentally
+  removed from the output (thanks [@mjsabin01](https://github.com/mjsabin01))
+
 ### 0.9.1
 
 - Added a patch to attempt to better handle extraneous &lt;/a&gt; tags in the input string if any exist. This is for when the

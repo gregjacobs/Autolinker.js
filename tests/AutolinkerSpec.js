@@ -282,15 +282,16 @@ describe( "Autolinker", function() {
 			} );
 			
 			
-			it( "should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
-				var html = '</a><a href="http://google.com">google.com</a>';
+			it( "should properly handle HTML markup + text nodes that are nested within <a> tags", function() {
+				var html = '<a href="http://google.com"><b>google.com</b></a>';
 				
 				var result = autolinker.link( html );
 				expect( result ).toBe( html );
 			} );
 			
-			it( "should handle HTML markup relating to <a> tagswhen formatting is applied", function() {
-				var html = '</a><a href="http://google.com"><b>google.com</b></a>';
+			
+			it( "should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
+				var html = '</a><a href="http://google.com">google.com</a>';
 				
 				var result = autolinker.link( html );
 				expect( result ).toBe( html );

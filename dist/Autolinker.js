@@ -1,6 +1,6 @@
 /*!
  * autolinker
- * 0.9.1
+ * 0.9.2
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -307,6 +307,11 @@
 					
 				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
 					resultHtml.push( this.processTextNode( inBetweenTagsText ) );
+					
+				} else {
+					// if we have a tag that is in between anchor tags (ex: <a href="..."><b>google.com</b></a>),
+					// just append the inner text
+					resultHtml.push( inBetweenTagsText );  
 				}
 				
 				resultHtml.push( tagText );  // now add the text of the tag itself verbatim

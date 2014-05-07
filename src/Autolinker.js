@@ -298,8 +298,10 @@
 					
 				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
 					resultHtml.push( this.processTextNode( inBetweenTagsText ) );
+					
 				} else {
-					// if we have a tag that is between anchor tags, just enter the text
+					// if we have a tag that is in between anchor tags (ex: <a href="..."><b>google.com</b></a>),
+					// just append the inner text
 					resultHtml.push( inBetweenTagsText );  
 				}
 				
