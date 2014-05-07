@@ -298,6 +298,9 @@
 					
 				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
 					resultHtml.push( this.processTextNode( inBetweenTagsText ) );
+				} else {
+					// if we have a tag that is between anchor tags, just enter the text
+					resultHtml.push( inBetweenTagsText );  
 				}
 				
 				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
