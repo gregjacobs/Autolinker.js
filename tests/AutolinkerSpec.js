@@ -205,15 +205,85 @@ describe( "Autolinker", function() {
 			var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { urls: false } );
 			expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is' );
 		} );
-		
-		
+
+
+		describe( "proper HTML handling", function() {
+			
+			it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
+				// Note: We aren't actually expecting the HTML to be modified by this test
+				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>';
+				expect( Autolinker.link( inAndOutHtml ) ).toBe( inAndOutHtml );
+			} );
+	
+	
+			it( "should properly autolink text within namespaced HTML elements, skipping over html elements with urls in attribute values", function() {
+				var html = '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );  // newWindow: false just to remove target="_blank" from the generated anchor
+				expect( result ).toBe( '<ns:p>Go to <a href="http://google.com">google.com</a> or <a data-qux-="test" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>' );
+			} );
+			
+			
+			it( "should properly skip over attribute names that could be interpreted as urls, while still autolinking urls in their inner text", function() {
+				var html = '<div google.com anotherAttr yahoo.com>My div that has an attribute of google.com</div>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( '<div google.com anotherAttr yahoo.com>My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
+			} );
+			
+			
+			it( "should properly skip over attribute names that could be interpreted as urls when they have a value, while still autolinking urls in their inner text", function() {
+				var html = '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of google.com</div>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
+			} );
+			
+			
+			it( "should properly skip over attribute names that could be interpreted as urls when they have a value and any number of spaces between attrs, while still autolinking urls in their inner text", function() {
+				var html = '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of google.com</div>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
+			} );
+			
+			
+			it( "should properly skip over attribute values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text", function() {
+				var html = '<div url="google.com" email="asdf@asdf.com" twitter="@asdf">google.com asdf@asdf.com @asdf</div>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( [
+					'<div url="google.com" email="asdf@asdf.com" twitter="@asdf">',
+						'<a href="http://google.com">google.com</a> ',
+						'<a href="mailto:asdf@asdf.com">asdf@asdf.com</a> ',
+						'<a href="https://twitter.com/asdf">@asdf</a>',
+					'</div>'
+				].join( "" ) );
+			} );
+			
+			
+			it( "should properly skip over attribute names and values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text", function() {
+				var html = '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">google.com asdf@asdf.com @asdf</div>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( [
+					'<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">',
+						'<a href="http://google.com">google.com</a> ',
+						'<a href="mailto:asdf@asdf.com">asdf@asdf.com</a> ',
+						'<a href="https://twitter.com/asdf">@asdf</a>',
+					'</div>'
+				].join( "" ) );
+			} );
+
+		} );
+
 		describe( "parenthesis handling", function() {
 			
 			it( "should include parentheses in URLs", function() {
 				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki/IANA_(disambiguation).", { newWindow: false } );
 				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>.' );
 				
-				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx.", { newWindow: false } );
+				result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx.", { newWindow: false } );
 				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx</a>.' );
 			} );
 			
@@ -222,7 +292,7 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki?IANA_(disambiguation).", { newWindow: false } );
 				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki?IANA_(disambiguation)">en.wikipedia.org/wiki?IANA_(disambiguation)</a>.' );
 				
-				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx.", { newWindow: false } );
+				result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx.", { newWindow: false } );
 				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library?aa752574(VS.85).aspx</a>.' );
 			} );
 			
@@ -231,7 +301,7 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "TLDs come from en.wikipedia.org/wiki#IANA_(disambiguation).", { newWindow: false } );
 				expect( result ).toBe( 'TLDs come from <a href="http://en.wikipedia.org/wiki#IANA_(disambiguation)">en.wikipedia.org/wiki#IANA_(disambiguation)</a>.' );
 				
-				var result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx.", { newWindow: false } );
+				result = Autolinker.link( "MSDN has a great article at http://msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx.", { newWindow: false } );
 				expect( result ).toBe( 'MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library#aa752574(VS.85).aspx</a>.' );
 			} );
 			
@@ -240,7 +310,7 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "TLDs come from (en.wikipedia.org/wiki/IANA_(disambiguation)).", { newWindow: false } );
 				expect( result ).toBe( 'TLDs come from (<a href="http://en.wikipedia.org/wiki/IANA_(disambiguation)">en.wikipedia.org/wiki/IANA_(disambiguation)</a>).' );
 				
-				var result = Autolinker.link( "MSDN has a great article at (http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx).", { newWindow: false } );
+				result = Autolinker.link( "MSDN has a great article at (http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx).", { newWindow: false } );
 				expect( result ).toBe( 'MSDN has a great article at (<a href="http://msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx">msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx</a>).' );
 			} );
 			
