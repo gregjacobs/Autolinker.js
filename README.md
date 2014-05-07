@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.9.1
+
+- Added a patch to attempt to better handle extraneous &lt;/a&gt; tags in the input string if any exist. This is for when the
+  input may have some invalid markup (for instance, on sites which allow user comments, blog posts, etc.).
+
 ### 0.9.0
 
 - Added better support for the processing of existing HTML in the input string. Now handles namespaced tags, and attribute names 

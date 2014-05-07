@@ -274,6 +274,40 @@ describe( "Autolinker", function() {
 					'</div>'
 				].join( "" ) );
 			} );
+			
+			
+			it( "should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
+				var html = '</a><a href="http://google.com">google.com</a>';
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( html );
+			} );
+			
+			
+			it( "should attempt to handle some more complex invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
+				var html = [
+					'</a>',  // invalid
+					'<a href="http://google.com">google.com</a>',
+					'<div>google.com</div>',
+					'</a>',  // invalid
+					'<a href="http://yahoo.com">yahoo.com</a>',
+					'</a>',  // invalid
+					'</a>',  // invalid
+					'twitter.com'
+				].join( "" );
+				
+				var result = Autolinker.link( html, { newWindow: false } );
+				expect( result ).toBe( [
+					'</a>',                                                   // invalid - left alone
+					'<a href="http://google.com">google.com</a>',             // valid tag - left alone
+					'<div><a href="http://google.com">google.com</a></div>',  // autolinked text in <div>
+					'</a>',                                                   // invalid - left alone
+					'<a href="http://yahoo.com">yahoo.com</a>',               // valid tag - left alone
+					'</a>',                                                   // invalid - left alone
+					'</a>',                                                   // invalid - left alone
+					'<a href="http://twitter.com">twitter.com</a>'            // autolinked text
+				].join( "" ) );
+			} );
 
 		} );
 

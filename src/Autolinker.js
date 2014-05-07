@@ -290,7 +290,7 @@
 						resultHtml.push( this.processTextNode( inBetweenTagsText ) );
 						
 					} else {   // it's the end </a> tag
-						anchorTagStackCount--;	
+						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 						if( anchorTagStackCount === 0 ) {
 							resultHtml.push( inBetweenTagsText );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
 						}
