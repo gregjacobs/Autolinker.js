@@ -153,39 +153,9 @@ describe( "Autolinker", function() {
 		} );
 		
 		
-		it( "should NOT automatically link URLs within HTML tags", function() {
-			var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
-			expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
-		} );
-		
-		
 		it( "should automatically link URLs past the last HTML tag", function() {
 			var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com' );
 			expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com" target="_blank">google.com</a>' );
-		} );
-		
-		
-		it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag", function() {
-			var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.' );
-			expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.' );
-		} );
-		
-		
-		it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others", function() {
-			var result = Autolinker.link( '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.' );
-			expect( result ).toBe( '<p>Joe went to <a href="http://google.com" target="_blank">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com" target="_blank">weather.com</a></p> yesterday.' );
-		} );
-		
-		
-		it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag", function() {
-			var result = Autolinker.link( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
-			expect( result ).toBe( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
-		} );
-		
-		
-		it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag, but match urls around the tags", function() {
-			var result = Autolinker.link( 'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)' );
-			expect( result ).toBe( '<a href="http://google.com" target="_blank">google.com</a> looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at <a href="http://google.com" target="_blank">google.com</a>)' );
 		} );
 		
 		
@@ -207,19 +177,55 @@ describe( "Autolinker", function() {
 		} );
 
 
-		describe( "proper HTML handling", function() {
+		describe( "proper input HTML handling", function() {
+			var autolinker;
+			
+			beforeEach( function() {
+				autolinker = new Autolinker( { newWindow: false } );  // just to stop the target="_blank" from coming into the autolinked results
+			} );
+			
+		
+			it( "should NOT automatically link URLs within existing HTML tags", function() {
+				var result = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
+				expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
+			} );
+			
+			
+			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag", function() {
+				var result = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.' );
+				expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.' );
+			} );
+			
+			
+			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others", function() {
+				var result = autolinker.link( '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.' );
+				expect( result ).toBe( '<p>Joe went to <a href="http://google.com">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com">weather.com</a></p> yesterday.' );
+			} );
+			
+			
+			it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag", function() {
+				var result = autolinker.link( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
+				expect( result ).toBe( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
+			} );
+			
+			
+			it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag, but match urls around the tags", function() {
+				var result = autolinker.link( 'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)' );
+				expect( result ).toBe( '<a href="http://google.com">google.com</a> looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at <a href="http://google.com">google.com</a>)' );
+			} );
+			
 			
 			it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
 				// Note: We aren't actually expecting the HTML to be modified by this test
-				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>';
-				expect( Autolinker.link( inAndOutHtml ) ).toBe( inAndOutHtml );
+				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar<\/a> Baz<\/ns:p>';
+				expect( autolinker.link( inAndOutHtml ) ).toBe( inAndOutHtml );
 			} );
 	
 	
 			it( "should properly autolink text within namespaced HTML elements, skipping over html elements with urls in attribute values", function() {
 				var html = '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );  // newWindow: false just to remove target="_blank" from the generated anchor
+				var result = autolinker.link( html );
 				expect( result ).toBe( '<ns:p>Go to <a href="http://google.com">google.com</a> or <a data-qux-="test" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>' );
 			} );
 			
@@ -227,7 +233,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute names that could be interpreted as urls, while still autolinking urls in their inner text", function() {
 				var html = '<div google.com anotherAttr yahoo.com>My div that has an attribute of google.com</div>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( '<div google.com anotherAttr yahoo.com>My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
 			} );
 			
@@ -235,7 +241,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute names that could be interpreted as urls when they have a value, while still autolinking urls in their inner text", function() {
 				var html = '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of google.com</div>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
 			} );
 			
@@ -243,7 +249,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute names that could be interpreted as urls when they have a value and any number of spaces between attrs, while still autolinking urls in their inner text", function() {
 				var html = '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of google.com</div>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of <a href="http://google.com">google.com</a></div>' );
 			} );
 			
@@ -251,7 +257,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text", function() {
 				var html = '<div url="google.com" email="asdf@asdf.com" twitter="@asdf">google.com asdf@asdf.com @asdf</div>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( [
 					'<div url="google.com" email="asdf@asdf.com" twitter="@asdf">',
 						'<a href="http://google.com">google.com</a> ',
@@ -265,7 +271,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute names and values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text", function() {
 				var html = '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">google.com asdf@asdf.com @asdf</div>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( [
 					'<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">',
 						'<a href="http://google.com">google.com</a> ',
@@ -279,7 +285,7 @@ describe( "Autolinker", function() {
 			it( "should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
 				var html = '</a><a href="http://google.com">google.com</a>';
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( html );
 			} );
 			
@@ -296,7 +302,7 @@ describe( "Autolinker", function() {
 					'twitter.com'
 				].join( "" );
 				
-				var result = Autolinker.link( html, { newWindow: false } );
+				var result = autolinker.link( html );
 				expect( result ).toBe( [
 					'</a>',                                                   // invalid - left alone
 					'<a href="http://google.com">google.com</a>',             // valid tag - left alone
@@ -311,6 +317,7 @@ describe( "Autolinker", function() {
 
 		} );
 
+		
 		describe( "parenthesis handling", function() {
 			
 			it( "should include parentheses in URLs", function() {
