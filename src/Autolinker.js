@@ -205,7 +205,7 @@
 		 * 1. If it is an end tag, this group will have the '/'.
 		 * 2. The tag name.
 		 */
-		htmlRegex : /<(\/)?(\w+)(?:(?:\s+\w+(?:\s*=\s*(?:".*?"|'.*?'|[^'">\s]+))?)+\s*|\s*)\/?>/g,
+        htmlRegex : /<(\/)?([0-9a-zA-Z:]+)(?:(?:\s+[^\s\0"'>\/=\x01-\x1F\x7F]+(?:\s*=\s*(?:".*?"|'.*?'|[^'"=<>`\s]+))?)+\s*|\s*)\/?>/g,
 
 		/**
 		 * @private
