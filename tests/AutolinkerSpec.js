@@ -207,6 +207,13 @@ describe( "Autolinker", function() {
 		} );
 		
 		
+        it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
+            // We aren't actually expecting the HTML to be modified by this test
+            var inAndOutHtml = "<ns:p>Foo <a data-qux-=\"\" href=\"http:\/\/www.example.com\" target=\"_blank\">Bar<\/a> Baz<\/ns:p>";
+            expect( Autolinker.link( inAndOutHtml ) ).toBe( inAndOutHtml );
+        } );
+
+
 		describe( "parenthesis handling", function() {
 			
 			it( "should include parentheses in URLs", function() {
