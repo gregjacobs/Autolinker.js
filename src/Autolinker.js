@@ -147,7 +147,7 @@
 			    
 			    // Allow optional path, query string, and hash anchor, not ending in the following characters: "!:,.;"
 			    // http://blog.codinghorror.com/the-problem-with-urls/
-			    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|])?/;  // note: optional part of the full regex
+			    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;\r\n]*[\-A-Za-z0-9+&@#\/%=~_()|])?/;  // note: optional part of the full regex
 			
 			
 			return new RegExp( [
@@ -413,7 +413,7 @@
 		 * @return {String} The anchor tag's attribute. Ex: `href="http://google.com" class="myLink myLink-url" target="_blank"` 
 		 */
 		createAnchorAttrsStr : function( linkType, anchorHref ) {
-			var attrs = [ 'href="' + anchorHref + '"' ];  // we'll always have the `href` attribute
+			var attrs = [ 'href="' + anchorHref.replace(/\r?\n*/g, '') + '"' ];  // we'll always have the `href` attribute
 			
 			var cssClass = this.createCssClass( linkType );
 			if( cssClass ) {
