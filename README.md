@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.9.0
+
+- Added better support for the processing of existing HTML in the input string. Now handles namespaced tags, and attribute names 
+  with dashes or any other Unicode character (thanks [@aziraphale](https://github.com/aziraphale))
+
 ### 0.8.0
 
 - Added `className` option for easily styling produced links (thanks [@busticated](https://github.com/busticated))
