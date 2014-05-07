@@ -198,14 +198,36 @@
 		 * @private
 		 * @property {RegExp} htmlRegex
 		 * 
-		 * A regular expression used to pull out HTML tags from a string.
+		 * A regular expression used to pull out HTML tags from a string. Handles namespaced HTML tags and
+		 * attribute names, as specified by http://www.w3.org/TR/html-markup/syntax.html
 		 * 
 		 * Capturing groups:
 		 * 
 		 * 1. If it is an end tag, this group will have the '/'.
 		 * 2. The tag name.
 		 */
-        htmlRegex : /<(\/)?([0-9a-zA-Z:]+)(?:(?:\s+[^\s\0"'>\/=\x01-\x1F\x7F]+(?:\s*=\s*(?:".*?"|'.*?'|[^'"=<>`\s]+))?)+\s*|\s*)\/?>/g,
+		htmlRegex : (function() {
+			var tagNameRegex = /[0-9a-zA-Z:]+/,
+			    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
+			    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/; // double quoted, single quoted, or unquoted attribute values
+			
+			return new RegExp( [
+				'<(/)?',  // Beginning of a tag. Either '<' for a start tag, or '</' for an end tag. The slash or an empty string is Capturing Group 1.
+				
+					// The tag name (Capturing Group 2)
+					'(' + tagNameRegex.source + ')',
+					
+					// Zero or more attributes following the tag name
+					'(?:',
+						'\\s+',  // one or more whitespace chars before an attribute
+						attrNameRegex.source,
+						'(?:\\s*=\\s*' + attrValueRegex.source + ')?',  // optional '=[value]'
+					')*',
+					
+					'\\s*',  // any trailing spaces before the closing '>'
+				'>'
+			].join( "" ), 'g' );
+		} )(),
 
 		/**
 		 * @private
