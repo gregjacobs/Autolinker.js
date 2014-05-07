@@ -1,5 +1,6 @@
 .externalToolBuilders
 .project
+.settings
 web.config
 .grunt/
 _SpecRunner.html
