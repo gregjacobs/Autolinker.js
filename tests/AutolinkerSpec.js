@@ -289,6 +289,13 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( html );
 			} );
 			
+			it( "should handle HTML markup relating to <a> tagswhen formatting is applied", function() {
+				var html = '</a><a href="http://google.com"><b>google.com</b></a>';
+				
+				var result = autolinker.link( html );
+				expect( result ).toBe( html );
+			} );
+			
 			
 			it( "should attempt to handle some more complex invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags", function() {
 				var html = [
