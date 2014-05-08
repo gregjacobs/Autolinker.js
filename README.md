@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.9.3
+
+- Fixed an issue where Twitter handles wouldn't be autolinked if they existed as the sole entity within parenthesis or brackets
+  (thanks [@busticated](https://github.com/busticated) for pointing this out and providing unit tests)
+
 ### 0.9.2
 
 - Fixed an issue with nested tags within an existing &lt;a&gt; tag, where the nested tags' inner text would be accidentally

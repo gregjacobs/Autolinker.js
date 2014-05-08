@@ -1,6 +1,6 @@
 /*!
  * autolinker
- * 0.9.2
+ * 0.9.3
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -8,6 +8,7 @@
  * https://github.com/gregjacobs/Autolinker.js
  */
 /*global define, module */
+/*jshint smarttabs:true */
 // Set up Autolinker appropriately for the environment.
 ( function( root, factory ) {
 	if( typeof define === 'function' && define.amd ) {
@@ -145,7 +146,7 @@
 		 *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
 		 */
 		matcherRegex: (function() {
-			var twitterRegex = /(^|\s)@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
+			var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
 			    
 			    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 			    
