@@ -1,4 +1,3 @@
-/*global define, module */
 // Set up Autolinker appropriately for the environment.
 ( function( root, factory ) {
 	if( typeof define === 'function' && define.amd ) {
