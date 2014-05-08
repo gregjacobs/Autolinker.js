@@ -83,12 +83,12 @@ var linkedText = Autolinker.link( "Check out google.com", { className: "myLink" 
 These are the options which may be specified for linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. These include:
 
 - **newWindow** : Boolean<br />
-  `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.
+  `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.<br /><br />
 - **stripPrefix** : Boolean<br />
-  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.
+  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
 - **truncate** : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').<br /><br />
-  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'
+  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br />
 - **className** : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added to all links, as well as this class
   plus "url"/"email"/"twitter" suffixes for styling url/email/twitter links differently.
@@ -100,9 +100,9 @@ These are the options which may be specified for linking. These are specified by
   3) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
   
 - **urls** : Boolean<br />
-  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.
+  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.<br />
 - **email** : Boolean<br />
-  `true` to have email addresses auto-linked, `false` to skip auto-linking of email addresses. Defaults to `true`.
+  `true` to have email addresses auto-linked, `false` to skip auto-linking of email addresses. Defaults to `true`.<br /><br />
 - **twitter** : Boolean<br />
   `true` to have Twitter handles auto-linked, `false` to skip auto-linking of Twitter handles. Defaults to `true`.
 
