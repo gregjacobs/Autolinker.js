@@ -111,6 +111,36 @@ describe( "Autolinker", function() {
 		} );
 		
 		
+		it( "should automatically link a URL with a line-break within its path", function() {
+			var result = Autolinker.link( "Joe went to http://yahoo.com/sp\norts." );
+			expect( result ).toBe( 'Joe went to <a href="http://yahoo.com/sports" target="_blank">yahoo.com/sp\norts</a>.' );
+		} );
+		
+		
+		it( "should automatically link a URL with a windows-style line-break within its path", function() {
+			var result = Autolinker.link( "Joe went to http://www.yahoo.com/spo\r\nrts." );
+			expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com/sports" target="_blank">yahoo.com/spo\r\nrts</a>.' );
+		} );
+		
+		
+		it( "should automatically link a URL with lots of line-breaks within its path", function() {
+			var result = Autolinker.link( "Joe went to http://yahoo.com/sp\n\n\n\n\n\norts." );
+			expect( result ).toBe( 'Joe went to <a href="http://yahoo.com/sports" target="_blank">yahoo.com/sp\n\n\n\n\n\norts</a>.' );
+		} );
+		
+		
+		it( "should automatically link a URL with line-breaks within a complex hash (such as a Google Analytics url)", function() {
+			var result = Autolinker.link( "Joe went to https://www.google.com/an\nalytics/web/?pli=1#my\n-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p4370\n4543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.\nrowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics" );
+			expect( result ).toBe( 'Joe went to <a href="https://www.google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/" target="_blank">google.com/an\nalytics/web/?pli=1#my\n-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p4370\n4543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.\nrowStart%3D0%268534-table.rowCount%3D25</a> and analyzed his analytics' );
+		} );
+		
+		
+		it( "should ignore leading line-breaks", function() {
+			var result = Autolinker.link( "Joe went to\n\nhttp://yahoo.com/sports." );
+			expect( result ).toBe( 'Joe went to\n\n<a href="http://yahoo.com/sports" target="_blank">yahoo.com/sports</a>.' );
+		} );
+		
+		
 		it( "should automatically link multiple URLs", function() {
 			var result = Autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
 			expect( result ).toBe( 'Joe went to <a href="http://yahoo.com" target="_blank">yahoo.com</a> and <a href="http://google.com" target="_blank">google.com</a>' );
@@ -187,20 +217,20 @@ describe( "Autolinker", function() {
 			var result = Autolinker.link( "Joe went to http://www.yahoo.com", { urls: false } );
 			expect( result ).toBe( 'Joe went to http://www.yahoo.com' );
 		} );
-
+		
 		
 		it( "should still automatically link Twitter handles when URL support is disabled", function() {
 			var result = Autolinker.link( "@greg is tweeting @joe with @josh", { urls: false } );
 			expect( result ).toBe( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>' );
 		} );
-
+		
 		
 		it( "should still automatically link email addresses if URL support is disabled", function() {
 			var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { urls: false } );
 			expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is' );
 		} );
-
-
+		
+		
 		describe( "proper input HTML handling", function() {
 			var autolinker;
 			
@@ -208,7 +238,7 @@ describe( "Autolinker", function() {
 				autolinker = new Autolinker( { newWindow: false } );  // just to stop the target="_blank" from coming into the autolinked results
 			} );
 			
-		
+			
 			it( "should NOT automatically link URLs within existing HTML tags", function() {
 				var result = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
 				expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
@@ -244,8 +274,8 @@ describe( "Autolinker", function() {
 				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar<\/a> Baz<\/ns:p>';
 				expect( autolinker.link( inAndOutHtml ) ).toBe( inAndOutHtml );
 			} );
-	
-	
+			
+			
 			it( "should properly autolink text within namespaced HTML elements, skipping over html elements with urls in attribute values", function() {
 				var html = '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com" target="_blank">Bar<\/a> Baz<\/ns:p>';
 				
