@@ -1,4 +1,5 @@
 /*global define, module */
+/*jshint smarttabs:true */
 // Set up Autolinker appropriately for the environment.
 ( function( root, factory ) {
 	if( typeof define === 'function' && define.amd ) {

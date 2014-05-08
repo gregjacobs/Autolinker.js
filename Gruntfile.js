@@ -48,6 +48,11 @@ module.exports = function(grunt) {
                 src: ['src/Autolinker.js'],
                 dest: 'dist/Autolinker.min.js',
             }
+        },
+        jshint: {
+            files: {
+                src: ['src/**/*.js', 'tests/**/*.js']
+            }
         }
     });
 
@@ -56,9 +61,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Tasks
-    grunt.registerTask('default', ['test', 'build']);
+    grunt.registerTask('default', ['lint', 'test', 'build']);
+    grunt.registerTask('lint', ['jshint']);
     grunt.registerTask('test', ['jasmine']);
     grunt.registerTask('build', ['concat:development', 'uglify:production']);
     grunt.registerTask('serve', ['connect:server:keepalive']);
