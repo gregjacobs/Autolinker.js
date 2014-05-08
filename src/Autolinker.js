@@ -365,8 +365,14 @@
 				var anchorHref = matchStr,  // initialize both of these
 				    anchorText = matchStr;  // values as the full match
 
-				if( ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ) {
-					// A disabled link type
+				// Simply return out for disabled link types, or possibly URL matches which do not have at least have 
+				// one period ('.') in the domain name (effectively skipping over strings like "abc:def")
+				if( 
+				    ( twitterMatch && !enableTwitter ) ||
+				    ( emailAddress && !enableEmailAddresses ) ||
+				    ( urlMatch && !enableUrls ) ||
+				    ( urlMatch && urlMatch.indexOf( '.' ) === -1 )  // At least one period ('.') must exist in the URL match for us to consider it an actual URL
+				) {
 					return prefixStr + anchorText + suffixStr;
 				}
 				
