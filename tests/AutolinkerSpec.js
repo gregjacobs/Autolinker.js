@@ -478,6 +478,24 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should automatically link twitter handles surrounded by parentheses", function() {
+				var result = Autolinker.link( "Joe's twitter is (@joe_the_man12)" );
+				expect( result ).toBe( 'Joe\'s twitter is (<a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>)' );
+			} );
+			
+			
+			it( "should automatically link twitter handles surrounded by braces", function() {
+				var result = Autolinker.link( "Joe's twitter is {@joe_the_man12}" );
+				expect( result ).toBe( 'Joe\'s twitter is {<a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>}' );
+			} );
+			
+			
+			it( "should automatically link twitter handles surrounded by brackets", function() {
+				var result = Autolinker.link( "Joe's twitter is [@joe_the_man12]" );
+				expect( result ).toBe( 'Joe\'s twitter is [<a href="https://twitter.com/joe_the_man12" target="_blank">@joe_the_man12</a>]' );
+			} );
+			
+			
 			it( "should automatically link multiple twitter handles in a string", function() {
 				var result = Autolinker.link( "@greg is tweeting @joe with @josh" );
 				expect( result ).toBe( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>' );
