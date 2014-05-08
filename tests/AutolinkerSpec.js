@@ -159,19 +159,43 @@ describe( "Autolinker", function() {
 		} );
 		
 		
-		it( "should NOT automatically link URLs in the form of http://www.yahoo.com if URL support is disabled", function() {
+		it( "should NOT automatically link strings of the form 'abc:d'", function() {
+			var result = Autolinker.link( 'Something like abc:d should not be linked as a URL' );
+			expect( result ).toBe( 'Something like abc:d should not be linked as a URL' );
+		} );
+		
+		
+		it( "should NOT automatically link strings of the form 'abc:def'", function() {
+			var result = Autolinker.link( 'Something like abc:def should not be linked as a URL' );
+			expect( result ).toBe( 'Something like abc:def should not be linked as a URL' );
+		} );
+		
+		
+		it( "should NOT automatically link strings of the form 'a.bc:def'", function() {
+			var result = Autolinker.link( 'Something like a.bc:def should not be linked as a URL' );
+			expect( result ).toBe( 'Something like a.bc:def should not be linked as a URL' );
+		} );
+		
+		
+		it( "should automatically link strings of the form 'abc:d.ef', interpreting this as a protocol and domain name", function() {
+			var result = Autolinker.link( 'Something like abc:d.ef should be linked as a URL', { newWindow: false } );
+			expect( result ).toBe( 'Something like <a href="abc:d.ef">abc:d.ef</a> should be linked as a URL' );
+		} );
+		
+		
+		it( "should NOT automatically link URLs if URL support is disabled", function() {
 			var result = Autolinker.link( "Joe went to http://www.yahoo.com", { urls: false } );
 			expect( result ).toBe( 'Joe went to http://www.yahoo.com' );
 		} );
 
 		
-		it( "should automatically link twitter handles when URL support is disabled", function() {
+		it( "should still automatically link Twitter handles when URL support is disabled", function() {
 			var result = Autolinker.link( "@greg is tweeting @joe with @josh", { urls: false } );
 			expect( result ).toBe( '<a href="https://twitter.com/greg" target="_blank">@greg</a> is tweeting <a href="https://twitter.com/joe" target="_blank">@joe</a> with <a href="https://twitter.com/josh" target="_blank">@josh</a>' );
 		} );
 
 		
-		it( "should automatically link an email address in the middle of the string if URL support is disabled", function() {
+		it( "should still automatically link email addresses if URL support is disabled", function() {
 			var result = Autolinker.link( "Joe's email is joe@joe.com because it is", { urls: false } );
 			expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com" target="_blank">joe@joe.com</a> because it is' );
 		} );

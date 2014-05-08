@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.9.4
+
+- Fixed an issue where a string in the form of `abc:def` would be autolinked as a protocol and domain name URL. Autolinker now
+  requires the domain name to have at least one period in it to be considered.
+
 ### 0.9.3
 
 - Fixed an issue where Twitter handles wouldn't be autolinked if they existed as the sole entity within parenthesis or brackets
