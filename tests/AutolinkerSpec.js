@@ -1,3 +1,4 @@
+/*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
 describe( "Autolinker", function() {
 	
 	describe( "instantiating and using as a class", function() {
