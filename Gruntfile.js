@@ -3,7 +3,7 @@ module.exports = function(grunt) {
 
     var banner = [
         '/*!',
-        ' * <%= pkg.name %>',
+        ' * Autolinker.js',
         ' * <%= pkg.version %>',
         ' *',
         ' * Copyright(c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>',

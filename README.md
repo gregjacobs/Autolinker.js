@@ -148,6 +148,11 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.10.0
+
+- Added support for protocol-relative URLs (ex: `//google.com`, which will effectively either have the `http://` or `https://` 
+  protocol depending on the protocol that is hosting the website)
+
 ### 0.9.4
 
 - Fixed an issue where a string in the form of `abc:def` would be autolinked as a protocol and domain name URL. Autolinker now
