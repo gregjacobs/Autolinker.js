@@ -57,6 +57,52 @@ describe( "Autolinker", function() {
 		} );
 		
 		
+		describe( "protocol-relative URLs", function() {
+			var autolinker;
+			
+			beforeEach( function() {
+				autolinker = new Autolinker( { newWindow: false } );  // so we don't get the target="_blank" in the resulting links for the tests
+			} );
+			
+			
+			it( "should automatically link protocol-relative URLs in the form of //yahoo.com at the beginning of the string", function() {
+				var result = autolinker.link( "//yahoo.com" );
+				expect( result ).toBe( '<a href="//yahoo.com">yahoo.com</a>' );
+			} );
+			
+			
+			it( "should automatically link protocol-relative URLs in the form of //yahoo.com in the middle of the string", function() {
+				var result = autolinker.link( "Joe went to //yahoo.com yesterday" );
+				expect( result ).toBe( 'Joe went to <a href="//yahoo.com">yahoo.com</a> yesterday' );
+			} );
+			
+			
+			it( "should automatically link protocol-relative URLs in the form of //yahoo.com at the end of the string", function() {
+				var result = autolinker.link( "Joe went to //yahoo.com" );
+				expect( result ).toBe( 'Joe went to <a href="//yahoo.com">yahoo.com</a>' );
+			} );
+			
+			
+			it( "should NOT automatically link supposed protocol-relative URLs in the form of abc//yahoo.com, which is most likely not supposed to be interpreted as a URL", function() {
+				var result = autolinker.link( "Joe went to abc//yahoo.com" );
+				expect( result ).toBe( 'Joe went to abc//yahoo.com' );
+			} );
+			
+			
+			it( "should NOT automatically link supposed protocol-relative URLs in the form of 123//yahoo.com, which is most likely not supposed to be interpreted as a URL", function() {
+				var result = autolinker.link( "Joe went to 123//yahoo.com" );
+				expect( result ).toBe( 'Joe went to 123//yahoo.com' );
+			} );
+			
+			
+			it( "should automatically link supposed protocol-relative URLs as long as the character before the '//' is a non-word character", function() {
+				var result = autolinker.link( "Joe went to abc-//yahoo.com" );
+				expect( result ).toBe( 'Joe went to abc-<a href="//yahoo.com">yahoo.com</a>' );
+			} );
+			
+		} );
+		
+		
 		it( "should automatically link 'yahoo.xyz', but not 'sencha.etc'", function() {
 			var result = Autolinker.link( "yahoo.xyz should be linked, sencha.etc should not", { newWindow: false } );
 			expect( result ).toBe( '<a href="http://yahoo.xyz">yahoo.xyz</a> should be linked, sencha.etc should not' );
@@ -153,12 +199,6 @@ describe( "Autolinker", function() {
 		} );
 		
 		
-		it( "should automatically link URLs past the last HTML tag", function() {
-			var result = Autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com' );
-			expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com" target="_blank">google.com</a>' );
-		} );
-		
-		
 		it( "should NOT automatically link strings of the form 'abc:d'", function() {
 			var result = Autolinker.link( 'Something like abc:d should not be linked as a URL' );
 			expect( result ).toBe( 'Something like abc:d should not be linked as a URL' );
@@ -206,6 +246,12 @@ describe( "Autolinker", function() {
 			
 			beforeEach( function() {
 				autolinker = new Autolinker( { newWindow: false } );  // just to stop the target="_blank" from coming into the autolinked results
+			} );
+		
+		
+			it( "should automatically link URLs past the last HTML tag", function() {
+				var result = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com' );
+				expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com">google.com</a>' );
 			} );
 			
 		

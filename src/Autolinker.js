@@ -1,5 +1,5 @@
 /*global define, module */
-/*jshint smarttabs:true */
+/*jshint undef:true, smarttabs:true */
 // Set up Autolinker appropriately for the environment.
 ( function( root, factory ) {
 	if( typeof define === 'function' && define.amd ) {
@@ -123,20 +123,25 @@
 		 * 
 		 * The regular expression that matches URLs, email addresses, and Twitter handles.
 		 * 
-		 * Capturing groups:
+		 * This regular expression has the following capturing groups:
 		 * 
-		 * 1. Group that is used to determine if there is a Twitter handle match (i.e. @someTwitterUser). Simply check for its existence
-		 *    to determine if there is a Twitter handle match. The next couple of capturing groups give information about the Twitter 
-		 *    handle match.
-		 * 2. The whitespace character before the @sign in a Twitter handle. This is needed because there are no lookbehinds in JS regular
-		 *    expressions, and can be used to reconstruct the original string in a replace().
+		 * 1. Group that is used to determine if there is a Twitter handle match (i.e. @someTwitterUser). Simply check for its 
+		 *    existence to determine if there is a Twitter handle match. The next couple of capturing groups give information 
+		 *    about the Twitter handle match.
+		 * 2. The whitespace character before the @sign in a Twitter handle. This is needed because there are no lookbehinds in
+		 *    JS regular expressions, and can be used to reconstruct the original string in a replace().
 		 * 3. The Twitter handle itself in a Twitter match. If the match is '@someTwitterUser', the handle is 'someTwitterUser'.
-		 * 4. Group that matches an email address. Used to determine if the match is an email address, as well as holding the full address.
-		 *    Ex: 'me@my.com'
+		 * 4. Group that matches an email address. Used to determine if the match is an email address, as well as holding the full 
+		 *    address. Ex: 'me@my.com'
 		 * 5. Group that matches a URL in the input text. Ex: 'http://google.com', 'www.google.com', or just 'google.com'.
 		 *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
+		 * 6. A protocol-relative ('//') match for the case of a 'www.' prefixed URL. Will be an empty string if it is not a 
+		 *    protocol-relative match. We need to know the character before the '//' in order to determine if it is a valid match
+		 *    or the // was in a string we don't want to auto-link.
+		 * 7. A protocol-relative ('//') match for the case of a known TLD prefixed URL. Will be an empty string if it is not a 
+		 *    protocol-relative match. See #6 for more info. 
 		 */
-		matcherRegex: (function() {
+		matcherRegex : (function() {
 			var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
 			    
 			    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
@@ -149,7 +154,6 @@
 			    // Allow optional path, query string, and hash anchor, not ending in the following characters: "!:,.;"
 			    // http://blog.codinghorror.com/the-problem-with-urls/
 			    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|])?/;  // note: optional part of the full regex
-			
 			
 			return new RegExp( [
 				'(',  // *** Capturing group $1, which can be used to check for a twitter handle match. Use group $3 for the actual twitter handle though. $2 may be used to reconstruct the original string in a replace() 
@@ -170,7 +174,7 @@
 				
 				'(',  // *** Capturing group $5, which is used to match a URL
 					'(?:', // parens to cover match for protocol (optional), and domain
-						'(?:',  // non-capturing paren for a protocol-prefixed url (ex: http://google.com) 
+						'(?:',  // non-capturing paren for a protocol-prefixed url (ex: http://google.com)
 							protocolRegex.source,
 							domainNameRegex.source,
 						')',
@@ -178,6 +182,7 @@
 						'|',
 						
 						'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
+							'(.?//)?',  // *** Capturing group $6 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 							wwwRegex.source,
 							domainNameRegex.source,
 						')',
@@ -185,6 +190,7 @@
 						'|',
 						
 						'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
+							'(.?//)?',  // *** Capturing group $7 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 							domainNameRegex.source,
 							tldRegex.source,
 						')',
@@ -197,10 +203,22 @@
 		
 		/**
 		 * @private
+		 * @property {RegExp} protocolRelativeRegex
+		 * 
+		 * The regular expression used to find protocol-relative URLs. A protocol-relative URL is, for example, "//yahoo.com"
+		 * 
+		 * This regular expression needs to match the character before the '//', in order to determine if we should actually
+		 * autolink a protocol-relative URL. For instance, we want to autolink something like "//google.com", but we
+		 * don't want to autolink something like "abc//google.com"
+		 */
+		protocolRelativeRegex : /(.)?\/\//,
+		
+		/**
+		 * @private
 		 * @property {RegExp} htmlRegex
 		 * 
-		 * A regular expression used to pull out HTML tags from a string. Handles namespaced HTML tags and
-		 * attribute names, as specified by http://www.w3.org/TR/html-markup/syntax.html
+		 * The regular expression used to pull out HTML tags from a string. Handles namespaced HTML tags and
+		 * attribute names, as specified by http://www.w3.org/TR/html-markup/syntax.html.
 		 * 
 		 * Capturing groups:
 		 * 
@@ -334,15 +352,31 @@
 			    enableEmailAddresses = this.email,
 			    enableUrls = this.urls;
 			
-			return text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5 ) {
+			return text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7 ) {
 				var twitterMatch = $1,
 				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
-				    twitterHandle = $3,  // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
-				    emailAddress = $4,   // For both determining if it is an email address, and stores the actual email address
-				    urlMatch = $5,       // The matched URL string
+				    twitterHandle = $3,   // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
+				    emailAddress = $4,    // For both determining if it is an email address, and stores the actual email address
+				    urlMatch = $5,        // The matched URL string
+				    protocolRelativeMatch = $6 || $7,  // The '//' for a protocol-relative match, with the character that comes before the '//'
 				    
-				    prefixStr = "",      // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
-				    suffixStr = "";      // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+				    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+				    suffixStr = "";       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+				
+				// Early exits with no replacements for:
+				// 1) Disabled link types
+				// 2) URL matches which do not have at least have one period ('.') in the domain name (effectively skipping over 
+				//    matches like "abc:def")
+				// 3) A protocol-relative url match (a URL beginning with '//') whose previous character is a word character 
+				//    (effectively skipping over strings like "abc//google.com")
+				if( 
+				    ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ||
+				    ( urlMatch && urlMatch.indexOf( '.' ) === -1 ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL
+				    ( protocolRelativeMatch && /^[\w]\/\//.test( protocolRelativeMatch ) )  // a protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
+				) {
+					return matchStr;
+				}
+				
 				
 				// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
 				// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
@@ -363,33 +397,39 @@
 				
 				
 				var anchorHref = matchStr,  // initialize both of these
-				    anchorText = matchStr;  // values as the full match
+				    anchorText = matchStr,  // values as the full match
+				    linkType;
 
-				// Simply return out for disabled link types, or possibly URL matches which do not have at least have 
-				// one period ('.') in the domain name (effectively skipping over strings like "abc:def")
-				if( 
-				    ( twitterMatch && !enableTwitter ) ||
-				    ( emailAddress && !enableEmailAddresses ) ||
-				    ( urlMatch && !enableUrls ) ||
-				    ( urlMatch && urlMatch.indexOf( '.' ) === -1 )  // At least one period ('.') must exist in the URL match for us to consider it an actual URL
-				) {
-					return prefixStr + anchorText + suffixStr;
-				}
-				
 				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 				// will try to direct the user to "http://current-domain.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
-				var linkType = 'url';
 				if( twitterMatch ) {
 					linkType = 'twitter';
 					prefixStr = twitterHandlePrefixWhitespaceChar;
 					anchorHref = 'https://twitter.com/' + twitterHandle;
 					anchorText = '@' + twitterHandle;
+					
 				} else if( emailAddress ) {
 					linkType = 'email';
 					anchorHref = 'mailto:' + emailAddress;
 					anchorText = emailAddress;
-				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {  // url string doesn't begin with a protocol, assume http://
-					anchorHref = 'http://' + anchorHref;
+					
+				} else {  // url match
+					linkType = 'url';
+					
+					if( protocolRelativeMatch ) {
+						// Strip off any protocol-relative '//' from the anchor text (leaving the previous non-word character 
+						// intact, if there is one)
+						var protocolRelRegex = new RegExp( "^" + me.protocolRelativeRegex.source ),  // for this one, we want to only match at the beginning of the string
+						    charBeforeMatch = protocolRelativeMatch.match( protocolRelRegex )[ 1 ] || "";
+						
+						prefixStr = charBeforeMatch + prefixStr;  // re-add the character before the '//' to what will be placed before the <a> tag
+						anchorHref = anchorHref.replace( protocolRelRegex, "//" );  // remove the char before the match for the href
+						anchorText = anchorText.replace( protocolRelRegex, "" );    // remove both the char before the match and the '//' for the anchor text
+
+					} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {
+						// url string doesn't begin with a protocol, assume http://
+						anchorHref = 'http://' + anchorHref;
+					}
 				}
 
 				// wrap the match in an anchor tag
