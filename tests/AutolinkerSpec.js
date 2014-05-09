@@ -78,6 +78,33 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL' );
 				} );
 				
+				
+				it( "should NOT automatically link a string in the form of 'version:1.0'", function() {
+					var result = autolinker.link( 'version:1.0' );
+					expect( result ).toBe( 'version:1.0' );
+				} );
+				
+				
+				it( "should NOT automatically link these 'abc:def' style strings", function() {
+					var strings = [
+						'BEGIN:VCALENDAR',
+						'VERSION:1.0',
+						'BEGIN:VEVENT',
+						'DTSTART:20140401T090000',
+						'DTEND:20140401T100000',
+						'SUMMARY:Some thing to do',
+						'LOCATION:',
+						'DESCRIPTION:Just call this guy yeah! Testings',
+						'PRIORITY:3',
+						'END:VEVENT',
+						'END:VCALENDAR'
+					];
+					
+					for( var i = 0, len = strings.length; i < len; i++ ) {
+						expect( autolinker.link( strings[ i ] ) ).toBe( strings[ i ] );  // none should be autolinked
+					}
+				} );
+				
 			} );
 			
 			

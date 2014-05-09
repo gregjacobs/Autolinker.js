@@ -372,6 +372,7 @@
 				if( 
 				    ( twitterMatch && !enableTwitter ) || ( emailAddress && !enableEmailAddresses ) || ( urlMatch && !enableUrls ) ||
 				    ( urlMatch && urlMatch.indexOf( '.' ) === -1 ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL
+				    ( urlMatch && /^[A-Za-z]{3,9}:/.test( urlMatch ) && !/:.*?[A-Za-z]/.test( urlMatch ) ) ||  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
 				    ( protocolRelativeMatch && /^[\w]\/\//.test( protocolRelativeMatch ) )  // a protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
 				) {
 					return matchStr;

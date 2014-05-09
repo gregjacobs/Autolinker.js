@@ -148,6 +148,10 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.10.1
+
+- Added fix to not autolink strings like "version:1.0", which were accidentally being interpreted as a protocol:domain string.
+
 ### 0.10.0
 
 - Added support for protocol-relative URLs (ex: `//google.com`, which will effectively either have the `http://` or `https://` 
