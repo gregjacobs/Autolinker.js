@@ -1,6 +1,6 @@
 {
   "name": "Autolinker.js",
-  "main": "Autolinker.js",
+  "main": "dist/Autolinker.js",
   "homepage": "https://github.com/gregjacobs/Autolinker.js",
   "authors": [
     "Gregory Jacobs <greg@greg-jacobs.com>"
