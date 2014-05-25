@@ -61,6 +61,36 @@ describe( "Autolinker", function() {
 				} );
 				
 				
+				it( "should automatically link URLs with a port number", function() {
+					var result = autolinker.link( "Joe went to http://yahoo.com:8000 today." );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000">yahoo.com:8000</a> today.' );
+				} );
+				
+				
+				it( "should automatically link URLs with a port number and a following slash", function() {
+					var result = autolinker.link( "Joe went to http://yahoo.com:8000/ today." );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000/">yahoo.com:8000</a> today.' );
+				} );
+				
+				
+				it( "should automatically link URLs with a port number and a path", function() {
+					var result = autolinker.link( "Joe went to http://yahoo.com:8000/mysite/page today." );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000/mysite/page">yahoo.com:8000/mysite/page</a> today.' );
+				} );
+				
+				
+				it( "should automatically link URLs with a port number and a query string", function() {
+					var result = autolinker.link( "Joe went to http://yahoo.com:8000?page=index today." );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000?page=index">yahoo.com:8000?page=index</a> today.' );
+				} );
+				
+				
+				it( "should automatically link URLs with a port number and a hash string", function() {
+					var result = autolinker.link( "Joe went to http://yahoo.com:8000#page=index today." );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000#page=index">yahoo.com:8000#page=index</a> today.' );
+				} );
+				
+				
 				it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
 					var result = autolinker.link( 'Something like git:d should not be linked as a URL' );
 					expect( result ).toBe( 'Something like git:d should not be linked as a URL' );
@@ -121,6 +151,12 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>.' );
 				} );
 				
+				
+				it( "should automatically link URLs in the form of 'www.yahoo.com:8000' (with a port number)", function() {
+					var result = autolinker.link( "Joe went to www.yahoo.com:8000 today" );
+					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com:8000">yahoo.com:8000</a> today' );
+				} );
+				
 			} );
 		
 			
@@ -153,6 +189,12 @@ describe( "Autolinker", function() {
 				it( "should automatically link URLs in the form of 'yahoo.com.', without including the trailing period", function() {
 					var result = autolinker.link( "Joe went to yahoo.com." );
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>.' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'www.yahoo.com:8000' (with a port number)", function() {
+					var result = autolinker.link( "Joe went to yahoo.com:8000 today" );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000">yahoo.com:8000</a> today' );
 				} );
 				
 			} );
