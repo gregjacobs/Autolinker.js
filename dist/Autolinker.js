@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.10.1
+ * 0.11.0
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -207,7 +207,7 @@
 					
 					urlSuffixRegex.source,  // match for path, query string, and/or hash anchor
 				')'
-			].join( "" ), 'g' );
+			].join( "" ), 'gi' );
 		} )(),
 		
 		/**
@@ -263,7 +263,7 @@
 		 * 
 		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
 		 */
-		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/,
+		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		
 		/**

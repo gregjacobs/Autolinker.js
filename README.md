@@ -148,6 +148,10 @@ autolinker.link( "Go to www.google.com" );
 
 ## Changelog:
 
+### 0.11.0
+
+- Allow Autolinker to link fully-capitalized URLs/Emails/Twitter handles.
+
 ### 0.10.1
 
 - Added fix to not autolink strings like "version:1.0", which were accidentally being interpreted as a protocol:domain string.

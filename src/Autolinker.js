@@ -198,7 +198,7 @@
 					
 					urlSuffixRegex.source,  // match for path, query string, and/or hash anchor
 				')'
-			].join( "" ), 'g' );
+			].join( "" ), 'gi' );
 		} )(),
 		
 		/**
@@ -254,7 +254,7 @@
 		 * 
 		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
 		 */
-		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/,
+		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		
 		/**

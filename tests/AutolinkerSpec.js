@@ -37,9 +37,15 @@ describe( "Autolinker", function() {
 				} );
 			
 			
-				it( "should automatically link URLs in the form of https://yahoo.com (https)", function() {
+				it( "should automatically link https URLs in the form of https://yahoo.com", function() {
 					var result = autolinker.link( "Joe went to https://www.yahoo.com" );
 					expect( result ).toBe( 'Joe went to <a href="https://www.yahoo.com">yahoo.com</a>' );
+				} );
+				
+				
+				it( "should automatically link capitalized URLs", function() {
+					var result = autolinker.link( "Joe went to HTTP://WWW.YAHOO.COM" );
+					expect( result ).toBe( 'Joe went to <a href="HTTP://WWW.YAHOO.COM">YAHOO.COM</a>' );
 				} );
 				
 				
@@ -157,6 +163,12 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com:8000">yahoo.com:8000</a> today' );
 				} );
 				
+				
+				it( "should automatically link capitalized URLs", function() {
+					var result = autolinker.link( "Joe went to WWW.YAHOO.COM today" );
+					expect( result ).toBe( 'Joe went to <a href="http://WWW.YAHOO.COM">YAHOO.COM</a> today' );
+				} );
+				
 			} );
 		
 			
@@ -197,6 +209,12 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000">yahoo.com:8000</a> today' );
 				} );
 				
+				
+				it( "should automatically link capitalized URLs", function() {
+					var result = autolinker.link( "Joe went to YAHOO.COM." );
+					expect( result ).toBe( 'Joe went to <a href="http://YAHOO.COM">YAHOO.COM</a>.' );
+				} );
+				
 			} );
 		
 		
@@ -217,6 +235,12 @@ describe( "Autolinker", function() {
 				it( "should automatically link protocol-relative URLs in the form of //yahoo.com at the end of the string", function() {
 					var result = autolinker.link( "Joe went to //yahoo.com" );
 					expect( result ).toBe( 'Joe went to <a href="//yahoo.com">yahoo.com</a>' );
+				} );
+				
+				
+				it( "should automatically link capitalized protocol-relative URLs", function() {
+					var result = autolinker.link( "Joe went to //YAHOO.COM" );
+					expect( result ).toBe( 'Joe went to <a href="//YAHOO.COM">YAHOO.COM</a>' );
 				} );
 				
 				
@@ -414,6 +438,12 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should automatically link fully-capitalized email addresses", function() {
+				var result = autolinker.link( "Joe's email is JOE@JOE.COM" );
+				expect( result ).toBe( 'Joe\'s email is <a href="mailto:JOE@JOE.COM">JOE@JOE.COM</a>' );
+			} );
+			
+			
 			it( "should NOT automatically link any old word with an @ character in it", function() {
 				var result = autolinker.link( "Hi there@stuff" );
 				expect( result ).toBe( 'Hi there@stuff' );
@@ -469,6 +499,12 @@ describe( "Autolinker", function() {
 			it( "should automatically link multiple twitter handles in a string", function() {
 				var result = autolinker.link( "@greg is tweeting @joe with @josh" );
 				expect( result ).toBe( '<a href="https://twitter.com/greg">@greg</a> is tweeting <a href="https://twitter.com/joe">@joe</a> with <a href="https://twitter.com/josh">@josh</a>' );
+			} );
+			
+			
+			it( "should automatically liny fully capitalized twitter handles", function() {
+				var result = autolinker.link( "@GREG is tweeting @JOE with @JOSH" );
+				expect( result ).toBe( '<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>' );
 			} );
 			
 		} );
