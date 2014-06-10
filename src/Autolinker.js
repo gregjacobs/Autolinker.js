@@ -116,6 +116,13 @@
 		 */
 		className : "",
 		
+    /**
+     * @cfg {boolean} nofollow
+     *
+     * A value assigned to the rel attribute of an HTML anchor tag.
+     * "nofollow" provides a way for search engines to not follow links on a page.
+     */
+    nofollow: false,
 		
 		/**
 		 * @private
@@ -474,6 +481,9 @@
 			}
 			if( this.newWindow ) {
 				attrs.push( 'target="_blank"' );
+			}
+			if( this.nofollow ) {
+				attrs.push( 'rel="nofollow"' );
 			}
 			
 			return attrs.join( " " );
