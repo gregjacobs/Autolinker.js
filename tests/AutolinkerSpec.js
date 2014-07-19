@@ -575,6 +575,12 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should NOT remove `br` tags from the output (Issue #46)", function() {
+				var result = autolinker.link( "Testing<br /> with<br/> br<br> tags" );
+				expect( result ).toBe( "Testing<br /> with<br/> br<br> tags" );
+			} );
+			
+			
 			it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
 				// Note: We aren't actually expecting the HTML to be modified by this test
 				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar<\/a> Baz<\/ns:p>';
