@@ -243,7 +243,7 @@
 						'(?:\\s*=\\s*' + attrValueRegex.source + ')?',  // optional '=[value]'
 					')*',
 					
-					'\\s*',  // any trailing spaces before the closing '>'
+					'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
 				'>'
 			].join( "" ), 'g' );
 		} )(),

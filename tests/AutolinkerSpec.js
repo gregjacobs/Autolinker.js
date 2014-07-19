@@ -518,9 +518,24 @@ describe( "Autolinker", function() {
 			} );
 			
 		
-			it( "should NOT automatically link URLs within existing HTML tags", function() {
+			it( "should NOT automatically link URLs within the attributes of existing HTML tags", function() {
 				var result = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
 				expect( result ).toBe( '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>' );
+			} );
+			
+		
+			it( "should NOT automatically link URLs within the attributes of existing HTML tags when there are prefixed or suffixed spaces in the attribute values", function() {
+				var result = autolinker.link( '<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>' );
+				expect( result ).toBe( '<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>' );
+				
+				var result2 = autolinker.link( '<p>Joe went to <a href="http://www.yahoo.com ">yahoo</a></p>' );
+				expect( result2 ).toBe( '<p>Joe went to <a href="http://www.yahoo.com ">yahoo</a></p>' );
+			} );
+			
+			
+			it( "should NOT automatically link URLs within self-closing tags", function() {
+				var result = autolinker.link( 'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />' );
+				expect( result ).toBe( 'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />' );
 			} );
 			
 			
@@ -545,6 +560,12 @@ describe( "Autolinker", function() {
 			it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag, but match urls around the tags", function() {
 				var result = autolinker.link( 'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)' );
 				expect( result ).toBe( '<a href="http://google.com">google.com</a> looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at <a href="http://google.com">google.com</a>)' );
+			} );
+			
+			
+			it( "should NOT automatically link an image tag with a URL inside of it, when it has another attribute which has extraneous spaces surround its value (Issue #45)", function() {
+				var result = autolinker.link( "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>" );
+				expect( result ).toBe( "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>" );
 			} );
 			
 			
