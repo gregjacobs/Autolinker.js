@@ -116,6 +116,17 @@
 		 */
 		className : "",
 		
+		/**
+		 * @cfg {String} amazonAffiliateId
+		 * 
+		 * Your Amazon Affiliate Program tracking ID, to be added to any generated Amazon links.
+		 * 
+		 * For example, if this config is provided as "memosync-20", then:
+		 * 
+		 * 1) Amazon URL links will have the following appended to them: "tag=memosync-20"
+		 */
+		amazonAffiliateId : "",		
+		
 		
 		/**
 		 * @private
