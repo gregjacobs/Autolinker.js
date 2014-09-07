@@ -611,6 +611,25 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should NOT modify the email address with other tags when inside another anchor", function() {
+				var input = [
+					'<div>First name: Subin</div>',
+					'<div>Surname: Sundar</div>',
+					'<div>',
+						'Email: ',
+						'<a href="mailto:subin.sundar@yo.in">',
+							'<font color="blue"><u>s</u></font>',
+							'<font color="blue"><u>ubin</u></font>',
+							'<font color="blue"><u>.sundar@yo.in</u></font>',
+						'</a>',
+					'</div>'
+				].join( "" );
+				
+				var result = autolinker.link( input );
+				expect( result ).toBe( input );
+			} );
+			
+			
 			it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
 				// Note: We aren't actually expecting the HTML to be modified by this test
 				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar<\/a> Baz<\/ns:p>';
