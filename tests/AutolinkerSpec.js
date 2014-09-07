@@ -581,6 +581,36 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should NOT automatically link anything in a !DOCTYPE tag (Issue #53)", function() {
+				var input = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
+				
+				var result = autolinker.link( input );
+				expect( result ).toBe( input );
+			} );
+			
+			
+			it( "should automatically link tags after a !DOCTYPE tag", function() {
+				var input = [
+					'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+					'<html>',
+						'<body>',
+							'Welcome to mysite.com',
+						'</body>',
+					'</html>'
+				].join( "" );
+				
+				var result = autolinker.link( input );
+				expect( result ).toBe( [
+					'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+					'<html>',
+						'<body>',
+							'Welcome to <a href="http://mysite.com">mysite.com</a>',
+						'</body>',
+					'</html>'
+				].join( "" ) );
+			} );
+			
+			
 			it( "should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)", function() {
 				// Note: We aren't actually expecting the HTML to be modified by this test
 				var inAndOutHtml = '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar<\/a> Baz<\/ns:p>';

@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.11.0
+ * 0.11.2
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -237,10 +237,11 @@
 		htmlRegex : (function() {
 			var tagNameRegex = /[0-9a-zA-Z:]+/,
 			    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
-			    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/; // double quoted, single quoted, or unquoted attribute values
+			    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
+			    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
 			
 			return new RegExp( [
-				'<(/)?',  // Beginning of a tag. Either '<' for a start tag, or '</' for an end tag. The slash or an empty string is Capturing Group 1.
+				'<(?:!|(/))?',  // Beginning of a tag. Either '<' for a start tag, '</' for an end tag, or <! for the <!DOCTYPE ...> tag. The slash or an empty string is Capturing Group 1.
 				
 					// The tag name (Capturing Group 2)
 					'(' + tagNameRegex.source + ')',
@@ -248,11 +249,14 @@
 					// Zero or more attributes following the tag name
 					'(?:',
 						'\\s+',  // one or more whitespace chars before an attribute
-						attrNameRegex.source,
-						'(?:\\s*=\\s*' + attrValueRegex.source + ')?',  // optional '=[value]'
+						
+						// Either:
+						// A. tag="value", or 
+						// B. "value" alone (for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
+						'(?:', nameEqualsValueRegex, '|', attrValueRegex.source + ')',
 					')*',
 					
-					'\\s*',  // any trailing spaces before the closing '>'
+					'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
 				'>'
 			].join( "" ), 'g' );
 		} )(),
