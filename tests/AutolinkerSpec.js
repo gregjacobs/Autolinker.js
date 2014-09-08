@@ -776,6 +776,12 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( 'Test <a href="http://www.url.com">http://www.url.com</a>' );
 			} );
 			
+			
+			it( "should remove the prefix by default", function() {
+				var result = Autolinker.link( "Test http://www.url.com", { newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://www.url.com">url.com</a>' );
+			} );
+			
 		} );
 			
 		
