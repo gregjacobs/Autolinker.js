@@ -8,9 +8,8 @@
  * https://github.com/gregjacobs/Autolinker.js
  */
 /*global define, module */
-/*jshint undef:true, smarttabs:true */
-// Set up Autolinker appropriately for the environment.
 ( function( root, factory ) {
+
 	if( typeof define === 'function' && define.amd ) {
 		define( factory );             // Define as AMD module if an AMD loader is present (ex: RequireJS).
 	} else if( typeof exports !== 'undefined' ) {
@@ -19,7 +18,7 @@
 		root.Autolinker = factory();   // Finally, define as a browser global if no module loader.
 	}
 }( this, function() {
-	
+
 	/**
 	 * @class Autolinker
 	 * @extends Object
@@ -260,7 +259,7 @@
 				'>'
 			].join( "" ), 'g' );
 		} )(),
-
+	
 		/**
 		 * @private
 		 * @property {RegExp} urlPrefixRegex
@@ -413,7 +412,7 @@
 				var anchorHref = matchStr,  // initialize both of these
 				    anchorText = matchStr,  // values as the full match
 				    linkType;
-
+	
 				// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 				// will try to direct the user to "http://current-domain.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
 				if( twitterMatch ) {
@@ -439,13 +438,13 @@
 						prefixStr = charBeforeMatch + prefixStr;  // re-add the character before the '//' to what will be placed before the <a> tag
 						anchorHref = anchorHref.replace( protocolRelRegex, "//" );  // remove the char before the match for the href
 						anchorText = anchorText.replace( protocolRelRegex, "" );    // remove both the char before the match and the '//' for the anchor text
-
+	
 					} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {
 						// url string doesn't begin with a protocol, assume http://
 						anchorHref = 'http://' + anchorHref;
 					}
 				}
-
+	
 				// wrap the match in an anchor tag
 				var anchorTag = me.createAnchorTag( linkType, anchorHref, anchorText );
 				return prefixStr + anchorTag + suffixStr;
@@ -605,7 +604,6 @@
 		return autolinker.link( text );
 	};
 
-	
 	return Autolinker;
-	
+
 } ) );
