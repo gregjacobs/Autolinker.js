@@ -116,6 +116,17 @@
 		 */
 		className : "",
 		
+		/**
+		 * @cfg {String} amazonTrackingId
+		 * 
+		 * Your Amazon Affiliate Program tracking ID, to be added to any generated Amazon links.
+		 * 
+		 * For example, if this config is provided as "memosync-20", then:
+		 * 
+		 * 1) Amazon URL links will have the following appended to them: "tag=memosync-20"
+		 */
+		amazonTrackingId : "",		
+		
 		
 		/**
 		 * @private
@@ -454,6 +465,13 @@
 		 * @return {String} The full HTML for the anchor tag.
 		 */
 		createAnchorTag : function( linkType, anchorHref, anchorText ) {
+			
+			//include amazon tracking id if specified
+		       if (anchorHref.match(/amazon\./i) && this.amazonTrackingId) {
+		         anchorHref = anchorHref.replace('tag=','oldtag=');
+		         anchorHref = anchorHref + ((anchorHref.indexOf('?') == -1) ? '?tag=' : '&tag=') + this.amazonTrackingId;
+		       }			
+			
 			var attributesStr = this.createAnchorAttrsStr( linkType, anchorHref );
 			anchorText = this.processAnchorText( anchorText );
 			
