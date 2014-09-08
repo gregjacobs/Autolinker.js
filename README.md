@@ -86,6 +86,8 @@ These are the options which may be specified for linking. These are specified by
   `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.<br /><br />
 - **stripPrefix** : Boolean<br />
   `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
+- **nofollow** : Boolean<br />
+	`true` to tell search engines to not follow the link, `false` otherwise. Defaults to `false`.<br /><br />
 - **truncate** : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').<br /><br />
   Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br />

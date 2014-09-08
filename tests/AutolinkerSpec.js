@@ -736,6 +736,27 @@ describe( "Autolinker", function() {
 			} );
 			
 		} );
+
+
+    describe( "`nofollow` option", function() {
+
+      it( "should not add rel=\"nofollow\" when the 'nofollow' option is not passed in", function() {
+        var result = Autolinker.link( "Test http://url.com" );
+        expect( result ).toBe( 'Test <a href="http://url.com">url.com</a>' );
+      } );
+
+      it( "should not add rel=\"nofollow\" when the 'nofollow' option is set to false", function() {
+        var result = Autolinker.link( "Test http://url.com", { nofollow: false } );
+        expect( result ).toBe( 'Test <a href="http://url.com">url.com</a>' );
+      } );
+
+
+      it( "should add rel=\"nofollow\" when the 'nofollow' option is set to true", function() {
+        var result = Autolinker.link( "Test http://url.com", { nofollow: true } );
+        expect( result ).toBe( 'Test <a href="http://url.com" rel="nofollow">url.com</a>' );
+      } );
+
+    } );
 		
 		
 		describe( "`stripPrefix` option", function() {
