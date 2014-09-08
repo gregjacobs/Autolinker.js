@@ -55,14 +55,42 @@
 	var Autolinker = function( cfg ) {
 		cfg = cfg || {};
 		
-		// Assign the properties of `cfg` onto the Autolinker instance
+		// Assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs. 
 		for( var prop in cfg )
 			if( cfg.hasOwnProperty( prop ) ) this[ prop ] = cfg[ prop ];
+		
+		this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
+			newWindow   : this.newWindow,
+			stripPrefix : this.stripPrefix,
+			truncate    : this.truncate,
+			className   : this.className
+		} );
 	};
 	
 	
 	Autolinker.prototype = {
 		constructor : Autolinker,  // fix constructor property
+		
+		/**
+		 * @cfg {Boolean} urls
+		 * 
+		 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+		 */
+		urls : true,
+		
+		/**
+		 * @cfg {Boolean} email
+		 * 
+		 * `true` if email addresses should be automatically linked, `false` if they should not be.
+		 */
+		email : true,
+		
+		/**
+		 * @cfg {Boolean} twitter
+		 * 
+		 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+		 */
+		twitter : true,
 		
 		/**
 		 * @cfg {Boolean} newWindow
@@ -88,27 +116,6 @@
 		 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
 		 * something like this: 'http://www...th/to/a/file'
 		 */
-		
-		/**
-		 * @cfg {Boolean} twitter
-		 * 
-		 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
-		 */
-		twitter : true,
-		
-		/**
-		 * @cfg {Boolean} email
-		 * 
-		 * `true` if email addresses should be automatically linked, `false` if they should not be.
-		 */
-		email : true,
-		
-		/**
-		 * @cfg {Boolean} urls
-		 * 
-		 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
-		 */
-		urls : true,
 		
 		/**
 		 * @cfg {String} className
@@ -259,14 +266,6 @@
 				'>'
 			].join( "" ), 'g' );
 		} )(),
-	
-		/**
-		 * @private
-		 * @property {RegExp} urlPrefixRegex
-		 * 
-		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
-		 */
-		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		
 		/**
@@ -446,16 +445,108 @@
 				}
 	
 				// wrap the match in an anchor tag
-				var anchorTag = me.createAnchorTag( linkType, anchorHref, anchorText );
+				var anchorTag = me.anchorTagBuilder.createAnchorTag( linkType, anchorHref, anchorText );
 				return prefixStr + anchorTag + suffixStr;
 			} );
-		},
+		}
+	
+	};
+	
+	
+	/**
+	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
+	 * Does not link URLs found within HTML tags.
+	 * 
+	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
+	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+	 * 
+	 * Example:
+	 * 
+	 *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
+	 *     // Produces: "Go to <a href="http://google.com">google.com</a>"
+	 * 
+	 * @static
+	 * @method link
+	 * @param {String} html The HTML text to link URLs within.
+	 * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
+	 *   See the class description for an example call.
+	 * @return {String} The HTML text, with URLs automatically linked
+	 */
+	Autolinker.link = function( text, options ) {
+		var autolinker = new Autolinker( options );
+		return autolinker.link( text );
+	};
+	
+	/**
+	 * @private
+	 * @class Autolinker.AnchorTagBuilder
+	 * @extends Object
+	 * 
+	 * Builds the anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
+	 * 
+	 * @constructor
+	 * @param {Object} [config] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
+	 */
+	Autolinker.AnchorTagBuilder = function( cfg ) {
+		// Assign the properties of `cfg` onto the Autolinker instance
+		for( var prop in cfg )
+			if( cfg.hasOwnProperty( prop ) ) this[ prop ] = cfg[ prop ];
+	};
+	
+	
+	Autolinker.AnchorTagBuilder.prototype = {
+		constructor : Autolinker.AnchorTagBuilder,
+		
+		
+		/**
+		 * @cfg {Boolean} newWindow
+		 * 
+		 * `true` if the links should open in a new window, `false` otherwise.
+		 */
+		
+		/**
+		 * @cfg {Boolean} stripPrefix
+		 * 
+		 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of links, `false` otherwise.
+		 */
+		
+		/**
+		 * @cfg {Number} truncate
+		 * 
+		 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of 
+		 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by 
+		 * adding a two period ellipsis ('..') into the middle of the string.
+		 * 
+		 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
+		 * something like this: 'http://www...th/to/a/file'
+		 */
+		
+		/**
+		 * @cfg {String} className
+		 * 
+		 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
+		 * plus url/email/twitter suffixes for styling url/email/twitter links differently.
+		 * 
+		 * For example, if this config is provided as "myLink", then:
+		 * 
+		 * 1) URL links will have the CSS classes: "myLink myLink-url"
+		 * 2) Email links will have the CSS classes: "myLink myLink-email", and
+		 * 3) Twitter links will have the CSS classes: "myLink myLink-twitter"
+		 */
+		
+	
+		/**
+		 * @private
+		 * @property {RegExp} urlPrefixRegex
+		 * 
+		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+		 */
+		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		
 		/**
 		 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
 		 * 
-		 * @private
 		 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
 		 * @param {String} anchorHref The href for the anchor tag.
 		 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
@@ -576,32 +667,7 @@
 			}
 			return anchorText;
 		}
-	
-	};
-	
-	
-	/**
-	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
-	 * Does not link URLs found within HTML tags.
-	 * 
-	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
-	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
-	 * 
-	 * Example:
-	 * 
-	 *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
-	 *     // Produces: "Go to <a href="http://google.com">google.com</a>"
-	 * 
-	 * @static
-	 * @method link
-	 * @param {String} html The HTML text to link URLs within.
-	 * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
-	 *   See the class description for an example call.
-	 * @return {String} The HTML text, with URLs automatically linked
-	 */
-	Autolinker.link = function( text, options ) {
-		var autolinker = new Autolinker( options );
-		return autolinker.link( text );
+		
 	};
 
 	return Autolinker;
