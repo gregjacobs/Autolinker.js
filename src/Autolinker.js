@@ -512,7 +512,7 @@
 		 * @return {String} The processed `anchorText`.
 		 */
 		processAnchorText : function( anchorText ) {
-			if( this.stripPrefix ) {
+			if( !this.stripPrefix ) {
 				anchorText = this.stripUrlPrefix( anchorText );
 			}
 			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
