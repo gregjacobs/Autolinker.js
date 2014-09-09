@@ -32,18 +32,7 @@
  * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
-	cfg = cfg || {};
-	
-	// Assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs. 
-	for( var prop in cfg )
-		if( cfg.hasOwnProperty( prop ) ) this[ prop ] = cfg[ prop ];
-	
-	this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
-		newWindow   : this.newWindow,
-		stripPrefix : this.stripPrefix,
-		truncate    : this.truncate,
-		className   : this.className
-	} );
+	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
 };
 
 
@@ -264,6 +253,27 @@ Autolinker.prototype = {
 	
 	
 	/**
+	 * Lazily instantiates and returns the {@link #anchorTagBuilder} instance for this Autolinker instance.
+	 * 
+	 * @return {Autolinker.AnchorTagBuilder}
+	 */
+	getAnchorTagBuilder : function() {
+		var anchorTagBuilder = this.anchorTagBuilder;
+		
+		if( !anchorTagBuilder ) {
+			anchorTagBuilder = this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
+				newWindow   : this.newWindow,
+				stripPrefix : this.stripPrefix,
+				truncate    : this.truncate,
+				className   : this.className
+			} );
+		}
+		
+		return anchorTagBuilder;
+	},
+	
+	
+	/**
 	 * Processes the given HTML to auto-link URLs/emails/Twitter handles.
 	 * 
 	 * Finds the text around any HTML elements in the input `html`, which will be the text that is processed.
@@ -340,7 +350,8 @@ Autolinker.prototype = {
 		    matcherRegex = this.matcherRegex,
 		    enableTwitter = this.twitter,
 		    enableEmailAddresses = this.email,
-		    enableUrls = this.urls;
+		    enableUrls = this.urls,
+		    anchorTagBuilder = this.getAnchorTagBuilder();
 		
 		return text.replace( matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7 ) {
 			var twitterMatch = $1,
@@ -387,25 +398,26 @@ Autolinker.prototype = {
 			}
 			
 			
+			
+			var match;
+			
+			
 			var anchorHref = matchStr,  // initialize both of these
 			    anchorText = matchStr,  // values as the full match
 			    linkType;
 
 			// Process the urls that are found. We need to change URLs like "www.yahoo.com" to "http://www.yahoo.com" (or the browser
 			// will try to direct the user to "http://current-domain.com/www.yahoo.com"), and we need to prefix 'mailto:' to email addresses.
+			var matchDescriptor;
 			if( twitterMatch ) {
-				linkType = 'twitter';
 				prefixStr = twitterHandlePrefixWhitespaceChar;
-				anchorHref = 'https://twitter.com/' + twitterHandle;
-				anchorText = '@' + twitterHandle;
+				match = new TwitterMatch( twitterHandle );
 				
 			} else if( emailAddress ) {
-				linkType = 'email';
-				anchorHref = 'mailto:' + emailAddress;
-				anchorText = emailAddress;
+				match = new EmailMatch( emailAddress );
 				
 			} else {  // url match
-				linkType = 'url';
+				match = new UrlMatch( );
 				
 				if( protocolRelativeMatch ) {
 					// Strip off any protocol-relative '//' from the anchor text (leaving the previous non-word character 
@@ -416,17 +428,47 @@ Autolinker.prototype = {
 					prefixStr = charBeforeMatch + prefixStr;  // re-add the character before the '//' to what will be placed before the <a> tag
 					anchorHref = anchorHref.replace( protocolRelRegex, "//" );  // remove the char before the match for the href
 					anchorText = anchorText.replace( protocolRelRegex, "" );    // remove both the char before the match and the '//' for the anchor text
-
+		
 				} else if( !/^[A-Za-z]{3,9}:/i.test( anchorHref ) ) {
 					// url string doesn't begin with a protocol, assume http://
 					anchorHref = 'http://' + anchorHref;
 				}
+				
+				
 			}
 
 			// wrap the match in an anchor tag
-			var anchorTag = me.anchorTagBuilder.createAnchorTag( linkType, anchorHref, anchorText );
+			var anchorTag = anchorTagBuilder.createAnchorTag( linkType, anchorHref, anchorText );
 			return prefixStr + anchorTag + suffixStr;
 		} );
+	},
+	
+	
+	
+	createTwitterMatchDescriptor : function( twitterHandle ) {
+		return {
+			linkType   : 'twitter',
+			anchorHref : 'https://twitter.com/' + twitterHandle,
+			anchorText : '@' + twitterHandle
+		};
+	},
+	
+	
+	createEmailMatchDescriptor : function( emailAddress ) {
+		return {
+			linkType   : 'email',
+			anchorHref : 'mailto:' + emailAddress,
+			anchorText : emailAddress
+		};
+	},
+	
+	
+	createUrlMatchDescriptor : function(  ) {
+		
+		
+		return {
+			linkType : 'url'
+		};
 	}
 
 };

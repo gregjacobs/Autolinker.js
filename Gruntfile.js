@@ -43,7 +43,7 @@ module.exports = function(grunt) {
 						return '\t' + src.replace( /\n/g, '\n\t' );  // indent each source file, which is placed inside the UMD block
 					}
 				},
-				src: [ 'src/umdBegin.js', 'src/Autolinker.js', 'src/AnchorTagBuilder.js', 'src/umdEnd.js' ],
+				src: [ 'src/umdBegin.js', 'src/Autolinker.js', 'src/Util.js', 'src/AnchorTagBuilder.js', 'src/umdEnd.js' ],
 				dest: 'dist/Autolinker.js',
 			},
 		},
