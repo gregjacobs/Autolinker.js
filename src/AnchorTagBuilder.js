@@ -156,7 +156,7 @@ Autolinker.AnchorTagBuilder.prototype = {
 	
 	
 	/**
-	 * Removes any trailing slash from the given `anchorText`, in prepration for the text to be displayed.
+	 * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
 	 * 
 	 * @private
 	 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
