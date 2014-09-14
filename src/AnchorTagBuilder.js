@@ -4,55 +4,31 @@
  * @extends Object
  * 
  * Builds the anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
- * 
- * @constructor
- * @param {Object} [config] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
  */
-Autolinker.AnchorTagBuilder = function( cfg ) {
-	// Assign the properties of `cfg` onto the Autolinker instance
-	for( var prop in cfg )
-		if( cfg.hasOwnProperty( prop ) ) this[ prop ] = cfg[ prop ];
-};
-
-
-Autolinker.AnchorTagBuilder.prototype = {
-	constructor : Autolinker.AnchorTagBuilder,
-	
+Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
 	/**
 	 * @cfg {Boolean} newWindow
 	 * 
-	 * `true` if the links should open in a new window, `false` otherwise.
+	 * See {@link Autolinker#newWindow} for details.
 	 */
 	
 	/**
 	 * @cfg {Boolean} stripPrefix
 	 * 
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of links, `false` otherwise.
+	 * See {@link Autolinker#stripPrefix} for details.
 	 */
 	
 	/**
 	 * @cfg {Number} truncate
 	 * 
-	 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of 
-	 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by 
-	 * adding a two period ellipsis ('..') into the middle of the string.
-	 * 
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'http://www...th/to/a/file'
+	 * See {@link Autolinker#truncate} for details.
 	 */
 	
 	/**
 	 * @cfg {String} className
 	 * 
-	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
-	 * plus url/email/twitter suffixes for styling url/email/twitter links differently.
-	 * 
-	 * For example, if this config is provided as "myLink", then:
-	 * 
-	 * 1) URL links will have the CSS classes: "myLink myLink-url"
-	 * 2) Email links will have the CSS classes: "myLink myLink-email", and
-	 * 3) Twitter links will have the CSS classes: "myLink myLink-twitter"
+	 * See {@link Autolinker#className} for details.
 	 */
 	
 
@@ -66,15 +42,24 @@ Autolinker.AnchorTagBuilder.prototype = {
 	
 	
 	/**
+	 * @constructor
+	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.Util.assign( this, cfg );
+	},
+	
+	
+	/**
 	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
 	 * 
-	 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 	 * @param {String} anchorHref The href for the anchor tag.
 	 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
 	 * @return {String} The full HTML for the anchor tag.
 	 */
-	createAnchorTag : function( linkType, anchorHref, anchorText ) {
-		var attributesStr = this.createAnchorAttrsStr( linkType, anchorHref );
+	createAnchorTag : function( matchType, anchorHref, anchorText ) {
+		var attributesStr = this.createAnchorAttrsStr( matchType, anchorHref );
 		anchorText = this.processAnchorText( anchorText );
 		
 		return '<a ' + attributesStr + '>' + anchorText + '</a>';
@@ -85,14 +70,14 @@ Autolinker.AnchorTagBuilder.prototype = {
 	 * Creates the string which will be the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
 	 * 
 	 * @private
-	 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 	 * @param {String} href The href for the anchor tag.
 	 * @return {String} The anchor tag's attribute. Ex: `href="http://google.com" class="myLink myLink-url" target="_blank"` 
 	 */
-	createAnchorAttrsStr : function( linkType, anchorHref ) {
+	createAnchorAttrsStr : function( matchType, anchorHref ) {
 		var attrs = [ 'href="' + anchorHref + '"' ];  // we'll always have the `href` attribute
 		
-		var cssClass = this.createCssClass( linkType );
+		var cssClass = this.createCssClass( matchType );
 		if( cssClass ) {
 			attrs.push( 'class="' + cssClass + '"' );
 		}
@@ -105,21 +90,21 @@ Autolinker.AnchorTagBuilder.prototype = {
 	
 	
 	/**
-	 * Creates the CSS class that will be used for a given anchor tag, based on the `linkType` and the {@link #className}
+	 * Creates the CSS class that will be used for a given anchor tag, based on the `matchType` and the {@link #className}
 	 * config.
 	 * 
 	 * @private
-	 * @param {"url"/"email"/"twitter"} linkType The type of link that an anchor tag is being generated for.
+	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 	 * @return {String} The CSS class string for the link. Example return: "myLink myLink-url". If no {@link #className}
 	 *   was configured, returns an empty string.
 	 */
-	createCssClass : function( linkType ) {
+	createCssClass : function( matchType ) {
 		var className = this.className;
 		
 		if( !className ) 
 			return "";
 		else
-			return className + " " + className + "-" + linkType;  // ex: "myLink myLink-url", "myLink myLink-email", or "myLink myLink-twitter"
+			return className + " " + className + "-" + matchType;  // ex: "myLink myLink-url", "myLink myLink-email", or "myLink myLink-twitter"
 	},
 	
 	
@@ -189,4 +174,4 @@ Autolinker.AnchorTagBuilder.prototype = {
 		return anchorText;
 	}
 	
-};
+} );

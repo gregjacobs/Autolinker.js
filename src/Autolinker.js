@@ -70,7 +70,8 @@ Autolinker.prototype = {
 	/**
 	 * @cfg {Boolean} stripPrefix
 	 * 
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of links, `false` otherwise.
+	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text, 
+	 * `false` otherwise.
 	 */
 	stripPrefix : true,
 	
@@ -79,10 +80,10 @@ Autolinker.prototype = {
 	 * 
 	 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of 
 	 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by 
-	 * adding a two period ellipsis ('..') into the middle of the string.
+	 * adding a two period ellipsis ('..') to the end of the string.
 	 * 
 	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'http://www...th/to/a/file'
+	 * something like this: 'yahoo.com/some/long/pat..'
 	 */
 	
 	/**
