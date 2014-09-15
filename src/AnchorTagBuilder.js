@@ -165,13 +165,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {String} The truncated anchor text.
 	 */
 	doTruncate : function( anchorText ) {
-		var truncateLen = this.truncate;
-		
-		// Truncate the anchor text if it is longer than the provided 'truncate' option
-		if( truncateLen && anchorText.length > truncateLen ) {
-			anchorText = anchorText.substring( 0, truncateLen - 2 ) + '..';
-		}
-		return anchorText;
+		return Autolinker.Util.ellipsis( anchorText, this.truncate || Number.POSITIVE_INFINITY );
 	}
 	
 } );

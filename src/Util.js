@@ -1,3 +1,4 @@
+/*jshint eqnull:true */
 /**
  * @class Autolinker.Util
  * @singleton
@@ -61,6 +62,25 @@ Autolinker.Util = {
 		Autolinker.Util.assign( subclassProto, protoProps );
 		
 		return subclass;
+	},
+	
+	
+	/**
+	 * Truncates the `str` at `len - ellipsisChars.length`, and adds the `ellipsisChars` to the
+	 * end of the string (by default, two periods: '..'). If the `str` length does not exceed 
+	 * `len`, the string will be returned unchanged.
+	 * 
+	 * @param {String} str The string to truncate and add an ellipsis to.
+	 * @param {Number} truncateLen The length to truncate the string at.
+	 * @param {String} [ellipsisChars=..] The ellipsis character(s) to add to the end of `str`
+	 *   when truncated. Defaults to '..'
+	 */
+	ellipsis : function( str, truncateLen, ellipsisChars ) {
+		if( str.length > truncateLen ) {
+			ellipsisChars = ( ellipsisChars == null ) ? '..' : ellipsisChars;
+			str = str.substring( 0, truncateLen - ellipsisChars.length ) + ellipsisChars;
+		}
+		return str;
 	}
 	
 };
