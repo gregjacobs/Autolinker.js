@@ -580,9 +580,9 @@ Autolinker.prototype = {
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
 			var anchorTagBuilder = this.getAnchorTagBuilder(),
-			    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );
+			    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );  // return an Autolinker.HtmlTag instance
 			
-			return anchorTag;
+			return anchorTag.toString();
 		}
 	}
 

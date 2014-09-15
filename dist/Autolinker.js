@@ -57,6 +57,36 @@
 	 * 
 	 * For example:
 	 * 
+	 * var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+	 * 
+	 * var linkedText = Autolinker.link( input, {
+	 *     replaceFn : function( autolinker, match ) {
+	 *         console.log( "href = ", match.getAnchorHref() );
+	 *         console.log( "text = ", match.getAnchorText() );
+	 *     
+	 *         switch( match.getType() ) {
+	 *             case 'url' : 
+	 *                 console.log( "url: ", match.getUrl() );
+	 *                 return true;  // let Autolinker perform its normal anchor tag replacement
+	 *                 
+	 *             case 'email' :
+	 *                 var email = match.getEmail();
+	 *                 console.log( "email: ", email );
+	 *                 
+	 *                 if( email === "my@own.address" ) {
+	 *                     return false;  // don't auto-link this particular email address; leave as-is
+	 *                 } else {
+	 *                     return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
+	 *                 }
+	 *             
+	 *             case 'twitter' :
+	 *                 var twitterHandle = match.getTwitterHandle();
+	 *                 console.log( twitterHandle );
+	 *                 
+	 *                 return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+	 *         }
+	 *     }
+	 * } );
 	 * 
 	 * 
 	 * The function may return the following values:
@@ -571,9 +601,9 @@
 			} else {  // replaceFnResult === true, or no/unknown return value from function
 				// Perform Autolinker's default anchor tag generation
 				var anchorTagBuilder = this.getAnchorTagBuilder(),
-				    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );
+				    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );  // return an Autolinker.HtmlTag instance
 				
-				return anchorTag;
+				return anchorTag.toString();
 			}
 		}
 	
@@ -604,6 +634,7 @@
 		return autolinker.link( text );
 	};
 	
+	/*jshint eqnull:true */
 	/**
 	 * @class Autolinker.Util
 	 * @singleton
@@ -667,15 +698,312 @@
 			Autolinker.Util.assign( subclassProto, protoProps );
 			
 			return subclass;
+		},
+		
+		
+		/**
+		 * Truncates the `str` at `len - ellipsisChars.length`, and adds the `ellipsisChars` to the
+		 * end of the string (by default, two periods: '..'). If the `str` length does not exceed 
+		 * `len`, the string will be returned unchanged.
+		 * 
+		 * @param {String} str The string to truncate and add an ellipsis to.
+		 * @param {Number} truncateLen The length to truncate the string at.
+		 * @param {String} [ellipsisChars=..] The ellipsis character(s) to add to the end of `str`
+		 *   when truncated. Defaults to '..'
+		 */
+		ellipsis : function( str, truncateLen, ellipsisChars ) {
+			if( str.length > truncateLen ) {
+				ellipsisChars = ( ellipsisChars == null ) ? '..' : ellipsisChars;
+				str = str.substring( 0, truncateLen - ellipsisChars.length ) + ellipsisChars;
+			}
+			return str;
 		}
 		
 	};
+	/*jshint boss:true */
+	/**
+	 * @class Autolinker.HtmlTag
+	 * @extends Object
+	 * 
+	 * Represents an HTML tag, which can be used to build HTML tags piece-by-piece programmatically.
+	 */
+	Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
+		
+		/**
+		 * @cfg {String} tagName
+		 * 
+		 * The tag name. Ex: 'a', 'button', etc.
+		 * 
+		 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toString}
+		 * is executed.
+		 */
+		
+		/**
+		 * @cfg {Object.<String, String>} attrs
+		 * 
+		 * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
+		 * values are the attribute values.
+		 */
+		
+		/**
+		 * @cfg {String} innerHtml
+		 * 
+		 * The inner HTML for the tag. 
+		 * 
+		 * Note the camel case name on `innerHtml`. Acronyms are camelCased in this utility (such as not to run into the acronym 
+		 * naming inconsistency that the DOM developers created with `XMLHttpRequest`). You may alternatively use {@link #innerHTML}
+		 * if you prefer, but this one is recommended.
+		 */
+		
+		/**
+		 * @cfg {String} innerHTML
+		 * 
+		 * Alias of {@link #innerHtml}, accepted for consistency with the browser DOM api, but prefer the camelCased version
+		 * for acronym names.
+		 */
+		
+		
+		/**
+		 * @protected
+		 * @property {RegExp} whitespaceRegex
+		 * 
+		 * Regular expression used to match whitespace in a string of CSS classes.
+		 */
+		whitespaceRegex : /\s+/,
+		
+		
+		/**
+		 * @constructor
+		 * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
+		 */
+		constructor : function( cfg ) {
+			Autolinker.Util.assign( this, cfg );
+			
+			this.innerHtml = this.innerHtml || this.innerHTML;
+		},
+		
+		
+		/**
+		 * Sets the tag name that will be used to generate the tag with.
+		 * 
+		 * @param {String} tagName
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		setTagName : function( tagName ) {
+			this.tagName = tagName;
+			return this;
+		},
+		
+		
+		/**
+		 * Retrieves the tag name.
+		 * 
+		 * @return {String}
+		 */
+		getTagName : function() {
+			return this.tagName || "";
+		},
+		
+		
+		/**
+		 * Sets an attribute on the HtmlTag.
+		 * 
+		 * @param {String} attrName The attribute name to set.
+		 * @param {String} attrValue The attribute value to set.
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		setAttr : function( attrName, attrValue ) {
+			var tagAttrs = this.getAttrs();
+			tagAttrs[ attrName ] = attrValue;
+			
+			return this;
+		},
+		
+		
+		/**
+		 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
+		 * 
+		 * @param {String} name The attribute name to retrieve.
+		 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
+		 */
+		getAttr : function( attrName ) {
+			return this.getAttrs()[ attrName ];
+		},
+		
+		
+		/**
+		 * Sets one or more attributes on the HtmlTag.
+		 * 
+		 * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		setAttrs : function( attrs ) {
+			var tagAttrs = this.getAttrs();
+			Autolinker.Util.assign( tagAttrs, attrs );
+			
+			return this;
+		},
+		
+		
+		/**
+		 * Retrieves the attributes Object (map) for the HtmlTag.
+		 * 
+		 * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
+		 */
+		getAttrs : function() {
+			return this.attrs || ( this.attrs = {} );
+		},
+		
+		
+		/**
+		 * Sets the provided `cssClass`, overwriting any current CSS classes on the HtmlTag.
+		 * 
+		 * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		setClass : function( cssClass ) {
+			return this.setAttr( 'class', cssClass );
+		},
+		
+		
+		/**
+		 * Convenience method to add one or more CSS classes to the HtmlTag. Will not add duplicate CSS classes.
+		 * 
+		 * @param {String} cssClass One or more space-separated CSS classes to add.
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		addClass : function( cssClass ) {
+			var classAttr = this.getClass(),
+			    whitespaceRegex = this.whitespaceRegex,
+			    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
+			    newClasses = cssClass.split( whitespaceRegex ),
+			    newClass;
+			
+			while( newClass = newClasses.shift() ) {
+				if( classes.indexOf( newClass ) === -1 ) {
+					classes.push( newClass );
+				}
+			}
+			
+			this.getAttrs()[ 'class' ] = classes.join( " " );
+			return this;
+		},
+		
+		
+		/**
+		 * Convenience method to remove one or more CSS classes from the HtmlTag.
+		 * 
+		 * @param {String} cssClass One or more space-separated CSS classes to remove.
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		removeClass : function( cssClass ) {
+			var classAttr = this.getClass(),
+			    whitespaceRegex = this.whitespaceRegex,
+			    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
+			    removeClasses = cssClass.split( whitespaceRegex ),
+			    removeClass;
+			
+			while( classes.length && ( removeClass = removeClasses.shift() ) ) {
+				var idx = classes.indexOf( removeClass );
+				if( idx !== -1 ) {
+					classes.splice( idx, 1 );
+				}
+			}
+			
+			this.getAttrs()[ 'class' ] = classes.join( " " );
+			return this;
+		},
+		
+		
+		/**
+		 * Convenience method to retrieve the CSS class(es) for the HtmlTag, which will each be separated by spaces when
+		 * there are multiple.
+		 * 
+		 * @return {String}
+		 */
+		getClass : function() {
+			return this.getAttrs()[ 'class' ] || "";
+		},
+		
+		
+		/**
+		 * Convenience method to check if the tag has a CSS class or not.
+		 * 
+		 * @param {String} cssClass The CSS class to check for.
+		 * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
+		 */
+		hasClass : function( cssClass ) {
+			return ( ' ' + this.getClass() + ' ' ).indexOf( ' ' + cssClass + ' ' ) !== -1;
+		},
+		
+		
+		/**
+		 * Sets the inner HTML for the tag.
+		 * 
+		 * @param {String} html The inner HTML to set.
+		 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+		 */
+		setInnerHtml : function( html ) {
+			this.innerHtml = html;
+			
+			return this;
+		},
+		
+		
+		/**
+		 * Retrieves the inner HTML for the tag.
+		 * 
+		 * @return {String}
+		 */
+		getInnerHtml : function() {
+			return this.innerHtml || "";
+		},
+		
+		
+		/**
+		 * Override of superclass method used to generate the HTML string for the tag.
+		 * 
+		 * @return {String}
+		 */
+		toString : function() {
+			var tagName = this.getTagName(),
+			    attrsStr = this.getAttrsStr();
+			
+			attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
+			
+			return [ '<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>' ].join( "" );
+		},
+		
+		
+		/**
+		 * Support method for {@link #toString}, returns the string space-separated key="value" pairs, used to populate 
+		 * the stringified HtmlTag.
+		 * 
+		 * @protected
+		 * @return {String} Example return: 'attr1="value1" attr2="value2"'
+		 */
+		getAttrsStr : function() {
+			if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
+			
+			var attrs = this.getAttrs(),
+			    attrsArr = [];
+			
+			for( var prop in attrs ) {
+				if( attrs.hasOwnProperty( prop ) ) {
+					attrsArr.push( prop + '="' + attrs[ prop ] + '"' );
+				}
+			}
+			return attrsArr.join( " " );
+		}
+		
+	} );
+	/*jshint sub:true */
 	/**
 	 * @private
 	 * @class Autolinker.AnchorTagBuilder
 	 * @extends Object
 	 * 
-	 * Builds the anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
+	 * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
 	 */
 	Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		
@@ -728,36 +1056,41 @@
 		 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 		 * @param {String} anchorHref The href for the anchor tag.
 		 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
-		 * @return {String} The full HTML for the anchor tag.
+		 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 		 */
 		createAnchorTag : function( matchType, anchorHref, anchorText ) {
-			var attributesStr = this.createAnchorAttrsStr( matchType, anchorHref );
-			anchorText = this.processAnchorText( anchorText );
+			var tag = new Autolinker.HtmlTag( {
+				tagName   : 'a',
+				attrs     : this.createAttrs( matchType, anchorHref ),
+				innerHtml : this.processAnchorText( anchorText )
+			} );
 			
-			return '<a ' + attributesStr + '>' + anchorText + '</a>';
+			return tag;
 		},
 		
 		
 		/**
-		 * Creates the string which will be the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
+		 * Creates the Object (map) of the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
 		 * 
-		 * @private
+		 * @protected
 		 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 		 * @param {String} href The href for the anchor tag.
-		 * @return {String} The anchor tag's attribute. Ex: `href="http://google.com" class="myLink myLink-url" target="_blank"` 
+		 * @return {Object} A key/value Object (map) of the anchor tag's attributes. 
 		 */
-		createAnchorAttrsStr : function( matchType, anchorHref ) {
-			var attrs = [ 'href="' + anchorHref + '"' ];  // we'll always have the `href` attribute
+		createAttrs : function( matchType, anchorHref ) {
+			var attrs = {
+				'href' : anchorHref  // we'll always have the `href` attribute
+			};
 			
 			var cssClass = this.createCssClass( matchType );
 			if( cssClass ) {
-				attrs.push( 'class="' + cssClass + '"' );
+				attrs[ 'class' ] = cssClass;
 			}
 			if( this.newWindow ) {
-				attrs.push( 'target="_blank"' );
+				attrs[ 'target' ] = "_blank";
 			}
 			
-			return attrs.join( " " );
+			return attrs;
 		},
 		
 		
@@ -837,13 +1170,7 @@
 		 * @return {String} The truncated anchor text.
 		 */
 		doTruncate : function( anchorText ) {
-			var truncateLen = this.truncate;
-			
-			// Truncate the anchor text if it is longer than the provided 'truncate' option
-			if( truncateLen && anchorText.length > truncateLen ) {
-				anchorText = anchorText.substring( 0, truncateLen - 2 ) + '..';
-			}
-			return anchorText;
+			return Autolinker.Util.ellipsis( anchorText, this.truncate || Number.POSITIVE_INFINITY );
 		}
 		
 	} );

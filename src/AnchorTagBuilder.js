@@ -1,9 +1,10 @@
+/*jshint sub:true */
 /**
  * @private
  * @class Autolinker.AnchorTagBuilder
  * @extends Object
  * 
- * Builds the anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
+ * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
  */
 Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
@@ -56,36 +57,41 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 	 * @param {String} anchorHref The href for the anchor tag.
 	 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
-	 * @return {String} The full HTML for the anchor tag.
+	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
 	createAnchorTag : function( matchType, anchorHref, anchorText ) {
-		var attributesStr = this.createAnchorAttrsStr( matchType, anchorHref );
-		anchorText = this.processAnchorText( anchorText );
+		var tag = new Autolinker.HtmlTag( {
+			tagName   : 'a',
+			attrs     : this.createAttrs( matchType, anchorHref ),
+			innerHtml : this.processAnchorText( anchorText )
+		} );
 		
-		return '<a ' + attributesStr + '>' + anchorText + '</a>';
+		return tag;
 	},
 	
 	
 	/**
-	 * Creates the string which will be the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
+	 * Creates the Object (map) of the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
 	 * 
-	 * @private
+	 * @protected
 	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
 	 * @param {String} href The href for the anchor tag.
-	 * @return {String} The anchor tag's attribute. Ex: `href="http://google.com" class="myLink myLink-url" target="_blank"` 
+	 * @return {Object} A key/value Object (map) of the anchor tag's attributes. 
 	 */
-	createAnchorAttrsStr : function( matchType, anchorHref ) {
-		var attrs = [ 'href="' + anchorHref + '"' ];  // we'll always have the `href` attribute
+	createAttrs : function( matchType, anchorHref ) {
+		var attrs = {
+			'href' : anchorHref  // we'll always have the `href` attribute
+		};
 		
 		var cssClass = this.createCssClass( matchType );
 		if( cssClass ) {
-			attrs.push( 'class="' + cssClass + '"' );
+			attrs[ 'class' ] = cssClass;
 		}
 		if( this.newWindow ) {
-			attrs.push( 'target="_blank"' );
+			attrs[ 'target' ] = "_blank";
 		}
 		
-		return attrs.join( " " );
+		return attrs;
 	},
 	
 	
