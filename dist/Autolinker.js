@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.11.2
+ * 0.12.0
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -48,6 +48,23 @@
 	 *         truncate  : 30
 	 *     } );
 	 *     // produces: 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'
+	 * 
+	 * 
+	 * ## Custom Replacements of Links
+	 * 
+	 * If the configuration options do not provide enough flexibility, a {@link #replaceFn} may be provided to fully customize
+	 * the output of Autolinker. This function is called once for each URL/Email/Twitter handle match that is encountered.
+	 * 
+	 * For example:
+	 * 
+	 * 
+	 * 
+	 * The function may return the following values:
+	 * 
+	 * - `true` (Boolean): Allow Autolinker to replace the match as it normally would.
+	 * - `false` (Boolean): Do not replace the current match at all - leave as-is.
+	 * - Any string: If a string is returned from the function, the string will be used directly as the replacement HTML for
+	 *   the match.
 	 * 
 	 * @constructor
 	 * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
@@ -120,6 +137,14 @@
 		 * 3) Twitter links will have the CSS classes: "myLink myLink-twitter"
 		 */
 		className : "",
+			
+		/**
+		 * @cfg {Function} replaceFn
+		 * 
+		 * A function to individually process each URL/Email/Twitter match found in the input string.
+		 * 
+		 * See the class's description for usage.
+		 */
 		
 		
 		/**
@@ -385,13 +410,11 @@
 		 */
 		processTextNode : function( text ) {
 			var me = this,  // for closure
-			    invalidProtocolRelMatchRegex = this.invalidProtocolRelMatchRegex,
-			    charBeforeProtocolRelMatchRegex = this.charBeforeProtocolRelMatchRegex,
-			    anchorTagBuilder = this.getAnchorTagBuilder();
+			    charBeforeProtocolRelMatchRegex = this.charBeforeProtocolRelMatchRegex;
 			
 			return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7 ) {
 				var twitterMatch = $1,
-				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes
+				    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes.
 				    twitterHandle = $3,      // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
 				    emailAddressMatch = $4,  // For both determining if it is an email address, and stores the actual email address
 				    urlMatch = $5,           // The matched URL string
@@ -403,37 +426,31 @@
 				    match;  // Will be an Autolinker.Match object
 				
 				
-				// Return out with no changes for match types that are disabled (url, email, twitter), or for matches
-				// that are invalid.
+				// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
+				// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
 				if( !me.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolRelativeMatch ) ) {
 					return matchStr;
 				}
 				
-				
 				// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
-				// in the match. This handles cases like the string "wikipedia.com/something_(disambiguation)" (which should be auto-
-				// linked, and when it is enclosed in parenthesis itself, such as: "(wikipedia.com/something_(disambiguation))" (in
-				// which the outer parens should *not* be auto-linked.
-				var lastChar = matchStr.charAt( matchStr.length - 1 );
-				if( lastChar === ')' ) {
-					var openParensMatch = matchStr.match( /\(/g ),
-					    closeParensMatch = matchStr.match( /\)/g ),
-					    numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
-					    numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
-					
-					if( numOpenParens < numCloseParens ) {
-						matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
-						suffixStr = ")";  // this will be added after the <a> tag
-					}
+				// in the match itself. 
+				if( me.matchHasUnbalancedClosingParen( matchStr ) ) {
+					matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+					suffixStr = ")";  // this will be added after the generated <a> tag
 				}
 				
 				
-				if( twitterMatch ) {
-					prefixStr = twitterHandlePrefixWhitespaceChar;
-					match = new Autolinker.TwitterMatch( { twitterHandle: twitterHandle } );
+				if( emailAddressMatch ) {
+					match = new Autolinker.EmailMatch( { email: emailAddressMatch } );
 					
-				} else if( emailAddressMatch ) {
-					match = new Autolinker.EmailMatch( { emailAddress: emailAddressMatch } );
+				} else if( twitterMatch ) {
+					// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
+					// itself (since there are no look-behinds in JS regexes)
+					if( twitterHandlePrefixWhitespaceChar ) {
+						prefixStr = twitterHandlePrefixWhitespaceChar;
+						matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
+					}
+					match = new Autolinker.TwitterMatch( { twitterHandle: twitterHandle } );
 					
 				} else {  // url match
 					// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
@@ -441,18 +458,17 @@
 					if( protocolRelativeMatch ) {
 						var charBeforeMatch = protocolRelativeMatch.match( charBeforeProtocolRelMatchRegex )[ 1 ] || "";
 						
-						if( charBeforeMatch ) {
-							prefixStr = charBeforeMatch;  // re-add the character before the '//' to what will be placed before the generated <a> tag
-							matchStr = matchStr.slice( 1 );
+						if( charBeforeMatch ) {  // fix up the `matchStr` if there was a preceding char before a protocol-relative match, which was needed to determine the match itself (since there are no look-behinds in JS regexes)
+							prefixStr = charBeforeMatch;
+							matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 						}
 					}
-					
 					match = new Autolinker.UrlMatch( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
 				}
 	
-				// wrap the match in an anchor tag
-				var anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );
-				return prefixStr + anchorTag + suffixStr;
+				// Generate the replacement text for the match
+				var matchReturnVal = me.createMatchReturnVal( match, matchStr );
+				return prefixStr + matchReturnVal + suffixStr;
 			} );
 		},
 		
@@ -491,6 +507,74 @@
 			}
 			
 			return true;
+		},
+		
+		
+		/**
+		 * Determines if a match found has an unmatched closing parenthesis. If so, this parenthesis will be removed
+		 * from the match itself, and appended after the generated anchor tag in {@link #processTextNode}.
+		 * 
+		 * A match may have an extra closing parenthesis at the end of the match because the regular expression must include parenthesis
+		 * for URLs such as "wikipedia.com/something_(disambiguation)", which should be auto-linked. 
+		 * 
+		 * However, an extra parenthesis *will* be included when the URL itself is wrapped in parenthesis, such as in the case of
+		 * "(wikipedia.com/something_(disambiguation))". In this case, the last closing parenthesis should *not* be part of the URL 
+		 * itself, and this method will return `true`.
+		 * 
+		 * @private
+		 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
+		 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at the end of the `matchStr`, `false` otherwise.
+		 */
+		matchHasUnbalancedClosingParen : function( matchStr ) {
+			var lastChar = matchStr.charAt( matchStr.length - 1 );
+			
+			if( lastChar === ')' ) {
+				var openParensMatch = matchStr.match( /\(/g ),
+				    closeParensMatch = matchStr.match( /\)/g ),
+				    numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
+				    numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
+				
+				if( numOpenParens < numCloseParens ) {
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
+		
+		/**
+		 * Creates the return string value for a given match in the input string, for the {@link #processTextNode} method.
+		 * 
+		 * This method handles the {@link #replaceFn}, if one was provided.
+		 * 
+		 * @private
+		 * @param {Autolinker.Match} match The Match object that represents the match.
+		 * @param {String} matchStr The original match string, after having been preprocessed to fix match edge cases (see
+		 *   the `prefixStr` and `suffixStr` vars in {@link #processTextNode}.
+		 * @return {String} The string that the `match` should be replaced with. This is usually the anchor tag string, but
+		 *   may be the `matchStr` itself if the match is not to be replaced.
+		 */
+		createMatchReturnVal : function( match, matchStr ) {
+			// Handle a custom `replaceFn` being provided
+			var replaceFnResult;
+			if( this.replaceFn ) {
+				replaceFnResult = this.replaceFn.call( this, this, match );  // Autolinker instance is the context, and the first arg
+			}
+			
+			if( typeof replaceFnResult === 'string' ) {
+				return replaceFnResult;  // `replaceFn` returned a string, use that
+				
+			} else if( replaceFnResult === false ) {
+				return matchStr;  // no replacement for the match
+			
+			} else {  // replaceFnResult === true, or no/unknown return value from function
+				// Perform Autolinker's default anchor tag generation
+				var anchorTagBuilder = this.getAnchorTagBuilder(),
+				    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );
+				
+				return anchorTag;
+			}
 		}
 	
 	};
@@ -817,7 +901,7 @@
 	Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
 		
 		/**
-		 * @cfg {String} emailAddress (required)
+		 * @cfg {String} email (required)
 		 * 
 		 * The email address that was matched.
 		 */
@@ -838,8 +922,8 @@
 		 * 
 		 * @return {String}
 		 */
-		getEmailAddress : function() {
-			return this.emailAddress;
+		getEmail : function() {
+			return this.email;
 		},
 		
 	
@@ -849,7 +933,7 @@
 		 * @return {String}
 		 */
 		getAnchorHref : function() {
-			return 'mailto:' + this.emailAddress;
+			return 'mailto:' + this.email;
 		},
 		
 		
@@ -859,7 +943,7 @@
 		 * @return {String}
 		 */
 		getAnchorText : function() {
-			return this.emailAddress;
+			return this.email;
 		}
 		
 	} );

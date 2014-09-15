@@ -444,6 +444,12 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should properly link an email address in parenthesis", function() {
+				var result = autolinker.link( "Joe's email is (joe@joe.com)" );
+				expect( result ).toBe( 'Joe\'s email is (<a href="mailto:joe@joe.com">joe@joe.com</a>)' );
+			} );
+			
+			
 			it( "should NOT automatically link any old word with an @ character in it", function() {
 				var result = autolinker.link( "Hi there@stuff" );
 				expect( result ).toBe( 'Hi there@stuff' );
@@ -886,5 +892,93 @@ describe( "Autolinker", function() {
 			
 		} );
 		
+		
+		describe( "`replaceFn` option", function() {
+			var returnTrueFn = function() { return true; },
+			    returnFalseFn = function() { return false; };
+			
+			it( "should replace the match as Autolinker would normally do when `true` is returned from the `replaceFn`", function() {
+				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", { 
+					newWindow : false,  // just to suppress the target="_blank" from the output for this test
+					replaceFn : returnTrueFn
+				} );
+				
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+				].join( ", " ) );
+			} );
+			
+			
+			it( "should replace the match as Autolinker would normally do when there is no return value (i.e. `undefined` is returned) from the `replaceFn`", function() {
+				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", { 
+					newWindow : false,  // just to suppress the target="_blank" from the output for this test
+					replaceFn : function() {}  // no return value (`undefined` is returned)
+				} );
+				
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+				].join( ", " ) );
+			} );
+			
+			
+			it( "should leave the match as-is when `false` is returned from the `replaceFn`", function() {
+				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					replaceFn : returnFalseFn
+				} );
+				
+				expect( result ).toBe( [
+					'Website: asdf.com',
+					'Email: asdf@asdf.com',
+					'Twitter: @asdf'
+				].join( ", " ) );
+			} );
+			
+			
+			it( "should use a string returned from the `replaceFn` as the HTML that is replaced in the input", function() {
+				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					replaceFn : function() { return "test"; }
+				} );
+				
+				expect( result ).toBe( "Website: test, Email: test, Twitter: test" );
+			} );
+			
+			
+			describe( 'special cases which check the `prefixStr` and `suffixStr` vars in the code', function() {
+			
+				it( "should leave the match as-is when the `replaceFn` returns `false` for a Twitter match", function() {
+					var result = Autolinker.link( "@asdf", { replaceFn: returnFalseFn } );
+					expect( result ).toBe( "@asdf" );
+					
+					var result2 = Autolinker.link( "Twitter: @asdf", { replaceFn: returnFalseFn } );
+					expect( result2 ).toBe( "Twitter: @asdf" );
+				} );
+				
+				
+				it( "should leave the match as-is when the `replaceFn` returns `false`, and the URL was wrapped in parenthesis", function() {
+					var result = Autolinker.link( "Go to (yahoo.com) my friend", { replaceFn: returnFalseFn } );
+					expect( result ).toBe( "Go to (yahoo.com) my friend" );
+					
+					var result2 = Autolinker.link( "Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend", { replaceFn: returnFalseFn } );
+					expect( result2 ).toBe( "Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend" );
+					
+					var result3 = Autolinker.link( "Go to (en.wikipedia.org/wiki/IANA_(disambiguation)) my friend", { replaceFn: returnFalseFn } );
+					expect( result3 ).toBe( "Go to (en.wikipedia.org/wiki/IANA_(disambiguation)) my friend" );
+				} );
+				
+				
+				it( "should leave the match as-is when the `replaceFn` returns `false`, and the URL was a protocol-relative match", function() {
+					var result = Autolinker.link( "Go to //yahoo.com my friend", { replaceFn: returnFalseFn } );
+					expect( result ).toBe( "Go to //yahoo.com my friend" );
+				} );
+				
+			} );
+			
+		} );
+		
 	} );
+	
 } );

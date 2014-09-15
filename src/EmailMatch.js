@@ -7,7 +7,7 @@
 Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
 	
 	/**
-	 * @cfg {String} emailAddress (required)
+	 * @cfg {String} email (required)
 	 * 
 	 * The email address that was matched.
 	 */
@@ -28,8 +28,8 @@ Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
 	 * 
 	 * @return {String}
 	 */
-	getEmailAddress : function() {
-		return this.emailAddress;
+	getEmail : function() {
+		return this.email;
 	},
 	
 
@@ -39,7 +39,7 @@ Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return 'mailto:' + this.emailAddress;
+		return 'mailto:' + this.email;
 	},
 	
 	
@@ -49,7 +49,7 @@ Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		return this.emailAddress;
+		return this.email;
 	}
 	
 } );
