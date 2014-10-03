@@ -145,8 +145,10 @@ Autolinker.prototype = {
 	 * @property {RegExp} htmlCharacterEntities
 	 *
 	 * The regular expression that matches common HTML character entities.
+	 * 
+	 * Ignoring &amp; as it coule be part of a query string, handling it separately
 	 */
-	htmlCharacterEntities: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&amp;|&#38;)/i,
+	htmlCharacterEntities: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
 	
 	/**
 	 * @private
