@@ -153,12 +153,13 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	addClass : function( cssClass ) {
 		var classAttr = this.getClass(),
 		    whitespaceRegex = this.whitespaceRegex,
+		    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    newClasses = cssClass.split( whitespaceRegex ),
 		    newClass;
 		
 		while( newClass = newClasses.shift() ) {
-			if( classes.indexOf( newClass ) === -1 ) {
+			if( indexOf( classes, newClass ) === -1 ) {
 				classes.push( newClass );
 			}
 		}
@@ -177,12 +178,13 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	removeClass : function( cssClass ) {
 		var classAttr = this.getClass(),
 		    whitespaceRegex = this.whitespaceRegex,
+		    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    removeClasses = cssClass.split( whitespaceRegex ),
 		    removeClass;
 		
 		while( classes.length && ( removeClass = removeClasses.shift() ) ) {
-			var idx = classes.indexOf( removeClass );
+			var idx = indexOf( classes, removeClass );
 			if( idx !== -1 ) {
 				classes.splice( idx, 1 );
 			}

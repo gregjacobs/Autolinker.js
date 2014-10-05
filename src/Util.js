@@ -85,6 +85,27 @@ Autolinker.Util = {
 	
 	
 	/**
+	 * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
+	 * 
+	 * @param {Array} arr The array to find an element of.
+	 * @param {*} element The element to find in the array, and return the index of.
+	 * @return {Number} The index of the `element`, or -1 if it was not found.
+	 */
+	indexOf : function( arr, element ) {
+		if( Array.prototype.indexOf ) {
+			return arr.indexOf( element );
+			
+		} else {
+			for( var i = 0, len = arr.length; i < len; i++ ) {
+				if( arr[ i ] === element ) return i;
+			}
+			return -1;
+		}
+	},
+	
+	
+	
+	/**
 	 * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
 	 * with a regular expression that contains capturing parenthesis.
 	 * 

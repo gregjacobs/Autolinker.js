@@ -319,6 +319,7 @@
 			    resultHtml = [];
 			
 			htmlParser.parse( textOrHtml, {
+				// Process HTML nodes in the input `textOrHtml`
 				processHtmlNode : function( tagText, tagName, isClosingTag ) {
 					if( tagName === 'a' ) {
 						if( !isClosingTag ) {  // it's the start <a> tag
@@ -331,6 +332,7 @@
 					resultHtml.push( tagText );  // now add the text of the tag itself verbatim
 				},
 				
+				// Process text nodes in the input `textOrHtml`
 				processTextNode : function( text ) {
 					if( anchorTagStackCount === 0 ) {
 						// If we're not within an <a> tag, process the text node
@@ -702,6 +704,27 @@
 		
 		
 		/**
+		 * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
+		 * 
+		 * @param {Array} arr The array to find an element of.
+		 * @param {*} element The element to find in the array, and return the index of.
+		 * @return {Number} The index of the `element`, or -1 if it was not found.
+		 */
+		indexOf : function( arr, element ) {
+			if( Array.prototype.indexOf ) {
+				return arr.indexOf( element );
+				
+			} else {
+				for( var i = 0, len = arr.length; i < len; i++ ) {
+					if( arr[ i ] === element ) return i;
+				}
+				return -1;
+			}
+		},
+		
+		
+		
+		/**
 		 * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
 		 * with a regular expression that contains capturing parenthesis.
 		 * 
@@ -1003,12 +1026,13 @@
 		addClass : function( cssClass ) {
 			var classAttr = this.getClass(),
 			    whitespaceRegex = this.whitespaceRegex,
+			    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 			    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 			    newClasses = cssClass.split( whitespaceRegex ),
 			    newClass;
 			
 			while( newClass = newClasses.shift() ) {
-				if( classes.indexOf( newClass ) === -1 ) {
+				if( indexOf( classes, newClass ) === -1 ) {
 					classes.push( newClass );
 				}
 			}
@@ -1027,12 +1051,13 @@
 		removeClass : function( cssClass ) {
 			var classAttr = this.getClass(),
 			    whitespaceRegex = this.whitespaceRegex,
+			    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 			    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 			    removeClasses = cssClass.split( whitespaceRegex ),
 			    removeClass;
 			
 			while( classes.length && ( removeClass = removeClasses.shift() ) ) {
-				var idx = classes.indexOf( removeClass );
+				var idx = indexOf( classes, removeClass );
 				if( idx !== -1 ) {
 					classes.splice( idx, 1 );
 				}
