@@ -334,7 +334,7 @@
 				processTextNode : function( text ) {
 					if( anchorTagStackCount === 0 ) {
 						// If we're not within an <a> tag, process the text node
-						var unescapedText = text.split( htmlCharacterEntitiesRegex ); //split at html entities
+						var unescapedText = Autolinker.Util.splitAndCapture( text, htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
 						
 						for ( var i = 0, len = unescapedText.length; i < len; i++ ) {
 							var textToProcess = unescapedText[ i ],
@@ -615,7 +615,7 @@
 	
 	// Namespace for `match` classes
 	Autolinker.match = {};
-	/*jshint eqnull:true */
+	/*jshint eqnull:true, boss:true */
 	/**
 	 * @class Autolinker.Util
 	 * @singleton
@@ -698,6 +698,48 @@
 				str = str.substring( 0, truncateLen - ellipsisChars.length ) + ellipsisChars;
 			}
 			return str;
+		},
+		
+		
+		/**
+		 * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
+		 * with a regular expression that contains capturing parenthesis.
+		 * 
+		 * For example:
+		 * 
+		 *     // Modern browsers: 
+		 *     "a,b,c".split( /(,)/ );  // --> [ 'a', ',', 'b', ',', 'c' ]
+		 *     
+		 *     // Old IE (including IE8):
+		 *     "a,b,c".split( /(,)/ );  // --> [ 'a', 'b', 'c' ]
+		 *     
+		 * This method emulates the functionality of modern browsers for the old IE case.
+		 * 
+		 * @param {String} str The string to split.
+		 * @param {RegExp} splitRegex The regular expression to split the input `str` on. The splitting
+		 *   character(s) will be spliced into the array, as in the "modern browsers" example in the 
+		 *   description of this method. 
+		 *   Note #1: the supplied regular expression **must** have the 'g' flag specified.
+		 *   Note #2: for simplicity's sake, the regular expression does not need 
+		 *   to contain capturing parenthesis - it will be assumed that any match has them.
+		 * @return {String[]} The split array of strings, with the splitting character(s) included.
+		 */
+		splitAndCapture : function( str, splitRegex ) {
+			if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
+			
+			var result = [],
+			    lastIdx = 0,
+			    match;
+			
+			while( match = splitRegex.exec( str ) ) {
+				result.push( str.substring( lastIdx, match.index ) );
+				result.push( match[ 0 ] );  // push the splitting char(s)
+				
+				lastIdx = match.index + match[ 0 ].length;
+			}
+			result.push( str.substring( lastIdx ) );
+			
+			return result;
 		}
 		
 	};

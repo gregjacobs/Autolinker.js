@@ -298,6 +298,7 @@ Autolinker.prototype = {
 		    resultHtml = [];
 		
 		htmlParser.parse( textOrHtml, {
+			// Process HTML nodes in the input `textOrHtml`
 			processHtmlNode : function( tagText, tagName, isClosingTag ) {
 				if( tagName === 'a' ) {
 					if( !isClosingTag ) {  // it's the start <a> tag
@@ -310,10 +311,11 @@ Autolinker.prototype = {
 				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
 			},
 			
+			// Process text nodes in the input `textOrHtml`
 			processTextNode : function( text ) {
 				if( anchorTagStackCount === 0 ) {
 					// If we're not within an <a> tag, process the text node
-					var unescapedText = text.split( htmlCharacterEntitiesRegex ); //split at html entities
+					var unescapedText = Autolinker.Util.splitAndCapture( text, htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
 					
 					for ( var i = 0, len = unescapedText.length; i < len; i++ ) {
 						var textToProcess = unescapedText[ i ],
