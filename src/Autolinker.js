@@ -194,6 +194,16 @@ Autolinker.prototype = {
 			'>'
 		].join( "" ), 'g' );
 	} )(),
+
+	/**
+	 * @private
+	 * @property {RegExp} htmlCharacterEntities
+	 *
+	 * The regular expression that matches common HTML character entities.
+	 * 
+	 * Ignoring &amp; as it coule be part of a query string, handling it separately
+	 */
+	htmlCharacterEntities: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
 	
 	/**
 	 * @private
@@ -364,7 +374,11 @@ Autolinker.prototype = {
 		    inBetweenTagsText,
 		    lastIndex = 0,
 		    anchorTagStackCount = 0,
-		    resultHtml = [];
+		    resultHtml = [],
+			htmlCharacterEntities = this.htmlCharacterEntities,
+			unescapedText,
+			textToProcess,
+			i;
 		
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
@@ -373,27 +387,34 @@ Autolinker.prototype = {
 			
 			inBetweenTagsText = html.substring( lastIndex, currentResult.index );
 			lastIndex = currentResult.index + tagText.length;
-			
-			// Process around anchor tags, and any inner text / html they may have
-			if( tagName === 'a' ) {
-				if( !isClosingTag ) {  // it's the start <a> tag
-					anchorTagStackCount++;
-					resultHtml.push( this.processTextNode( inBetweenTagsText ) );
-					
-				} else {   // it's the end </a> tag
-					anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
-					if( anchorTagStackCount === 0 ) {
-						resultHtml.push( inBetweenTagsText );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
+
+			//split at html entities
+			unescapedText = inBetweenTagsText.split( htmlCharacterEntities );
+
+			for ( i = 0; i < unescapedText.length; i++ ) {
+				textToProcess = unescapedText[i];
+
+				// Process around anchor tags, and any inner text / html they may have
+				if( tagName === 'a' ) {
+					if( !isClosingTag ) {  // it's the start <a> tag
+						anchorTagStackCount++;
+						resultHtml.push( this.processTextNode( textToProcess ) );
+
+					} else {   // it's the end </a> tag
+						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
+						if( anchorTagStackCount === 0 ) {
+							resultHtml.push( textToProcess );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
+						}
 					}
+
+				} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
+					resultHtml.push( this.processTextNode( textToProcess ) );
+
+				} else {
+					// if we have a tag that is in between anchor tags (ex: <a href="..."><b>google.com</b></a>),
+					// just append the inner text
+					resultHtml.push( textToProcess );
 				}
-				
-			} else if( anchorTagStackCount === 0 ) {   // not within an anchor tag, link the "in between" text
-				resultHtml.push( this.processTextNode( inBetweenTagsText ) );
-				
-			} else {
-				// if we have a tag that is in between anchor tags (ex: <a href="..."><b>google.com</b></a>),
-				// just append the inner text
-				resultHtml.push( inBetweenTagsText );  
 			}
 			
 			resultHtml.push( tagText );  // now add the text of the tag itself verbatim
@@ -401,8 +422,14 @@ Autolinker.prototype = {
 		
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 		if( lastIndex < html.length ) {
-			var processedTextNode = this.processTextNode( html.substring( lastIndex ) );
-			resultHtml.push( processedTextNode );
+			//split at html entities
+			unescapedText = html.substring( lastIndex ).split( htmlCharacterEntities );
+
+			for ( i = 0; i < unescapedText.length; i++ ) {
+				textToProcess = unescapedText[i];
+				var processedTextNode = this.processTextNode( textToProcess );
+				resultHtml.push( processedTextNode );
+			}
 		}
 		
 		return resultHtml.join( "" );
