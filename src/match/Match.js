@@ -1,11 +1,11 @@
 /**
  * @private
  * @abstract
- * @class Autolinker.Match
+ * @class Autolinker.match.Match
  * 
  * Represents a match found in an input string which should be Autolinked.
  */
-Autolinker.Match = Autolinker.Util.extend( Object, {
+Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	
 	/**
 	 * @constructor

@@ -1,10 +1,10 @@
 /**
  * @private
- * @class Autolinker.EmailMatch
+ * @class Autolinker.match.Email
  * 
  * Represents a Email match found in an input string which should be Autolinked.
  */
-Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
+Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	
 	/**
 	 * @cfg {String} email (required)

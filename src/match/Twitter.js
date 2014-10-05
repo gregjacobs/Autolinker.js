@@ -1,10 +1,10 @@
 /**
  * @private
- * @class Autolinker.TwitterMatch
+ * @class Autolinker.match.Twitter
  * 
  * Represents a Twitter match found in an input string which should be Autolinked.
  */
-Autolinker.TwitterMatch = Autolinker.Util.extend( Autolinker.Match, {
+Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	
 	/**
 	 * @cfg {String} twitterHandle (required)

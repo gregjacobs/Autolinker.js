@@ -459,7 +459,7 @@ Autolinker.prototype = {
 			    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
 			    suffixStr = "",       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 			    
-			    match;  // Will be an Autolinker.Match object
+			    match;  // Will be an Autolinker.match.Match object
 			
 			
 			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
@@ -477,7 +477,7 @@ Autolinker.prototype = {
 			
 			
 			if( emailAddressMatch ) {
-				match = new Autolinker.EmailMatch( { email: emailAddressMatch } );
+				match = new Autolinker.match.Email( { email: emailAddressMatch } );
 				
 			} else if( twitterMatch ) {
 				// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
@@ -486,7 +486,7 @@ Autolinker.prototype = {
 					prefixStr = twitterHandlePrefixWhitespaceChar;
 					matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
 				}
-				match = new Autolinker.TwitterMatch( { twitterHandle: twitterHandle } );
+				match = new Autolinker.match.Twitter( { twitterHandle: twitterHandle } );
 				
 			} else {  // url match
 				// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
@@ -499,7 +499,7 @@ Autolinker.prototype = {
 						matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 					}
 				}
-				match = new Autolinker.UrlMatch( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
+				match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
 			}
 
 			// Generate the replacement text for the match
@@ -585,7 +585,7 @@ Autolinker.prototype = {
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 * 
 	 * @private
-	 * @param {Autolinker.Match} match The Match object that represents the match.
+	 * @param {Autolinker.match.Match} match The Match object that represents the match.
 	 * @param {String} matchStr The original match string, after having been preprocessed to fix match edge cases (see
 	 *   the `prefixStr` and `suffixStr` vars in {@link #processTextNode}.
 	 * @return {String} The string that the `match` should be replaced with. This is usually the anchor tag string, but
@@ -639,3 +639,7 @@ Autolinker.link = function( text, options ) {
 	var autolinker = new Autolinker( options );
 	return autolinker.link( text );
 };
+
+
+// Namespace for `match` classes
+Autolinker.match = {};

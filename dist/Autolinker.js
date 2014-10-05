@@ -218,13 +218,13 @@
 	
 		/**
 		 * @private
-		 * @property {RegExp} htmlCharacterEntities
+		 * @property {RegExp} htmlCharacterEntitiesRegex
 		 *
 		 * The regular expression that matches common HTML character entities.
 		 * 
-		 * Ignoring &amp; as it coule be part of a query string, handling it separately
+		 * Ignoring &amp; as it could be part of a query string -- handling it separately.
 		 */
-		htmlCharacterEntities: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
+		htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
 		
 		/**
 		 * @private
@@ -396,7 +396,7 @@
 			    lastIndex = 0,
 			    anchorTagStackCount = 0,
 			    resultHtml = [],
-				htmlCharacterEntities = this.htmlCharacterEntities,
+				htmlCharacterEntitiesRegex = this.htmlCharacterEntitiesRegex,
 				unescapedText,
 				textToProcess,
 				i;
@@ -410,18 +410,18 @@
 				lastIndex = currentResult.index + tagText.length;
 	
 				//split at html entities
-				unescapedText = inBetweenTagsText.split( htmlCharacterEntities );
+				unescapedText = inBetweenTagsText.split( htmlCharacterEntitiesRegex );
 	
 				for ( i = 0; i < unescapedText.length; i++ ) {
 					textToProcess = unescapedText[i];
 	
 					// Process around anchor tags, and any inner text / html they may have
 					if( tagName === 'a' ) {
-						if( !isClosingTag ) {  // its the start <a> tag
+						if( !isClosingTag ) {  // it's the start <a> tag
 							anchorTagStackCount++;
 							resultHtml.push( this.processTextNode( textToProcess ) );
 	
-						} else {   // its the end </a> tag
+						} else {   // it's the end </a> tag
 							anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 							if( anchorTagStackCount === 0 ) {
 								resultHtml.push( textToProcess );  // We hit the matching </a> tag, simply add all of the text from the start <a> tag to the end </a> tag without linking it
@@ -444,7 +444,7 @@
 			// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 			if( lastIndex < html.length ) {
 				//split at html entities
-				unescapedText = html.substring( lastIndex ).split( htmlCharacterEntities );
+				unescapedText = html.substring( lastIndex ).split( htmlCharacterEntitiesRegex );
 	
 				for ( i = 0; i < unescapedText.length; i++ ) {
 					textToProcess = unescapedText[i];
@@ -480,7 +480,7 @@
 				    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
 				    suffixStr = "",       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 				    
-				    match;  // Will be an Autolinker.Match object
+				    match;  // Will be an Autolinker.match.Match object
 				
 				
 				// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
@@ -498,7 +498,7 @@
 				
 				
 				if( emailAddressMatch ) {
-					match = new Autolinker.EmailMatch( { email: emailAddressMatch } );
+					match = new Autolinker.match.Email( { email: emailAddressMatch } );
 					
 				} else if( twitterMatch ) {
 					// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
@@ -507,7 +507,7 @@
 						prefixStr = twitterHandlePrefixWhitespaceChar;
 						matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
 					}
-					match = new Autolinker.TwitterMatch( { twitterHandle: twitterHandle } );
+					match = new Autolinker.match.Twitter( { twitterHandle: twitterHandle } );
 					
 				} else {  // url match
 					// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
@@ -520,7 +520,7 @@
 							matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 						}
 					}
-					match = new Autolinker.UrlMatch( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
+					match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
 				}
 	
 				// Generate the replacement text for the match
@@ -606,7 +606,7 @@
 		 * This method handles the {@link #replaceFn}, if one was provided.
 		 * 
 		 * @private
-		 * @param {Autolinker.Match} match The Match object that represents the match.
+		 * @param {Autolinker.match.Match} match The Match object that represents the match.
 		 * @param {String} matchStr The original match string, after having been preprocessed to fix match edge cases (see
 		 *   the `prefixStr` and `suffixStr` vars in {@link #processTextNode}.
 		 * @return {String} The string that the `match` should be replaced with. This is usually the anchor tag string, but
@@ -661,6 +661,9 @@
 		return autolinker.link( text );
 	};
 	
+	
+	// Namespace for `match` classes
+	Autolinker.match = {};
 	/*jshint eqnull:true */
 	/**
 	 * @class Autolinker.Util
@@ -806,7 +809,7 @@
 		constructor : function( cfg ) {
 			Autolinker.Util.assign( this, cfg );
 			
-			this.innerHtml = this.innerHtml || this.innerHTML;
+			this.innerHtml = this.innerHtml || this.innerHTML;  // accept either the camelCased form or the fully capitalized acronym
 		},
 		
 		
@@ -994,7 +997,7 @@
 		 */
 		toString : function() {
 			var tagName = this.getTagName(),
-			    attrsStr = this.getAttrsStr();
+			    attrsStr = this.buildAttrsStr();
 			
 			attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
 			
@@ -1007,9 +1010,9 @@
 		 * the stringified HtmlTag.
 		 * 
 		 * @protected
-		 * @return {String} Example return: 'attr1="value1" attr2="value2"'
+		 * @return {String} Example return: `attr1="value1" attr2="value2"`
 		 */
-		getAttrsStr : function() {
+		buildAttrsStr : function() {
 			if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
 			
 			var attrs = this.getAttrs(),
@@ -1204,11 +1207,11 @@
 	/**
 	 * @private
 	 * @abstract
-	 * @class Autolinker.Match
+	 * @class Autolinker.match.Match
 	 * 
 	 * Represents a match found in an input string which should be Autolinked.
 	 */
-	Autolinker.Match = Autolinker.Util.extend( Object, {
+	Autolinker.match.Match = Autolinker.Util.extend( Object, {
 		
 		/**
 		 * @constructor
@@ -1248,11 +1251,11 @@
 	} );
 	/**
 	 * @private
-	 * @class Autolinker.EmailMatch
+	 * @class Autolinker.match.Email
 	 * 
 	 * Represents a Email match found in an input string which should be Autolinked.
 	 */
-	Autolinker.EmailMatch = Autolinker.Util.extend( Autolinker.Match, {
+	Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 		
 		/**
 		 * @cfg {String} email (required)
@@ -1303,11 +1306,11 @@
 	} );
 	/**
 	 * @private
-	 * @class Autolinker.TwitterMatch
+	 * @class Autolinker.match.Twitter
 	 * 
 	 * Represents a Twitter match found in an input string which should be Autolinked.
 	 */
-	Autolinker.TwitterMatch = Autolinker.Util.extend( Autolinker.Match, {
+	Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 		
 		/**
 		 * @cfg {String} twitterHandle (required)
@@ -1358,11 +1361,11 @@
 	} );
 	/**
 	 * @private
-	 * @class Autolinker.TwitterMatch
+	 * @class Autolinker.match.Twitter
 	 * 
 	 * Represents a Url match found in an input string which should be Autolinked.
 	 */
-	Autolinker.UrlMatch = Autolinker.Util.extend( Autolinker.Match, {
+	Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		
 		/**
 		 * @cfg {String} url (required)
