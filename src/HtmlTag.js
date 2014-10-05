@@ -57,7 +57,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
 		
-		this.innerHtml = this.innerHtml || this.innerHTML;
+		this.innerHtml = this.innerHtml || this.innerHTML;  // accept either the camelCased form or the fully capitalized acronym
 	},
 	
 	
@@ -245,7 +245,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 */
 	toString : function() {
 		var tagName = this.getTagName(),
-		    attrsStr = this.getAttrsStr();
+		    attrsStr = this.buildAttrsStr();
 		
 		attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
 		
@@ -258,9 +258,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * the stringified HtmlTag.
 	 * 
 	 * @protected
-	 * @return {String} Example return: 'attr1="value1" attr2="value2"'
+	 * @return {String} Example return: `attr1="value1" attr2="value2"`
 	 */
-	getAttrsStr : function() {
+	buildAttrsStr : function() {
 		if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
 		
 		var attrs = this.getAttrs(),

@@ -197,13 +197,13 @@ Autolinker.prototype = {
 
 	/**
 	 * @private
-	 * @property {RegExp} htmlCharacterEntities
+	 * @property {RegExp} htmlCharacterEntitiesRegex
 	 *
 	 * The regular expression that matches common HTML character entities.
 	 * 
-	 * Ignoring &amp; as it coule be part of a query string, handling it separately
+	 * Ignoring &amp; as it could be part of a query string -- handling it separately.
 	 */
-	htmlCharacterEntities: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
+	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/i,
 	
 	/**
 	 * @private
@@ -375,7 +375,7 @@ Autolinker.prototype = {
 		    lastIndex = 0,
 		    anchorTagStackCount = 0,
 		    resultHtml = [],
-			htmlCharacterEntities = this.htmlCharacterEntities,
+			htmlCharacterEntitiesRegex = this.htmlCharacterEntitiesRegex,
 			unescapedText,
 			textToProcess,
 			i;
@@ -389,7 +389,7 @@ Autolinker.prototype = {
 			lastIndex = currentResult.index + tagText.length;
 
 			//split at html entities
-			unescapedText = inBetweenTagsText.split( htmlCharacterEntities );
+			unescapedText = inBetweenTagsText.split( htmlCharacterEntitiesRegex );
 
 			for ( i = 0; i < unescapedText.length; i++ ) {
 				textToProcess = unescapedText[i];
@@ -423,7 +423,7 @@ Autolinker.prototype = {
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 		if( lastIndex < html.length ) {
 			//split at html entities
-			unescapedText = html.substring( lastIndex ).split( htmlCharacterEntities );
+			unescapedText = html.substring( lastIndex ).split( htmlCharacterEntitiesRegex );
 
 			for ( i = 0; i < unescapedText.length; i++ ) {
 				textToProcess = unescapedText[i];
