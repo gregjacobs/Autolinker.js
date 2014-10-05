@@ -73,7 +73,8 @@ Autolinker.UrlMatch = Autolinker.Util.extend( Autolinker.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return this.getUrl();
+		var url = this.getUrl();
+		return url.replace('&amp;', '&');
 	},
 	
 	
