@@ -47,6 +47,7 @@ module.exports = function(grunt) {
 					'src/umdBegin.js',
 					'src/Autolinker.js',
 					'src/Util.js',
+					'src/HtmlParser.js',
 					'src/HtmlTag.js',
 					'src/AnchorTagBuilder.js',
 					'src/match/Match.js',

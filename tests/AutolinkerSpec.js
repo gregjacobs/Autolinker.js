@@ -743,19 +743,29 @@ describe( "Autolinker", function() {
 					'<a href="http://twitter.com">twitter.com</a>'            // autolinked text
 				].join( "" ) );
 			} );
+			
 
 			it( "should handle &nbsp; after a url and not treat it as a query string", function() {
-				var html = "<p>Joe went to yahoo.com&nbsp;and google.com</p>";
+				var html = "<p>Joe went to yahoo.com&nbsp;and google.com&nbsp;today</p>";
 
 				var result = autolinker.link( html );
-				expect( result ).toBe('<p>Joe went to <a href="http://yahoo.com">yahoo.com</a>&nbsp;and <a href="http://google.com">google.com</a></p>');
+				expect( result ).toBe('<p>Joe went to <a href="http://yahoo.com">yahoo.com</a>&nbsp;and <a href="http://google.com">google.com</a>&nbsp;today</p>');
 			} );
+			
+
+			it( "should handle HTML entities like &nbsp; within a non-autolinked part of a text node, properly appending it to the output", function() {
+				var html = "Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com";
+
+				var result = autolinker.link( html );
+				expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a> and used HTML&nbsp;entities like &gt; and &lt; <a href="http://google.com">google.com</a>');
+			} );
+			
 			
 			it( "should handle &amp; inside a url and not ignore it", function() {
 				var html = "<p>Joe went to example.com?arg=1&amp;arg=2</p>";
 				
 				var result = autolinker.link( html );
-				expect( result ).toBe('<p>Joe went to <a href="http://example.com?arg=1&arg=2">example.com?arg=1&amp;arg=2</a></p>');
+				expect( result ).toBe( '<p>Joe went to <a href="http://example.com?arg=1&arg=2">example.com?arg=1&amp;arg=2</a></p>' );
 			} );
 
 		} );

@@ -70,6 +70,9 @@ var autolinker = new Autolinker( [ options ] );
 var linkedText = autolinker.link( textToAutoLink );
 ```
 
+Note: if using the same options to autolink multiple pieces of html/text, it is slightly more efficient to create a single
+Autolinker instance, and run the `link()` method repeatedly (i.e. use the "class" form above).
+
 	
 #### Example:
 
