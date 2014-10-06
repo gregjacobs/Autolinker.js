@@ -1,3 +1,4 @@
+/*global Autolinker */
 /**
  * @private
  * @abstract

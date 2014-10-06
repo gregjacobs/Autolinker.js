@@ -1,3 +1,4 @@
+/*global Autolinker */
 /*jshint boss:true */
 /**
  * @class Autolinker.HtmlTag

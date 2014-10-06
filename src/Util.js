@@ -1,3 +1,4 @@
+/*global Autolinker */
 /*jshint eqnull:true, boss:true */
 /**
  * @class Autolinker.Util

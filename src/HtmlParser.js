@@ -1,3 +1,4 @@
+/*global Autolinker */
 /**
  * @class Autolinker.HtmlParser
  * @extends Object
