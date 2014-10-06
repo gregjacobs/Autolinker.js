@@ -222,7 +222,7 @@ A replacement of the match is made based on the return value of the function. Th
 
 ## Full API Docs
 
-The full API docs for Autolinker may be referenced at <a href="http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker" target="_blank">http://gregjacobs.github.io/Autolinker.js/docs/</a>
+The full API docs for Autolinker may be referenced at: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)
 
 
 ## Changelog:
