@@ -4,7 +4,75 @@
  * @class Autolinker.HtmlTag
  * @extends Object
  * 
- * Represents an HTML tag, which can be used to build HTML tags piece-by-piece programmatically.
+ * Represents an HTML tag, which can be used to easily build/modify HTML tags programmatically.
+ * 
+ * Autolinker uses this abstraction to create HTML tags, and then write them out as strings. You may also use
+ * this class in your code, especially within a {@link Autolinker#replaceFn replaceFn}.
+ * 
+ * ## Examples
+ * 
+ * Example instantiation:
+ * 
+ *     var tag = new Autolinker.HtmlTag( {
+ *         tagName : 'a',
+ *         attrs   : { 'href': 'http://google.com', 'class': 'external-link' },
+ *         innerHtml : 'Google'
+ *     } );
+ *     
+ *     tag.toString();  // <a href="http://google.com" class="external-link">Google</a>
+ *     
+ *     // Individual accessor methods
+ *     tag.getTagName();                 // 'a'
+ *     tag.getAttr( 'href' );            // 'http://google.com'
+ *     tag.hasClass( 'external-link' );  // true
+ * 
+ * 
+ * Using mutator methods (which may be used in combination with instantiation config properties):
+ * 
+ *     var tag = new Autolinker.HtmlTag();
+ *     tag.setTagName( 'a' );
+ *     tag.setAttr( 'href', 'http://google.com' );
+ *     tag.addClass( 'external-link' );
+ *     tag.setInnerHtml( 'Google' );
+ *     
+ *     tag.getTagName();                 // 'a'
+ *     tag.getAttr( 'href' );            // 'http://google.com'
+ *     tag.hasClass( 'external-link' );  // true
+ *     
+ *     tag.toString();  // <a href="http://google.com" class="external-link">Google</a>
+ *     
+ * 
+ * ## Example use within a {@link Autolinker#replaceFn replaceFn}
+ * 
+ *     var html = Autolinker.link( "Test google.com", {
+ *         replaceFn : function( autolinker, match ) {
+ *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance, configured with the Match's href and anchor text
+ *             tag.setAttr( 'rel', 'nofollow' );
+ *             
+ *             return tag;
+ *         }
+ *     } );
+ *     
+ *     // generated html:
+ *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
+ *     
+ *     
+ * ## Example use with a new tag for the replacement
+ * 
+ *     var html = Autolinker.link( "Test google.com", {
+ *         replaceFn : function( autolinker, match ) {
+ *             var tag = new Autolinker.HtmlTag( {
+ *                 tagName : 'button',
+ *                 attrs   : { 'title': 'Load URL: ' + match.getAnchorHref() },
+ *                 innerHtml : 'Load URL: ' + match.getAnchorText()
+ *             } );
+ *             
+ *             return tag;
+ *         }
+ *     } );
+ *     
+ *     // generated html:
+ *     //   Test <button title="Load URL: http://google.com">Load URL: google.com</button>
  */
 Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	

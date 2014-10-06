@@ -1,7 +1,9 @@
-/*global module */
+/*global require, module */
+/*jshint devel:true */
 module.exports = function(grunt) {
 	'use strict';
 	
+	var exec = require( 'child_process' ).exec;
 	var banner = createBanner();
 	
 	// Project configuration.
@@ -69,6 +71,23 @@ module.exports = function(grunt) {
 				src: [ 'dist/Autolinker.js' ],
 				dest: 'dist/Autolinker.min.js',
 			}
+		},
+		
+		jsduck: {
+			main: {
+				// source paths with your code
+				src: [
+					'src/**/*.js'
+				],
+		
+				// docs output dir
+				dest: 'docs',
+		
+				// extra options
+				options: {
+					'title': 'Autolinker API Docs'
+				}
+			}
 		}
 	} );
 
@@ -78,13 +97,13 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
+	grunt.loadNpmTasks( 'grunt-jsduck' );
 
 	// Tasks
-	grunt.registerTask( 'default', [ 'lint', 'build', 'doTest' ] );
-	grunt.registerTask( 'lint', [ 'jshint' ] );
-	grunt.registerTask( 'test', [ 'build', 'doTest' ] );
-	grunt.registerTask( 'doTest', [ 'jasmine' ] );
+	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
 	grunt.registerTask( 'build', [ 'concat:development', 'uglify:production' ] );
+	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
+	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
 	
 	

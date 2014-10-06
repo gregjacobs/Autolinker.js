@@ -34,6 +34,7 @@
     "requirejs": "^2.1.11",
     "grunt-contrib-uglify": "^0.4.0",
     "grunt-contrib-concat": "^0.4.0",
-    "grunt-contrib-jshint": "^0.10.0"
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-jsduck": "^1.0.1"
   }
 }

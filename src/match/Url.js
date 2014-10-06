@@ -1,9 +1,11 @@
 /*global Autolinker */
 /**
- * @private
- * @class Autolinker.match.Twitter
+ * @class Autolinker.match.Url
+ * @extends Autolinker.match.Match
  * 
  * Represents a Url match found in an input string which should be Autolinked.
+ * 
+ * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
 Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	
@@ -22,8 +24,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	
 	/**
 	 * @cfg {Boolean} stripPrefix (required)
-	 * 
-	 * See {@link Autolinker#stripPrefix} for details.
+	 * @inheritdoc {@link Autolinker#stripPrefix}
 	 */
 	
 
@@ -158,6 +159,6 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
-	},
+	}
 	
 } );

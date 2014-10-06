@@ -6,25 +6,38 @@
  * @extends Object
  * 
  * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
+ * 
+ * Normally this class is instantiated, configured, and used internally by an {@link Autolinker} instance, but may 
+ * actually be retrieved in a {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag} instances
+ * which may be modified before returning from the {@link Autolinker#replaceFn replaceFn}. For example:
+ * 
+ *     var html = Autolinker.link( "Test google.com", {
+ *         replaceFn : function( autolinker, match ) {
+ *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+ *             tag.setAttr( 'rel', 'nofollow' );
+ *             
+ *             return tag;
+ *         }
+ *     } );
+ *     
+ *     // generated html:
+ *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
  */
 Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
 	/**
 	 * @cfg {Boolean} newWindow
-	 * 
-	 * See {@link Autolinker#newWindow} for details.
+	 * @inheritdoc Autolinker#newWindow
 	 */
 	
 	/**
 	 * @cfg {Number} truncate
-	 * 
-	 * See {@link Autolinker#truncate} for details.
+	 * @inheritdoc Autolinker#truncate
 	 */
 	
 	/**
 	 * @cfg {String} className
-	 * 
-	 * See {@link Autolinker#className} for details.
+	 * @inheritdoc Autolinker#className
 	 */
 	
 	
@@ -100,8 +113,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
 	
 	/**
-	 * Processes the `anchorText` by stripping the URL prefix (if {@link #stripPrefix} is `true`), removing
-	 * any trailing slash, and truncating the text according to the {@link #truncate} config.
+	 * Processes the `anchorText` by truncating the text according to the {@link #truncate} config.
 	 * 
 	 * @private
 	 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).

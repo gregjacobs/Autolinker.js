@@ -1,9 +1,11 @@
 /*global Autolinker */
 /**
- * @private
  * @class Autolinker.match.Twitter
+ * @extends Autolinker.match.Match
  * 
  * Represents a Twitter match found in an input string which should be Autolinked.
+ * 
+ * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
 Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	

@@ -36,44 +36,55 @@
  * 
  * For example:
  * 
- * var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
- * 
- * var linkedText = Autolinker.link( input, {
- *     replaceFn : function( autolinker, match ) {
- *         console.log( "href = ", match.getAnchorHref() );
- *         console.log( "text = ", match.getAnchorText() );
+ *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
  *     
- *         switch( match.getType() ) {
- *             case 'url' : 
- *                 console.log( "url: ", match.getUrl() );
- *                 return true;  // let Autolinker perform its normal anchor tag replacement
+ *     var linkedText = Autolinker.link( input, {
+ *         replaceFn : function( autolinker, match ) {
+ *             console.log( "href = ", match.getAnchorHref() );
+ *             console.log( "text = ", match.getAnchorText() );
+ *         
+ *             switch( match.getType() ) {
+ *                 case 'url' : 
+ *                     console.log( "url: ", match.getUrl() );
+ *                     
+ *                     if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
+ *                         var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+ *                         tag.setAttr( 'rel', 'nofollow' );
+ *                         tag.addClass( 'external-link' );
+ *                         
+ *                         return tag;
+ *                         
+ *                     } else {
+ *                         return true;  // let Autolinker perform its normal anchor tag replacement
+ *                     }
+ *                     
+ *                 case 'email' :
+ *                     var email = match.getEmail();
+ *                     console.log( "email: ", email );
+ *                     
+ *                     if( email === "my@own.address" ) {
+ *                         return false;  // don't auto-link this particular email address; leave as-is
+ *                     } else {
+ *                         return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
+ *                     }
  *                 
- *             case 'email' :
- *                 var email = match.getEmail();
- *                 console.log( "email: ", email );
- *                 
- *                 if( email === "my@own.address" ) {
- *                     return false;  // don't auto-link this particular email address; leave as-is
- *                 } else {
- *                     return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
- *                 }
- *             
- *             case 'twitter' :
- *                 var twitterHandle = match.getTwitterHandle();
- *                 console.log( twitterHandle );
- *                 
- *                 return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+ *                 case 'twitter' :
+ *                     var twitterHandle = match.getTwitterHandle();
+ *                     console.log( twitterHandle );
+ *                     
+ *                     return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+ *             }
  *         }
- *     }
- * } );
+ *     } );
  * 
  * 
  * The function may return the following values:
  * 
  * - `true` (Boolean): Allow Autolinker to replace the match as it normally would.
  * - `false` (Boolean): Do not replace the current match at all - leave as-is.
- * - Any string: If a string is returned from the function, the string will be used directly as the replacement HTML for
+ * - Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
  *   the match.
+ * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
  * 
  * @constructor
  * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
@@ -141,9 +152,9 @@ Autolinker.prototype = {
 	 * 
 	 * For example, if this config is provided as "myLink", then:
 	 * 
-	 * 1) URL links will have the CSS classes: "myLink myLink-url"
-	 * 2) Email links will have the CSS classes: "myLink myLink-email", and
-	 * 3) Twitter links will have the CSS classes: "myLink myLink-twitter"
+	 * - URL links will have the CSS classes: "myLink myLink-url"
+	 * - Email links will have the CSS classes: "myLink myLink-email", and
+	 * - Twitter links will have the CSS classes: "myLink myLink-twitter"
 	 */
 	className : "",
 		
@@ -153,6 +164,14 @@ Autolinker.prototype = {
 	 * A function to individually process each URL/Email/Twitter match found in the input string.
 	 * 
 	 * See the class's description for usage.
+	 * 
+	 * This function is called with the following parameters:
+	 * 
+	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may be used to retrieve child objects from (such
+	 *   as the instance's {@link #getTagBuilder tag builder}).
+	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which can be used to retrieve information about the
+	 *   {@link Autolinker.match.Url URL}/{@link Autolinker.match.Email email}/{@link Autolinker.match.Twitter Twitter}
+	 *   match that the `replaceFn` is currently processing.
 	 */
 	
 	
@@ -174,10 +193,10 @@ Autolinker.prototype = {
 	 * 
 	 * This regular expression has the following capturing groups:
 	 * 
-	 * 1. Group that is used to determine if there is a Twitter handle match (i.e. @someTwitterUser). Simply check for its 
+	 * 1. Group that is used to determine if there is a Twitter handle match (i.e. \@someTwitterUser). Simply check for its 
 	 *    existence to determine if there is a Twitter handle match. The next couple of capturing groups give information 
 	 *    about the Twitter handle match.
-	 * 2. The whitespace character before the @sign in a Twitter handle. This is needed because there are no lookbehinds in
+	 * 2. The whitespace character before the \@sign in a Twitter handle. This is needed because there are no lookbehinds in
 	 *    JS regular expressions, and can be used to reconstruct the original string in a replace().
 	 * 3. The Twitter handle itself in a Twitter match. If the match is '@someTwitterUser', the handle is 'someTwitterUser'.
 	 * 4. Group that matches an email address. Used to determine if the match is an email address, as well as holding the full 
@@ -280,6 +299,14 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
+	 * @property {Autolinker.HtmlParser} htmlParser
+	 * 
+	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
+	 * in the {@link #getHtmlParser} method.
+	 */
+	
+	/**
+	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
 	 * 
 	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
@@ -365,6 +392,21 @@ Autolinker.prototype = {
 	/**
 	 * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
 	 * if it does not yet exist.
+	 * 
+	 * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that 
+	 * Autolinker would normally generate, and then allow for modifications before returning it. For example:
+	 * 
+	 *     var html = Autolinker.link( "Test google.com", {
+	 *         replaceFn : function( autolinker, match ) {
+	 *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+	 *             tag.setAttr( 'rel', 'nofollow' );
+	 *             
+	 *             return tag;
+	 *         }
+	 *     } );
+	 *     
+	 *     // generated html:
+	 *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
 	 * 
 	 * @return {Autolinker.AnchorTagBuilder}
 	 */

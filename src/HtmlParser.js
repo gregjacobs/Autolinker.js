@@ -1,12 +1,13 @@
 /*global Autolinker */
 /**
+ * @private
  * @class Autolinker.HtmlParser
  * @extends Object
  * 
- * An HTML parser which simply walks an HTML string and calls the provided visitor functions to process HTML 
- * and text nodes.
+ * An HTML parser implementation which simply walks an HTML string and calls the provided visitor functions to process 
+ * HTML and text nodes.
  * 
- * Autolinker uses this to only link URLs/emails/Twitter handles in text nodes, basically ignoring HTML tags.
+ * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, basically ignoring HTML tags.
  */
 Autolinker.HtmlParser = Autolinker.Util.extend( Object, {
 	

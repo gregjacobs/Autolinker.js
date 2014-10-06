@@ -1,9 +1,11 @@
 /*global Autolinker */
 /**
- * @private
  * @class Autolinker.match.Email
+ * @extends Autolinker.match.Match
  * 
  * Represents a Email match found in an input string which should be Autolinked.
+ * 
+ * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
 Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	

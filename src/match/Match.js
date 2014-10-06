@@ -1,10 +1,34 @@
 /*global Autolinker */
 /**
- * @private
  * @abstract
  * @class Autolinker.match.Match
  * 
- * Represents a match found in an input string which should be Autolinked.
+ * Represents a match found in an input string which should be Autolinked. A Match object is what is provided in a 
+ * {@link Autolinker#replaceFn replaceFn}, and may be used to query for details about the match.
+ * 
+ * For example:
+ * 
+ *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+ *     
+ *     var linkedText = Autolinker.link( input, {
+ *         replaceFn : function( autolinker, match ) {
+ *             console.log( "href = ", match.getAnchorHref() );
+ *             console.log( "text = ", match.getAnchorText() );
+ *         
+ *             switch( match.getType() ) {
+ *                 case 'url' : 
+ *                     console.log( "url: ", match.getUrl() );
+ *                     
+ *                 case 'email' :
+ *                     console.log( "email: ", match.getEmail() );
+ *                     
+ *                 case 'twitter' :
+ *                     console.log( "twitter: ", match.getTwitterHandle() );
+ *             }
+ *         }
+ *     } );
+ *     
+ * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
  */
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	
