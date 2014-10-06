@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.12.1
+ * 0.12.2
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -1408,7 +1408,7 @@
 	 * @class Autolinker.match.Match
 	 * 
 	 * Represents a match found in an input string which should be Autolinked. A Match object is what is provided in a 
-	 * {@link Autolinker#replaceFn replaceFn}, which may be used to query for details about the match.
+	 * {@link Autolinker#replaceFn replaceFn}, and may be used to query for details about the match.
 	 * 
 	 * For example:
 	 * 
@@ -1614,8 +1614,7 @@
 		
 		/**
 		 * @cfg {Boolean} stripPrefix (required)
-		 * 
-		 * See {@link Autolinker#stripPrefix} for details.
+		 * @inheritdoc {@link Autolinker#stripPrefix}
 		 */
 		
 	
