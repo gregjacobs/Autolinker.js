@@ -1,3 +1,4 @@
+/*global Autolinker */
 /*jshint sub:true */
 /**
  * @private
@@ -15,12 +16,6 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 	
 	/**
-	 * @cfg {Boolean} stripPrefix
-	 * 
-	 * See {@link Autolinker#stripPrefix} for details.
-	 */
-	
-	/**
 	 * @cfg {Number} truncate
 	 * 
 	 * See {@link Autolinker#truncate} for details.
@@ -31,15 +26,6 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * 
 	 * See {@link Autolinker#className} for details.
 	 */
-	
-
-	/**
-	 * @private
-	 * @property {RegExp} urlPrefixRegex
-	 * 
-	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
-	 */
-	urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 	
 	
 	/**
@@ -54,16 +40,14 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	/**
 	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
 	 * 
-	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
-	 * @param {String} anchorHref The href for the anchor tag.
-	 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
+	 * @param {Autolinker.match.Match} match The Match instance to generate an anchor tag from.
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
-	createAnchorTag : function( matchType, anchorHref, anchorText ) {
+	createAnchorTag : function( match ) {
 		var tag = new Autolinker.HtmlTag( {
 			tagName   : 'a',
-			attrs     : this.createAttrs( matchType, anchorHref ),
-			innerHtml : this.processAnchorText( anchorText )
+			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
+			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
 		
 		return tag;
@@ -123,41 +107,8 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {String} The processed `anchorText`.
 	 */
 	processAnchorText : function( anchorText ) {
-		if( this.stripPrefix ) {
-			anchorText = this.stripUrlPrefix( anchorText );
-		}
-		anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 		anchorText = this.doTruncate( anchorText );
 		
-		return anchorText;
-	},
-	
-	
-	/**
-	 * Strips the URL prefix (such as "http://" or "https://") from the given text.
-	 * 
-	 * @private
-	 * @param {String} text The text of the anchor that is being generated, for which to strip off the
-	 *   url prefix (such as stripping off "http://")
-	 * @return {String} The `anchorText`, with the prefix stripped.
-	 */
-	stripUrlPrefix : function( text ) {
-		return text.replace( this.urlPrefixRegex, '' );
-	},
-	
-	
-	/**
-	 * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
-	 * 
-	 * @private
-	 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
-	 *   slash ('/') that may exist.
-	 * @return {String} The `anchorText`, with the trailing slash removed.
-	 */
-	removeTrailingSlash : function( anchorText ) {
-		if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
-			anchorText = anchorText.slice( 0, -1 );
-		}
 		return anchorText;
 	},
 	

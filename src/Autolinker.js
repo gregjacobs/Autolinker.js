@@ -286,9 +286,11 @@ Autolinker.prototype = {
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
 	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
 	 * 
-	 * @method link
+	 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
+	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
+	 * 
 	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within.
-	 * @return {String} The HTML, with URLs/emails/twitter handles automatically linked.
+	 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
 	 */
 	link : function( textOrHtml ) {
 		var me = this,  // for closure
@@ -348,6 +350,7 @@ Autolinker.prototype = {
 		if( !htmlParser ) {
 			htmlParser = this.htmlParser = new Autolinker.HtmlParser();
 		}
+		
 		return htmlParser;
 	},
 	
@@ -363,29 +366,12 @@ Autolinker.prototype = {
 		if( !anchorTagBuilder ) {
 			anchorTagBuilder = this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
-				stripPrefix : this.stripPrefix,
 				truncate    : this.truncate,
 				className   : this.className
 			} );
 		}
 		
 		return anchorTagBuilder;
-	},
-	
-	
-	/**
-	 * Processes the given HTML to auto-link URLs/emails/Twitter handles.
-	 * 
-	 * Finds the text around any HTML elements in the input `html`, which will be the text that is processed.
-	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor tags.
-	 * 
-	 * @private
-	 * @method processHtml
-	 * @param {String} html The input text or HTML to process in order to auto-link.
-	 * @return {String}
-	 */
-	processHtml : function( html ) {
-		
 	},
 	
 	
@@ -452,7 +438,7 @@ Autolinker.prototype = {
 						matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 					}
 				}
-				match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
+				match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch, stripPrefix: me.stripPrefix } );
 			}
 
 			// Generate the replacement text for the match
@@ -560,7 +546,7 @@ Autolinker.prototype = {
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
 			var anchorTagBuilder = this.getAnchorTagBuilder(),
-			    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );  // return an Autolinker.HtmlTag instance
+			    anchorTag = anchorTagBuilder.createAnchorTag( match );  // returns an Autolinker.HtmlTag instance
 			
 			return anchorTag.toString();
 		}

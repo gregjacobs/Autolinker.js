@@ -762,10 +762,10 @@ describe( "Autolinker", function() {
 			
 			
 			it( "should handle &amp; inside a url and not ignore it", function() {
-				var html = "<p>Joe went to example.com?arg=1&amp;arg=2</p>";
+				var html = "<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>";
 				
 				var result = autolinker.link( html );
-				expect( result ).toBe( '<p>Joe went to <a href="http://example.com?arg=1&arg=2">example.com?arg=1&amp;arg=2</a></p>' );
+				expect( result ).toBe( '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>' );
 			} );
 
 		} );
