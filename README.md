@@ -223,6 +223,10 @@ A replacement of the match is made based on the return value of the function. Th
 
 ## Changelog:
 
+### 0.12.1
+
+- Expose the `Autolinker.HtmlTag` class, and allow it to be used in the `replaceFn`
+
 ### 0.12.0
 
 - Add `replaceFn` option
