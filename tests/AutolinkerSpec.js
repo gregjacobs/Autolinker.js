@@ -971,6 +971,38 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should allow an Autolinker.HtmlTag instance to be returned from the `replaceFn`, and use that as the HTML to be replaced from the input", function() {
+				var result = Autolinker.link( "Website: asdf.com", {
+					newWindow : false,
+					
+					replaceFn : function( autolinker, match ) {
+						var tag = autolinker.getTagBuilder().build( match );
+						tag.setInnerHtml( 'asdf!' );  // just to check that we're replacing with the returned `tag` instance
+						return tag;
+					}
+				} );
+				
+				expect( result ).toBe( 'Website: <a href="http://asdf.com">asdf!</a>' );
+			} );
+			
+			
+			it( "should allow an Autolinker.HtmlTag instance to be modified before being returned from the `replaceFn`", function() {
+				var result = Autolinker.link( "Website: asdf.com", {
+					newWindow : false,
+					
+					replaceFn : function( autolinker, match ) {
+						var tag = autolinker.getTagBuilder().build( match );
+						tag.addClass( 'test' );
+						tag.addClass( 'test2' );
+						tag.setAttr( 'rel', 'nofollow' );
+						return tag;
+					}
+				} );
+				
+				expect( result ).toBe( 'Website: <a href="http://asdf.com" class="test test2" rel="nofollow">asdf.com</a>' );
+			} );
+			
+			
 			describe( 'special cases which check the `prefixStr` and `suffixStr` vars in the code', function() {
 			
 				it( "should leave the match as-is when the `replaceFn` returns `false` for a Twitter match", function() {

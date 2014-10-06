@@ -278,6 +278,14 @@ Autolinker.prototype = {
 	 */
 	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
 	
+	/**
+	 * @private
+	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
+	 * 
+	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
+	 * in the {@link #getTagBuilder} method.
+	 */
+	
 	
 	/**
 	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
@@ -309,7 +317,6 @@ Autolinker.prototype = {
 						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 					}
 				}
-				
 				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
 			},
 			
@@ -342,7 +349,7 @@ Autolinker.prototype = {
 	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
 	 * 
 	 * @protected
-	 * @return {Autolinker.SimpleHtmlParser}
+	 * @return {Autolinker.HtmlParser}
 	 */
 	getHtmlParser : function() {
 		var htmlParser = this.htmlParser;
@@ -356,22 +363,23 @@ Autolinker.prototype = {
 	
 	
 	/**
-	 * Lazily instantiates and returns the {@link #anchorTagBuilder} instance for this Autolinker instance.
+	 * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
+	 * if it does not yet exist.
 	 * 
 	 * @return {Autolinker.AnchorTagBuilder}
 	 */
-	getAnchorTagBuilder : function() {
-		var anchorTagBuilder = this.anchorTagBuilder;
+	getTagBuilder : function() {
+		var tagBuilder = this.tagBuilder;
 		
-		if( !anchorTagBuilder ) {
-			anchorTagBuilder = this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
+		if( !tagBuilder ) {
+			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
 				className   : this.className
 			} );
 		}
 		
-		return anchorTagBuilder;
+		return tagBuilder;
 	},
 	
 	
@@ -542,11 +550,14 @@ Autolinker.prototype = {
 			
 		} else if( replaceFnResult === false ) {
 			return matchStr;  // no replacement for the match
+			
+		} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
+			return replaceFnResult.toString();
 		
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
-			var anchorTagBuilder = this.getAnchorTagBuilder(),
-			    anchorTag = anchorTagBuilder.createAnchorTag( match );  // returns an Autolinker.HtmlTag instance
+			var tagBuilder = this.getTagBuilder(),
+			    anchorTag = tagBuilder.build( match );  // returns an Autolinker.HtmlTag instance
 			
 			return anchorTag.toString();
 		}

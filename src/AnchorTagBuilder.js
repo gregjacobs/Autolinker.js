@@ -1,7 +1,7 @@
 /*global Autolinker */
 /*jshint sub:true */
 /**
- * @private
+ * @protected
  * @class Autolinker.AnchorTagBuilder
  * @extends Object
  * 
@@ -38,12 +38,13 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
 	
 	/**
-	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
+	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of the matched URL/email/Twitter text,
+	 * via its `match` object.
 	 * 
 	 * @param {Autolinker.match.Match} match The Match instance to generate an anchor tag from.
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
-	createAnchorTag : function( match ) {
+	build : function( match ) {
 		var tag = new Autolinker.HtmlTag( {
 			tagName   : 'a',
 			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),

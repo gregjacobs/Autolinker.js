@@ -171,7 +171,17 @@ var linkedText = Autolinker.link( input, {
         switch( match.getType() ) {
         	case 'url' : 
         		console.log( "url: ", match.getUrl() );
-        		return true;  // let Autolinker perform its normal anchor tag replacement
+        		
+        		if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
+        			var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+        			tag.setAttr( 'rel', 'nofollow' );
+        			tag.addClass( 'external-link' );
+        			
+        			return tag;
+        			
+        		} else {
+        			return true;  // let Autolinker perform its normal anchor tag replacement
+        		}
         		
         	case 'email' :
         		var email = match.getEmail();
@@ -197,16 +207,17 @@ var linkedText = Autolinker.link( input, {
 The function is provided two arguments:
 
 1. The Autolinker instance that is performing replacements. This can be used to query the options that the Autolinker
-   instance is configured with, or to call its utility methods.
-2. An `Autolinker.Match` object which details the match that is to be replaced.
+   instance is configured with, or to retrieve its TagBuilder instance (via `autolinker.getTagBuilder()`).
+2. An `Autolinker.match.Match` object which details the match that is to be replaced.
 
 
 A replacement of the match is made based on the return value of the function. The following return values may be provided:
  
 - No return value (`undefined`), or `true` (Boolean): Delegate back to Autolinker to replace the match as it normally would.
 - `false` (Boolean): Do not replace the current match at all - leave as-is.
-- Any string: If a string is returned from the function, the string will be used directly as the replacement HTML for
+- Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
   the match.
+- An `Autolinker.HtmlTag` instance, which can be used to build/modify an HTML tag before writing out its HTML text.
 
 
 

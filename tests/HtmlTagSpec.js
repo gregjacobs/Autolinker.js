@@ -377,6 +377,18 @@ describe( "Autolinker.HtmlTag", function() {
 			expect( tag.toString() ).toBe( '<a href="http://path/to/site" rel="nofollow">My Site</a>' );
 		} );
 		
+		
+		it( "should properly build an HTML string from just the mutator methods", function() {
+			var tag = new HtmlTag();
+			tag.setTagName( 'a' );
+			tag.addClass( 'test' );
+			tag.addClass( 'test2' );
+			tag.setAttr( 'href', 'http://path/to/site' );
+			tag.setInnerHtml( 'My Site' );
+			
+			expect( tag.toString() ).toBe( '<a class="test test2" href="http://path/to/site">My Site</a>' );
+		} );
+		
 	} );
 	
 } );

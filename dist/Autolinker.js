@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.12.0
+ * 0.12.1
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -299,6 +299,14 @@
 		 */
 		charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
 		
+		/**
+		 * @private
+		 * @property {Autolinker.AnchorTagBuilder} tagBuilder
+		 * 
+		 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
+		 * in the {@link #getTagBuilder} method.
+		 */
+		
 		
 		/**
 		 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
@@ -307,9 +315,11 @@
 		 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
 		 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
 		 * 
-		 * @method link
+		 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
+		 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
+		 * 
 		 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within.
-		 * @return {String} The HTML, with URLs/emails/twitter handles automatically linked.
+		 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
 		 */
 		link : function( textOrHtml ) {
 			var me = this,  // for closure
@@ -328,7 +338,6 @@
 							anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 						}
 					}
-					
 					resultHtml.push( tagText );  // now add the text of the tag itself verbatim
 				},
 				
@@ -361,7 +370,7 @@
 		 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
 		 * 
 		 * @protected
-		 * @return {Autolinker.SimpleHtmlParser}
+		 * @return {Autolinker.HtmlParser}
 		 */
 		getHtmlParser : function() {
 			var htmlParser = this.htmlParser;
@@ -369,44 +378,29 @@
 			if( !htmlParser ) {
 				htmlParser = this.htmlParser = new Autolinker.HtmlParser();
 			}
+			
 			return htmlParser;
 		},
 		
 		
 		/**
-		 * Lazily instantiates and returns the {@link #anchorTagBuilder} instance for this Autolinker instance.
+		 * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
+		 * if it does not yet exist.
 		 * 
 		 * @return {Autolinker.AnchorTagBuilder}
 		 */
-		getAnchorTagBuilder : function() {
-			var anchorTagBuilder = this.anchorTagBuilder;
+		getTagBuilder : function() {
+			var tagBuilder = this.tagBuilder;
 			
-			if( !anchorTagBuilder ) {
-				anchorTagBuilder = this.anchorTagBuilder = new Autolinker.AnchorTagBuilder( {
+			if( !tagBuilder ) {
+				tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 					newWindow   : this.newWindow,
-					stripPrefix : this.stripPrefix,
 					truncate    : this.truncate,
 					className   : this.className
 				} );
 			}
 			
-			return anchorTagBuilder;
-		},
-		
-		
-		/**
-		 * Processes the given HTML to auto-link URLs/emails/Twitter handles.
-		 * 
-		 * Finds the text around any HTML elements in the input `html`, which will be the text that is processed.
-		 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor tags.
-		 * 
-		 * @private
-		 * @method processHtml
-		 * @param {String} html The input text or HTML to process in order to auto-link.
-		 * @return {String}
-		 */
-		processHtml : function( html ) {
-			
+			return tagBuilder;
 		},
 		
 		
@@ -473,7 +467,7 @@
 							matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 						}
 					}
-					match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch } );
+					match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch, stripPrefix: me.stripPrefix } );
 				}
 	
 				// Generate the replacement text for the match
@@ -577,11 +571,14 @@
 				
 			} else if( replaceFnResult === false ) {
 				return matchStr;  // no replacement for the match
+				
+			} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
+				return replaceFnResult.toString();
 			
 			} else {  // replaceFnResult === true, or no/unknown return value from function
 				// Perform Autolinker's default anchor tag generation
-				var anchorTagBuilder = this.getAnchorTagBuilder(),
-				    anchorTag = anchorTagBuilder.createAnchorTag( match.getType(), match.getAnchorHref(), match.getAnchorText() );  // return an Autolinker.HtmlTag instance
+				var tagBuilder = this.getTagBuilder(),
+				    anchorTag = tagBuilder.build( match );  // returns an Autolinker.HtmlTag instance
 				
 				return anchorTag.toString();
 			}
@@ -617,6 +614,7 @@
 	
 	// Namespace for `match` classes
 	Autolinker.match = {};
+	/*global Autolinker */
 	/*jshint eqnull:true, boss:true */
 	/**
 	 * @class Autolinker.Util
@@ -766,6 +764,7 @@
 		}
 		
 	};
+	/*global Autolinker */
 	/**
 	 * @class Autolinker.HtmlParser
 	 * @extends Object
@@ -871,6 +870,7 @@
 		}
 		
 	} );
+	/*global Autolinker */
 	/*jshint boss:true */
 	/**
 	 * @class Autolinker.HtmlTag
@@ -1150,9 +1150,10 @@
 		}
 		
 	} );
+	/*global Autolinker */
 	/*jshint sub:true */
 	/**
-	 * @private
+	 * @protected
 	 * @class Autolinker.AnchorTagBuilder
 	 * @extends Object
 	 * 
@@ -1167,12 +1168,6 @@
 		 */
 		
 		/**
-		 * @cfg {Boolean} stripPrefix
-		 * 
-		 * See {@link Autolinker#stripPrefix} for details.
-		 */
-		
-		/**
 		 * @cfg {Number} truncate
 		 * 
 		 * See {@link Autolinker#truncate} for details.
@@ -1183,15 +1178,6 @@
 		 * 
 		 * See {@link Autolinker#className} for details.
 		 */
-		
-	
-		/**
-		 * @private
-		 * @property {RegExp} urlPrefixRegex
-		 * 
-		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
-		 */
-		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		
 		/**
@@ -1204,18 +1190,17 @@
 		
 		
 		/**
-		 * Generates the actual anchor (&lt;a&gt;) tag to use in place of a source url/email/twitter link.
+		 * Generates the actual anchor (&lt;a&gt;) tag to use in place of piece of source URL/email/Twitter text,
+		 * via its `match` object.
 		 * 
-		 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
-		 * @param {String} anchorHref The href for the anchor tag.
-		 * @param {String} anchorText The anchor tag's text (i.e. what will be displayed).
+		 * @param {Autolinker.match.Match} match The Match instance to generate an anchor tag from.
 		 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 		 */
-		createAnchorTag : function( matchType, anchorHref, anchorText ) {
+		build : function( match ) {
 			var tag = new Autolinker.HtmlTag( {
 				tagName   : 'a',
-				attrs     : this.createAttrs( matchType, anchorHref ),
-				innerHtml : this.processAnchorText( anchorText )
+				attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
+				innerHtml : this.processAnchorText( match.getAnchorText() )
 			} );
 			
 			return tag;
@@ -1275,41 +1260,8 @@
 		 * @return {String} The processed `anchorText`.
 		 */
 		processAnchorText : function( anchorText ) {
-			if( this.stripPrefix ) {
-				anchorText = this.stripUrlPrefix( anchorText );
-			}
-			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 			anchorText = this.doTruncate( anchorText );
 			
-			return anchorText;
-		},
-		
-		
-		/**
-		 * Strips the URL prefix (such as "http://" or "https://") from the given text.
-		 * 
-		 * @private
-		 * @param {String} text The text of the anchor that is being generated, for which to strip off the
-		 *   url prefix (such as stripping off "http://")
-		 * @return {String} The `anchorText`, with the prefix stripped.
-		 */
-		stripUrlPrefix : function( text ) {
-			return text.replace( this.urlPrefixRegex, '' );
-		},
-		
-		
-		/**
-		 * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
-		 * 
-		 * @private
-		 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
-		 *   slash ('/') that may exist.
-		 * @return {String} The `anchorText`, with the trailing slash removed.
-		 */
-		removeTrailingSlash : function( anchorText ) {
-			if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
-				anchorText = anchorText.slice( 0, -1 );
-			}
 			return anchorText;
 		},
 		
@@ -1327,6 +1279,7 @@
 		}
 		
 	} );
+	/*global Autolinker */
 	/**
 	 * @private
 	 * @abstract
@@ -1372,6 +1325,7 @@
 		getAnchorText : Autolinker.Util.abstractMethod
 	
 	} );
+	/*global Autolinker */
 	/**
 	 * @private
 	 * @class Autolinker.match.Email
@@ -1427,6 +1381,7 @@
 		}
 		
 	} );
+	/*global Autolinker */
 	/**
 	 * @private
 	 * @class Autolinker.match.Twitter
@@ -1482,6 +1437,7 @@
 		}
 		
 	} );
+	/*global Autolinker */
 	/**
 	 * @private
 	 * @class Autolinker.match.Twitter
@@ -1503,6 +1459,20 @@
 		 * and will be either http:// or https:// based on the protocol that the site is loaded under.
 		 */
 		
+		/**
+		 * @cfg {Boolean} stripPrefix (required)
+		 * 
+		 * See {@link Autolinker#stripPrefix} for details.
+		 */
+		
+	
+		/**
+		 * @private
+		 * @property {RegExp} urlPrefixRegex
+		 * 
+		 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+		 */
+		urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 		
 		/**
 		 * @private
@@ -1558,7 +1528,8 @@
 		 */
 		getAnchorHref : function() {
 			var url = this.getUrl();
-			return url.replace('&amp;', '&');
+			
+			return url.replace( /&amp;/g, '&' );  // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html 
 		},
 		
 		
@@ -1568,15 +1539,65 @@
 		 * @return {String}
 		 */
 		getAnchorText : function() {
-			var url = this.getUrl();
+			var anchorText = this.getUrl();
 			
 			if( this.protocolRelativeMatch ) {
 				// Strip off any protocol-relative '//' from the anchor text
-				url = url.replace( this.protocolRelativeRegex, '' );
+				anchorText = this.stripProtocolRelativePrefix( anchorText );
 			}
+			if( this.stripPrefix ) {
+				anchorText = this.stripUrlPrefix( anchorText );
+			}
+			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 			
-			return url;
-		}
+			return anchorText;
+		},
+		
+		
+		// ---------------------------------------
+		
+		// Utility Functionality
+		
+		/**
+		 * Strips the URL prefix (such as "http://" or "https://") from the given text.
+		 * 
+		 * @private
+		 * @param {String} text The text of the anchor that is being generated, for which to strip off the
+		 *   url prefix (such as stripping off "http://")
+		 * @return {String} The `anchorText`, with the prefix stripped.
+		 */
+		stripUrlPrefix : function( text ) {
+			return text.replace( this.urlPrefixRegex, '' );
+		},
+		
+		
+		/**
+		 * Strips any protocol-relative '//' from the anchor text.
+		 * 
+		 * @private
+		 * @param {String} text The text of the anchor that is being generated, for which to strip off the
+		 *   protocol-relative prefix (such as stripping off "//")
+		 * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
+		 */
+		stripProtocolRelativePrefix : function( text ) {
+			return text.replace( this.protocolRelativeRegex, '' );
+		},
+		
+		
+		/**
+		 * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
+		 * 
+		 * @private
+		 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
+		 *   slash ('/') that may exist.
+		 * @return {String} The `anchorText`, with the trailing slash removed.
+		 */
+		removeTrailingSlash : function( anchorText ) {
+			if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
+				anchorText = anchorText.slice( 0, -1 );
+			}
+			return anchorText;
+		},
 		
 	} );
 
