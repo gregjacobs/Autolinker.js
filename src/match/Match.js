@@ -33,6 +33,13 @@
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	
 	/**
+	 * @cfg {String} matchedText (required)
+	 * 
+	 * The original text that was matched.
+	 */
+	
+	
+	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Match instance, specified in an Object (map).
 	 */
@@ -48,6 +55,16 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @return {String}
 	 */
 	getType : Autolinker.Util.abstractMethod,
+	
+	
+	/**
+	 * Returns the original text that was matched.
+	 * 
+	 * @return {String}
+	 */
+	getMatchedText : function() {
+		return this.matchedText;
+	},
 	
 
 	/**

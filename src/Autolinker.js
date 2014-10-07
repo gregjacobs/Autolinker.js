@@ -466,7 +466,7 @@ Autolinker.prototype = {
 			
 			
 			if( emailAddressMatch ) {
-				match = new Autolinker.match.Email( { email: emailAddressMatch } );
+				match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
 				
 			} else if( twitterMatch ) {
 				// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
@@ -475,7 +475,7 @@ Autolinker.prototype = {
 					prefixStr = twitterHandlePrefixWhitespaceChar;
 					matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
 				}
-				match = new Autolinker.match.Twitter( { twitterHandle: twitterHandle } );
+				match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
 				
 			} else {  // url match
 				// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
@@ -488,7 +488,13 @@ Autolinker.prototype = {
 						matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 					}
 				}
-				match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch, stripPrefix: me.stripPrefix } );
+				
+				match = new Autolinker.match.Url( {
+					matchedText : matchStr,
+					url : matchStr,
+					protocolRelativeMatch : protocolRelativeMatch,
+					stripPrefix : me.stripPrefix
+				} );
 			}
 
 			// Generate the replacement text for the match

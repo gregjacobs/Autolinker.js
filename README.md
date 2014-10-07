@@ -227,6 +227,14 @@ The full API docs for Autolinker may be referenced at: [http://gregjacobs.github
 
 ## Changelog:
 
+### 0.12.3
+
+- Add `Autolinker.match.Match#getMatchedText` method
+
+### 0.12.2
+
+- Add documentation generation, and update inline documentation.
+
 ### 0.12.1
 
 - Expose the `Autolinker.HtmlTag` class, and allow it to be used in the `replaceFn`

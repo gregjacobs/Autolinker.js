@@ -921,6 +921,52 @@ describe( "Autolinker", function() {
 			var returnTrueFn = function() { return true; },
 			    returnFalseFn = function() { return false; };
 			
+			
+			it( "should populate a UrlMatch object with the appropriate properties", function() {
+				var replaceFnCallCount = 0;
+				var result = Autolinker.link( "Website: asdf.com ", {  // purposeful trailing space
+					replaceFn : function( autolinker, match ) {
+						replaceFnCallCount++;
+						
+						expect( match.getMatchedText() ).toBe( 'asdf.com' );
+						expect( match.getUrl() ).toBe( 'http://asdf.com' );
+					}
+				} );
+				
+				expect( replaceFnCallCount ).toBe( 1 );  // make sure the replaceFn was called
+			} );
+			
+			
+			it( "should populate an EmailMatch object with the appropriate properties", function() {
+				var replaceFnCallCount = 0;
+				var result = Autolinker.link( "Email: asdf@asdf.com ", {  // purposeful trailing space
+					replaceFn : function( autolinker, match ) {
+						replaceFnCallCount++;
+						
+						expect( match.getMatchedText() ).toBe( 'asdf@asdf.com' );
+						expect( match.getEmail() ).toBe( 'asdf@asdf.com' );
+					}
+				} );
+				
+				expect( replaceFnCallCount ).toBe( 1 );  // make sure the replaceFn was called
+			} );
+			
+			
+			it( "should populate a TwitterMatch object with the appropriate properties", function() {
+				var replaceFnCallCount = 0;
+				var result = Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
+					replaceFn : function( autolinker, match ) {
+						replaceFnCallCount++;
+						
+						expect( match.getMatchedText() ).toBe( '@myTwitter' );
+						expect( match.getTwitterHandle() ).toBe( 'myTwitter' );
+					}
+				} );
+				
+				expect( replaceFnCallCount ).toBe( 1 );  // make sure the replaceFn was called
+			} );
+			
+			
 			it( "should replace the match as Autolinker would normally do when `true` is returned from the `replaceFn`", function() {
 				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", { 
 					newWindow : false,  // just to suppress the target="_blank" from the output for this test

@@ -487,7 +487,7 @@
 				
 				
 				if( emailAddressMatch ) {
-					match = new Autolinker.match.Email( { email: emailAddressMatch } );
+					match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
 					
 				} else if( twitterMatch ) {
 					// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
@@ -496,7 +496,7 @@
 						prefixStr = twitterHandlePrefixWhitespaceChar;
 						matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
 					}
-					match = new Autolinker.match.Twitter( { twitterHandle: twitterHandle } );
+					match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
 					
 				} else {  // url match
 					// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
@@ -509,7 +509,13 @@
 							matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
 						}
 					}
-					match = new Autolinker.match.Url( { url: matchStr, protocolRelativeMatch: protocolRelativeMatch, stripPrefix: me.stripPrefix } );
+					
+					match = new Autolinker.match.Url( {
+						matchedText : matchStr,
+						url : matchStr,
+						protocolRelativeMatch : protocolRelativeMatch,
+						stripPrefix : me.stripPrefix
+					} );
 				}
 	
 				// Generate the replacement text for the match
@@ -1437,6 +1443,13 @@
 	Autolinker.match.Match = Autolinker.Util.extend( Object, {
 		
 		/**
+		 * @cfg {String} matchedText (required)
+		 * 
+		 * The original text that was matched.
+		 */
+		
+		
+		/**
 		 * @constructor
 		 * @param {Object} cfg The configuration properties for the Match instance, specified in an Object (map).
 		 */
@@ -1452,6 +1465,16 @@
 		 * @return {String}
 		 */
 		getType : Autolinker.Util.abstractMethod,
+		
+		
+		/**
+		 * Returns the original text that was matched.
+		 * 
+		 * @return {String}
+		 */
+		getMatchedText : function() {
+			return this.matchedText;
+		},
 		
 	
 		/**
