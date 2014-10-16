@@ -3,6 +3,5 @@
 .settings
 web.config
 .grunt/
-docs/
 _SpecRunner.html
 node_modules/

@@ -81,7 +81,7 @@ module.exports = function(grunt) {
 				],
 		
 				// docs output dir
-				dest: 'docs',
+				dest: 'gh-pages/docs',
 		
 				// extra options
 				options: {
