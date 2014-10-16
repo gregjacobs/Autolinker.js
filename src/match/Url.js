@@ -24,7 +24,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	
 	/**
 	 * @cfg {Boolean} stripPrefix (required)
-	 * @inheritdoc {@link Autolinker#stripPrefix}
+	 * @inheritdoc Autolinker#stripPrefix
 	 */
 	
 
