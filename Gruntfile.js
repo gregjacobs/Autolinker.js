@@ -144,7 +144,7 @@ module.exports = function(grunt) {
 	function createDistFileHeader() {
 		return [
 			"/*global define, module */",
-			"( function( root, factory ) {\n",
+			"( function( root, factory ) {",
 				"\tif( typeof define === 'function' && define.amd ) {",
 					"\t\tdefine( factory );             // Define as AMD module if an AMD loader is present (ex: RequireJS).",
 				"\t} else if( typeof exports !== 'undefined' ) {",

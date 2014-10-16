@@ -21,7 +21,7 @@ Autolinker.Util = {
 	 * 
 	 * @param {Object} dest The destination object.
 	 * @param {Object} src The source object.
-	 * @return {Object} The destination object.
+	 * @return {Object} The destination object (`dest`)
 	 */
 	assign : function( dest, src ) {
 		for( var prop in src ) {
