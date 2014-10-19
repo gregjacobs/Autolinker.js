@@ -56,7 +56,7 @@ var Autolinker = require( 'autolinker' );
 
 ## Usage
 
-Using the static `link()` method:
+Using the static [link()](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-static-method-link) method:
 
 ```javascript
 var linkedText = Autolinker.link( textToAutolink[, options] );
@@ -71,7 +71,7 @@ var linkedText = autolinker.link( textToAutoLink );
 ```
 
 Note: if using the same options to autolink multiple pieces of html/text, it is slightly more efficient to create a single
-Autolinker instance, and run the `link()` method repeatedly (i.e. use the "class" form above).
+Autolinker instance, and run the [link()](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-method-link) method repeatedly (i.e. use the "class" form above).
 
 	
 #### Example:
@@ -83,16 +83,16 @@ var linkedText = Autolinker.link( "Check out google.com", { className: "myLink" 
 
 ## Options
 
-These are the options which may be specified for linking. These are specified by providing an Object as the second parameter to `Autolinker.link()`. These include:
+These are the options which may be specified for linking. These are specified by providing an Object as the second parameter to [Autolinker.link()](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-static-method-link). These include:
 
-- **newWindow** : Boolean<br />
+- [newWindow](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow) : Boolean<br />
   `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.<br /><br />
-- **stripPrefix** : Boolean<br />
+- [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
   `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
-- **truncate** : Number<br />
+- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number<br />
   A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of a link. If the URL/email/twitter is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').<br /><br />
-  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br />
-- **className** : String<br />
+  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+- [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added to all links, as well as this class
   plus "url"/"email"/"twitter" suffixes for styling url/email/twitter links differently.
   
@@ -102,18 +102,18 @@ These are the options which may be specified for linking. These are specified by
   2) Email links will have the CSS classes: "myLink myLink-email", and<br />
   3) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
   
-- **urls** : Boolean<br />
+- [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.<br />
-- **email** : Boolean<br />
+- [email](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-email) : Boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of email addresses. Defaults to `true`.<br /><br />
-- **twitter** : Boolean<br />
-  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of Twitter handles. Defaults to `true`.
-- **replaceFn** : Function<br />
+- [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) : Boolean<br />
+  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of Twitter handles. Defaults to `true`.<br /><br />
+- [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the input string, one at a time. See the section 
   <a href="#custom-replacement-function">Custom Replacement Function</a> for more details.
 
 
-For example, if you wanted to disable links from opening in new windows, you could do:
+For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow), you could do:
 
 ```javascript
 var linkedText = Autolinker.link( "Check out google.com", { newWindow: false } );
@@ -135,7 +135,7 @@ var myTextEl = document.getElementById( 'text' );
 myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
 ```
 
-Using the same pre-configured Autolinker instance in multiple locations of a codebase (usually by dependency injection):
+Using the same pre-configured [Autolinker](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker) instance in multiple locations of a codebase (usually by dependency injection):
 
 ```javascript
 var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
@@ -155,7 +155,7 @@ autolinker.link( "Go to www.google.com" );
 
 ## Custom Replacement Function
 
-A custom replacement function (`replaceFn`) may be provided to replace url/email/twitter matches on an individual basis, based
+A custom replacement function ([replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn)) may be provided to replace url/email/twitter matches on an individual basis, based
 on the return from this function.
 
 Full example, for purposes of documenting the API:
@@ -165,39 +165,39 @@ var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
 
 var linkedText = Autolinker.link( input, {
     replaceFn : function( autolinker, match ) {
-    	console.log( "href = ", match.getAnchorHref() );
-    	console.log( "text = ", match.getAnchorText() );
+        console.log( "href = ", match.getAnchorHref() );
+        console.log( "text = ", match.getAnchorText() );
     
         switch( match.getType() ) {
-        	case 'url' : 
-        		console.log( "url: ", match.getUrl() );
+            case 'url' : 
+                console.log( "url: ", match.getUrl() );
         		
-        		if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
-        			var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
-        			tag.setAttr( 'rel', 'nofollow' );
-        			tag.addClass( 'external-link' );
+                if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
+                    var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+                    tag.setAttr( 'rel', 'nofollow' );
+                    tag.addClass( 'external-link' );
+        
+                    return tag;
         			
-        			return tag;
-        			
-        		} else {
-        			return true;  // let Autolinker perform its normal anchor tag replacement
-        		}
+                } else {
+                    return true;  // let Autolinker perform its normal anchor tag replacement
+                }
         		
-        	case 'email' :
-        		var email = match.getEmail();
-        		console.log( "email: ", email );
+            case 'email' :
+                var email = match.getEmail();
+                console.log( "email: ", email );
         		
-        		if( email === "my@own.address" ) {
-        			return false;  // don't auto-link this particular email address; leave as-is
-        		} else {
-        			return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
-        		}
+                if( email === "my@own.address" ) {
+                    return false;  // don't auto-link this particular email address; leave as-is
+                } else {
+                    return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
+                }
         	
-        	case 'twitter' :
-        		var twitterHandle = match.getTwitterHandle();
-        		console.log( twitterHandle );
-        		
-        		return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+            case 'twitter' :
+                var twitterHandle = match.getTwitterHandle();
+                console.log( twitterHandle );
+        
+                return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
         }
     }
 } );
@@ -207,8 +207,8 @@ var linkedText = Autolinker.link( input, {
 The function is provided two arguments:
 
 1. The Autolinker instance that is performing replacements. This can be used to query the options that the Autolinker
-   instance is configured with, or to retrieve its TagBuilder instance (via `autolinker.getTagBuilder()`).
-2. An `Autolinker.match.Match` object which details the match that is to be replaced.
+   instance is configured with, or to retrieve its TagBuilder instance (via [autolinker.getTagBuilder()](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-method-getTagBuilder)).
+2. An [Autolinker.match.Match](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.match.Match) object which details the match that is to be replaced.
 
 
 A replacement of the match is made based on the return value of the function. The following return values may be provided:
@@ -217,7 +217,7 @@ A replacement of the match is made based on the return value of the function. Th
 - `false` (Boolean): Do not replace the current match at all - leave as-is.
 - Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
   the match.
-- An `Autolinker.HtmlTag` instance, which can be used to build/modify an HTML tag before writing out its HTML text.
+- An [Autolinker.HtmlTag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.HtmlTag) instance, which can be used to build/modify an HTML tag before writing out its HTML text.
 
 
 ## Full API Docs
