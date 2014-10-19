@@ -227,4 +227,4 @@ The full API docs for Autolinker may be referenced at: [http://gregjacobs.github
 
 ## Changelog
 
-[https://github.com/gregjacobs/Autolinker.js/wiki/Changelog](Changelog)
+[Changelog](https://github.com/gregjacobs/Autolinker.js/wiki/Changelog])
