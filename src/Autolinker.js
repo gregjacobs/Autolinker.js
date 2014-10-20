@@ -324,7 +324,8 @@ Autolinker.prototype = {
 	 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
 	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
 	 * 
-	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within.
+	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within (depending on if
+	 *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
 	 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
 	 */
 	link : function( textOrHtml ) {
@@ -434,74 +435,122 @@ Autolinker.prototype = {
 	 * @return {String} The text with anchor tags auto-filled.
 	 */
 	processTextNode : function( text ) {
-		var me = this,  // for closure
-		    charBeforeProtocolRelMatchRegex = this.charBeforeProtocolRelMatchRegex;
+		var me = this;  // for closure
 		
 		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7 ) {
-			var twitterMatch = $1,
-			    twitterHandlePrefixWhitespaceChar = $2,  // The whitespace char before the @ sign in a Twitter handle match. This is needed because of no lookbehinds in JS regexes.
-			    twitterHandle = $3,      // The actual twitterUser (i.e the word after the @ sign in a Twitter handle match)
-			    emailAddressMatch = $4,  // For both determining if it is an email address, and stores the actual email address
-			    urlMatch = $5,           // The matched URL string
-			    protocolRelativeMatch = $6 || $7,  // The '//' for a protocol-relative match, with the character that comes before the '//'
-			    
-			    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
-			    suffixStr = "",       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
-			    
-			    match;  // Will be an Autolinker.match.Match object
-			
+			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // match description object
 			
 			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
 			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
-			if( !me.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolRelativeMatch ) ) {
+			if( !matchDescObj ) {
 				return matchStr;
-			}
-			
-			// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
-			// in the match itself. 
-			if( me.matchHasUnbalancedClosingParen( matchStr ) ) {
-				matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
-				suffixStr = ")";  // this will be added after the generated <a> tag
-			}
-			
-			
-			if( emailAddressMatch ) {
-				match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
 				
-			} else if( twitterMatch ) {
-				// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
-				// itself (since there are no look-behinds in JS regexes)
-				if( twitterHandlePrefixWhitespaceChar ) {
-					prefixStr = twitterHandlePrefixWhitespaceChar;
-					matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
-				}
-				match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
-				
-			} else {  // url match
-				// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
-				// to match due to the lack of a negative look-behind in JavaScript regular expressions)
-				if( protocolRelativeMatch ) {
-					var charBeforeMatch = protocolRelativeMatch.match( charBeforeProtocolRelMatchRegex )[ 1 ] || "";
-					
-					if( charBeforeMatch ) {  // fix up the `matchStr` if there was a preceding char before a protocol-relative match, which was needed to determine the match itself (since there are no look-behinds in JS regexes)
-						prefixStr = charBeforeMatch;
-						matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
-					}
-				}
-				
-				match = new Autolinker.match.Url( {
-					matchedText : matchStr,
-					url : matchStr,
-					protocolRelativeMatch : protocolRelativeMatch,
-					stripPrefix : me.stripPrefix
-				} );
+			} else {
+				// Generate the replacement text for the match
+				var matchReturnVal = me.createMatchReturnVal( matchDescObj.match, matchDescObj.matchStr );
+				return matchDescObj.prefixStr + matchReturnVal + matchDescObj.suffixStr;
 			}
-
-			// Generate the replacement text for the match
-			var matchReturnVal = me.createMatchReturnVal( match, matchStr );
-			return prefixStr + matchReturnVal + suffixStr;
 		} );
 	},
+	
+	
+	/**
+	 * Processes a candidate match from the {@link #matcherRegex}. 
+	 * 
+	 * Not all matches found by the regex are actual URL/email/Twitter matches, as determined by {@link #isValidMatch}. In
+	 * this case, the method returns `null`. Otherwise, a valid Object with `prefixStr`, `match`, and `suffixStr` is returned.
+	 * 
+	 * @private
+	 * @param {String} matchStr The full match that was found by the {@link #matcherRegex}.
+	 * @param {String} twitterMatch The matched text of a Twitter handle, if the match is a Twitter match.
+	 * @param {String} twitterHandlePrefixWhitespaceChar The whitespace char before the @ sign in a Twitter handle match. This 
+	 *   is needed because of no lookbehinds in JS regexes, and is need to re-include the character for the anchor tag replacement.
+	 * @param {String} twitterHandle The actual Twitter user (i.e the word after the @ sign in a Twitter match).
+	 * @param {String} emailAddressMatch The matched email address for an email address match.
+	 * @param {String} urlMatch The matched URL string for a URL match.
+	 * @param {String} wwwProtocolRelativeMatch The '//' for a protocol-relative match from a 'www' url, with the character that 
+	 *   comes before the '//'.
+	 * @param {String} tldProtocolRelativeMatch The '//' for a protocol-relative match from a TLD (top level domain) match, with 
+	 *   the character that comes before the '//'.
+	 *   
+	 * @return {Object} A "match description object". This will be `null` if the match was invalid, or if a match type is disabled.
+	 *   Otherwise, this will be an Object (map) with the following properties:
+	 * @return {String} return.prefixStr The char(s) that should be prepended to the replacement string. These are char(s) that
+	 *   were needed to be included from the regex match that were ignored by processing code, and should be re-inserted into 
+	 *   the replacement stream.
+	 * @return {String} return.suffixStr The char(s) that should be appended to the replacement string. These are char(s) that
+	 *   were needed to be included from the regex match that were ignored by processing code, and should be re-inserted into 
+	 *   the replacement stream.
+	 * @return {String} return.matchStr The `matchStr`, fixed up to remove characters that are no longer needed (which have been
+	 *   added to `prefixStr` and `suffixStr`).
+	 * @return {Autolinker.match.Match} return.match The Match object that represents the match that was found.
+	 */
+	processCandidateMatch : function( 
+		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle, 
+		emailAddressMatch, urlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch
+	) {
+		var protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
+		    match,  // Will be an Autolinker.match.Match object
+		    
+		    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+		    suffixStr = "";       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+		    
+		
+		// Return out with `null` for match types that are disabled (url, email, twitter), or for matches that are 
+		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
+		if( !this.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolRelativeMatch ) ) {
+			return null;
+		}
+		
+		// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
+		// in the match itself. 
+		if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
+			matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+			suffixStr = ")";  // this will be added after the generated <a> tag
+		}
+		
+		
+		if( emailAddressMatch ) {
+			match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
+			
+		} else if( twitterMatch ) {
+			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
+			// itself (since there are no look-behinds in JS regexes)
+			if( twitterHandlePrefixWhitespaceChar ) {
+				prefixStr = twitterHandlePrefixWhitespaceChar;
+				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
+			}
+			match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
+			
+		} else {  // url match
+			// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
+			// to match due to the lack of a negative look-behind in JavaScript regular expressions)
+			if( protocolRelativeMatch ) {
+				var charBeforeMatch = protocolRelativeMatch.match( this.charBeforeProtocolRelMatchRegex )[ 1 ] || "";
+				
+				if( charBeforeMatch ) {  // fix up the `matchStr` if there was a preceding char before a protocol-relative match, which was needed to determine the match itself (since there are no look-behinds in JS regexes)
+					prefixStr = charBeforeMatch;
+					matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
+				}
+			}
+			
+			match = new Autolinker.match.Url( {
+				matchedText : matchStr,
+				url : matchStr,
+				protocolRelativeMatch : protocolRelativeMatch,
+				stripPrefix : this.stripPrefix
+			} );
+		}
+		
+		return {
+			prefixStr : prefixStr,
+			suffixStr : suffixStr,
+			matchStr  : matchStr,
+			match     : match
+		};
+	},
+	
+	
 	
 	
 	/**
@@ -627,15 +676,15 @@ Autolinker.prototype = {
  *     // Produces: "Go to <a href="http://google.com">google.com</a>"
  * 
  * @static
- * @method link
- * @param {String} html The HTML text to link URLs within.
+ * @param {String} textOrHtml The HTML or text to find URLs, email addresses, and Twitter handles within (depending on if
+ *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
  * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
  *   See the class description for an example call.
  * @return {String} The HTML text, with URLs automatically linked
  */
-Autolinker.link = function( text, options ) {
+Autolinker.link = function( textOrHtml, options ) {
 	var autolinker = new Autolinker( options );
-	return autolinker.link( text );
+	return autolinker.link( textOrHtml );
 };
 
 
