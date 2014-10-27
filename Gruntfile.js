@@ -31,7 +31,7 @@ module.exports = function(grunt) {
 		jasmine: {
 			dist: {
 				options: {
-					specs: 'tests/*Spec.js',
+					specs: 'tests/*Spec.js'
 				},
 				src: minDistPath
 			}
@@ -41,14 +41,9 @@ module.exports = function(grunt) {
 			development: {
 				options: {
 					banner : banner,
-					nonull : true,
-					
-					process : function( src, filepath ) {
-						return '\t' + src.replace( /\n/g, '\n\t' );  // indent each source file, which is placed inside the UMD block
-					}
+					nonull : true
 				},
 				src: [
-					'src/umdBegin.js',
 					'src/Autolinker.js',
 					'src/Util.js',
 					'src/HtmlParser.js',
@@ -58,10 +53,9 @@ module.exports = function(grunt) {
 					'src/match/Email.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js',
-					'src/umdEnd.js'
 				],
-				dest: distPath,
-			},
+				dest: distPath
+			}
 		},
 		
 		uglify: {
@@ -70,7 +64,7 @@ module.exports = function(grunt) {
 					banner: banner
 				},
 				src: [ distPath ],
-				dest: minDistPath,
+				dest: minDistPath
 			}
 		},
 		
@@ -116,8 +110,6 @@ module.exports = function(grunt) {
 	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
 	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
-	
-	
 	
 	/**
 	 * Creates the banner comment with license header that is placed over the concatenated/minified files.
