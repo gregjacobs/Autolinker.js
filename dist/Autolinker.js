@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.12.2
+ * 0.12.3
  *
  * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -9,7 +9,6 @@
  */
 /*global define, module */
 ( function( root, factory ) {
-
 	if( typeof define === 'function' && define.amd ) {
 		define( factory );             // Define as AMD module if an AMD loader is present (ex: RequireJS).
 	} else if( typeof exports !== 'undefined' ) {
@@ -242,7 +241,7 @@
 			    
 			    // Allow optional path, query string, and hash anchor, not ending in the following characters: "!:,.;"
 			    // http://blog.codinghorror.com/the-problem-with-urls/
-			    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|])?/;  // note: optional part of the full regex
+			    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;\$\*]*[\-A-Za-z0-9+&@#\/%=~_()|\$\*])?/;  // note: optional part of the full regex
 			
 			return new RegExp( [
 				'(',  // *** Capturing group $1, which can be used to check for a twitter handle match. Use group $3 for the actual twitter handle though. $2 may be used to reconstruct the original string in a replace() 
@@ -685,7 +684,7 @@
 		 * 
 		 * @param {Object} dest The destination object.
 		 * @param {Object} src The source object.
-		 * @return {Object} The destination object.
+		 * @return {Object} The destination object (`dest`)
 		 */
 		assign : function( dest, src ) {
 			for( var prop in src ) {
@@ -1637,7 +1636,7 @@
 		
 		/**
 		 * @cfg {Boolean} stripPrefix (required)
-		 * @inheritdoc {@link Autolinker#stripPrefix}
+		 * @inheritdoc Autolinker#stripPrefix
 		 */
 		
 	

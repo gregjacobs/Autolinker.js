@@ -221,7 +221,7 @@ Autolinker.prototype = {
 		    
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|])?/;  // note: optional part of the full regex
+		    urlSuffixRegex = /(?:[\-A-Za-z0-9+&@#\/%?=~_()|!:,.;\$\*]*[\-A-Za-z0-9+&@#\/%=~_()|\$\*])?/;  // note: optional part of the full regex
 		
 		return new RegExp( [
 			'(',  // *** Capturing group $1, which can be used to check for a twitter handle match. Use group $3 for the actual twitter handle though. $2 may be used to reconstruct the original string in a replace() 
