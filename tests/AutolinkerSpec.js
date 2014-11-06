@@ -334,6 +334,33 @@ describe( "Autolinker", function() {
 			} );
 		
 		
+			describe( "Special character handling", function() {
+			
+				it( "should include $ in URLs", function() {
+					var result = autolinker.link( "Check out pair programming: http://c2.com/cgi/wiki$?VirtualPairProgramming" );
+					expect( result ).toBe( 'Check out pair programming: <a href="http://c2.com/cgi/wiki$?VirtualPairProgramming">c2.com/cgi/wiki$?VirtualPairProgramming</a>' );
+				} );
+				
+				
+				it( "should include $ in URLs with query strings", function() {
+					var result = autolinker.link( "Check out the image at http://server.com/template?fmt=jpeg&$base=700." );
+					expect( result ).toBe( 'Check out the image at <a href="http://server.com/template?fmt=jpeg&$base=700">server.com/template?fmt=jpeg&$base=700</a>.' );
+				} );
+
+				it( "should include * in URLs", function() {
+					var result = autolinker.link( "Google from wayback http://wayback.archive.org/web/*/http://google.com" );
+					expect( result ).toBe( 'Google from wayback <a href="http://wayback.archive.org/web/*/http://google.com">wayback.archive.org/web/*/http://google.com</a>' );
+				} );
+				
+				
+				it( "should include * in URLs with query strings", function() {
+					var result = autolinker.link( "Twitter search for bob smith https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith" );
+					expect( result ).toBe( 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>' );
+				} );
+
+			} );
+		
+		
 			describe( "URL path, query string, and hash handling", function() {
 				
 				it( "should automatically link URLs in the form of yahoo.com/path/to/file.html, handling the path", function() {
