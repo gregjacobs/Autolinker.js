@@ -787,7 +787,17 @@ describe( "Autolinker", function() {
 		} );
 		
 		
-		describe( "`stripPrefix` option", function() {
+		describe( "`stripProtocol` option", function() {
+			
+			it( "should remove the protocol part of a URL for display when set to `true`", function() {
+				var result = Autolinker.link( "http://www.url.com", { stripProtocol: true, newWindow: false } );
+				expect( result ).toBe( 'Test <a href="file://execute-virus.com">file://execute-virus.com</a>' );
+			} );
+			
+		} );
+		
+		
+		describe( "`stripPrefix` option (maintained for backward compatibility)", function() {
 		
 			it( "should not remove the prefix for non-http protocols", function() {
 				var result = Autolinker.link( "Test file://execute-virus.com", { stripPrefix: true, newWindow: false } );
