@@ -358,6 +358,17 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>' );
 				} );
 
+				it( "should include ' in URLs", function() {
+					var result = autolinker.link( "You are a star http://en.wikipedia.org/wiki/You're_a_Star/" );
+					expect( result ).toBe( 'You are a star <a href="http://en.wikipedia.org/wiki/You\'re_a_Star/">en.wikipedia.org/wiki/You\'re_a_Star</a>' );
+				} );
+				
+				
+				it( "should include ' in URLs with query strings", function() {
+					var result = autolinker.link( "Test google search https://www.google.com/#q=test's" );
+					expect( result ).toBe( 'Test google search <a href="https://www.google.com/#q=test\'s">google.com/#q=test\'s</a>' );
+				} );
+
 			} );
 		
 		
