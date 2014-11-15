@@ -386,6 +386,7 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Check out the image at <a href="http://server.com/template?fmt=jpeg&$base=700">server.com/template?fmt=jpeg&$base=700</a>.' );
 				} );
 
+				
 				it( "should include * in URLs", function() {
 					var result = autolinker.link( "Google from wayback http://wayback.archive.org/web/*/http://google.com" );
 					expect( result ).toBe( 'Google from wayback <a href="http://wayback.archive.org/web/*/http://google.com">wayback.archive.org/web/*/http://google.com</a>' );
@@ -397,6 +398,7 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>' );
 				} );
 
+				
 				it( "should include ' in URLs", function() {
 					var result = autolinker.link( "You are a star http://en.wikipedia.org/wiki/You're_a_Star/" );
 					expect( result ).toBe( 'You are a star <a href="http://en.wikipedia.org/wiki/You\'re_a_Star/">en.wikipedia.org/wiki/You\'re_a_Star</a>' );
@@ -406,6 +408,12 @@ describe( "Autolinker", function() {
 				it( "should include ' in URLs with query strings", function() {
 					var result = autolinker.link( "Test google search https://www.google.com/#q=test's" );
 					expect( result ).toBe( 'Test google search <a href="https://www.google.com/#q=test\'s">google.com/#q=test\'s</a>' );
+				} );
+				
+				
+				it( "should include [ and ] in URLs with query strings", function() {
+					var result = autolinker.link( "Go to https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6 today" );
+					expect( result ).toBe( 'Go to <a href="https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6">example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6</a> today' );
 				} );
 
 			} );
