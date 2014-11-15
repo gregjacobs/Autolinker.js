@@ -140,6 +140,11 @@ describe( "Autolinker", function() {
 						expect( autolinker.link( strings[ i ] ) ).toBe( strings[ i ] );  // none should be autolinked
 					}
 				} );
+
+				it( "should NOT include preceding : introductions without a space", function() {
+					var result = autolinker.link( 'the link:http://example.com/' );
+					expect( result ).toBe( 'the link:<a href="http://example.com/">example.com</a>' );
+				});
 				
 			} );
 			
