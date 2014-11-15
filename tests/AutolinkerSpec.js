@@ -157,11 +157,21 @@ describe( "Autolinker", function() {
 						'DESCRIPTION:Just call this guy yeah! Testings',
 						'PRIORITY:3',
 						'END:VEVENT',
-						'END:VCALENDAR'
+						'END:VCALENDAR',
+						'START:123:SOMETHING'
 					];
+					var i, len = strings.length, str;
 					
-					for( var i = 0, len = strings.length; i < len; i++ ) {
-						expect( autolinker.link( strings[ i ] ) ).toBe( strings[ i ] );  // none should be autolinked
+					// Test with just the strings themselves.
+					for( i = 0; i < len; i++ ) {
+						str = strings[ i ];
+						expect( autolinker.link( str ) ).toBe( str );  // none should be autolinked
+					}
+					
+					// Test with the strings surrounded by other text
+					for( i = 0; i < len; i++ ) {
+						str = strings[ i ];
+						expect( autolinker.link( 'test ' + str + ' test' ) ).toBe( 'test ' + str + ' test' );  // none should be autolinked 
 					}
 				} );
 

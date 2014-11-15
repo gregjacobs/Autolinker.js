@@ -91,6 +91,8 @@
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
+	
+	this.matchValidator = new Autolinker.MatchValidator();
 };
 
 
@@ -273,22 +275,6 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {RegExp} invalidProtocolRelMatchRegex
-	 * 
-	 * The regular expression used to check a potential protocol-relative URL match, coming from the {@link #matcherRegex}. 
-	 * A protocol-relative URL is, for example, "//yahoo.com"
-	 * 
-	 * This regular expression is used in conjunction with the {@link #matcherRegex}, and checks to see if there is a word character
-	 * before the '//' in order to determine if we should actually autolink a protocol-relative URL. This is needed because there
-	 * is no negative look-behind in JavaScript regular expressions. 
-	 * 
-	 * For instance, we want to autolink something like "//google.com", but we don't want to autolink something 
-	 * like "abc//google.com"
-	 */
-	invalidProtocolRelMatchRegex : /^[\w]\/\//,
-	
-	/**
-	 * @private
 	 * @property {RegExp} charBeforeProtocolRelMatchRegex
 	 * 
 	 * The regular expression used to retrieve the character before a protocol-relative URL match.
@@ -298,6 +284,14 @@ Autolinker.prototype = {
 	 * from the URL.
 	 */
 	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
+	
+	/**
+	 * @private
+	 * @property {Autolinker.MatchValidator} matchValidator
+	 * 
+	 * The MatchValidator object, used to filter out any false positives from the {@link #matcherRegex}. See
+	 * {@link Autolinker.MatchValidator} for details.
+	 */
 	
 	/**
 	 * @private
@@ -440,7 +434,7 @@ Autolinker.prototype = {
 		var me = this;  // for closure
 		
 		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 ) {
-			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // match description object
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 );  // match description object
 			
 			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
 			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
@@ -459,7 +453,7 @@ Autolinker.prototype = {
 	/**
 	 * Processes a candidate match from the {@link #matcherRegex}. 
 	 * 
-	 * Not all matches found by the regex are actual URL/email/Twitter matches, as determined by {@link #isValidMatch}. In
+	 * Not all matches found by the regex are actual URL/email/Twitter matches, as determined by the {@link #matchValidator}. In
 	 * this case, the method returns `null`. Otherwise, a valid Object with `prefixStr`, `match`, and `suffixStr` is returned.
 	 * 
 	 * @private
@@ -502,7 +496,10 @@ Autolinker.prototype = {
 		
 		// Return out with `null` for match types that are disabled (url, email, twitter), or for matches that are 
 		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
-		if( !this.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolUrlMatch, protocolRelativeMatch ) ) {
+		if(
+			( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) ||
+			!this.matchValidator.isValidMatch( urlMatch, protocolUrlMatch, protocolRelativeMatch ) 
+		) {
 			return null;
 		}
 		
@@ -552,47 +549,6 @@ Autolinker.prototype = {
 			matchStr  : matchStr,
 			match     : match
 		};
-	},
-	
-	
-	
-	
-	/**
-	 * Determines if a given match found by {@link #processTextNode} is valid. Will return `false` for:
-	 * 
-	 * 1) Disabled link types (i.e. having a Twitter match, but {@link #twitter} matching is disabled)
-	 * 2) URL matches which do not have at least have one period ('.') in the domain name (effectively skipping over 
-	 *    matches like "abc:def")
-	 * 3) A protocol-relative url match (a URL beginning with '//') whose previous character is a word character 
-	 *    (effectively skipping over strings like "abc//google.com")
-	 * 
-	 * Otherwise, returns `true`.
-	 * 
-	 * @private
-	 * @param {String} twitterMatch The matched Twitter handle, if there was one. Will be empty string if the match is not a 
-	 *   Twitter match.
-	 * @param {String} emailAddressMatch The matched Email address, if there was one. Will be empty string if the match is not 
-	 *   an Email address match.
-	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
-	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to match
-	 *   something like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
-	 * @param {String} protocolRelativeMatch The protocol-relative string for a URL match (i.e. '//'), possibly with a preceding
-	 *   character (ex, a space, such as: ' //', or a letter, such as: 'a//'). The match is invalid if there is a word character
-	 *   preceding the '//'.
-	 * @return {Boolean} `true` if the match given is valid and should be processed, or `false` if the match is invalid and/or 
-	 *   should just not be processed (such as, if it's a Twitter match, but {@link #twitter} matching is disabled}.
-	 */
-	isValidMatch : function( twitterMatch, emailAddressMatch, urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
-		if(
-		    ( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) ||
-		    ( urlMatch && ( !protocolUrlMatch || !(/:\/\//).test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-		    ( urlMatch && /^[A-Za-z]{3,9}:/.test( urlMatch ) && !/:.*?[A-Za-z]/.test( urlMatch ) ) ||     // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-		    ( protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) )  // a protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
-		) {
-			return false;
-		}
-		
-		return true;
 	},
 	
 	
