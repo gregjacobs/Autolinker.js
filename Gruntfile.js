@@ -5,6 +5,8 @@ module.exports = function(grunt) {
 	
 	var exec = require( 'child_process' ).exec;
 	var banner = createBanner();
+	var distPath = 'dist/Autolinker.js';
+	var minDistPath = 'dist/Autolinker.min.js';
 	
 	// Project configuration.
 	grunt.initConfig( {
@@ -29,25 +31,19 @@ module.exports = function(grunt) {
 		jasmine: {
 			dist: {
 				options: {
-					specs: 'tests/*Spec.js',
+					specs: 'tests/*Spec.js'
 				},
-				src: 'dist/Autolinker.min.js'
+				src: minDistPath
 			}
 		},
 		
 		concat: {
 			development: {
 				options: {
-					banner : banner + createDistFileHeader(),
-					footer : createDistFileFooter(),
-					nonull : true,
-					
-					process : function( src, filepath ) {
-						return '\t' + src.replace( /\n/g, '\n\t' );  // indent each source file, which is placed inside the UMD block
-					}
+					banner : banner,
+					nonull : true
 				},
 				src: [
-					'src/umdBegin.js',
 					'src/Autolinker.js',
 					'src/Util.js',
 					'src/HtmlParser.js',
@@ -57,10 +53,9 @@ module.exports = function(grunt) {
 					'src/match/Email.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js',
-					'src/umdEnd.js'
 				],
-				dest: 'dist/Autolinker.js',
-			},
+				dest: distPath
+			}
 		},
 		
 		uglify: {
@@ -68,8 +63,8 @@ module.exports = function(grunt) {
 				options: {
 					banner: banner
 				},
-				src: [ 'dist/Autolinker.js' ],
-				dest: 'dist/Autolinker.min.js',
+				src: [ distPath ],
+				dest: minDistPath
 			}
 		},
 		
@@ -88,6 +83,15 @@ module.exports = function(grunt) {
 					'title': 'Autolinker API Docs'
 				}
 			}
+		},
+
+		umd: {
+			main: {
+				src: distPath,
+				globalAlias: 'Autolinker', //  Changes the name of the global variable
+				objectToExport: 'Autolinker',
+				indent: '\t'
+			}
 		}
 	} );
 
@@ -98,15 +102,14 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jsduck' );
+	grunt.loadNpmTasks( 'grunt-umd' );
 
 	// Tasks
 	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
-	grunt.registerTask( 'build', [ 'concat:development', 'uglify:production' ] );
+	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
 	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
 	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
-	
-	
 	
 	/**
 	 * Creates the banner comment with license header that is placed over the concatenated/minified files.
@@ -127,49 +130,4 @@ module.exports = function(grunt) {
 			' */\n'
 		].join( "\n" );
 	}
-	
-	
-	/**
-	 * Creates the UMD (Universal Module Definition) header, which defines Autolinker as one of the following when loaded:
-	 * 
-	 * 1. An AMD module, if an AMD loader is available (such as RequireJS)
-	 * 2. A CommonJS module, if a CommonJS module environment is available (such as Node.js), or
-	 * 3. A global variable if the others are unavailable.
-	 * 
-	 * This UMD header is combined with the UMD footer to create the distribution JavaScript file.
-	 * 
-	 * @private
-	 * @return {String}
-	 */
-	function createDistFileHeader() {
-		return [
-			"/*global define, module */",
-			"( function( root, factory ) {",
-				"\tif( typeof define === 'function' && define.amd ) {",
-					"\t\tdefine( factory );             // Define as AMD module if an AMD loader is present (ex: RequireJS).",
-				"\t} else if( typeof exports !== 'undefined' ) {",
-					"\t\tmodule.exports = factory();    // Define as CommonJS module for Node.js, if available.",
-				"\t} else {",
-					"\t\troot.Autolinker = factory();   // Finally, define as a browser global if no module loader.",
-				"\t}",
-			"}( this, function() {\n\n"
-		].join( "\n" );
-	}
-	
-	
-	/**
-	 * Creates the UMD (Universal Module Definition) footer. See {@link #createDistFileHeader} for details.
-	 * 
-	 * @private
-	 * @return {String}
-	 */
-	function createDistFileFooter() {
-		var umdEnd = [
-				'\n\n\treturn Autolinker;\n',
-			'} ) );'
-		];
-		
-		return umdEnd.join( "\n" );
-	}
-	
 };
