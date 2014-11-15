@@ -3,12 +3,20 @@
 module.exports = function(grunt) {
 	'use strict';
 	
-	var exec = require( 'child_process' ).exec;
-	var banner = createBanner();
-	var distPath = 'dist/Autolinker.js';
-	var minDistPath = 'dist/Autolinker.min.js';
+	// Tasks
+	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
+	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
+	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
+	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
+	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
 	
-	// Project configuration.
+	
+	// Project configuration
+	var exec = require( 'child_process' ).exec,
+	    banner = createBanner(),
+	    distPath = 'dist/Autolinker.js',
+	    minDistPath = 'dist/Autolinker.min.js';
+	
 	grunt.initConfig( {
 		pkg: grunt.file.readJSON( 'package.json' ),
 		
@@ -103,13 +111,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jsduck' );
 	grunt.loadNpmTasks( 'grunt-umd' );
-
-	// Tasks
-	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
-	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
-	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
-	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
-	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
+	
 	
 	/**
 	 * Creates the banner comment with license header that is placed over the concatenated/minified files.
