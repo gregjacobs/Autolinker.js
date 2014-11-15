@@ -29,6 +29,12 @@ describe( "Autolinker", function() {
 					var result = autolinker.link( "Joe went to http://yahoo.com" );
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>' );
 				} );
+				
+				
+				it( "should automatically link localhost URLs when there is a protocol", function() {
+					var result = autolinker.link( "Joe went to http://localhost today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost">localhost</a> today' );
+				} );
 			
 			
 				it( "should automatically link URLs in the form of http://www.yahoo.com (i.e. protocol and 'www' prefix)", function() {
@@ -85,15 +91,33 @@ describe( "Autolinker", function() {
 				} );
 				
 				
+				it( "should automatically link a localhost URL with a port number and a path", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000/page today." );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000/page">localhost:8000/page</a> today.' );
+				} );
+				
+				
 				it( "should automatically link URLs with a port number and a query string", function() {
 					var result = autolinker.link( "Joe went to http://yahoo.com:8000?page=index today." );
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000?page=index">yahoo.com:8000?page=index</a> today.' );
 				} );
 				
 				
+				it( "should automatically link a localhost URL with a port number and a query string", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000?page=index today." );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000?page=index">localhost:8000?page=index</a> today.' );
+				} );
+				
+				
 				it( "should automatically link URLs with a port number and a hash string", function() {
 					var result = autolinker.link( "Joe went to http://yahoo.com:8000#page=index today." );
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000#page=index">yahoo.com:8000#page=index</a> today.' );
+				} );
+				
+				
+				it( "should automatically link a localhost URL with a port number and a hash string", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000#page=index today." );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#page=index">localhost:8000#page=index</a> today.' );
 				} );
 				
 				
@@ -141,10 +165,10 @@ describe( "Autolinker", function() {
 					}
 				} );
 
-				it( "should NOT include preceding : introductions without a space", function() {
+				it( "should NOT include preceding ':' introductions without a space", function() {
 					var result = autolinker.link( 'the link:http://example.com/' );
 					expect( result ).toBe( 'the link:<a href="http://example.com/">example.com</a>' );
-				});
+				} );
 				
 			} );
 			

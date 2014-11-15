@@ -203,10 +203,12 @@ Autolinker.prototype = {
 	 *    address. Ex: 'me@my.com'
 	 * 5. Group that matches a URL in the input text. Ex: 'http://google.com', 'www.google.com', or just 'google.com'.
 	 *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
-	 * 6. A protocol-relative ('//') match for the case of a 'www.' prefixed URL. Will be an empty string if it is not a 
+	 * 6. Group that matches a protocol URL (i.e. 'http://google.com'). This is used to match protocol URLs with just a single
+	 *    word, like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
+	 * 7. A protocol-relative ('//') match for the case of a 'www.' prefixed URL. Will be an empty string if it is not a 
 	 *    protocol-relative match. We need to know the character before the '//' in order to determine if it is a valid match
 	 *    or the // was in a string we don't want to auto-link.
-	 * 7. A protocol-relative ('//') match for the case of a known TLD prefixed URL. Will be an empty string if it is not a 
+	 * 8. A protocol-relative ('//') match for the case of a known TLD prefixed URL. Will be an empty string if it is not a 
 	 *    protocol-relative match. See #6 for more info. 
 	 */
 	matcherRegex : (function() {
@@ -214,7 +216,7 @@ Autolinker.prototype = {
 		    
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 		    
-		    protocolRegex = /(?:[A-Za-z]{3,9}:(?![A-Za-z]{3,9}:\/\/)(?:\/\/)?)/,      // match protocol, allow in format http:// or mailto:
+		    protocolRegex = /(?:[A-Za-z]{3,9}:(?![A-Za-z]{3,9}:\/\/)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:")
 		    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
 		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
 		    tldRegex = /\.(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/,   // match our known top level domains (TLDs)
@@ -242,7 +244,7 @@ Autolinker.prototype = {
 			
 			'(',  // *** Capturing group $5, which is used to match a URL
 				'(?:', // parens to cover match for protocol (optional), and domain
-					'(?:',  // non-capturing paren for a protocol-prefixed url (ex: http://google.com)
+					'(',  // *** Capturing group $6, for a protocol-prefixed url (ex: http://google.com)
 						protocolRegex.source,
 						domainNameRegex.source,
 					')',
@@ -250,7 +252,7 @@ Autolinker.prototype = {
 					'|',
 					
 					'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
-						'(.?//)?',  // *** Capturing group $6 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+						'(.?//)?',  // *** Capturing group $7 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 						wwwRegex.source,
 						domainNameRegex.source,
 					')',
@@ -258,7 +260,7 @@ Autolinker.prototype = {
 					'|',
 					
 					'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
-						'(.?//)?',  // *** Capturing group $7 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+						'(.?//)?',  // *** Capturing group $8 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 						domainNameRegex.source,
 						tldRegex.source,
 					')',
@@ -437,7 +439,7 @@ Autolinker.prototype = {
 	processTextNode : function( text ) {
 		var me = this;  // for closure
 		
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7 ) {
+		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 ) {
 			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // match description object
 			
 			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
@@ -468,6 +470,8 @@ Autolinker.prototype = {
 	 * @param {String} twitterHandle The actual Twitter user (i.e the word after the @ sign in a Twitter match).
 	 * @param {String} emailAddressMatch The matched email address for an email address match.
 	 * @param {String} urlMatch The matched URL string for a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to match
+	 *   something like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
 	 * @param {String} wwwProtocolRelativeMatch The '//' for a protocol-relative match from a 'www' url, with the character that 
 	 *   comes before the '//'.
 	 * @param {String} tldProtocolRelativeMatch The '//' for a protocol-relative match from a TLD (top level domain) match, with 
@@ -487,7 +491,7 @@ Autolinker.prototype = {
 	 */
 	processCandidateMatch : function( 
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle, 
-		emailAddressMatch, urlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch
+		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch
 	) {
 		var protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 		    match,  // Will be an Autolinker.match.Match object
@@ -498,7 +502,7 @@ Autolinker.prototype = {
 		
 		// Return out with `null` for match types that are disabled (url, email, twitter), or for matches that are 
 		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
-		if( !this.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolRelativeMatch ) ) {
+		if( !this.isValidMatch( twitterMatch, emailAddressMatch, urlMatch, protocolUrlMatch, protocolRelativeMatch ) ) {
 			return null;
 		}
 		
@@ -570,16 +574,18 @@ Autolinker.prototype = {
 	 * @param {String} emailAddressMatch The matched Email address, if there was one. Will be empty string if the match is not 
 	 *   an Email address match.
 	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to match
+	 *   something like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
 	 * @param {String} protocolRelativeMatch The protocol-relative string for a URL match (i.e. '//'), possibly with a preceding
 	 *   character (ex, a space, such as: ' //', or a letter, such as: 'a//'). The match is invalid if there is a word character
 	 *   preceding the '//'.
 	 * @return {Boolean} `true` if the match given is valid and should be processed, or `false` if the match is invalid and/or 
 	 *   should just not be processed (such as, if it's a Twitter match, but {@link #twitter} matching is disabled}.
 	 */
-	isValidMatch : function( twitterMatch, emailAddressMatch, urlMatch, protocolRelativeMatch ) {
-		if( 
+	isValidMatch : function( twitterMatch, emailAddressMatch, urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
+		if(
 		    ( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) ||
-		    ( urlMatch && urlMatch.indexOf( '.' ) === -1 ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL
+		    ( urlMatch && ( !protocolUrlMatch || !(/:\/\//).test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
 		    ( urlMatch && /^[A-Za-z]{3,9}:/.test( urlMatch ) && !/:.*?[A-Za-z]/.test( urlMatch ) ) ||     // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
 		    ( protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) )  // a protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
 		) {
