@@ -16,6 +16,13 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 	
 	/**
+	 * @cfg {Boolean} protocolUrlMatch (required)
+	 * 
+	 * `true` if the URL is a match which already has a protocol (i.e. 'http://'), `false` if the match was from a 'www' or
+	 * known TLD match.
+	 */
+	
+	/**
 	 * @cfg {Boolean} protocolRelativeMatch (required)
 	 * 
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match is a URL that starts with '//',
@@ -46,13 +53,13 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	protocolRelativeRegex : /^\/\//,
 	
 	/**
-	 * @protected
-	 * @property {RegExp} checkForProtocolRegex
+	 * @private
+	 * @property {Boolean} protocolPrepended
 	 * 
-	 * A regular expression used to check if the {@link #url} is missing a protocol (in which case, 'http://'
-	 * will be added).
+	 * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
+	 * {@link #url} did not have a protocol)
 	 */
-	checkForProtocolRegex: /^[A-Za-z]{3,9}:/,
+	protocolPrepended : false,
 	
 
 	/**
@@ -66,17 +73,19 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	
 	
 	/**
-	 * Returns the url that was matched, assuming the protocol to be 'http://' if the match
-	 * was missing a protocol.
+	 * Returns the url that was matched, assuming the protocol to be 'http://' if the original
+	 * match was missing a protocol.
 	 * 
 	 * @return {String}
 	 */
 	getUrl : function() {
 		var url = this.url;
 		
-		// if the url string doesn't begin with a protocol, assume http://
-		if( !this.protocolRelativeMatch && !this.checkForProtocolRegex.test( url ) ) {
+		// if the url string doesn't begin with a protocol, assume 'http://'
+		if( !this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended ) {
 			url = this.url = 'http://' + url;
+			
+			this.protocolPrepended = true;
 		}
 		
 		return url;

@@ -35,6 +35,36 @@ describe( "Autolinker", function() {
 					var result = autolinker.link( "Joe went to http://localhost today" );
 					expect( result ).toBe( 'Joe went to <a href="http://localhost">localhost</a> today' );
 				} );
+				
+				
+				it( "should automatically link localhost URLs when there is a protocol and port", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000 today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a> today' );
+				} );
+				
+				
+				it( "should automatically link localhost URLs when there is a protocol, port, and path", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000/abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000/abc">localhost:8000/abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link localhost URLs when there is a protocol, port, and query string", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000?abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000?abc">localhost:8000?abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link localhost URLs when there is a protocol, port, and hash", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000#abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#abc">localhost:8000#abc</a> today' );
+				} );
+				
+				
+				it( "should not include the '?' char if it is at the end of the URL", function() {
+					var result = autolinker.link( "Joe went to http://localhost:8000? today" );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>? today' );
+				} );
 			
 			
 				it( "should automatically link URLs in the form of http://www.yahoo.com (i.e. protocol and 'www' prefix)", function() {
@@ -121,65 +151,123 @@ describe( "Autolinker", function() {
 				} );
 				
 				
-				it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
-					var result = autolinker.link( 'Something like git:d should not be linked as a URL' );
-					expect( result ).toBe( 'Something like git:d should not be linked as a URL' );
-				} );
-				
-				
-				it( "should NOT automatically link strings of the form 'git:domain' (using the heuristic that the domain name does not have a '.' in it)", function() {
-					var result = autolinker.link( 'Something like git:domain should not be linked as a URL' );
-					expect( result ).toBe( 'Something like git:domain should not be linked as a URL' );
-				} );
-				
-				
-				it( "should automatically link strings of the form 'git:domain.com', interpreting this as a protocol and domain name", function() {
-					var result = autolinker.link( 'Something like git:domain.com should be linked as a URL' );
-					expect( result ).toBe( 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL' );
-				} );
-				
-				
-				it( "should NOT automatically link a string in the form of 'version:1.0'", function() {
-					var result = autolinker.link( 'version:1.0' );
-					expect( result ).toBe( 'version:1.0' );
-				} );
-				
-				
-				it( "should NOT automatically link these 'abc:def' style strings", function() {
-					var strings = [
-						'BEGIN:VCALENDAR',
-						'VERSION:1.0',
-						'BEGIN:VEVENT',
-						'DTSTART:20140401T090000',
-						'DTEND:20140401T100000',
-						'SUMMARY:Some thing to do',
-						'LOCATION:',
-						'DESCRIPTION:Just call this guy yeah! Testings',
-						'PRIORITY:3',
-						'END:VEVENT',
-						'END:VCALENDAR',
-						'START:123:SOMETHING'
-					];
-					var i, len = strings.length, str;
+				describe( "protocol linking", function() {
+						
+					it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
+						var result = autolinker.link( 'Something like git:d should not be linked as a URL' );
+						expect( result ).toBe( 'Something like git:d should not be linked as a URL' );
+					} );
 					
-					// Test with just the strings themselves.
-					for( i = 0; i < len; i++ ) {
-						str = strings[ i ];
-						expect( autolinker.link( str ) ).toBe( str );  // none should be autolinked
-					}
 					
-					// Test with the strings surrounded by other text
-					for( i = 0; i < len; i++ ) {
-						str = strings[ i ];
-						expect( autolinker.link( 'test ' + str + ' test' ) ).toBe( 'test ' + str + ' test' );  // none should be autolinked 
-					}
+					it( "should NOT automatically link strings of the form 'git:domain' (using the heuristic that the domain name does not have a '.' in it)", function() {
+						var result = autolinker.link( 'Something like git:domain should not be linked as a URL' );
+						expect( result ).toBe( 'Something like git:domain should not be linked as a URL' );
+					} );
+					
+					
+					it( "should automatically link strings of the form 'git:domain.com', interpreting this as a protocol and domain name", function() {
+						var result = autolinker.link( 'Something like git:domain.com should be linked as a URL' );
+						expect( result ).toBe( 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL' );
+					} );
+					
+					
+					it( "should NOT automatically link a string in the form of 'version:1.0'", function() {
+						var result = autolinker.link( 'version:1.0' );
+						expect( result ).toBe( 'version:1.0' );
+					} );
+					
+					
+					it( "should NOT automatically link these 'abc:def' style strings", function() {
+						var strings = [
+							'BEGIN:VCALENDAR',
+							'VERSION:1.0',
+							'BEGIN:VEVENT',
+							'DTSTART:20140401T090000',
+							'DTEND:20140401T100000',
+							'SUMMARY:Some thing to do',
+							'LOCATION:',
+							'DESCRIPTION:Just call this guy yeah! Testings',
+							'PRIORITY:3',
+							'END:VEVENT',
+							'END:VCALENDAR',
+							'START:123',
+							'START:123:SOMETHING'
+						];
+						var i, len = strings.length, str;
+						
+						// Test with just the strings themselves.
+						for( i = 0; i < len; i++ ) {
+							str = strings[ i ];
+							expect( autolinker.link( str ) ).toBe( str );  // none should be autolinked
+						}
+						
+						// Test with the strings surrounded by other text
+						for( i = 0; i < len; i++ ) {
+							str = strings[ i ];
+							expect( autolinker.link( 'test ' + str + ' test' ) ).toBe( 'test ' + str + ' test' );  // none should be autolinked 
+						}
+					} );
+	
+					
+					it( "should NOT include preceding ':' introductions without a space", function() {
+						var result = autolinker.link( 'the link:http://example.com/' );
+						expect( result ).toBe( 'the link:<a href="http://example.com/">example.com</a>' );
+					} );
+					
+					
+					it( "should autolink protocols with at least two characters", function() {
+						var result = autolinker.link( 'link this: gg://example.com/' );
+						expect( result ).toBe( 'link this: <a href="gg://example.com/">gg://example.com</a>' );
+					} );
+					
+					
+					it( "should autolink protocols with more than 9 characters (as was the previous upper bound, but it seems protocols may be longer)", function() {
+						var result = autolinker.link( 'link this: opaquelocktoken://example' );
+						expect( result ).toBe( 'link this: <a href="opaquelocktoken://example">opaquelocktoken://example</a>' );
+					} );
+					
+					
+					it( "should NOT autolink a protocol with only one character", function() {
+						var result = autolinker.link( 'do not link this: a://example' );
+						expect( result ).toBe( 'do not link this: a://example' );
+					} );
+					
+					
+					it( "should autolink protocols with digits, dashes, dots, and plus signs in their names", function() {
+						var result1 = autolinker.link( 'link this: a1://example' );
+						expect( result1 ).toBe( 'link this: <a href="a1://example">a1://example</a>' );
+						
+						var result2 = autolinker.link( 'link this: view-source://example' );
+						expect( result2 ).toBe( 'link this: <a href="view-source://example">view-source://example</a>' );
+						
+						var result3 = autolinker.link( 'link this: iris.xpc://example' );
+						expect( result3 ).toBe( 'link this: <a href="iris.xpc://example">iris.xpc://example</a>' );
+						
+						var result4 = autolinker.link( 'link this: test+protocol://example' );
+						expect( result4 ).toBe( 'link this: <a href="test+protocol://example">test+protocol://example</a>' );
+						
+						// Test all allowed non-alpha chars
+						var result5 = autolinker.link( 'link this: test+proto-col.123://example' );
+						expect( result5 ).toBe( 'link this: <a href="test+proto-col.123://example">test+proto-col.123://example</a>' );
+					} );
+					
+					
+					it( "should NOT autolink protocols that start with a digit, dash, plus sign, or dot, as per http://tools.ietf.org/html/rfc3986#section-3.1", function() {
+						var result = autolinker.link( 'do not link this: 1a://example' );
+						expect( result ).toBe( 'do not link this: 1a://example' );
+						
+						var result2 = autolinker.link( 'do not link this: -a://example' );
+						expect( result2 ).toBe( 'do not link this: -a://example' );
+						
+						var result3 = autolinker.link( 'do not link this: +a://example' );
+						expect( result3 ).toBe( 'do not link this: +a://example' );
+						
+						var result4 = autolinker.link( 'do not link this: .a://example' );
+						expect( result4 ).toBe( 'do not link this: .a://example' );
+					} );
+					
 				} );
-
-				it( "should NOT include preceding ':' introductions without a space", function() {
-					var result = autolinker.link( 'the link:http://example.com/' );
-					expect( result ).toBe( 'the link:<a href="http://example.com/">example.com</a>' );
-				} );
-				
+					
 			} );
 			
 			
@@ -203,9 +291,33 @@ describe( "Autolinker", function() {
 				} );
 				
 				
+				it( "should automatically link URLs in the form of 'www.yahoo.com:8000/abc' (with a port number and path)", function() {
+					var result = autolinker.link( "Joe went to www.yahoo.com:8000/abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com:8000/abc">yahoo.com:8000/abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'www.yahoo.com:8000?abc' (with a port number and query string)", function() {
+					var result = autolinker.link( "Joe went to www.yahoo.com:8000?abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com:8000?abc">yahoo.com:8000?abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'www.yahoo.com:8000#abc' (with a port number and hash)", function() {
+					var result = autolinker.link( "Joe went to www.yahoo.com:8000#abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com:8000#abc">yahoo.com:8000#abc</a> today' );
+				} );
+				
+				
 				it( "should automatically link capitalized URLs", function() {
 					var result = autolinker.link( "Joe went to WWW.YAHOO.COM today" );
 					expect( result ).toBe( 'Joe went to <a href="http://WWW.YAHOO.COM">YAHOO.COM</a> today' );
+				} );
+				
+				
+				it( "should not include the '?' char if it is at the end of the URL", function() {
+					var result = autolinker.link( "Joe went to www.yahoo.com? today" );
+					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>? today' );
 				} );
 				
 			} );
@@ -243,15 +355,39 @@ describe( "Autolinker", function() {
 				} );
 				
 				
-				it( "should automatically link URLs in the form of 'www.yahoo.com:8000' (with a port number)", function() {
+				it( "should automatically link URLs in the form of 'yahoo.com:8000' (with a port number)", function() {
 					var result = autolinker.link( "Joe went to yahoo.com:8000 today" );
 					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000">yahoo.com:8000</a> today' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'yahoo.com:8000/abc' (with a port number and path)", function() {
+					var result = autolinker.link( "Joe went to yahoo.com:8000/abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000/abc">yahoo.com:8000/abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'yahoo.com:8000?abc' (with a port number and query string)", function() {
+					var result = autolinker.link( "Joe went to yahoo.com:8000?abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000?abc">yahoo.com:8000?abc</a> today' );
+				} );
+				
+				
+				it( "should automatically link URLs in the form of 'yahoo.com:8000#abc' (with a port number and hash)", function() {
+					var result = autolinker.link( "Joe went to yahoo.com:8000#abc today" );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000#abc">yahoo.com:8000#abc</a> today' );
 				} );
 				
 				
 				it( "should automatically link capitalized URLs", function() {
 					var result = autolinker.link( "Joe went to YAHOO.COM." );
 					expect( result ).toBe( 'Joe went to <a href="http://YAHOO.COM">YAHOO.COM</a>.' );
+				} );
+				
+				
+				it( "should not include the '?' char if it is at the end of the URL", function() {
+					var result = autolinker.link( "Joe went to yahoo.com? today" );
+					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>? today' );
 				} );
 				
 			} );
@@ -898,7 +1034,7 @@ describe( "Autolinker", function() {
 			} );
 			
 		} );
-			
+		
 		
 		describe( "`truncate` option", function() {
 		

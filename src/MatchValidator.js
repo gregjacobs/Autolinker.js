@@ -34,7 +34,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} hasFullProtocolRegex
 	 */
-	hasFullProtocolRegex : /^[A-Za-z]{3,9}:\/\//,
+	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
 	
 	/**
 	 * Regex to test for a protocol prefix, such as 'mailto:'
@@ -42,7 +42,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} hasProtocolPrefixRegex
 	 */
-	hasProtocolPrefixRegex : /^[A-Za-z]{3,9}:/,
+	hasProtocolPrefixRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
 	
 	/**
 	 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
@@ -50,7 +50,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} hasWordCharAfterProtocolRegex
 	 */
-	hasWordCharAfterProtocolRegex : /:.*?[A-Za-z]/,
+	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z]/,
 	
 	
 	/**
@@ -76,9 +76,9 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 */
 	isValidMatch : function( urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
 		if(
-			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-			this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch ) ||               // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-			this.isInvalidProtocolRelativeMatch( protocolRelativeMatch )            // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
+			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||       // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
+			this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) ||  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+			this.isInvalidProtocolRelativeMatch( protocolRelativeMatch )                 // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
 		) {
 			return false;
 		}
@@ -104,7 +104,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 *   match.
 	 */
 	urlMatchDoesNotHaveProtocolOrDot : function( urlMatch, protocolUrlMatch ) {
-		return ( urlMatch && ( !protocolUrlMatch || !this.hasFullProtocolRegex.test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 );
+		return ( !!urlMatch && ( !protocolUrlMatch || !this.hasFullProtocolRegex.test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 );
 	},
 	
 	
@@ -116,11 +116,18 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * 
 	 * @private
 	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to
+	 *   know whether or not we have a protocol in the URL string, in order to check for a word character after the protocol
+	 *   separator (':').
 	 * @return {Boolean} `true` if the URL match does not have at least one word character in it after the protocol, `false`
 	 *   otherwise.
 	 */
-	urlMatchDoesNotHaveAtLeastOneWordChar : function( urlMatch ) {
-		return ( urlMatch && this.hasProtocolPrefixRegex.test( urlMatch ) && !this.hasWordCharAfterProtocolRegex.test( urlMatch ) );
+	urlMatchDoesNotHaveAtLeastOneWordChar : function( urlMatch, protocolUrlMatch ) {
+		if( urlMatch && protocolUrlMatch ) {
+			return !this.hasWordCharAfterProtocolRegex.test( urlMatch );
+		} else {
+			return false;
+		}
 	},
 	
 	
@@ -136,7 +143,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @return {Boolean} `true` if it is an invalid protocol-relative match, `false` otherwise.
 	 */
 	isInvalidProtocolRelativeMatch : function( protocolRelativeMatch ) {
-		return ( protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) );
+		return ( !!protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) );
 	}
 
 } );

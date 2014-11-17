@@ -16,7 +16,7 @@
 
 	/*!
 	 * Autolinker.js
-	 * 0.13.1
+	 * 0.14.0
 	 *
 	 * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
 	 * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -243,7 +243,7 @@
 
 			    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 
-			    protocolRegex = /(?:[A-Za-z]{3,9}:(?![A-Za-z]{3,9}:\/\/)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:")
+			    protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 			    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
 			    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
 			    tldRegex = /\.(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/,   // match our known top level domains (TLDs)
@@ -563,7 +563,8 @@
 				match = new Autolinker.match.Url( {
 					matchedText : matchStr,
 					url : matchStr,
-					protocolRelativeMatch : protocolRelativeMatch,
+					protocolUrlMatch : !!protocolUrlMatch,
+					protocolRelativeMatch : !!protocolRelativeMatch,
 					stripPrefix : this.stripPrefix
 				} );
 			}
@@ -1318,7 +1319,7 @@
 		 * @private
 		 * @property {RegExp} hasFullProtocolRegex
 		 */
-		hasFullProtocolRegex : /^[A-Za-z]{3,9}:\/\//,
+		hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
 
 		/**
 		 * Regex to test for a protocol prefix, such as 'mailto:'
@@ -1326,7 +1327,7 @@
 		 * @private
 		 * @property {RegExp} hasProtocolPrefixRegex
 		 */
-		hasProtocolPrefixRegex : /^[A-Za-z]{3,9}:/,
+		hasProtocolPrefixRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
 
 		/**
 		 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
@@ -1334,7 +1335,7 @@
 		 * @private
 		 * @property {RegExp} hasWordCharAfterProtocolRegex
 		 */
-		hasWordCharAfterProtocolRegex : /:.*?[A-Za-z]/,
+		hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z]/,
 
 
 		/**
@@ -1360,9 +1361,9 @@
 		 */
 		isValidMatch : function( urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
 			if(
-				this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||  // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-				this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch ) ||               // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-				this.isInvalidProtocolRelativeMatch( protocolRelativeMatch )            // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
+				this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||       // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
+				this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) ||  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+				this.isInvalidProtocolRelativeMatch( protocolRelativeMatch )                 // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
 			) {
 				return false;
 			}
@@ -1388,7 +1389,7 @@
 		 *   match.
 		 */
 		urlMatchDoesNotHaveProtocolOrDot : function( urlMatch, protocolUrlMatch ) {
-			return ( urlMatch && ( !protocolUrlMatch || !this.hasFullProtocolRegex.test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 );
+			return ( !!urlMatch && ( !protocolUrlMatch || !this.hasFullProtocolRegex.test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 );
 		},
 
 
@@ -1400,11 +1401,18 @@
 		 * 
 		 * @private
 		 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
+		 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to
+		 *   know whether or not we have a protocol in the URL string, in order to check for a word character after the protocol
+		 *   separator (':').
 		 * @return {Boolean} `true` if the URL match does not have at least one word character in it after the protocol, `false`
 		 *   otherwise.
 		 */
-		urlMatchDoesNotHaveAtLeastOneWordChar : function( urlMatch ) {
-			return ( urlMatch && this.hasProtocolPrefixRegex.test( urlMatch ) && !this.hasWordCharAfterProtocolRegex.test( urlMatch ) );
+		urlMatchDoesNotHaveAtLeastOneWordChar : function( urlMatch, protocolUrlMatch ) {
+			if( urlMatch && protocolUrlMatch ) {
+				return !this.hasWordCharAfterProtocolRegex.test( urlMatch );
+			} else {
+				return false;
+			}
 		},
 
 
@@ -1420,7 +1428,7 @@
 		 * @return {Boolean} `true` if it is an invalid protocol-relative match, `false` otherwise.
 		 */
 		isInvalidProtocolRelativeMatch : function( protocolRelativeMatch ) {
-			return ( protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) );
+			return ( !!protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) );
 		}
 
 	} );
@@ -1786,6 +1794,13 @@
 		 */
 
 		/**
+		 * @cfg {Boolean} protocolUrlMatch (required)
+		 * 
+		 * `true` if the URL is a match which already has a protocol (i.e. 'http://'), `false` if the match was from a 'www' or
+		 * known TLD match.
+		 */
+
+		/**
 		 * @cfg {Boolean} protocolRelativeMatch (required)
 		 * 
 		 * `true` if the URL is a protocol-relative match. A protocol-relative match is a URL that starts with '//',
@@ -1816,13 +1831,13 @@
 		protocolRelativeRegex : /^\/\//,
 
 		/**
-		 * @protected
-		 * @property {RegExp} checkForProtocolRegex
+		 * @private
+		 * @property {Boolean} protocolPrepended
 		 * 
-		 * A regular expression used to check if the {@link #url} is missing a protocol (in which case, 'http://'
-		 * will be added).
+		 * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
+		 * {@link #url} did not have a protocol)
 		 */
-		checkForProtocolRegex: /^[A-Za-z]{3,9}:/,
+		protocolPrepended : false,
 
 
 		/**
@@ -1836,17 +1851,19 @@
 
 
 		/**
-		 * Returns the url that was matched, assuming the protocol to be 'http://' if the match
-		 * was missing a protocol.
+		 * Returns the url that was matched, assuming the protocol to be 'http://' if the original
+		 * match was missing a protocol.
 		 * 
 		 * @return {String}
 		 */
 		getUrl : function() {
 			var url = this.url;
 
-			// if the url string doesn't begin with a protocol, assume http://
-			if( !this.protocolRelativeMatch && !this.checkForProtocolRegex.test( url ) ) {
+			// if the url string doesn't begin with a protocol, assume 'http://'
+			if( !this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended ) {
 				url = this.url = 'http://' + url;
+
+				this.protocolPrepended = true;
 			}
 
 			return url;
