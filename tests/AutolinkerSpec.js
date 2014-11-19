@@ -152,63 +152,7 @@ describe( "Autolinker", function() {
 				
 				
 				describe( "protocol linking", function() {
-						
-					it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
-						var result = autolinker.link( 'Something like git:d should not be linked as a URL' );
-						expect( result ).toBe( 'Something like git:d should not be linked as a URL' );
-					} );
-					
-					
-					it( "should NOT automatically link strings of the form 'git:domain' (using the heuristic that the domain name does not have a '.' in it)", function() {
-						var result = autolinker.link( 'Something like git:domain should not be linked as a URL' );
-						expect( result ).toBe( 'Something like git:domain should not be linked as a URL' );
-					} );
-					
-					
-					it( "should automatically link strings of the form 'git:domain.com', interpreting this as a protocol and domain name", function() {
-						var result = autolinker.link( 'Something like git:domain.com should be linked as a URL' );
-						expect( result ).toBe( 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL' );
-					} );
-					
-					
-					it( "should NOT automatically link a string in the form of 'version:1.0'", function() {
-						var result = autolinker.link( 'version:1.0' );
-						expect( result ).toBe( 'version:1.0' );
-					} );
-					
-					
-					it( "should NOT automatically link these 'abc:def' style strings", function() {
-						var strings = [
-							'BEGIN:VCALENDAR',
-							'VERSION:1.0',
-							'BEGIN:VEVENT',
-							'DTSTART:20140401T090000',
-							'DTEND:20140401T100000',
-							'SUMMARY:Some thing to do',
-							'LOCATION:',
-							'DESCRIPTION:Just call this guy yeah! Testings',
-							'PRIORITY:3',
-							'END:VEVENT',
-							'END:VCALENDAR',
-							'START:123',
-							'START:123:SOMETHING'
-						];
-						var i, len = strings.length, str;
-						
-						// Test with just the strings themselves.
-						for( i = 0; i < len; i++ ) {
-							str = strings[ i ];
-							expect( autolinker.link( str ) ).toBe( str );  // none should be autolinked
-						}
-						
-						// Test with the strings surrounded by other text
-						for( i = 0; i < len; i++ ) {
-							str = strings[ i ];
-							expect( autolinker.link( 'test ' + str + ' test' ) ).toBe( 'test ' + str + ' test' );  // none should be autolinked 
-						}
-					} );
 	
-					
 					it( "should NOT include preceding ':' introductions without a space", function() {
 						var result = autolinker.link( 'the link:http://example.com/' );
 						expect( result ).toBe( 'the link:<a href="http://example.com/">example.com</a>' );
@@ -264,6 +208,74 @@ describe( "Autolinker", function() {
 						
 						var result4 = autolinker.link( 'do not link this: .a://example' );
 						expect( result4 ).toBe( 'do not link this: .a://example' );
+					} );
+					
+					
+					it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
+						var result = autolinker.link( "do not link javascript:window.alert('hi') please" );
+						expect( result ).toBe( "do not link javascript:window.alert('hi') please" );
+					} );
+					
+					
+					it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
+						var result = autolinker.link( "do not link vbscript:window.alert('hi') please" );
+						expect( result ).toBe( "do not link vbscript:window.alert('hi') please" );
+					} );
+					
+					
+					it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
+						var result = autolinker.link( 'Something like git:d should not be linked as a URL' );
+						expect( result ).toBe( 'Something like git:d should not be linked as a URL' );
+					} );
+					
+					
+					it( "should NOT automatically link strings of the form 'git:domain' (using the heuristic that the domain name does not have a '.' in it)", function() {
+						var result = autolinker.link( 'Something like git:domain should not be linked as a URL' );
+						expect( result ).toBe( 'Something like git:domain should not be linked as a URL' );
+					} );
+					
+					
+					it( "should automatically link strings of the form 'git:domain.com', interpreting this as a protocol and domain name", function() {
+						var result = autolinker.link( 'Something like git:domain.com should be linked as a URL' );
+						expect( result ).toBe( 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL' );
+					} );
+					
+					
+					it( "should NOT automatically link a string in the form of 'version:1.0'", function() {
+						var result = autolinker.link( 'version:1.0' );
+						expect( result ).toBe( 'version:1.0' );
+					} );
+					
+					
+					it( "should NOT automatically link these 'abc:def' style strings", function() {
+						var strings = [
+							'BEGIN:VCALENDAR',
+							'VERSION:1.0',
+							'BEGIN:VEVENT',
+							'DTSTART:20140401T090000',
+							'DTEND:20140401T100000',
+							'SUMMARY:Some thing to do',
+							'LOCATION:',
+							'DESCRIPTION:Just call this guy yeah! Testings',
+							'PRIORITY:3',
+							'END:VEVENT',
+							'END:VCALENDAR',
+							'START:123',
+							'START:123:SOMETHING'
+						];
+						var i, len = strings.length, str;
+						
+						// Test with just the strings themselves.
+						for( i = 0; i < len; i++ ) {
+							str = strings[ i ];
+							expect( autolinker.link( str ) ).toBe( str );  // none should be autolinked
+						}
+						
+						// Test with the strings surrounded by other text
+						for( i = 0; i < len; i++ ) {
+							str = strings[ i ];
+							expect( autolinker.link( 'test ' + str + ' test' ) ).toBe( 'test ' + str + ' test' );  // none should be autolinked 
+						}
 					} );
 					
 				} );

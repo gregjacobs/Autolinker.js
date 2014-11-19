@@ -1,4 +1,5 @@
 /*global Autolinker */
+/*jshint scripturl:true */
 /**
  * @private
  * @class Autolinker.MatchValidator
@@ -37,12 +38,14 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
 	
 	/**
-	 * Regex to test for a protocol prefix, such as 'mailto:'
+	 * Regex to find the URI scheme, such as 'mailto:'.
+	 * 
+	 * This is used to filter out 'javascript:' and 'vbscript:' schemes.
 	 * 
 	 * @private
-	 * @property {RegExp} hasProtocolPrefixRegex
+	 * @property {RegExp} uriSchemeRegex
 	 */
-	hasProtocolPrefixRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
+	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
 	
 	/**
 	 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
@@ -76,6 +79,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 */
 	isValidMatch : function( urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
 		if(
+			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||       // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
 			this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) ||  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
 			this.isInvalidProtocolRelativeMatch( protocolRelativeMatch )                 // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
@@ -84,6 +88,22 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 		}
 		
 		return true;
+	},
+	
+	
+	/**
+	 * Determines if the URI scheme is a valid scheme to be autolinked. Returns `false` if the scheme is 
+	 * 'javascript:' or 'vbscript:'
+	 * 
+	 * @private
+	 * @param {String} uriSchemeMatch The match URL string for a full URI scheme match. Ex: 'http://yahoo.com' 
+	 *   or 'mailto:a@a.com'.
+	 * @return {Boolean} `true` if the scheme is a valid one, `false` otherwise.
+	 */
+	isValidUriScheme : function( uriSchemeMatch ) {
+		var uriScheme = uriSchemeMatch.match( this.uriSchemeRegex )[ 0 ];
+		
+		return ( uriScheme !== 'javascript:' && uriScheme !== 'vbscript:' );
 	},
 	
 	
