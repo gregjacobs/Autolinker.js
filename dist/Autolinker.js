@@ -16,7 +16,7 @@
 
 	/*!
 	 * Autolinker.js
-	 * 0.14.1
+	 * 0.15.0
 	 *
 	 * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
 	 * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -850,34 +850,53 @@
 		 * 
 		 * Capturing groups:
 		 * 
-		 * 1. If it is an end tag, this group will have the '/'.
-		 * 2. The tag name.
+		 * 1. The "!DOCTYPE" tag name, if a tag is a &lt;!DOCTYPE&gt; tag.
+		 * 2. If it is an end tag, this group will have the '/'.
+		 * 3. The tag name for all tags (other than the &lt;!DOCTYPE&gt; tag)
 		 */
 		htmlRegex : (function() {
-			var tagNameRegex = /[0-9a-zA-Z:]+/,
+			var tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
 			    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
 			    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 			    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
 
 			return new RegExp( [
-				'<(?:!|(/))?',  // Beginning of a tag. Either '<' for a start tag, '</' for an end tag, or <! for the <!DOCTYPE ...> tag. The slash or an empty string is Capturing Group 1.
+				// for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
+				'(?:',
+					'<(!DOCTYPE)',  // *** Capturing Group 1 - If it's a doctype tag
 
-					// The tag name (Capturing Group 2)
-					'(' + tagNameRegex.source + ')',
+						// Zero or more attributes following the tag name
+						'(?:',
+							'\\s+',  // one or more whitespace chars before an attribute
 
-					// Zero or more attributes following the tag name
-					'(?:',
-						'\\s+',  // one or more whitespace chars before an attribute
+							// Either:
+							// A. attr="value", or 
+							// B. "value" alone (To cover example doctype tag: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
+							'(?:', nameEqualsValueRegex, '|', attrValueRegex.source + ')',
+						')*',
+					'>',
+				')',
 
-						// Either:
-						// A. tag="value", or 
-						// B. "value" alone (for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
-						'(?:', nameEqualsValueRegex, '|', attrValueRegex.source + ')',
-					')*',
+				'|',
 
-					'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
-				'>'
-			].join( "" ), 'g' );
+				// All other HTML tags (i.e. tags that are not <!DOCTYPE>)
+				'(?:',
+					'<(/)?',  // Beginning of a tag. Either '<' for a start tag, or '</' for an end tag. 
+					          // *** Capturing Group 2: The slash or an empty string. Slash ('/') for end tag, empty string for start or self-closing tag.
+
+						// *** Capturing Group 3 - The tag name
+						'(' + tagNameRegex.source + ')',
+
+						// Zero or more attributes following the tag name
+						'(?:',
+							'\\s+',                // one or more whitespace chars before an attribute
+							nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
+						')*',
+
+						'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
+					'>',
+				')'
+			].join( "" ), 'gi' );
 		} )(),
 
 
@@ -911,15 +930,15 @@
 			// wrapping the URLs in anchor tags
 			while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 				var tagText = currentResult[ 0 ],
-				    tagName = currentResult[ 2 ],
-				    isClosingTag = !!currentResult[ 1 ],
+				    tagName = currentResult[ 1 ] || currentResult[ 3 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a") 
+				    isClosingTag = !!currentResult[ 2 ],
 				    inBetweenTagsText = html.substring( lastIndex, currentResult.index );
 
 				if( inBetweenTagsText ) {
 					processTextNodeVisitor( inBetweenTagsText );
 				}
 
-				processHtmlNodeVisitor( tagText, tagName, isClosingTag );
+				processHtmlNodeVisitor( tagText, tagName.toLowerCase(), isClosingTag );
 
 				lastIndex = currentResult.index + tagText.length;
 			}

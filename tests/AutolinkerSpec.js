@@ -850,6 +850,14 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should autolink the link, and not fail with 100% cpu in the Regex engine when presented with the input in issue #54", function() {
+				var inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! Gefallt mir klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
+				    result = autolinker.link( inputStr );
+				
+				expect( result ).toBe( 'Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: <a href="http://dorcoshai.de/pb1205ro">dorcoshai.de/pb1205ro</a>, und dann machst Du am Gewinnspiel mit! Gefallt mir klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)' );
+			} );
+			
+			
 			it( "should NOT modify the email address with other tags when inside another anchor", function() {
 				var input = [
 					'<div>First name: Subin</div>',
