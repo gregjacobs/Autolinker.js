@@ -16,7 +16,7 @@
 
 	/*!
 	 * Autolinker.js
-	 * 0.15.1
+	 * 0.15.2
 	 *
 	 * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
 	 * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -210,7 +210,7 @@
 		 * 
 		 * Ignoring &amp; as it could be part of a query string -- handling it separately.
 		 */
-		htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/gi,
+		htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi,
 
 		/**
 		 * @private
