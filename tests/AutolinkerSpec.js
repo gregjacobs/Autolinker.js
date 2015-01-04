@@ -1008,6 +1008,14 @@ describe( "Autolinker", function() {
 				var result = autolinker.link( html );
 				expect( result ).toBe( '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>' );
 			} );
+			
+			
+			it( "should handle line breaks inside an HTML tag, not accidentally autolinking a URL within the tag", function() {
+				var html = '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>';
+				
+				var result = autolinker.link( html );
+				expect( result ).toBe( '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>' );
+			} );
 
 		} );
 		

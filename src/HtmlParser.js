@@ -27,7 +27,7 @@ Autolinker.HtmlParser = Autolinker.Util.extend( Object, {
 	htmlRegex : (function() {
 		var tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
 		    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
-		    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
+		    attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 		    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
 		
 		return new RegExp( [
