@@ -56,6 +56,7 @@ module.exports = function(grunt) {
 					'src/Util.js',
 					'src/HtmlParser.js',
 					'src/HtmlTag.js',
+					'src/MatchParser.js',
 					'src/MatchValidator.js',
 					'src/AnchorTagBuilder.js',
 					'src/match/Match.js',

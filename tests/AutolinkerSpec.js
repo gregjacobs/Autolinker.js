@@ -1307,6 +1307,16 @@ describe( "Autolinker", function() {
 			} );
 			
 			
+			it( "should not drop a trailing parenthesis of a URL match if the `replaceFn` returns false", function() {
+				var result = Autolinker.link( "Go to the website (asdf.com) and see", {
+					newWindow : false,
+					replaceFn : returnFalseFn
+				} );
+				
+				expect( result ).toBe( 'Go to the website (asdf.com) and see' );
+			} );
+			
+			
 			describe( 'special cases which check the `prefixStr` and `suffixStr` vars in the code', function() {
 			
 				it( "should leave the match as-is when the `replaceFn` returns `false` for a Twitter match", function() {
