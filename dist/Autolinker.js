@@ -16,9 +16,9 @@
 
 	/*!
 	 * Autolinker.js
-	 * 0.15.0
+	 * 0.15.1
 	 *
-	 * Copyright(c) 2014 Gregory Jacobs <greg@greg-jacobs.com>
+	 * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
 	 * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
 	 *
 	 * https://github.com/gregjacobs/Autolinker.js
@@ -857,7 +857,7 @@
 		htmlRegex : (function() {
 			var tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
 			    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
-			    attrValueRegex = /(?:".*?"|'.*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
+			    attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 			    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
 
 			return new RegExp( [
