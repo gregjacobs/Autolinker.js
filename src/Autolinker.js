@@ -434,7 +434,7 @@ Autolinker.prototype = {
 		var me = this;  // for closure
 		
 		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 ) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 );  // match description object
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 );  // "match description" object
 			
 			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
 			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
