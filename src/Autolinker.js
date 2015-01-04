@@ -185,7 +185,7 @@ Autolinker.prototype = {
 	 * 
 	 * Ignoring &amp; as it could be part of a query string -- handling it separately.
 	 */
-	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;)/gi,
+	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi,
 	
 	/**
 	 * @private

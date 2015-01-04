@@ -993,7 +993,7 @@ describe( "Autolinker", function() {
 				expect( result ).toBe('<p>Joe went to <a href="http://yahoo.com">yahoo.com</a>&nbsp;and <a href="http://google.com">google.com</a>&nbsp;today</p>');
 			} );
 			
-
+			
 			it( "should handle HTML entities like &nbsp; within a non-autolinked part of a text node, properly appending it to the output", function() {
 				var html = "Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com";
 
@@ -1017,6 +1017,15 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>' );
 			} );
 
+			
+			it( "should handle a URL inside an HTML-encoded anchor tag (Issue #76)", function() {
+				var html = "Joe learned about anchor tags on the &lt;a href=&quot;http://www.w3schools.com/aaa&quot;&gt;W3SCHOOLS&lt;/a&gt; site ...";
+				var tobe = "Joe learned about anchor tags on the &lt;a href=&quot;<a href=\"http://www.w3schools.com/aaa\">w3schools.com/aaa</a>&quot;&gt;W3SCHOOLS&lt;/a&gt; site ...";
+
+				var result = autolinker.link( html );
+				expect( result ).toBe( tobe );
+			} );
+			
 		} );
 		
 		
