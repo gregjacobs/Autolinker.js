@@ -4,10 +4,11 @@
  * @class Autolinker.htmlParser.HtmlParser
  * @extends Object
  * 
- * An HTML parser implementation which simply walks an HTML string and calls the provided visitor functions to process 
- * HTML and text nodes.
+ * An HTML parser implementation which simply walks an HTML string and returns an array of 
+ * {@link Autolinker.htmlParser.HtmlNode HtmlNodes} that represent the basic HTML structure of the input string.
  * 
- * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, basically ignoring HTML tags.
+ * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, effectively ignoring / "walking
+ * around" HTML tags.
  */
 Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	
@@ -71,44 +72,31 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	
 	
 	/**
-	 * Walks an HTML string, calling the `options.processHtmlNode` function for each HTML tag that is encountered, and calling
-	 * the `options.processTextNode` function when each text around HTML tags is encountered.
+	 * Parses an HTML string and returns a simple array of {@link Autolinker.htmlParser.HtmlNode HtmlNodes} to represent
+	 * the HTML structure of the input string. 
 	 * 
 	 * @param {String} html The HTML to parse.
-	 * @param {Object} [options] An Object (map) which may contain the following properties:
-	 * 
-	 * @param {Function} [options.processHtmlNode] A visitor function which allows processing of an encountered HTML node.
-	 *   This function is called with the following arguments:
-	 * @param {String} [options.processHtmlNode.tagText] The HTML tag text that was found.
-	 * @param {String} [options.processHtmlNode.tagName] The tag name for the HTML tag that was found. Ex: 'a' for an anchor tag.
-	 * @param {String} [options.processHtmlNode.isClosingTag] `true` if the tag is a closing tag (ex: &lt;/a&gt;), `false` otherwise.
-	 *  
-	 * @param {Function} [options.processTextNode] A visitor function which allows processing of an encountered text node.
-	 *   This function is called with the following arguments:
-	 * @param {String} [options.processTextNode.text] The text node that was matched.
+	 * @return {Autolinker.htmlParser.HtmlNode[]}
 	 */
-	parse : function( html, options ) {
-		options = options || {};
-		
-		var processHtmlNodeVisitor = options.processHtmlNode || function() {},
-		    processTextNodeVisitor = options.processTextNode || function() {},
-		    htmlRegex = this.htmlRegex,
+	parse : function( html ) {
+		var htmlRegex = this.htmlRegex,
 		    currentResult,
-		    lastIndex = 0;
+		    lastIndex = 0,
+		    nodes = [];  // will be the result of the method
 		
-		// Loop over the HTML string, ignoring HTML tags, and processing the text that lies between them,
-		// wrapping the URLs in anchor tags
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
 			    tagName = currentResult[ 1 ] || currentResult[ 3 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a") 
 			    isClosingTag = !!currentResult[ 2 ],
 			    inBetweenTagsText = html.substring( lastIndex, currentResult.index );
 			
+			// Push a TextNode, if there was text
 			if( inBetweenTagsText ) {
-				processTextNodeVisitor( inBetweenTagsText );
+				nodes.push( this.createTextNode( inBetweenTagsText ) );
 			}
 			
-			processHtmlNodeVisitor( tagText, tagName.toLowerCase(), isClosingTag );
+			// Push the ElementNode
+			nodes.push( this.createElementNode( tagText, tagName, isClosingTag ) );
 			
 			lastIndex = currentResult.index + tagText.length;
 		}
@@ -118,9 +106,41 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			var text = html.substring( lastIndex );
 			
 			if( text ) {
-				processTextNodeVisitor( text );
+				nodes.push( this.createTextNode( text ) );
 			}
 		}
+		
+		return nodes;
+	},
+	
+	
+	/**
+	 * Factory method to create an {@link Autolinker.htmlParser.ElementNode ElementNode}.
+	 * 
+	 * @private
+	 * @param {String} tagText The full text of the tag (element) that was matched, including its attributes.
+	 * @param {String} tagName The name of the tag. Ex: An &lt;img&gt; tag would be passed to this method as "img".
+	 * @param {Boolean} isClosingTag `true` if it's a closing tag, false otherwise.
+	 * @return {Autolinker.htmlParser.ElementNode}
+	 */
+	createElementNode : function( tagText, tagName, isClosingTag ) {
+		return new Autolinker.htmlParser.ElementNode( {
+			text    : tagText,
+			tagName : tagName.toLowerCase(),
+			closing : isClosingTag
+		} );
+	},
+	
+	
+	/**
+	 * Factory method to create a {@link Autolinker.htmlParser.TextNode TextNode}.
+	 * 
+	 * @private
+	 * @param {String} text The text that was matched.
+	 * @return {Autolinker.htmlParser.TextNode}
+	 */
+	createTextNode : function( text ) {
+		return new Autolinker.htmlParser.TextNode( { text: text } );
 	}
 	
 } );

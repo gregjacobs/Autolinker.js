@@ -143,6 +143,7 @@ Autolinker.prototype = {
 	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
 	 * something like this: 'yahoo.com/some/long/pat..'
 	 */
+	truncate : undefined,
 	
 	/**
 	 * @cfg {String} className
@@ -192,6 +193,7 @@ Autolinker.prototype = {
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
 	 * in the {@link #getHtmlParser} method.
 	 */
+	htmlParser : undefined,
 	
 	/**
 	 * @private
@@ -200,6 +202,7 @@ Autolinker.prototype = {
 	 * The MatchParser instance used to find URL/email/Twitter matches in the text nodes of an input string passed to
 	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
 	 */
+	matchParser : undefined,
 	
 	/**
 	 * @private
@@ -208,6 +211,7 @@ Autolinker.prototype = {
 	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
 	 */
+	tagBuilder : undefined,
 	
 	
 	/**
@@ -225,34 +229,37 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
 	 */
 	link : function( textOrHtml ) {
-		var me = this,  // for closure
-		    htmlParser = this.getHtmlParser(),
+		var htmlParser = this.getHtmlParser(),
+		    htmlNodes = htmlParser.parse( textOrHtml ),
 		    htmlCharacterEntitiesRegex = this.htmlCharacterEntitiesRegex,
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
 		    resultHtml = [];
 		
-		htmlParser.parse( textOrHtml, {
-			// Process HTML nodes in the input `textOrHtml`
-			processHtmlNode : function( tagText, tagName, isClosingTag ) {
-				if( tagName === 'a' ) {
-					if( !isClosingTag ) {  // it's the start <a> tag
+		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
+			var htmlNode = htmlNodes[ i ];
+			
+			if( htmlNode.getType() === 'element' ) {
+				// Process HTML nodes in the input `textOrHtml`
+				if( htmlNode.getTagName() === 'a' ) {
+					if( !htmlNode.isClosing() ) {  // it's the start <a> tag
 						anchorTagStackCount++;
 					} else {   // it's the end </a> tag
 						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 					}
 				}
-				resultHtml.push( tagText );  // now add the text of the tag itself verbatim
-			},
-			
-			// Process text nodes in the input `textOrHtml`
-			processTextNode : function( text ) {
+				resultHtml.push( htmlNode.getText() );  // now add the text of the tag itself verbatim
+				
+			} else {
+				// Process text nodes in the input `textOrHtml`
+				var text = htmlNode.getText();
+				
 				if( anchorTagStackCount === 0 ) {
 					// If we're not within an <a> tag, process the text node
 					var unescapedText = Autolinker.Util.splitAndCapture( text, htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
 					
-					for ( var i = 0, len = unescapedText.length; i < len; i++ ) {
-						var textToProcess = unescapedText[ i ],
-						    processedTextNode = me.doReplacements( textToProcess );
+					for ( var j = 0, jlen = unescapedText.length; j < jlen; j++ ) {
+						var textToProcess = unescapedText[ j ],
+						    processedTextNode = this.doReplacements( textToProcess );
 						
 						resultHtml.push( processedTextNode );
 					}
@@ -263,26 +270,9 @@ Autolinker.prototype = {
 					resultHtml.push( text );
 				}
 			}
-		} );
-		
-		return resultHtml.join( "" );
-	},
-	
-	
-	/**
-	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
-	 * 
-	 * @protected
-	 * @return {Autolinker.htmlParser.HtmlParser}
-	 */
-	getHtmlParser : function() {
-		var htmlParser = this.htmlParser;
-		
-		if( !htmlParser ) {
-			htmlParser = this.htmlParser = new Autolinker.htmlParser.HtmlParser();
 		}
 		
-		return htmlParser;
+		return resultHtml.join( "" );
 	},
 	
 	
@@ -298,28 +288,6 @@ Autolinker.prototype = {
 	 */
 	doReplacements : function( text ) {
 		return this.getMatchParser().replace( text, this.createMatchReturnVal, this );
-	},
-	
-	
-	/**
-	 * Lazily instantiates and returns the {@link #matchParser} instance for this Autolinker instance.
-	 * 
-	 * @protected
-	 * @return {Autolinker.matchParser.MatchParser}
-	 */
-	getMatchParser : function() {
-		var matchParser = this.matchParser;
-		
-		if( !matchParser ) {
-			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
-				urls : this.urls,
-				email : this.email,
-				twitter : this.twitter,
-				stripPrefix : this.stripPrefix
-			} );
-		}
-		
-		return matchParser;
 	},
 	
 	
@@ -356,6 +324,45 @@ Autolinker.prototype = {
 			
 			return anchorTag.toString();
 		}
+	},
+	
+	
+	/**
+	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
+	 * 
+	 * @protected
+	 * @return {Autolinker.htmlParser.HtmlParser}
+	 */
+	getHtmlParser : function() {
+		var htmlParser = this.htmlParser;
+		
+		if( !htmlParser ) {
+			htmlParser = this.htmlParser = new Autolinker.htmlParser.HtmlParser();
+		}
+		
+		return htmlParser;
+	},
+	
+	
+	/**
+	 * Lazily instantiates and returns the {@link #matchParser} instance for this Autolinker instance.
+	 * 
+	 * @protected
+	 * @return {Autolinker.matchParser.MatchParser}
+	 */
+	getMatchParser : function() {
+		var matchParser = this.matchParser;
+		
+		if( !matchParser ) {
+			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
+				urls : this.urls,
+				email : this.email,
+				twitter : this.twitter,
+				stripPrefix : this.stripPrefix
+			} );
+		}
+		
+		return matchParser;
 	},
 	
 	
