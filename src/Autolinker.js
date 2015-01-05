@@ -195,7 +195,7 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {Autolinker.MatchParser} matchParser
+	 * @property {Autolinker.matchParser.MatchParser} matchParser
 	 * 
 	 * The MatchParser instance used to find URL/email/Twitter matches in the text nodes of an input string passed to
 	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
@@ -305,13 +305,13 @@ Autolinker.prototype = {
 	 * Lazily instantiates and returns the {@link #matchParser} instance for this Autolinker instance.
 	 * 
 	 * @protected
-	 * @return {Autolinker.MatchParser}
+	 * @return {Autolinker.matchParser.MatchParser}
 	 */
 	getMatchParser : function() {
 		var matchParser = this.matchParser;
 		
 		if( !matchParser ) {
-			matchParser = this.matchParser = new Autolinker.MatchParser( {
+			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
 				urls : this.urls,
 				email : this.email,
 				twitter : this.twitter,
@@ -425,3 +425,4 @@ Autolinker.link = function( textOrHtml, options ) {
 // Autolinker Namespaces
 Autolinker.match = {};
 Autolinker.htmlParser = {};
+Autolinker.matchParser = {};

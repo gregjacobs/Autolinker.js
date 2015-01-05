@@ -1,7 +1,7 @@
 /*global Autolinker */
 /**
  * @private
- * @class Autolinker.MatchParser
+ * @class Autolinker.matchParser.MatchParser
  * @extends Object
  * 
  * Used by Autolinker to parse {@link #urls URLs}, {@link #emails email addresses}, and {@link #twitter Twitter handles}, 
@@ -11,7 +11,7 @@
  * first uses the {@link HtmlParser} to "walk around" HTML tags, and then the text around the HTML tags is passed into
  * the MatchParser in order to find the actual matches.
  */
-Autolinker.MatchParser = Autolinker.Util.extend( Object, {
+Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	
 	/**
 	 * @cfg {Boolean} urls
