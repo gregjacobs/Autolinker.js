@@ -187,7 +187,7 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {Autolinker.HtmlParser} htmlParser
+	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 * 
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
 	 * in the {@link #getHtmlParser} method.
@@ -273,13 +273,13 @@ Autolinker.prototype = {
 	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
 	 * 
 	 * @protected
-	 * @return {Autolinker.HtmlParser}
+	 * @return {Autolinker.htmlParser.HtmlParser}
 	 */
 	getHtmlParser : function() {
 		var htmlParser = this.htmlParser;
 		
 		if( !htmlParser ) {
-			htmlParser = this.htmlParser = new Autolinker.HtmlParser();
+			htmlParser = this.htmlParser = new Autolinker.htmlParser.HtmlParser();
 		}
 		
 		return htmlParser;
@@ -422,5 +422,6 @@ Autolinker.link = function( textOrHtml, options ) {
 };
 
 
-// Namespace for `match` classes
+// Autolinker Namespaces
 Autolinker.match = {};
+Autolinker.htmlParser = {};

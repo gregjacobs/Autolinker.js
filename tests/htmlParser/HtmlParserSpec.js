@@ -1,6 +1,6 @@
 /*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
-describe( "Autolinker.HtmlParser", function() {
-	var HtmlParser = Autolinker.HtmlParser,
+describe( "Autolinker.htmlParser.HtmlParser", function() {
+	var HtmlParser = Autolinker.htmlParser.HtmlParser,
 	    htmlParser;
 	
 	
