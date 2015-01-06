@@ -39,7 +39,7 @@ module.exports = function(grunt) {
 		jasmine: {
 			dist: {
 				options: {
-					specs: 'tests/*Spec.js'
+					specs: 'tests/**/*Spec.js'
 				},
 				src: minDistPath
 			}
@@ -59,6 +59,7 @@ module.exports = function(grunt) {
 					'src/htmlParser/HtmlParser.js',
 					'src/htmlParser/HtmlNode.js',
 					'src/htmlParser/ElementNode.js',
+					'src/htmlParser/EntityNode.js',
 					'src/htmlParser/TextNode.js',
 					'src/matchParser/MatchParser.js',
 					'src/matchParser/MatchValidator.js',

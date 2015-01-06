@@ -178,16 +178,6 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {RegExp} htmlCharacterEntitiesRegex
-	 *
-	 * The regular expression that matches common HTML character entities.
-	 * 
-	 * Ignoring &amp; as it could be part of a query string -- handling it separately.
-	 */
-	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi,
-	
-	/**
-	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 * 
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
@@ -231,43 +221,39 @@ Autolinker.prototype = {
 	link : function( textOrHtml ) {
 		var htmlParser = this.getHtmlParser(),
 		    htmlNodes = htmlParser.parse( textOrHtml ),
-		    htmlCharacterEntitiesRegex = this.htmlCharacterEntitiesRegex,
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
 		    resultHtml = [];
 		
 		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
-			var htmlNode = htmlNodes[ i ];
+			var node = htmlNodes[ i ],
+			    nodeType = node.getType(),
+			    nodeText = node.getText();
 			
-			if( htmlNode.getType() === 'element' ) {
+			if( nodeType === 'element' ) {
 				// Process HTML nodes in the input `textOrHtml`
-				if( htmlNode.getTagName() === 'a' ) {
-					if( !htmlNode.isClosing() ) {  // it's the start <a> tag
+				if( node.getTagName() === 'a' ) {
+					if( !node.isClosing() ) {  // it's the start <a> tag
 						anchorTagStackCount++;
 					} else {   // it's the end </a> tag
 						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 					}
 				}
-				resultHtml.push( htmlNode.getText() );  // now add the text of the tag itself verbatim
+				resultHtml.push( nodeText );  // now add the text of the tag itself verbatim
+				
+			} else if( nodeType === 'entity' ) {
+				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') verbatim
 				
 			} else {
 				// Process text nodes in the input `textOrHtml`
-				var text = htmlNode.getText();
-				
 				if( anchorTagStackCount === 0 ) {
-					// If we're not within an <a> tag, process the text node
-					var unescapedText = Autolinker.Util.splitAndCapture( text, htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
-					
-					for ( var j = 0, jlen = unescapedText.length; j < jlen; j++ ) {
-						var textToProcess = unescapedText[ j ],
-						    processedTextNode = this.doReplacements( textToProcess );
-						
-						resultHtml.push( processedTextNode );
-					}
+					// If we're not within an <a> tag, process the text node to linkify
+					var linkifiedStr = this.linkifyStr( nodeText );
+					resultHtml.push( linkifiedStr );
 					
 				} else {
 					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything 
 					// already within an <a>...</a> tag
-					resultHtml.push( text );
+					resultHtml.push( nodeText );
 				}
 			}
 		}
@@ -283,11 +269,11 @@ Autolinker.prototype = {
 	 * This method does the actual wrapping of URLs/emails/Twitter handles with anchor tags.
 	 * 
 	 * @private
-	 * @param {String} text The text to auto-link.
+	 * @param {String} str The string of text to auto-link.
 	 * @return {String} The text with anchor tags auto-filled.
 	 */
-	doReplacements : function( text ) {
-		return this.getMatchParser().replace( text, this.createMatchReturnVal, this );
+	linkifyStr : function( str ) {
+		return this.getMatchParser().replace( str, this.createMatchReturnVal, this );
 	},
 	
 	

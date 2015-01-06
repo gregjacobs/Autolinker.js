@@ -70,6 +70,16 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		].join( "" ), 'gi' );
 	} )(),
 	
+	/**
+	 * @private
+	 * @property {RegExp} htmlCharacterEntitiesRegex
+	 *
+	 * The regular expression that matches common HTML character entities.
+	 * 
+	 * Ignoring &amp; as it could be part of a query string -- handling it separately.
+	 */
+	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi,
+	
 	
 	/**
 	 * Parses an HTML string and returns a simple array of {@link Autolinker.htmlParser.HtmlNode HtmlNodes} to represent
@@ -82,17 +92,19 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		var htmlRegex = this.htmlRegex,
 		    currentResult,
 		    lastIndex = 0,
+		    textAndEntityNodes,
 		    nodes = [];  // will be the result of the method
 		
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
-			    tagName = currentResult[ 1 ] || currentResult[ 3 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a") 
+			    tagName = currentResult[ 1 ] || currentResult[ 3 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img") 
 			    isClosingTag = !!currentResult[ 2 ],
 			    inBetweenTagsText = html.substring( lastIndex, currentResult.index );
 			
-			// Push a TextNode, if there was text
+			// Push TextNodes and EntityNodes for any text found between tags
 			if( inBetweenTagsText ) {
-				nodes.push( this.createTextNode( inBetweenTagsText ) );
+				textAndEntityNodes = this.parseTextAndEntityNodes( inBetweenTagsText );
+				nodes.push.apply( nodes, textAndEntityNodes );
 			}
 			
 			// Push the ElementNode
@@ -105,11 +117,40 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		if( lastIndex < html.length ) {
 			var text = html.substring( lastIndex );
 			
+			// Push TextNodes and EntityNodes for any text found between tags
 			if( text ) {
-				nodes.push( this.createTextNode( text ) );
+				textAndEntityNodes = this.parseTextAndEntityNodes( text );
+				nodes.push.apply( nodes, textAndEntityNodes );
 			}
 		}
 		
+		return nodes;
+	},
+	
+	
+	/**
+	 * Parses text and HTML entity nodes from a given string. The input string should not have any HTML tags (elements)
+	 * within it.
+	 * 
+	 * @private
+	 * @param {String} text The text to parse.
+	 * @return {Autolinker.htmlParser.HtmlNode[]} An array of HtmlNodes to represent the 
+	 *   {@link Autolinker.htmlParser.TextNode TextNodes} and {@link Autolinker.htmlParser.EntityNode EntityNodes} found.
+	 */
+	parseTextAndEntityNodes : function( text ) {
+		var nodes = [],
+		    textAndEntityTokens = Autolinker.Util.splitAndCapture( text, this.htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
+		
+		// Every even numbered token is a TextNode, and every odd numbered token is an EntityNode
+		// For example: an input `text` of "Test &quot;this&quot; today" would turn into the 
+		//   `textAndEntityTokens`: [ 'Test ', '&quot;', 'this', '&quot;', ' today' ]
+		for( var i = 0, len = textAndEntityTokens.length; i < len; i += 2 ) {
+			var textToken = textAndEntityTokens[ i ],
+			    entityToken = textAndEntityTokens[ i + 1 ];
+			
+			if( textToken ) nodes.push( this.createTextNode( textToken ) );
+			if( entityToken ) nodes.push( this.createEntityNode( entityToken ) );
+		}
 		return nodes;
 	},
 	
@@ -129,6 +170,18 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			tagName : tagName.toLowerCase(),
 			closing : isClosingTag
 		} );
+	},
+	
+	
+	/**
+	 * Factory method to create a {@link Autolinker.htmlParser.EntityNode EntityNode}.
+	 * 
+	 * @private
+	 * @param {String} text The text that was matched for the HTML entity (such as '&amp;nbsp;').
+	 * @return {Autolinker.htmlParser.EntityNode}
+	 */
+	createEntityNode : function( text ) {
+		return new Autolinker.htmlParser.EntityNode( { text: text } );
 	},
 	
 	
