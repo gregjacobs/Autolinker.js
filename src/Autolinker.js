@@ -94,6 +94,10 @@ var Autolinker = function( cfg ) {
 };
 
 
+var defaultPreprocessFn = function( autolinker, str ) {
+	return str;
+};
+
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
@@ -185,6 +189,20 @@ Autolinker.prototype = {
 
 
 	/**
+	 * @cfg {Function} preprocessFn
+	 *
+	 * A function which gets called to preprocess input strings before performing the built-in autolinker replacement operations.
+	 * Defaults to the identity function.
+	 * This function is called with the following parameters:
+	 *
+	 * @cfg {Autolinker} preprocessFn.autolinker The Autolinker instance
+	 * @cfg {String} preoprocessFn.str The text to be replaced
+	 *
+	 *
+	 */
+	preprocessFn: defaultPreprocessFn,
+
+	/**
 	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 *
@@ -210,7 +228,6 @@ Autolinker.prototype = {
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
-
 
 	/**
 	 * Automatically links URLs, email addresses, phone numbers, and Twitter handles found in the given chunk of HTML.
@@ -269,7 +286,6 @@ Autolinker.prototype = {
 		return resultHtml.join( "" );
 	},
 
-
 	/**
 	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for matched
 	 * URLs/emails/phone#s/Twitter handles, and returns the string with the replacements made.
@@ -281,7 +297,9 @@ Autolinker.prototype = {
 	 * @return {String} The text with anchor tags auto-filled.
 	 */
 	linkifyStr : function( str ) {
-		return this.getMatchParser().replace( str, this.createMatchReturnVal, this );
+		// preprocess string, then pas into match parser.
+		var initialResult = this.preprocessFn( this, str );
+		return this.getMatchParser().replace( initialResult, this.createMatchReturnVal, this );
 	},
 
 

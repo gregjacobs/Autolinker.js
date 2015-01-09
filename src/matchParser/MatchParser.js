@@ -204,9 +204,9 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
 			if( !matchDescObj ) {
 				return matchStr;
-
 			} else {
 				// Generate replacement text for the match from the `replaceFn`
+				didFindMatch = true;
 				var replaceStr = replaceFn.call( contextObj, matchDescObj.match );
 				return matchDescObj.prefixStr + replaceStr + matchDescObj.suffixStr;
 			}

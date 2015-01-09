@@ -1,6 +1,20 @@
 /*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
 describe( "Autolinker", function() {
 
+	describe( "preprocess function", function() {
+		it( "should capitalize string, then linkify", function() {
+			var capitalizer = function( autolinker, str ){
+				return str.toUpperCase();
+			}
+
+			var autolinker = new Autolinker( { newWindow: false, preprocessFn: capitalizer});
+
+			var result = autolinker.link( "Hi, my number is: 919-789-1622" );
+			expect( result ).toBe('HI, MY NUMBER IS: <a href="tel:9197891622">919-789-1622</a>');
+		});
+
+	});
+
 	describe( "instantiating and using as a class", function() {
 
 		it( "should configure the instance with configuration options, and then be able to execute the link() method", function() {
@@ -11,7 +25,6 @@ describe( "Autolinker", function() {
 		} );
 
 	} );
-
 
 	describe( "link() method", function() {
 		var autolinker;

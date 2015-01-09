@@ -119,6 +119,10 @@
 	};
 
 
+	var defaultSecondPassFn = function( context, str ) {
+		return str;
+	};
+
 	Autolinker.prototype = {
 		constructor : Autolinker,  // fix constructor property
 
@@ -210,6 +214,20 @@
 
 
 		/**
+		 * @cfg {Function} secondPassReplaceFn
+		 *
+		 * A function which gets called for any string where no built-in matches are found in the input.
+		 * Defaults to the identity function.
+		 * This function is called with the following parameters:
+		 *
+		 * @cfg {Autolinker} secondPassReplaceFn.autolinker The Autolinker instance
+		 * @cfg {String} secondPassReplaceFn.str The text to be replaced
+		 *
+		 *
+		 */
+		secondPassReplaceFn: defaultSecondPassFn,
+
+		/**
 		 * @private
 		 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 		 *
@@ -235,7 +253,6 @@
 		 * in the {@link #getTagBuilder} method.
 		 */
 		tagBuilder : undefined,
-
 
 		/**
 		 * Automatically links URLs, email addresses, phone numbers, and Twitter handles found in the given chunk of HTML.
@@ -294,7 +311,6 @@
 			return resultHtml.join( "" );
 		},
 
-
 		/**
 		 * Process the text that lies in between HTML tags, performing the anchor tag replacements for matched
 		 * URLs/emails/phone#s/Twitter handles, and returns the string with the replacements made.
@@ -306,7 +322,7 @@
 		 * @return {String} The text with anchor tags auto-filled.
 		 */
 		linkifyStr : function( str ) {
-			return this.getMatchParser().replace( str, this.createMatchReturnVal, this );
+			return this.getMatchParser().replace( str, this.createMatchReturnVal, this.secondPassReplaceFn, this );
 		},
 
 
@@ -1647,10 +1663,11 @@
 		 * @param {Object} [contextObj=window] The context object ("scope") to run the `replaceFn` in.
 		 * @return {String}
 		 */
-		replace : function( text, replaceFn, contextObj ) {
+		replace : function( text, replaceFn, secondPassReplaceFn, contextObj ) {
 			var me = this;  // for closure
+			var didFindMatch = false;
 
-			return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
+			var initialResult = text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
 				var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9);  // "match description" object
 
 				// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are
@@ -1660,10 +1677,17 @@
 
 				} else {
 					// Generate replacement text for the match from the `replaceFn`
+					didFindMatch = true;
 					var replaceStr = replaceFn.call( contextObj, matchDescObj.match );
 					return matchDescObj.prefixStr + replaceStr + matchDescObj.suffixStr;
 				}
 			} );
+
+			if (!didFindMatch) {
+				return secondPassReplaceFn.call( contextObj, initialResult );
+			} else {
+				return initialResult;
+			}
 		},
 
 
