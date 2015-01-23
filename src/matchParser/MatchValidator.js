@@ -101,7 +101,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @return {Boolean} `true` if the scheme is a valid one, `false` otherwise.
 	 */
 	isValidUriScheme : function( uriSchemeMatch ) {
-		var uriScheme = uriSchemeMatch.match( this.uriSchemeRegex )[ 0 ];
+		var uriScheme = uriSchemeMatch.match( this.uriSchemeRegex )[ 0 ].toLowerCase();
 		
 		return ( uriScheme !== 'javascript:' && uriScheme !== 'vbscript:' );
 	},
