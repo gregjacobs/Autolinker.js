@@ -2,7 +2,7 @@
  * @class Autolinker
  * @extends Object
  * 
- * Utility class used to process a given string of text, and wrap the URLs, email addresses, and Twitter handles in 
+ * Utility class used to process a given string of text, and wrap the URLs, email addresses, Twitter handles, and TwitterHashtag handles in 
  * the appropriate anchor (&lt;a&gt;) tags to turn them into links.
  * 
  * Any of the configuration options may be provided in an Object (map) provided to the Autolinker constructor, which
@@ -32,11 +32,11 @@
  * ## Custom Replacements of Links
  * 
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn} may be provided to fully customize
- * the output of Autolinker. This function is called once for each URL/Email/Twitter handle match that is encountered.
+ * the output of Autolinker. This function is called once for each URL/Email/Twitter handle/TwitterHashtag handel match that is encountered.
  * 
  * For example:
  * 
- *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+ *     var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and TwitterHashtag Handles
  *     
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
@@ -73,6 +73,11 @@
  *                     console.log( twitterHandle );
  *                     
  *                     return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+ *		   case 'twitterHashtag' :
+ *                     var twitterHashtagHandle = match.getTwitterHashtagHandle();
+ *                     console.log( twitterHashtagHandle );
+ *                     
+ *                     return '<a href="http://newplace.to.link.twitterHashtag.handles.to/">' + twitterHashtagHandle + '</a>';
  *             }
  *         }
  *     } );
@@ -119,6 +124,13 @@ Autolinker.prototype = {
 	twitter : true,
 	
 	/**
+	 * @cfg {Boolean} twitterHashtag
+	 * 
+	 * `true` if TwitterHashtag handles ("@example") should be automatically linked, `false` if they should not be.
+	 */
+	twitterHashtag : true,
+
+	/**
 	 * @cfg {Boolean} newWindow
 	 * 
 	 * `true` if the links should open in a new window, `false` otherwise.
@@ -136,8 +148,8 @@ Autolinker.prototype = {
 	/**
 	 * @cfg {Number} truncate
 	 * 
-	 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of 
-	 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by 
+	 * A number for how many characters long URLs/emails/twitter handles/twitterHashtag handles should be truncated to inside the text of 
+	 * a link. If the URL/email/twitter/twitterHashtag is over this number of characters, it will be truncated to this length by 
 	 * adding a two period ellipsis ('..') to the end of the string.
 	 * 
 	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
@@ -149,20 +161,21 @@ Autolinker.prototype = {
 	 * @cfg {String} className
 	 * 
 	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
-	 * plus url/email/twitter suffixes for styling url/email/twitter links differently.
+	 * plus url/email/twitter/twitterHashtag suffixes for styling url/email/twitter/twitterHashtag links differently.
 	 * 
 	 * For example, if this config is provided as "myLink", then:
 	 * 
 	 * - URL links will have the CSS classes: "myLink myLink-url"
 	 * - Email links will have the CSS classes: "myLink myLink-email", and
 	 * - Twitter links will have the CSS classes: "myLink myLink-twitter"
+	 * - TwitterHashtag links will have the CSS classes: "myLink myLink-twitterHashtag"
 	 */
 	className : "",
 	
 	/**
 	 * @cfg {Function} replaceFn
 	 * 
-	 * A function to individually process each URL/Email/Twitter match found in the input string.
+	 * A function to individually process each URL/Email/Twitter/TwitterHashtag match found in the input string.
 	 * 
 	 * See the class's description for usage.
 	 * 
@@ -171,7 +184,7 @@ Autolinker.prototype = {
 	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may be used to retrieve child objects from (such
 	 *   as the instance's {@link #getTagBuilder tag builder}).
 	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which can be used to retrieve information about the
-	 *   {@link Autolinker.match.Url URL}/{@link Autolinker.match.Email email}/{@link Autolinker.match.Twitter Twitter}
+	 *   {@link Autolinker.match.Url URL}/{@link Autolinker.match.Email email}/{@link Autolinker.match.Twitter Twitter}/{@link Autolinker.match.TwitterHashtag TwitterHashtag}
 	 *   match that the `replaceFn` is currently processing.
 	 */
 	
@@ -189,7 +202,7 @@ Autolinker.prototype = {
 	 * @private
 	 * @property {Autolinker.matchParser.MatchParser} matchParser
 	 * 
-	 * The MatchParser instance used to find URL/email/Twitter matches in the text nodes of an input string passed to
+	 * The MatchParser instance used to find URL/email/Twitter/TwitterHashtag matches in the text nodes of an input string passed to
 	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
 	 */
 	matchParser : undefined,
@@ -198,14 +211,14 @@ Autolinker.prototype = {
 	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
 	 * 
-	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
+	 * The AnchorTagBuilder instance used to build the URL/email/Twitter/TwitterHashtag replacement anchor tags. This is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
 	
 	
 	/**
-	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
+	 * Automatically links URLs, email addresses, Twitter handles, and TwitterHashtag handles found in the given chunk of HTML. 
 	 * Does not link URLs found within HTML tags.
 	 * 
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
@@ -214,9 +227,9 @@ Autolinker.prototype = {
 	 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
 	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
 	 * 
-	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within (depending on if
-	 *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
-	 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
+	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, Twitter handles, and TwitterHashtag handles within (depending on if
+	 *   the {@link #urls}, {@link #email}, {@link #twitter}, and {@link #twitterHashtag} options are enabled).
+	 * @return {String} The HTML, with URLs/emails/Twitter/TwitterHashtag handles automatically linked.
 	 */
 	link : function( textOrHtml ) {
 		var htmlParser = this.getHtmlParser(),
@@ -264,9 +277,9 @@ Autolinker.prototype = {
 	
 	/**
 	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for matched 
-	 * URLs/emails/Twitter handles, and returns the string with the replacements made. 
+	 * URLs/emails/Twitter handles/TwitterHashtag handles, and returns the string with the replacements made. 
 	 * 
-	 * This method does the actual wrapping of URLs/emails/Twitter handles with anchor tags.
+	 * This method does the actual wrapping of URLs/emails/Twitter handles/TwitterHashtag handles with anchor tags.
 	 * 
 	 * @private
 	 * @param {String} str The string of text to auto-link.
@@ -344,6 +357,7 @@ Autolinker.prototype = {
 				urls : this.urls,
 				email : this.email,
 				twitter : this.twitter,
+				twitterHashtag : this.twitterHashtag,
 				stripPrefix : this.stripPrefix
 			} );
 		}
@@ -391,7 +405,7 @@ Autolinker.prototype = {
 
 
 /**
- * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
+ * Automatically links URLs, email addresses, Twitter handles, and TwitterHashtag handles found in the given chunk of HTML. 
  * Does not link URLs found within HTML tags.
  * 
  * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
@@ -403,8 +417,8 @@ Autolinker.prototype = {
  *     // Produces: "Go to <a href="http://google.com">google.com</a>"
  * 
  * @static
- * @param {String} textOrHtml The HTML or text to find URLs, email addresses, and Twitter handles within (depending on if
- *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
+ * @param {String} textOrHtml The HTML or text to find URLs, email addresses, Twitter handles, and TwitterHashtag handles within (depending on if
+ *   the {@link #urls}, {@link #email}, {@link #twitter},and {@link #twitterHashtag} options are enabled).
  * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
  *   See the class description for an example call.
  * @return {String} The HTML text, with URLs automatically linked
