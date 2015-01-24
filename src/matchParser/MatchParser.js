@@ -4,10 +4,10 @@
  * @class Autolinker.matchParser.MatchParser
  * @extends Object
  * 
- * Used by Autolinker to parse {@link #urls URLs}, {@link #emails email addresses}, and {@link #twitter Twitter handles}, 
+ * Used by Autolinker to parse {@link #urls URLs}, {@link #emails email addresses}, {@link #twitter Twitter handles}, and {@link #twitterHashtag TwitterHashtag handles}, 
  * given an input string of text.
  * 
- * The MatchParser is fed a non-HTML string in order to search out URLs, email addresses and Twitter handles. Autolinker
+ * The MatchParser is fed a non-HTML string in order to search out URLs, email addresses, Twitter handles and TwitterHashtag handlers. Autolinker
  * first uses the {@link HtmlParser} to "walk around" HTML tags, and then the text around the HTML tags is passed into
  * the MatchParser in order to find the actual matches.
  */
@@ -35,6 +35,12 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	twitter : true,
 	
 	/**
+	 * @cfg {Boolean} twitterHashtag
+	 * 
+	 * `true` if TwitterHashtag handles ("@example") should be automatically linked, `false` if they should not be.
+	 */
+	twitterHashtag : true,
+	/**
 	 * @cfg {Boolean} stripPrefix
 	 * 
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text
@@ -49,7 +55,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 * 
-	 * The regular expression that matches URLs, email addresses, and Twitter handles.
+	 * The regular expression that matches URLs, email addresses, Twitter handles and TwitterHashtag handlers.
 	 * 
 	 * This regular expression has the following capturing groups:
 	 * 
@@ -70,9 +76,17 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *    or the // was in a string we don't want to auto-link.
 	 * 8. A protocol-relative ('//') match for the case of a known TLD prefixed URL. Will be an empty string if it is not a 
 	 *    protocol-relative match. See #6 for more info. 
+	 * 9. Group that is used to determine if there is a TwitterHashtag handle match (i.e. \#someHashtag). Simply check for its 
+	 *    existence to determine if there is a TwitterHashtag handle match. The next couple of capturing groups give information 
+	 *    about the TwitterHashtag handle match.
+	 * 10. The whitespace character before the \#sign in a TwitterHashtag handle. This is needed because there are no lookbehinds in
+	 *    JS regular expressions, and can be used to reconstruct the original string in a replace().
+	 * 11. The TwitterHashtag handle itself in a TwitterHashtag match. If the match is '#someHashtag', the handle is 'someHashtag'.
 	 */
 	matcherRegex : (function() {
 		var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
+
+		    twitterHashtagRegex = /(^|[^\w])#(\w{1,15})/,              // For matching a twitterHashtag handle. Ex: #games
 		    
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 		    
@@ -127,6 +141,12 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 				')',
 				
 				'(?:' + urlSuffixRegex.source + ')?',  // match for path, query string, and/or hash anchor - optional
+			')',
+'|'
+'(',  // *** Capturing group $9, which can be used to check for a twitterHashtag handle match. Use group $11 for the actual twitterHashtag handle though. $10 may be used to reconstruct the original string in a replace() 
+				// *** Capturing group $10, which matches the whitespace character before the '#' sign (needed because of no lookbehinds), and 
+				// *** Capturing group $11, which matches the actual twitterHashtag handle
+				twitterHashtagRegex.source,
 			')'
 		].join( "" ), 'gi' );
 	} )(),
@@ -164,7 +184,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	
 	
 	/**
-	 * Parses the input `text` to search for URLs/emails/Twitter handles, and calls the `replaceFn`
+	 * Parses the input `text` to search for URLs/emails/Twitter and TwitterHashtag handles, and calls the `replaceFn`
 	 * to allow replacements of the matches. Returns the `text` with matches replaced.
 	 * 
 	 * @param {String} text The text to search and repace matches in.
@@ -177,10 +197,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 		
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 ) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8 );  // "match description" object
+		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11 ) {
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11 );  // "match description" object
 			
-			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are 
+			// Return out with no changes for match types that are disabled (url, email, twitter, twitterHashtag), or for matches that are 
 			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
 			if( !matchDescObj ) {
 				return matchStr;
@@ -197,7 +217,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	/**
 	 * Processes a candidate match from the {@link #matcherRegex}. 
 	 * 
-	 * Not all matches found by the regex are actual URL/email/Twitter matches, as determined by the {@link #matchValidator}. In
+	 * Not all matches found by the regex are actual URL/email/Twitter/TwitterHashtag matches, as determined by the {@link #matchValidator}. In
 	 * this case, the method returns `null`. Otherwise, a valid Object with `prefixStr`, `match`, and `suffixStr` is returned.
 	 * 
 	 * @private
@@ -214,6 +234,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *   comes before the '//'.
 	 * @param {String} tldProtocolRelativeMatch The '//' for a protocol-relative match from a TLD (top level domain) match, with 
 	 *   the character that comes before the '//'.
+ 	* @param {String} twitterHashtagMatch The matched text of a TwitterHashtag handle, if the match is a TwitterHashtag match.
+	 * @param {String} twitterHashtagHandlePrefixWhitespaceChar The whitespace char before the # sign in a TwitterHashtag handle match. This 
+	 *   is needed because of no lookbehinds in JS regexes, and is need to re-include the character for the anchor tag replacement.
+	 * @param {String} twitterHashtagHandle The actual Twitter hashtag (i.e the word after the # sign in a TwitterHashtag match).
 	 *   
 	 * @return {Object} A "match description object". This will be `null` if the match was invalid, or if a match type is disabled.
 	 *   Otherwise, this will be an Object (map) with the following properties:
@@ -227,7 +251,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 */
 	processCandidateMatch : function( 
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle, 
-		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch
+		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch,
+		twitterHashtagMatch, twitterHashtagHandlePrefixWhitespaceChar, twitterHashtagHandle, 
 	) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will 
 		// be added to `prefixStr` and `suffixStr`).
@@ -235,14 +260,14 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		var protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 		    match,  // Will be an Autolinker.match.Match object
 		    
-		    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter handle match
+		    prefixStr = "",       // A string to use to prefix the anchor tag that is created. This is needed for the Twitter and TwitterHashtag handle match
 		    suffixStr = "";       // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 		    
 		
-		// Return out with `null` for match types that are disabled (url, email, twitter), or for matches that are 
+		// Return out with `null` for match types that are disabled (url, email, twitter, twitterHashtag), or for matches that are 
 		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
 		if(
-			( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) ||
+			( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) || ( twitterHashtagMatch && !this.twitterHashtag ) || 
 			!this.matchValidator.isValidMatch( urlMatch, protocolUrlMatch, protocolRelativeMatch ) 
 		) {
 			return null;
@@ -268,7 +293,16 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			}
 			match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
 			
-		} else {  // url match
+		} else if( twitterHashtagMatch ) {
+			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match 
+			// itself (since there are no look-behinds in JS regexes)
+			if( twitterHashtagHandlePrefixWhitespaceChar ) {
+				prefixStr = twitterHashtagHandlePrefixWhitespaceChar;
+				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
+			}
+			match = new Autolinker.match.TwitterHashTag( { matchedText: matchStr, twitterHashtagHandle: twitterHashtagHandle } );
+			
+		}else {  // url match
 			// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
 			// to match due to the lack of a negative look-behind in JavaScript regular expressions)
 			if( protocolRelativeMatch ) {
