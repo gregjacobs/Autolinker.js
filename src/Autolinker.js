@@ -178,7 +178,7 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
+	 * @property {Autolinker.htmlParser.HtmlParser}
 	 * 
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
 	 * in the {@link #getHtmlParser} method.
@@ -187,7 +187,7 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {Autolinker.matchParser.MatchParser} matchParser
+	 * @property {Autolinker.matchParser.MatchParser}
 	 * 
 	 * The MatchParser instance used to find URL/email/Twitter matches in the text nodes of an input string passed to
 	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
@@ -196,7 +196,7 @@ Autolinker.prototype = {
 	
 	/**
 	 * @private
-	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
+	 * @property {Autolinker.AnchorTagBuilder}
 	 * 
 	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
