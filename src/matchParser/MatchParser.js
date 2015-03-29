@@ -4,48 +4,54 @@
  * @class Autolinker.matchParser.MatchParser
  * @extends Object
  *
- * Used by Autolinker to parse {@link #urls URLs}, {@link #emails email addresses}, and {@link #twitter Twitter handles},
- * given an input string of text.
+ * Used by Autolinker to parse {@link #urls URLs}, {@link #emails email addresses},
+ * and {@link #twitter Twitter handles}, given an input string of text.
  *
- * The MatchParser is fed a non-HTML string in order to search out URLs, email addresses and Twitter handles. Autolinker
- * first uses the {@link HtmlParser} to "walk around" HTML tags, and then the text around the HTML tags is passed into
- * the MatchParser in order to find the actual matches.
+ * The MatchParser is fed a non-HTML string in order to search out URLs, email
+ * addresses and Twitter handles. Autolinker first uses the {@link HtmlParser}
+ * to "walk around" HTML tags, and then the text around the HTML tags is passed
+ * into the MatchParser in order to find the actual matches.
  */
 Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 	/**
 	 * @cfg {Boolean} urls
 	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+	 * `true` if miscellaneous URLs should be automatically linked, `false` if
+	 * they should not.
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
 	 *
-	 * `true` if email addresses should be automatically linked, `false` if they should not be.
+	 * `true` if email addresses should be automatically linked, `false` if they
+	 * should not.
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
 	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+	 * `true` if Twitter handles ("@example") should be automatically linked,
+	 * `false` if they should not.
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
 	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked, `false` if they should not be.
+	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+	 * `false` if they should not.
 	 */
 	phone: true,
 
 	/**
 	 * @cfg {Boolean} stripPrefix
 	 *
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text
-	 * in {@link Autolinker.match.Url URL matches}, `false` otherwise.
+	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
+	 * from the beginning of URL links' text in {@link Autolinker.match.Url URL matches},
+	 * `false` otherwise.
 	 *
 	 * TODO: Handle this before a URL Match object is instantiated.
 	 */
@@ -56,40 +62,53 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 *
-	 * The regular expression that matches URLs, email addresses, phone #s, and Twitter handles.
+	 * The regular expression that matches URLs, email addresses, phone #s, and
+	 * Twitter handles.
 	 *
 	 * This regular expression has the following capturing groups:
 	 *
-	 * 1. Group that is used to determine if there is a Twitter handle match (i.e. \@someTwitterUser). Simply check for its
-	 *    existence to determine if there is a Twitter handle match. The next couple of capturing groups give information
-	 *    about the Twitter handle match.
-	 * 2. The whitespace character before the \@sign in a Twitter handle. This is needed because there are no lookbehinds in
-	 *    JS regular expressions, and can be used to reconstruct the original string in a replace().
-	 * 3. The Twitter handle itself in a Twitter match. If the match is '@someTwitterUser', the handle is 'someTwitterUser'.
-	 * 4. Group that matches an email address. Used to determine if the match is an email address, as well as holding the full
-	 *    address. Ex: 'me@my.com'
-	 * 5. Group that matches a URL in the input text. Ex: 'http://google.com', 'www.google.com', or just 'google.com'.
-	 *    This also includes a path, url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
-	 * 6. Group that matches a protocol URL (i.e. 'http://google.com'). This is used to match protocol URLs with just a single
-	 *    word, like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
-	 * 7. A protocol-relative ('//') match for the case of a 'www.' prefixed URL. Will be an empty string if it is not a
-	 *    protocol-relative match. We need to know the character before the '//' in order to determine if it is a valid match
-	 *    or the // was in a string we don't want to auto-link.
-	 * 8. A protocol-relative ('//') match for the case of a known TLD prefixed URL. Will be an empty string if it is not a
-	 *    protocol-relative match. See #6 for more info.
-	 * 9. Group that is used to determine if there is a phone number match. The next 3 groups give segments of the phone number.
-	 * 10.(Optional) Group that matches the area code of a phone number. Will be an empty string if not included in the number.
-	 * 11.Group that matches the first 3 digits of a US phone number.
-	 * 12.Group that matches the last 4 digits of a US phone number.
-   */
+	 * 1.  Group that is used to determine if there is a Twitter handle match
+	 *     (i.e. \@someTwitterUser). Simply check for its existence to determine
+	 *     if there is a Twitter handle match. The next couple of capturing
+	 *     groups give information about the Twitter handle match.
+	 * 2.  The whitespace character before the \@sign in a Twitter handle. This
+	 *     is needed because there are no lookbehinds in JS regular expressions,
+	 *     and can be used to reconstruct the original string in a replace().
+	 * 3.  The Twitter handle itself in a Twitter match. If the match is
+	 *     '@someTwitterUser', the handle is 'someTwitterUser'.
+	 * 4.  Group that matches an email address. Used to determine if the match
+	 *     is an email address, as well as holding the full address. Ex:
+	 *     'me@my.com'
+	 * 5.  Group that matches a URL in the input text. Ex: 'http://google.com',
+	 *     'www.google.com', or just 'google.com'. This also includes a path,
+	 *     url parameters, or hash anchors. Ex: google.com/path/to/file?q1=1&q2=2#myAnchor
+	 * 6.  Group that matches a protocol URL (i.e. 'http://google.com'). This is
+	 *     used to match protocol URLs with just a single word, like 'http://localhost',
+	 *     where we won't double check that the domain name has at least one '.'
+	 *     in it.
+	 * 7.  A protocol-relative ('//') match for the case of a 'www.' prefixed
+	 *     URL. Will be an empty string if it is not a protocol-relative match.
+	 *     We need to know the character before the '//' in order to determine
+	 *     if it is a valid match or the // was in a string we don't want to
+	 *     auto-link.
+	 * 8.  A protocol-relative ('//') match for the case of a known TLD prefixed
+	 *     URL. Will be an empty string if it is not a protocol-relative match.
+	 *     See #6 for more info.
+	 * 9.  Group that is used to determine if there is a phone number match. The
+	 *     next 3 groups give segments of the phone number.
+	 * 10. (Optional) Group that matches the area code of a phone number. Will
+	 *     be an empty string if not included in the number.
+	 * 11. Group that matches the first 3 digits of a US phone number.
+	 * 12. Group that matches the last 4 digits of a US phone number.
+	 */
 	matcherRegex : (function() {
-		var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
+		var twitterRegex = /(^|[^\w])@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 
-		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
-		    phoneRegex = /\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})/,
+		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,                // something@ for email addresses (a.k.a. local-part)
+		    phoneRegex = /\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 		    protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
-		    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
-		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
+		    wwwRegex = /(?:www\.)/,                                // starting with 'www.'
+		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,     // anything looking at all like a domain, non-unicode domains, not ending in a period
 		    tldRegex = /\.(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/,   // match our known top level domains (TLDs)
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
@@ -184,29 +203,33 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Parses the input `text` to search for URLs/emails/Twitter handles, and calls the `replaceFn`
-	 * to allow replacements of the matches. Returns the `text` with matches replaced.
+	 * Parses the input `text` to search for URLs/emails/Twitter handles, and
+	 * calls the `replaceFn` to allow replacements of the matches. Returns the
+	 * `text` with matches replaced.
 	 *
 	 * @param {String} text The text to search and repace matches in.
-	 * @param {Function} replaceFn The iterator function to handle the replacements. The function takes a
-	 *   single argument, a {@link Autolinker.match.Match} object, and should return the text that should
-	 *   make the replacement.
-	 * @param {Object} [contextObj=window] The context object ("scope") to run the `replaceFn` in.
+	 * @param {Function} replaceFn The iterator function to handle the
+	 *   replacements. The function takes a single argument, a {@link Autolinker.match.Match}
+	 *   object, and should return the text that should make the replacement.
+	 * @param {Object} [contextObj=window] The context object ("scope") to run
+	 *   the `replaceFn` in.
 	 * @return {String}
 	 */
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9);  // "match description" object
+		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9 ) {
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9 );  // "match description" object
 
-			// Return out with no changes for match types that are disabled (url, email, twitter), or for matches that are
-			// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
+			// Return out with no changes for match types that are disabled (url,
+			// email, phone, twitter), or for matches that are invalid (false
+			// positives from the matcherRegex, which can't use look-behinds
+			// since they are unavailable in JS).
 			if( !matchDescObj ) {
 				return matchStr;
+
 			} else {
 				// Generate replacement text for the match from the `replaceFn`
-				didFindMatch = true;
 				var replaceStr = replaceFn.call( contextObj, matchDescObj.match );
 				return matchDescObj.prefixStr + replaceStr + matchDescObj.suffixStr;
 			}
@@ -248,8 +271,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 */
 	processCandidateMatch : function(
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle,
-		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch, tldProtocolRelativeMatch,
-		phoneMatch) {
+		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch,
+		tldProtocolRelativeMatch, phoneMatch ) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will
 		// be added to `prefixStr` and `suffixStr`).
 
@@ -289,7 +312,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 		} else if ( phoneMatch ) {
 			// remove non-numeric values from phone number string
-			var cleanNumber = matchStr.replace(/\D/g,'');
+			var cleanNumber = matchStr.replace( /\D/g, '' );
  			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
 
 		} else {  // url match
@@ -305,11 +328,11 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			}
 
 			match = new Autolinker.match.Url( {
-				matchedText : matchStr,
-				url : matchStr,
-				protocolUrlMatch : !!protocolUrlMatch,
+				matchedText           : matchStr,
+				url                   : matchStr,
+				protocolUrlMatch      : !!protocolUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
-				stripPrefix : this.stripPrefix
+				stripPrefix           : this.stripPrefix
 			} );
 		}
 

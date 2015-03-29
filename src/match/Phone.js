@@ -3,9 +3,11 @@
  * @class Autolinker.match.Phone
  * @extends Autolinker.match.Match
  *
- * Represents a Phone number match found in an input string which should be Autolinked.
+ * Represents a Phone number match found in an input string which should be
+ * Autolinked.
  *
- * See this class's superclass ({@link Autolinker.match.Match}) for more details.
+ * See this class's superclass ({@link Autolinker.match.Match}) for more
+ * details.
  */
 Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
@@ -27,7 +29,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
-	 * Returns the email address that was matched.
+	 * Returns the phone number that was matched.
 	 *
 	 * @return {String}
 	 */
