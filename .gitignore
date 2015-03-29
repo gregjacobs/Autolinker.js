@@ -1,4 +1,5 @@
 .externalToolBuilders
+.idea
 .project
 .settings
 web.config
