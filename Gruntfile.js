@@ -2,24 +2,24 @@
 /*jshint devel:true */
 module.exports = function(grunt) {
 	'use strict';
-	
+
 	// Tasks
 	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
 	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
 	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
 	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
-	
-	
+
+
 	// Project configuration
 	var exec = require( 'child_process' ).exec,
 	    banner = createBanner(),
 	    distPath = 'dist/Autolinker.js',
 	    minDistPath = 'dist/Autolinker.min.js';
-	
+
 	grunt.initConfig( {
 		pkg: grunt.file.readJSON( 'package.json' ),
-		
+
 		connect: {
 			server: {
 				options: {
@@ -29,13 +29,13 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		
+
 		jshint: {
 			files: {
 				src: [ 'src/**/*.js', 'tests/**/*.js' ]
 			}
 		},
-		
+
 		jasmine: {
 			dist: {
 				options: {
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
 				src: minDistPath
 			}
 		},
-		
+
 		concat: {
 			development: {
 				options: {
@@ -65,13 +65,14 @@ module.exports = function(grunt) {
 					'src/matchParser/MatchValidator.js',
 					'src/match/Match.js',
 					'src/match/Email.js',
+					'src/match/Phone.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js'
 				],
 				dest: distPath
 			}
 		},
-		
+
 		uglify: {
 			production: {
 				options: {
@@ -81,17 +82,17 @@ module.exports = function(grunt) {
 				dest: minDistPath
 			}
 		},
-		
+
 		jsduck: {
 			main: {
 				// source paths with your code
 				src: [
 					'src/**/*.js'
 				],
-		
+
 				// docs output dir
 				dest: 'gh-pages/docs',
-		
+
 				// extra options
 				options: {
 					'title': 'Autolinker API Docs'
@@ -117,11 +118,11 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jsduck' );
 	grunt.loadNpmTasks( 'grunt-umd' );
-	
-	
+
+
 	/**
 	 * Creates the banner comment with license header that is placed over the concatenated/minified files.
-	 * 
+	 *
 	 * @private
 	 * @return {String}
 	 */

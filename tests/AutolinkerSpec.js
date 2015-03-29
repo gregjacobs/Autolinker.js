@@ -1,6 +1,20 @@
 /*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
 describe( "Autolinker", function() {
 	
+	describe( "preprocess function", function() {
+		it( "should capitalize string, then linkify", function() {
+			var capitalizer = function( autolinker, str ){
+				return str.toUpperCase();
+			}
+
+			var autolinker = new Autolinker( { newWindow: false, preprocessFn: capitalizer});
+
+			var result = autolinker.link( "Hi, my number is: 919-789-1622" );
+			expect( result ).toBe('HI, MY NUMBER IS: <a href="tel:9197891622">919-789-1622</a>');
+		});
+
+	});
+
 	describe( "instantiating and using as a class", function() {
 		
 		it( "should configure the instance with configuration options, and then be able to execute the link() method", function() {
@@ -12,7 +26,6 @@ describe( "Autolinker", function() {
 		
 	} );
 	
-	
 	describe( "link() method", function() {
 		var autolinker;
 		
@@ -20,7 +33,41 @@ describe( "Autolinker", function() {
 			autolinker = new Autolinker( { newWindow: false } );  // so that target="_blank" is not added to resulting autolinked URLs
 		} );
 		
+		describe( "Phone number linking", function() {
+
+			it( "should automatically link a phone number which is the only thing in the string", function() {
+				var result = autolinker.link( "(555)666-7777" );
+				expect( result ).toBe( '<a href="tel:5556667777">(555)666-7777</a>' );
+			} );
+
+			it( "should automatically link a phone number when there are no parens", function() {
+				var result = autolinker.link( "555-666-7777" );
+				expect( result ).toBe( '<a href="tel:5556667777">555-666-7777</a>' );
+			} );
+
+			it( "should automatically link a phone number when there are spaces as delimiters", function() {
+				var result = autolinker.link( "555 666 7777" );
+				expect( result ).toBe( '<a href="tel:5556667777">555 666 7777</a>' );
+			} );
 		
+			it( "should automatically link a phone number when there are no delimiters", function() {
+				var result = autolinker.link( "5556667777" );
+				expect( result ).toBe( '<a href="tel:5556667777">5556667777</a>' );
+			} );
+
+			it( "should automatically link a phone number contained in a larger string", function() {
+				var result = autolinker.link( "Here's my number: (555)666-7777, so call me maybe?" );
+				expect( result ).toBe( "Here's my number: <a href=\"tel:5556667777\">(555)666-7777</a>, so call me maybe?" );
+			} );
+
+			it( "should do nothing if phone flag is set to false.", function() {
+				autolinker.phone = false;
+				var result = autolinker.link( "(555)666-7777" );
+				expect( result ).toBe( '(555)666-7777' );
+			} );
+
+		});
+
 		describe( "URL linking", function() {
 			
 			describe( "protocol-prefixed URLs (i.e. URLs starting with http:// or https://)", function() {
@@ -209,26 +256,26 @@ describe( "Autolinker", function() {
 						var result4 = autolinker.link( 'do not link this: .a://example' );
 						expect( result4 ).toBe( 'do not link this: .a://example' );
 					} );
-
-
-                    it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
-                        var result = autolinker.link( "do not link javascript:window.alert('hi') please" );
-                        expect( result ).toBe( "do not link javascript:window.alert('hi') please" );
-                    } );
-
-
+					
+					
+					it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
+						var result = autolinker.link( "do not link javascript:window.alert('hi') please" );
+						expect( result ).toBe( "do not link javascript:window.alert('hi') please" );
+					} );
+					
+					
                     it( "should NOT autolink possible URLs with the 'javascript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
                         var result = autolinker.link( "do not link JavAscriPt:window.alert('hi') please" );
                         expect( result ).toBe( "do not link JavAscriPt:window.alert('hi') please" );
                     } );
 
 
-                    it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
-                        var result = autolinker.link( "do not link vbscript:window.alert('hi') please" );
-                        expect( result ).toBe( "do not link vbscript:window.alert('hi') please" );
-                    } );
-
-
+					it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
+						var result = autolinker.link( "do not link vbscript:window.alert('hi') please" );
+						expect( result ).toBe( "do not link vbscript:window.alert('hi') please" );
+					} );
+					
+					
                     it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
                         var result = autolinker.link( "do not link vBsCriPt:window.alert('hi') please" );
                         expect( result ).toBe( "do not link vBsCriPt:window.alert('hi') please" );
@@ -759,7 +806,6 @@ describe( "Autolinker", function() {
 			} );
 			
 		} );
-
 
 		describe( "proper handling of HTML in the input string", function() {
 		
