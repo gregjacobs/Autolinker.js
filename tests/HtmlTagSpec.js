@@ -336,14 +336,14 @@ describe( "Autolinker.HtmlTag", function() {
 	} );
 	
 	
-	describe( 'toString()', function() {
+	describe( 'toAnchorString()', function() {
 		
 		it( "should populate only the tag name when no attribute are set, and no inner HTML is set", function() {
 			var tag = new HtmlTag( {
 				tagName : 'a'
 			} );
 			
-			expect( tag.toString() ).toBe( '<a></a>' );
+			expect( tag.toAnchorString() ).toBe( '<a></a>' );
 		} );
 		
 		
@@ -353,7 +353,7 @@ describe( "Autolinker.HtmlTag", function() {
 				innerHtml : "My Site"
 			} );
 			
-			expect( tag.toString() ).toBe( '<a>My Site</a>' );
+			expect( tag.toAnchorString() ).toBe( '<a>My Site</a>' );
 		} );
 		
 		
@@ -363,7 +363,7 @@ describe( "Autolinker.HtmlTag", function() {
 				attrs   : { href: 'http://path/to/site', rel: 'nofollow' }
 			} );
 			
-			expect( tag.toString() ).toBe( '<a href="http://path/to/site" rel="nofollow"></a>' );
+			expect( tag.toAnchorString() ).toBe( '<a href="http://path/to/site" rel="nofollow"></a>' );
 		} );
 		
 		
@@ -374,7 +374,7 @@ describe( "Autolinker.HtmlTag", function() {
 				innerHtml : "My Site"
 			} );
 			
-			expect( tag.toString() ).toBe( '<a href="http://path/to/site" rel="nofollow">My Site</a>' );
+			expect( tag.toAnchorString() ).toBe( '<a href="http://path/to/site" rel="nofollow">My Site</a>' );
 		} );
 		
 		
@@ -386,7 +386,7 @@ describe( "Autolinker.HtmlTag", function() {
 			tag.setAttr( 'href', 'http://path/to/site' );
 			tag.setInnerHtml( 'My Site' );
 			
-			expect( tag.toString() ).toBe( '<a class="test test2" href="http://path/to/site">My Site</a>' );
+			expect( tag.toAnchorString() ).toBe( '<a class="test test2" href="http://path/to/site">My Site</a>' );
 		} );
 		
 	} );

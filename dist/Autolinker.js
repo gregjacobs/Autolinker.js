@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.15.3
+ * 0.15.4
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -26,91 +26,91 @@
 /**
  * @class Autolinker
  * @extends Object
- * 
- * Utility class used to process a given string of text, and wrap the URLs, email addresses, and Twitter handles in 
+ *
+ * Utility class used to process a given string of text, and wrap the URLs, email addresses, and Twitter handles in
  * the appropriate anchor (&lt;a&gt;) tags to turn them into links.
- * 
+ *
  * Any of the configuration options may be provided in an Object (map) provided to the Autolinker constructor, which
  * will configure how the {@link #link link()} method will process the links.
- * 
+ *
  * For example:
- * 
+ *
  *     var autolinker = new Autolinker( {
  *         newWindow : false,
  *         truncate  : 30
  *     } );
- *     
+ *
  *     var html = autolinker.link( "Joe went to www.yahoo.com" );
  *     // produces: 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'
- * 
- * 
+ *
+ *
  * The {@link #static-link static link()} method may also be used to inline options into a single call, which may
  * be more convenient for one-off uses. For example:
- * 
+ *
  *     var html = Autolinker.link( "Joe went to www.yahoo.com", {
  *         newWindow : false,
  *         truncate  : 30
  *     } );
  *     // produces: 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'
- * 
- * 
+ *
+ *
  * ## Custom Replacements of Links
- * 
+ *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn} may be provided to fully customize
  * the output of Autolinker. This function is called once for each URL/Email/Twitter handle match that is encountered.
- * 
+ *
  * For example:
- * 
+ *
  *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
- *     
+ *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
- *         
+ *
  *             switch( match.getType() ) {
- *                 case 'url' : 
+ *                 case 'url' :
  *                     console.log( "url: ", match.getUrl() );
- *                     
+ *
  *                     if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
  *                         var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
  *                         tag.setAttr( 'rel', 'nofollow' );
  *                         tag.addClass( 'external-link' );
- *                         
+ *
  *                         return tag;
- *                         
+ *
  *                     } else {
  *                         return true;  // let Autolinker perform its normal anchor tag replacement
  *                     }
- *                     
+ *
  *                 case 'email' :
  *                     var email = match.getEmail();
  *                     console.log( "email: ", email );
- *                     
+ *
  *                     if( email === "my@own.address" ) {
  *                         return false;  // don't auto-link this particular email address; leave as-is
  *                     } else {
  *                         return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
  *                     }
- *                 
+ *
  *                 case 'twitter' :
  *                     var twitterHandle = match.getTwitterHandle();
  *                     console.log( twitterHandle );
- *                     
+ *
  *                     return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
  *             }
  *         }
  *     } );
- * 
- * 
+ *
+ *
  * The function may return the following values:
- * 
+ *
  * - `true` (Boolean): Allow Autolinker to replace the match as it normally would.
  * - `false` (Boolean): Do not replace the current match at all - leave as-is.
  * - Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
  *   the match.
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
- * 
+ *
  * @constructor
  * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
  */
@@ -121,124 +121,124 @@ var Autolinker = function( cfg ) {
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
-	
+
 	/**
 	 * @cfg {Boolean} urls
-	 * 
+	 *
 	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
 	 */
 	urls : true,
-	
+
 	/**
 	 * @cfg {Boolean} email
-	 * 
+	 *
 	 * `true` if email addresses should be automatically linked, `false` if they should not be.
 	 */
 	email : true,
-	
+
 	/**
 	 * @cfg {Boolean} twitter
-	 * 
+	 *
 	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
 	 */
 	twitter : true,
-	
+
 	/**
 	 * @cfg {Boolean} newWindow
-	 * 
+	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
 	newWindow : true,
-	
+
 	/**
 	 * @cfg {Boolean} stripPrefix
-	 * 
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text, 
+	 *
+	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text,
 	 * `false` otherwise.
 	 */
 	stripPrefix : true,
-	
+
 	/**
 	 * @cfg {Number} truncate
-	 * 
-	 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of 
-	 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by 
+	 *
+	 * A number for how many characters long URLs/emails/twitter handles should be truncated to inside the text of
+	 * a link. If the URL/email/twitter is over this number of characters, it will be truncated to this length by
 	 * adding a two period ellipsis ('..') to the end of the string.
-	 * 
+	 *
 	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
 	 * something like this: 'yahoo.com/some/long/pat..'
 	 */
 	truncate : undefined,
-	
+
 	/**
 	 * @cfg {String} className
-	 * 
+	 *
 	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
 	 * plus url/email/twitter suffixes for styling url/email/twitter links differently.
-	 * 
+	 *
 	 * For example, if this config is provided as "myLink", then:
-	 * 
+	 *
 	 * - URL links will have the CSS classes: "myLink myLink-url"
 	 * - Email links will have the CSS classes: "myLink myLink-email", and
 	 * - Twitter links will have the CSS classes: "myLink myLink-twitter"
 	 */
 	className : "",
-	
+
 	/**
 	 * @cfg {Function} replaceFn
-	 * 
+	 *
 	 * A function to individually process each URL/Email/Twitter match found in the input string.
-	 * 
+	 *
 	 * See the class's description for usage.
-	 * 
+	 *
 	 * This function is called with the following parameters:
-	 * 
+	 *
 	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may be used to retrieve child objects from (such
 	 *   as the instance's {@link #getTagBuilder tag builder}).
 	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which can be used to retrieve information about the
 	 *   {@link Autolinker.match.Url URL}/{@link Autolinker.match.Email email}/{@link Autolinker.match.Twitter Twitter}
 	 *   match that the `replaceFn` is currently processing.
 	 */
-	
-	
+
+
 	/**
 	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
-	 * 
+	 *
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
 	 * in the {@link #getHtmlParser} method.
 	 */
 	htmlParser : undefined,
-	
+
 	/**
 	 * @private
 	 * @property {Autolinker.matchParser.MatchParser} matchParser
-	 * 
+	 *
 	 * The MatchParser instance used to find URL/email/Twitter matches in the text nodes of an input string passed to
 	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
 	 */
 	matchParser : undefined,
-	
+
 	/**
 	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
-	 * 
+	 *
 	 * The AnchorTagBuilder instance used to build the URL/email/Twitter replacement anchor tags. This is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
-	
-	
+
+
 	/**
-	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
+	 * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML.
 	 * Does not link URLs found within HTML tags.
-	 * 
+	 *
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
 	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
-	 * 
+	 *
 	 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
 	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
-	 * 
+	 *
 	 * @param {String} textOrHtml The HTML or text to link URLs, email addresses, and Twitter handles within (depending on if
 	 *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
 	 * @return {String} The HTML, with URLs/emails/Twitter handles automatically linked.
@@ -248,12 +248,12 @@ Autolinker.prototype = {
 		    htmlNodes = htmlParser.parse( textOrHtml ),
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
 		    resultHtml = [];
-		
+
 		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
 			var node = htmlNodes[ i ],
 			    nodeType = node.getType(),
 			    nodeText = node.getText();
-			
+
 			if( nodeType === 'element' ) {
 				// Process HTML nodes in the input `textOrHtml`
 				if( node.getTagName() === 'a' ) {
@@ -264,35 +264,35 @@ Autolinker.prototype = {
 					}
 				}
 				resultHtml.push( nodeText );  // now add the text of the tag itself verbatim
-				
+
 			} else if( nodeType === 'entity' ) {
 				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') verbatim
-				
+
 			} else {
 				// Process text nodes in the input `textOrHtml`
 				if( anchorTagStackCount === 0 ) {
 					// If we're not within an <a> tag, process the text node to linkify
 					var linkifiedStr = this.linkifyStr( nodeText );
 					resultHtml.push( linkifiedStr );
-					
+
 				} else {
-					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything 
+					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything
 					// already within an <a>...</a> tag
 					resultHtml.push( nodeText );
 				}
 			}
 		}
-		
+
 		return resultHtml.join( "" );
 	},
-	
-	
+
+
 	/**
-	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for matched 
-	 * URLs/emails/Twitter handles, and returns the string with the replacements made. 
-	 * 
+	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for matched
+	 * URLs/emails/Twitter handles, and returns the string with the replacements made.
+	 *
 	 * This method does the actual wrapping of URLs/emails/Twitter handles with anchor tags.
-	 * 
+	 *
 	 * @private
 	 * @param {String} str The string of text to auto-link.
 	 * @return {String} The text with anchor tags auto-filled.
@@ -300,13 +300,13 @@ Autolinker.prototype = {
 	linkifyStr : function( str ) {
 		return this.getMatchParser().replace( str, this.createMatchReturnVal, this );
 	},
-	
-	
+
+
 	/**
 	 * Creates the return string value for a given match in the input string, for the {@link #processTextNode} method.
-	 * 
+	 *
 	 * This method handles the {@link #replaceFn}, if one was provided.
-	 * 
+	 *
 	 * @private
 	 * @param {Autolinker.match.Match} match The Match object that represents the match.
 	 * @return {String} The string that the `match` should be replaced with. This is usually the anchor tag string, but
@@ -318,52 +318,52 @@ Autolinker.prototype = {
 		if( this.replaceFn ) {
 			replaceFnResult = this.replaceFn.call( this, this, match );  // Autolinker instance is the context, and the first arg
 		}
-		
+
 		if( typeof replaceFnResult === 'string' ) {
 			return replaceFnResult;  // `replaceFn` returned a string, use that
-			
+
 		} else if( replaceFnResult === false ) {
 			return match.getMatchedText();  // no replacement for the match
-			
+
 		} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
-			return replaceFnResult.toString();
-		
+			return replaceFnResult.toAnchorString();
+
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
 			var tagBuilder = this.getTagBuilder(),
 			    anchorTag = tagBuilder.build( match );  // returns an Autolinker.HtmlTag instance
-			
-			return anchorTag.toString();
+
+			return anchorTag.toAnchorString();
 		}
 	},
-	
-	
+
+
 	/**
 	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
-	 * 
+	 *
 	 * @protected
 	 * @return {Autolinker.htmlParser.HtmlParser}
 	 */
 	getHtmlParser : function() {
 		var htmlParser = this.htmlParser;
-		
+
 		if( !htmlParser ) {
 			htmlParser = this.htmlParser = new Autolinker.htmlParser.HtmlParser();
 		}
-		
+
 		return htmlParser;
 	},
-	
-	
+
+
 	/**
 	 * Lazily instantiates and returns the {@link #matchParser} instance for this Autolinker instance.
-	 * 
+	 *
 	 * @protected
 	 * @return {Autolinker.matchParser.MatchParser}
 	 */
 	getMatchParser : function() {
 		var matchParser = this.matchParser;
-		
+
 		if( !matchParser ) {
 			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
 				urls : this.urls,
@@ -372,35 +372,35 @@ Autolinker.prototype = {
 				stripPrefix : this.stripPrefix
 			} );
 		}
-		
+
 		return matchParser;
 	},
-	
-	
+
+
 	/**
 	 * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
 	 * if it does not yet exist.
-	 * 
-	 * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that 
+	 *
+	 * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that
 	 * Autolinker would normally generate, and then allow for modifications before returning it. For example:
-	 * 
+	 *
 	 *     var html = Autolinker.link( "Test google.com", {
 	 *         replaceFn : function( autolinker, match ) {
 	 *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
 	 *             tag.setAttr( 'rel', 'nofollow' );
-	 *             
+	 *
 	 *             return tag;
 	 *         }
 	 *     } );
-	 *     
+	 *
 	 *     // generated html:
 	 *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
-	 * 
+	 *
 	 * @return {Autolinker.AnchorTagBuilder}
 	 */
 	getTagBuilder : function() {
 		var tagBuilder = this.tagBuilder;
-		
+
 		if( !tagBuilder ) {
 			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
@@ -408,7 +408,7 @@ Autolinker.prototype = {
 				className   : this.className
 			} );
 		}
-		
+
 		return tagBuilder;
 	}
 
@@ -416,17 +416,17 @@ Autolinker.prototype = {
 
 
 /**
- * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML. 
+ * Automatically links URLs, email addresses, and Twitter handles found in the given chunk of HTML.
  * Does not link URLs found within HTML tags.
- * 
+ *
  * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
  * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
- * 
+ *
  * Example:
- * 
+ *
  *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
  *     // Produces: "Go to <a href="http://google.com">google.com</a>"
- * 
+ *
  * @static
  * @param {String} textOrHtml The HTML or text to find URLs, email addresses, and Twitter handles within (depending on if
  *   the {@link #urls}, {@link #email}, and {@link #twitter} options are enabled).
@@ -444,6 +444,7 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.htmlParser = {};
 Autolinker.matchParser = {};
+
 /*global Autolinker */
 /*jshint eqnull:true, boss:true */
 /**
@@ -599,62 +600,62 @@ Autolinker.Util = {
 /**
  * @class Autolinker.HtmlTag
  * @extends Object
- * 
+ *
  * Represents an HTML tag, which can be used to easily build/modify HTML tags programmatically.
- * 
+ *
  * Autolinker uses this abstraction to create HTML tags, and then write them out as strings. You may also use
  * this class in your code, especially within a {@link Autolinker#replaceFn replaceFn}.
- * 
+ *
  * ## Examples
- * 
+ *
  * Example instantiation:
- * 
+ *
  *     var tag = new Autolinker.HtmlTag( {
  *         tagName : 'a',
  *         attrs   : { 'href': 'http://google.com', 'class': 'external-link' },
  *         innerHtml : 'Google'
  *     } );
- *     
- *     tag.toString();  // <a href="http://google.com" class="external-link">Google</a>
- *     
+ *
+ *     tag.toAnchorString();  // <a href="http://google.com" class="external-link">Google</a>
+ *
  *     // Individual accessor methods
  *     tag.getTagName();                 // 'a'
  *     tag.getAttr( 'href' );            // 'http://google.com'
  *     tag.hasClass( 'external-link' );  // true
- * 
- * 
+ *
+ *
  * Using mutator methods (which may be used in combination with instantiation config properties):
- * 
+ *
  *     var tag = new Autolinker.HtmlTag();
  *     tag.setTagName( 'a' );
  *     tag.setAttr( 'href', 'http://google.com' );
  *     tag.addClass( 'external-link' );
  *     tag.setInnerHtml( 'Google' );
- *     
+ *
  *     tag.getTagName();                 // 'a'
  *     tag.getAttr( 'href' );            // 'http://google.com'
  *     tag.hasClass( 'external-link' );  // true
- *     
- *     tag.toString();  // <a href="http://google.com" class="external-link">Google</a>
- *     
- * 
+ *
+ *     tag.toAnchorString();  // <a href="http://google.com" class="external-link">Google</a>
+ *
+ *
  * ## Example use within a {@link Autolinker#replaceFn replaceFn}
- * 
+ *
  *     var html = Autolinker.link( "Test google.com", {
  *         replaceFn : function( autolinker, match ) {
  *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance, configured with the Match's href and anchor text
  *             tag.setAttr( 'rel', 'nofollow' );
- *             
+ *
  *             return tag;
  *         }
  *     } );
- *     
+ *
  *     // generated html:
  *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
- *     
- *     
+ *
+ *
  * ## Example use with a new tag for the replacement
- * 
+ *
  *     var html = Autolinker.link( "Test google.com", {
  *         replaceFn : function( autolinker, match ) {
  *             var tag = new Autolinker.HtmlTag( {
@@ -662,73 +663,73 @@ Autolinker.Util = {
  *                 attrs   : { 'title': 'Load URL: ' + match.getAnchorHref() },
  *                 innerHtml : 'Load URL: ' + match.getAnchorText()
  *             } );
- *             
+ *
  *             return tag;
  *         }
  *     } );
- *     
+ *
  *     // generated html:
  *     //   Test <button title="Load URL: http://google.com">Load URL: google.com</button>
  */
 Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
-	
+
 	/**
 	 * @cfg {String} tagName
-	 * 
+	 *
 	 * The tag name. Ex: 'a', 'button', etc.
-	 * 
-	 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toString}
+	 *
+	 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
 	 * is executed.
 	 */
-	
+
 	/**
 	 * @cfg {Object.<String, String>} attrs
-	 * 
+	 *
 	 * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
 	 * values are the attribute values.
 	 */
-	
+
 	/**
 	 * @cfg {String} innerHtml
-	 * 
-	 * The inner HTML for the tag. 
-	 * 
-	 * Note the camel case name on `innerHtml`. Acronyms are camelCased in this utility (such as not to run into the acronym 
+	 *
+	 * The inner HTML for the tag.
+	 *
+	 * Note the camel case name on `innerHtml`. Acronyms are camelCased in this utility (such as not to run into the acronym
 	 * naming inconsistency that the DOM developers created with `XMLHttpRequest`). You may alternatively use {@link #innerHTML}
 	 * if you prefer, but this one is recommended.
 	 */
-	
+
 	/**
 	 * @cfg {String} innerHTML
-	 * 
+	 *
 	 * Alias of {@link #innerHtml}, accepted for consistency with the browser DOM api, but prefer the camelCased version
 	 * for acronym names.
 	 */
-	
-	
+
+
 	/**
 	 * @protected
 	 * @property {RegExp} whitespaceRegex
-	 * 
+	 *
 	 * Regular expression used to match whitespace in a string of CSS classes.
 	 */
 	whitespaceRegex : /\s+/,
-	
-	
+
+
 	/**
 	 * @constructor
 	 * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
 	 */
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
-		
+
 		this.innerHtml = this.innerHtml || this.innerHTML;  // accept either the camelCased form or the fully capitalized acronym
 	},
-	
-	
+
+
 	/**
 	 * Sets the tag name that will be used to generate the tag with.
-	 * 
+	 *
 	 * @param {String} tagName
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
@@ -736,21 +737,21 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 		this.tagName = tagName;
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Retrieves the tag name.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getTagName : function() {
 		return this.tagName || "";
 	},
-	
-	
+
+
 	/**
 	 * Sets an attribute on the HtmlTag.
-	 * 
+	 *
 	 * @param {String} attrName The attribute name to set.
 	 * @param {String} attrValue The attribute value to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
@@ -758,60 +759,60 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	setAttr : function( attrName, attrValue ) {
 		var tagAttrs = this.getAttrs();
 		tagAttrs[ attrName ] = attrValue;
-		
+
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
-	 * 
+	 *
 	 * @param {String} name The attribute name to retrieve.
 	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
 	 */
 	getAttr : function( attrName ) {
 		return this.getAttrs()[ attrName ];
 	},
-	
-	
+
+
 	/**
 	 * Sets one or more attributes on the HtmlTag.
-	 * 
+	 *
 	 * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
 	setAttrs : function( attrs ) {
 		var tagAttrs = this.getAttrs();
 		Autolinker.Util.assign( tagAttrs, attrs );
-		
+
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Retrieves the attributes Object (map) for the HtmlTag.
-	 * 
+	 *
 	 * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
 	 */
 	getAttrs : function() {
 		return this.attrs || ( this.attrs = {} );
 	},
-	
-	
+
+
 	/**
 	 * Sets the provided `cssClass`, overwriting any current CSS classes on the HtmlTag.
-	 * 
+	 *
 	 * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
 	setClass : function( cssClass ) {
 		return this.setAttr( 'class', cssClass );
 	},
-	
-	
+
+
 	/**
 	 * Convenience method to add one or more CSS classes to the HtmlTag. Will not add duplicate CSS classes.
-	 * 
+	 *
 	 * @param {String} cssClass One or more space-separated CSS classes to add.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
@@ -822,21 +823,21 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    newClasses = cssClass.split( whitespaceRegex ),
 		    newClass;
-		
+
 		while( newClass = newClasses.shift() ) {
 			if( indexOf( classes, newClass ) === -1 ) {
 				classes.push( newClass );
 			}
 		}
-		
+
 		this.getAttrs()[ 'class' ] = classes.join( " " );
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Convenience method to remove one or more CSS classes from the HtmlTag.
-	 * 
+	 *
 	 * @param {String} cssClass One or more space-separated CSS classes to remove.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
@@ -847,92 +848,92 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    removeClasses = cssClass.split( whitespaceRegex ),
 		    removeClass;
-		
+
 		while( classes.length && ( removeClass = removeClasses.shift() ) ) {
 			var idx = indexOf( classes, removeClass );
 			if( idx !== -1 ) {
 				classes.splice( idx, 1 );
 			}
 		}
-		
+
 		this.getAttrs()[ 'class' ] = classes.join( " " );
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Convenience method to retrieve the CSS class(es) for the HtmlTag, which will each be separated by spaces when
 	 * there are multiple.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getClass : function() {
 		return this.getAttrs()[ 'class' ] || "";
 	},
-	
-	
+
+
 	/**
 	 * Convenience method to check if the tag has a CSS class or not.
-	 * 
+	 *
 	 * @param {String} cssClass The CSS class to check for.
 	 * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
 	 */
 	hasClass : function( cssClass ) {
 		return ( ' ' + this.getClass() + ' ' ).indexOf( ' ' + cssClass + ' ' ) !== -1;
 	},
-	
-	
+
+
 	/**
 	 * Sets the inner HTML for the tag.
-	 * 
+	 *
 	 * @param {String} html The inner HTML to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
 	setInnerHtml : function( html ) {
 		this.innerHtml = html;
-		
+
 		return this;
 	},
-	
-	
+
+
 	/**
 	 * Retrieves the inner HTML for the tag.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getInnerHtml : function() {
 		return this.innerHtml || "";
 	},
-	
-	
+
+
 	/**
 	 * Override of superclass method used to generate the HTML string for the tag.
-	 * 
+	 *
 	 * @return {String}
 	 */
-	toString : function() {
+	toAnchorString : function() {
 		var tagName = this.getTagName(),
 		    attrsStr = this.buildAttrsStr();
-		
+
 		attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
-		
+
 		return [ '<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>' ].join( "" );
 	},
-	
-	
+
+
 	/**
-	 * Support method for {@link #toString}, returns the string space-separated key="value" pairs, used to populate 
+	 * Support method for {@link #toAnchorString}, returns the string space-separated key="value" pairs, used to populate
 	 * the stringified HtmlTag.
-	 * 
+	 *
 	 * @protected
 	 * @return {String} Example return: `attr1="value1" attr2="value2"`
 	 */
 	buildAttrsStr : function() {
 		if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
-		
+
 		var attrs = this.getAttrs(),
 		    attrsArr = [];
-		
+
 		for( var prop in attrs ) {
 			if( attrs.hasOwnProperty( prop ) ) {
 				attrsArr.push( prop + '="' + attrs[ prop ] + '"' );
@@ -940,8 +941,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 		}
 		return attrsArr.join( " " );
 	}
-	
+
 } );
+
 /*global Autolinker */
 /*jshint sub:true */
 /**
