@@ -209,18 +209,30 @@ describe( "Autolinker", function() {
 						var result4 = autolinker.link( 'do not link this: .a://example' );
 						expect( result4 ).toBe( 'do not link this: .a://example' );
 					} );
-					
-					
-					it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
-						var result = autolinker.link( "do not link javascript:window.alert('hi') please" );
-						expect( result ).toBe( "do not link javascript:window.alert('hi') please" );
-					} );
-					
-					
-					it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
-						var result = autolinker.link( "do not link vbscript:window.alert('hi') please" );
-						expect( result ).toBe( "do not link vbscript:window.alert('hi') please" );
-					} );
+
+
+                    it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
+                        var result = autolinker.link( "do not link javascript:window.alert('hi') please" );
+                        expect( result ).toBe( "do not link javascript:window.alert('hi') please" );
+                    } );
+
+
+                    it( "should NOT autolink possible URLs with the 'javascript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
+                        var result = autolinker.link( "do not link JavAscriPt:window.alert('hi') please" );
+                        expect( result ).toBe( "do not link JavAscriPt:window.alert('hi') please" );
+                    } );
+
+
+                    it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
+                        var result = autolinker.link( "do not link vbscript:window.alert('hi') please" );
+                        expect( result ).toBe( "do not link vbscript:window.alert('hi') please" );
+                    } );
+
+
+                    it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
+                        var result = autolinker.link( "do not link vBsCriPt:window.alert('hi') please" );
+                        expect( result ).toBe( "do not link vBsCriPt:window.alert('hi') please" );
+                    } );
 					
 					
 					it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {

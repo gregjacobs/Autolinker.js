@@ -66,7 +66,7 @@ module.exports = function(grunt) {
 					'src/match/Match.js',
 					'src/match/Email.js',
 					'src/match/Twitter.js',
-					'src/match/Url.js',
+					'src/match/Url.js'
 				],
 				dest: distPath
 			}
