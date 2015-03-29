@@ -96,16 +96,12 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *     See #6 for more info.
 	 * 9.  Group that is used to determine if there is a phone number match. The
 	 *     next 3 groups give segments of the phone number.
-	 * 10. (Optional) Group that matches the area code of a phone number. Will
-	 *     be an empty string if not included in the number.
-	 * 11. Group that matches the first 3 digits of a US phone number.
-	 * 12. Group that matches the last 4 digits of a US phone number.
 	 */
 	matcherRegex : (function() {
 		var twitterRegex = /(^|[^\w])@(\w{1,15})/,                 // For matching a twitter handle. Ex: @gregory_jacobs
 
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,                // something@ for email addresses (a.k.a. local-part)
-		    phoneRegex = /\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+		    phoneRegex = /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 		    protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                                // starting with 'www.'
 		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,     // anything looking at all like a domain, non-unicode domains, not ending in a period
@@ -166,7 +162,6 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			'(',
 				phoneRegex.source,
 			')'
-
 		].join( "" ), 'gi' );
 	} )(),
 

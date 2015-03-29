@@ -216,10 +216,10 @@ describe( "Autolinker", function() {
 					} );
 
 
-                    it( "should NOT autolink possible URLs with the 'javascript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
-                        var result = autolinker.link( "do not link JavAscriPt:window.alert('hi') please" );
-                        expect( result ).toBe( "do not link JavAscriPt:window.alert('hi') please" );
-                    } );
+					it( "should NOT autolink possible URLs with the 'javascript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
+						var result = autolinker.link( "do not link JavAscriPt:window.alert('hi') please" );
+						expect( result ).toBe( "do not link JavAscriPt:window.alert('hi') please" );
+					} );
 
 
 					it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme", function() {
@@ -228,10 +228,10 @@ describe( "Autolinker", function() {
 					} );
 
 
-                    it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
-                        var result = autolinker.link( "do not link vBsCriPt:window.alert('hi') please" );
-                        expect( result ).toBe( "do not link vBsCriPt:window.alert('hi') please" );
-                    } );
+					it( "should NOT autolink possible URLs with the 'vbscript:' URI scheme, with different upper/lowercase letters in the uri scheme", function() {
+						var result = autolinker.link( "do not link vBsCriPt:window.alert('hi') please" );
+						expect( result ).toBe( "do not link vBsCriPt:window.alert('hi') please" );
+					} );
 
 
 					it( "should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", function() {
@@ -760,56 +760,49 @@ describe( "Autolinker", function() {
 		} );
 
 
-        describe( "phone number linking", function() {
+		describe( "phone number linking", function() {
 
-            it( "should automatically link a phone number which is the only thing in the string", function() {
-                var result = autolinker.link( "(555)666-7777" );
-                expect( result ).toBe( '<a href="tel:5556667777">(555)666-7777</a>' );
-            } );
-
-
-            it( "should automatically link a phone number when there is a space after the parens", function() {
-                var result = autolinker.link( "(555) 666-7777" );
-                expect( result ).toBe( '<a href="tel:5556667777">(555) 666-7777</a>' );
-            } );
+			it( "should automatically link an in-country phone number", function() {
+				expect( autolinker.link( "(555)666-7777" ) ).toBe( '<a href="tel:5556667777">(555)666-7777</a>' );
+				expect( autolinker.link( "(555) 666-7777" ) ).toBe( '<a href="tel:5556667777">(555) 666-7777</a>' );
+				expect( autolinker.link( "555-666-7777" ) ).toBe( '<a href="tel:5556667777">555-666-7777</a>' );
+				expect( autolinker.link( "555 666 7777" ) ).toBe( '<a href="tel:5556667777">555 666 7777</a>' );
+				expect( autolinker.link( "555.666.7777" ) ).toBe( '<a href="tel:5556667777">555.666.7777</a>' );
+			} );
 
 
-            it( "should automatically link a phone number when there are no parens", function() {
-                var result = autolinker.link( "555-666-7777" );
-                expect( result ).toBe( '<a href="tel:5556667777">555-666-7777</a>' );
-            } );
+			it( "should automatically link an international phone number", function() {
+				expect( autolinker.link( "+1-541-754-3010" ) ).toBe(  '<a href="tel:15417543010">+1-541-754-3010</a>' );
+				expect( autolinker.link( "1-541-754-3010" ) ).toBe(   '<a href="tel:15417543010">1-541-754-3010</a>' );
+				expect( autolinker.link( "1 (541) 754-3010" ) ).toBe( '<a href="tel:15417543010">1 (541) 754-3010</a>' );
+				expect( autolinker.link( "1.541.754.3010" ) ).toBe(   '<a href="tel:15417543010">1.541.754.3010</a>' );
+			} );
 
 
-            it( "should automatically link a phone number when there are spaces as delimiters", function() {
-                var result = autolinker.link( "555 666 7777" );
-                expect( result ).toBe( '<a href="tel:5556667777">555 666 7777</a>' );
-            } );
+			it( "should automatically link a phone number that is completely surrounded by parenthesis", function() {
+				var result = autolinker.link( "((555) 666-7777)" );
+				expect( result ).toBe( '(<a href="tel:5556667777">(555) 666-7777</a>)' );
+			} );
 
 
-            it( "should automatically link a phone number when there are no delimiters", function() {
-                var result = autolinker.link( "5556667777" );
-                expect( result ).toBe( '<a href="tel:5556667777">5556667777</a>' );
-            } );
+			it( "should automatically link a phone number contained in a larger string", function() {
+				var result = autolinker.link( "Here's my number: (555)666-7777, so call me maybe?" );
+				expect( result ).toBe( 'Here\'s my number: <a href=\"tel:5556667777\">(555)666-7777</a>, so call me maybe?' );
+			} );
 
 
-            it( "should automatically link a phone number that is completely surrounded by parenthesis", function() {
-                var result = autolinker.link( "((555) 666 7777)" );
-                expect( result ).toBe( '(<a href="tel:5556667777">(555) 666 7777</a>)' );
-            } );
+			it( "should automatically link a phone number surrounded by parenthesis contained in a larger string", function() {
+				var result = autolinker.link( "Here's my number ((555)666-7777), so call me maybe?" );
+				expect( result ).toBe( 'Here\'s my number (<a href=\"tel:5556667777\">(555)666-7777</a>), so call me maybe?' );
+			} );
 
 
-            it( "should automatically link a phone number contained in a larger string", function() {
-                var result = autolinker.link( "Here's my number: (555)666-7777, so call me maybe?" );
-                expect( result ).toBe( 'Here\'s my number: <a href=\"tel:5556667777\">(555)666-7777</a>, so call me maybe?' );
-            } );
+			it( "should NOT automatically link a phone number when there are no delimiters, since we don't know for sure if this is a phone number or some other number", function() {
+				expect( autolinker.link( "5556667777" ) ).toBe( '5556667777' );
+				expect( autolinker.link( "15417543010" ) ).toBe( '15417543010' );
+			} );
 
-
-            it( "should automatically link a phone number surrounded by parenthesis contained in a larger string", function() {
-                var result = autolinker.link( "Here's my number ((555)666-7777), so call me maybe?" );
-                expect( result ).toBe( 'Here\'s my number (<a href=\"tel:5556667777\">(555)666-7777</a>), so call me maybe?' );
-            } );
-
-        } );
+		} );
 
 
 		describe( "proper handling of HTML in the input string", function() {
@@ -1195,14 +1188,14 @@ describe( "Autolinker", function() {
 
 
 		describe( "`urls`, `email`, `phone`, and `twitter` options", function() {
-            var inputStr = "Website: asdf.com, Email: asdf@asdf.com, Phone: (123) 456-7890, Twitter: @asdf";
+			var inputStr = "Website: asdf.com, Email: asdf@asdf.com, Phone: (123) 456-7890, Twitter: @asdf";
 
 			it( "should link all 4 types if all 4 urls/email/phone/twitter options are enabled", function() {
 				var result = Autolinker.link( inputStr, { newWindow: false } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
-                    'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-                    'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
 					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
 				].join( ", " ) );
 			} );
@@ -1213,32 +1206,32 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( [
 					'Website: asdf.com',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-                    'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
 					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
 				].join( ", " ) );
 			} );
 
 
-            it( "should not link email addresses when they are disabled", function() {
-                var result = Autolinker.link( inputStr, { newWindow: false, email: false } );
-                expect( result ).toBe( [
-                    'Website: <a href="http://asdf.com">asdf.com</a>',
-                    'Email: asdf@asdf.com',
-                    'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-                    'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
-                ].join( ", " ) );
-            } );
+			it( "should not link email addresses when they are disabled", function() {
+				var result = Autolinker.link( inputStr, { newWindow: false, email: false } );
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: asdf@asdf.com',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+				].join( ", " ) );
+			} );
 
 
-            it( "should not link phone numbers when they are disabled", function() {
-                var result = Autolinker.link( inputStr, { newWindow: false, phone: false } );
-                expect( result ).toBe( [
-                    'Website: <a href="http://asdf.com">asdf.com</a>',
-                    'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-                    'Phone: (123) 456-7890',
-                    'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
-                ].join( ", " ) );
-            } );
+			it( "should not link phone numbers when they are disabled", function() {
+				var result = Autolinker.link( inputStr, { newWindow: false, phone: false } );
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Phone: (123) 456-7890',
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+				].join( ", " ) );
+			} );
 
 
 			it( "should not link Twitter handles when they are disabled", function() {
@@ -1246,7 +1239,7 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-                    'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
 					'Twitter: @asdf'
 				].join( ", " ) );
 			} );
