@@ -7,9 +7,9 @@
  * Used by Autolinker to parse potential matches, given an input string of text.
  *
  * The MatchParser is fed a non-HTML string in order to search for matches.
- * Autolinker first uses the {@link HtmlParser} to "walk around" HTML tags,
- * and then the text around the HTML tags is passed into the MatchParser in
- * order to find the actual matches.
+ * Autolinker first uses the {@link Autolinker.htmlParser.HtmlParser} to "walk
+ * around" HTML tags, and then the text around the HTML tags is passed into the
+ * MatchParser in order to find the actual matches.
  */
 Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
@@ -181,11 +181,13 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} charBeforeProtocolRelMatchRegex
 	 *
-	 * The regular expression used to retrieve the character before a protocol-relative URL match.
+	 * The regular expression used to retrieve the character before a
+	 * protocol-relative URL match.
 	 *
-	 * This is used in conjunction with the {@link #matcherRegex}, which needs to grab the character before a protocol-relative
-	 * '//' due to the lack of a negative look-behind in JavaScript regular expressions. The character before the match is stripped
-	 * from the URL.
+	 * This is used in conjunction with the {@link #matcherRegex}, which needs
+	 * to grab the character before a protocol-relative '//' due to the lack of
+	 * a negative look-behind in JavaScript regular expressions. The character
+	 * before the match is stripped from the URL.
 	 */
 	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
 
@@ -193,14 +195,15 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {Autolinker.MatchValidator} matchValidator
 	 *
-	 * The MatchValidator object, used to filter out any false positives from the {@link #matcherRegex}. See
-	 * {@link Autolinker.MatchValidator} for details.
+	 * The MatchValidator object, used to filter out any false positives from
+	 * the {@link #matcherRegex}. See {@link Autolinker.MatchValidator} for details.
 	 */
 
 
 	/**
 	 * @constructor
-	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
+	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder
+	 * instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
@@ -211,7 +214,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 	/**
 	 * Parses the input `text` to search for matches, and calls the `replaceFn`
-	 * to allow replacements of the matches. Returns the `text` with matches replaced.
+	 * to allow replacements of the matches. Returns the `text` with matches
+	 * replaced.
 	 *
 	 * @param {String} text The text to search and repace matches in.
 	 * @param {Function} replaceFn The iterator function to handle the
@@ -313,8 +317,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		    prefixStr = "",  // A string to use to prefix the anchor tag that is created. This is needed for the Twitter and Hashtag matches.
 		    suffixStr = "";  // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 
-		// Return out with `null` for match types that are disabled (url, email, twitter, hashtag), or for matches that are
-		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
+		// Return out with `null` for match types that are disabled (url, email,
+		// twitter, hashtag), or for matches that are invalid (false positives
+		// from the matcherRegex, which can't use look-behinds since they are
+		// unavailable in JS).
 		if(
 			( urlMatch && !this.urls ) ||
 			( emailAddressMatch && !this.email ) ||
@@ -326,7 +332,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			return null;
 		}
 
-		// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
+		// Handle a closing parenthesis at the end of the match, and exclude it
+		// if there is not a matching open parenthesis
 		// in the match itself.
 		if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
 			matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
@@ -337,8 +344,9 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
 
 		} else if( twitterMatch ) {
-			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match
-			// itself (since there are no look-behinds in JS regexes)
+			// fix up the `matchStr` if there was a preceding whitespace char,
+			// which was needed to determine the match itself (since there are
+			// no look-behinds in JS regexes)
 			if( twitterHandlePrefixWhitespaceChar ) {
 				prefixStr = twitterHandlePrefixWhitespaceChar;
 				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
@@ -351,8 +359,9 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
  			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
 
 		} else if( hashtagMatch ) {
-			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match
-			// itself (since there are no look-behinds in JS regexes)
+			// fix up the `matchStr` if there was a preceding whitespace char,
+			// which was needed to determine the match itself (since there are
+			// no look-behinds in JS regexes)
 			if( hashtagPrefixWhitespaceChar ) {
 				prefixStr = hashtagPrefixWhitespaceChar;
 				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
@@ -360,8 +369,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			match = new Autolinker.match.Hashtag( { matchedText: matchStr, serviceName: this.hashtag, hashtag: hashtag } );
 
 		} else {  // url match
-			// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
-			// to match due to the lack of a negative look-behind in JavaScript regular expressions)
+			// If it's a protocol-relative '//' match, remove the character
+			// before the '//' (which the matcherRegex needed to match due to
+			// the lack of a negative look-behind in JavaScript regular
+			// expressions)
 			if( protocolRelativeMatch ) {
 				var charBeforeMatch = protocolRelativeMatch.match( this.charBeforeProtocolRelMatchRegex )[ 1 ] || "";
 
@@ -389,19 +400,23 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Determines if a match found has an unmatched closing parenthesis. If so, this parenthesis will be removed
-	 * from the match itself, and appended after the generated anchor tag in {@link #processTextNode}.
+	 * Determines if a match found has an unmatched closing parenthesis. If so,
+	 * this parenthesis will be removed from the match itself, and appended
+	 * after the generated anchor tag in {@link #processCandidateMatch}.
 	 *
-	 * A match may have an extra closing parenthesis at the end of the match because the regular expression must include parenthesis
-	 * for URLs such as "wikipedia.com/something_(disambiguation)", which should be auto-linked.
+	 * A match may have an extra closing parenthesis at the end of the match
+	 * because the regular expression must include parenthesis for URLs such as
+	 * "wikipedia.com/something_(disambiguation)", which should be auto-linked.
 	 *
-	 * However, an extra parenthesis *will* be included when the URL itself is wrapped in parenthesis, such as in the case of
-	 * "(wikipedia.com/something_(disambiguation))". In this case, the last closing parenthesis should *not* be part of the URL
-	 * itself, and this method will return `true`.
+	 * However, an extra parenthesis *will* be included when the URL itself is
+	 * wrapped in parenthesis, such as in the case of "(wikipedia.com/something_(disambiguation))".
+	 * In this case, the last closing parenthesis should *not* be part of the
+	 * URL itself, and this method will return `true`.
 	 *
 	 * @private
 	 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
-	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at the end of the `matchStr`, `false` otherwise.
+	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
+	 *   the end of the `matchStr`, `false` otherwise.
 	 */
 	matchHasUnbalancedClosingParen : function( matchStr ) {
 		var lastChar = matchStr.charAt( matchStr.length - 1 );

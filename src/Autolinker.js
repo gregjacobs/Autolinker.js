@@ -260,7 +260,7 @@ Autolinker.prototype = {
 	 *
 	 * @param {String} textOrHtml The HTML or text to autolink matches within
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
-	 *   {@link #twitter}, and {@link #hashtags} options are enabled).
+	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
@@ -307,8 +307,9 @@ Autolinker.prototype = {
 	},
 
 	/**
-	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for
-	 * the matches, and returns the string with the replacements made.
+	 * Process the text that lies in between HTML tags, performing the anchor
+	 * tag replacements for the matches, and returns the string with the
+	 * replacements made.
 	 *
 	 * This method does the actual wrapping of matches with anchor tags.
 	 *
@@ -322,7 +323,8 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Creates the return string value for a given match in the input string, for the {@link #processTextNode} method.
+	 * Creates the return string value for a given match in the input string,
+	 * for the {@link #linkifyStr} method.
 	 *
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 *
@@ -441,8 +443,8 @@ Autolinker.prototype = {
  * and Hashtags found in the given chunk of HTML. Does not link URLs found
  * within HTML tags.
  *
- * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
- * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+ * For instance, if given the text: `You should go to http://www.yahoo.com`,
+ * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
  *
  * Example:
  *
@@ -450,10 +452,12 @@ Autolinker.prototype = {
  *     // Produces: "Go to <a href="http://google.com">google.com</a>"
  *
  * @static
- * @param {String} textOrHtml The HTML or text to find matches within (depending on if
- *   the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and {@link #hashtags} options are enabled).
- * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
- *   See the class description for an example call.
+ * @param {String} textOrHtml The HTML or text to find matches within (depending
+ *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
+ *   and {@link #hashtag} options are enabled).
+ * @param {Object} [options] Any of the configuration options for the Autolinker
+ *   class, specified in an Object (map). See the class description for an
+ *   example call.
  * @return {String} The HTML text, with matches automatically linked.
  */
 Autolinker.link = function( textOrHtml, options ) {
