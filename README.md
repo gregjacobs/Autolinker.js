@@ -15,7 +15,7 @@ So, this utility attempts to handle everything. It:
 - Will autolink email addresses.
 - Will autolink phone numbers.
 - Will autolink Twitter handles.
-- Will autolink Twitter Hashtags.
+- Will autolink Twitter hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that
   matter), and will not accidentally wrap the inner text of an anchor tag with a
@@ -96,36 +96,51 @@ These are the options which may be specified for linking. These are specified by
 providing an Object as the second parameter to [Autolinker.link()](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-static-method-link). These include:
 
 - [newWindow](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow) : Boolean<br />
-  `true` to have the links should open in a new window when clicked, `false` otherwise. Defaults to `true`.<br /><br />
+  `true` to have the links should open in a new window when clicked, `false`
+  otherwise. Defaults to `true`.<br /><br />
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
-  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
+  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
+  beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
 - [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number<br />
-  A number for how many characters long URLs/emails/twitter handles/twitterHashtag handles should be truncated to inside the text of a link. If the URL/email/twitter/twitterHashtag is over the number of characters, it will be truncated to this length by replacing the end of the string with a two period ellipsis ('..').<br /><br />
-  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+  A number for how many characters long URLs/emails/Twitter handles/Twitter
+  hashtags should be truncated to inside the text of a link. If the match is
+  over the number of characters, it will be truncated to this length by
+  replacing the end of the string with a two period ellipsis ('..').<br /><br />
+  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
+  to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
-  A CSS class name to add to the generated anchor tags. This class will be added to all links, as well as this class
-  plus "url"/"email"/"twitter"/"twitterHashtag" suffixes for styling url/email/twitter/twitterHashtag links differently.
+  A CSS class name to add to the generated anchor tags. This class will be added
+  to all links, as well as this class plus "url"/"email"/"phone""twitter"/"twitterHashtag"
+  suffixes for styling url/email/twitter/twitterHashtag links differently.
 
   For example, if this config is provided as "myLink", then:
 
   1) URL links will have the CSS classes: "myLink myLink-url"<br />
-  2) Email links will have the CSS classes: "myLink myLink-email", and<br />
+  2) Email links will have the CSS classes: "myLink myLink-email"<br />
+  2) Phone links will have the CSS classes: "myLink myLink-phone"<br />
   3) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
   4) TwitterHashtag links will have the CSS classes: "myLink myLink-twitterHashtag"<br />
 
 - [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean<br />
-  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults to `true`.<br />
+  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
+  Defaults to `true`.<br />
 - [email](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-email) : Boolean<br />
-  `true` to have email addresses auto-linked, `false` to skip auto-linking of email addresses. Defaults to `true`.<br /><br />
+  `true` to have email addresses auto-linked, `false` to skip auto-linking of
+  email addresses. Defaults to `true`.<br /><br />
 - [phone](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-phone) : Boolean<br />
-  `true` to have phone numbers auto-linked, `false` to skip auto-linking of phone numbers. Defaults to `true`.<br /><br />
+  `true` to have phone numbers auto-linked, `false` to skip auto-linking of
+  phone numbers. Defaults to `true`.<br /><br />
 - [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) : Boolean<br />
-  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of Twitter handles. Defaults to `true`.<br /><br />
+  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of
+  Twitter handles. Defaults to `true`.<br /><br />
 - [twitterHashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitterHashtag) : Boolean<br />
-  `true` to have TwitterHashtag handles auto-linked, `false` to skip auto-linking of TwitterHashtag handles. Defaults to `false`.<br /><br />
+  `true` to have Twitter hashtags auto-linked, `false` to skip auto-linking of
+  Twitter hashtags. Defaults to `false`.<br /><br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
-  A function to use to programmatically make replacements of matches in the input string, one at a time. See the section
-  <a href="#custom-replacement-function">Custom Replacement Function</a> for more details.
+  A function to use to programmatically make replacements of matches in the
+  input string, one at a time. See the section
+  <a href="#custom-replacement-function">Custom Replacement Function</a> for
+  more details.
 
 
 For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow), you could do:
@@ -173,13 +188,13 @@ autolinker.link( "Go to www.google.com" );
 ## Custom Replacement Function
 
 A custom replacement function ([replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn))
-may be provided to replace url/email/Twitter/TwitterHashtag matches on an individual basis,
-based on the return from this function.
+may be provided to replace url/email/phone/Twitter handle/Twitter hashtag
+matches on an individual basis, based on the return from this function.
 
 Full example, for purposes of documenting the API:
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and TwitterHashtag Handles
+var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and TwitterHashtags
 
 var linkedText = Autolinker.link( input, {
     replaceFn : function( autolinker, match ) {
@@ -224,10 +239,10 @@ var linkedText = Autolinker.link( input, {
                 return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
 
             case 'twitterHashtag' :
-                var twitterHashtagHandle = match.getTwitterHashtagHandle();
-                console.log( twitterHashtagHandle );
+                var hashtag = match.getHashtag();
+                console.log( hashtag );
 
-                return '<a href="http://newplace.to.link.twitterHashtag.handles.to/">' + twitterHashtagHandle + '</a>';
+                return '<a href="http://newplace.to.link.twitterHashtag.handles.to/">' + hashtag + '</a>';
         }
     }
 } );
