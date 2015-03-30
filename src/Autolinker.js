@@ -71,6 +71,12 @@
  *                         return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
  *                     }
  *
+ *                 case 'phone' :
+ *                     var phoneNumber = match.getPhoneNumber();
+ *                     console.log( phoneNumber );
+ *
+ *                     return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
+ *
  *                 case 'twitter' :
  *                     var twitterHandle = match.getTwitterHandle();
  *                     console.log( twitterHandle );
@@ -100,6 +106,12 @@
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
+
+	// Validate the value of the `hashtag` cfg.
+	var hashtag = this.hashtag;
+	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' ) {
+		throw new Error( "invalid `hashtag` cfg - see docs" );
+	}
 };
 
 Autolinker.prototype = {
@@ -134,10 +146,15 @@ Autolinker.prototype = {
 	phone: true,
 
 	/**
-	 * @cfg {Boolean} hashtag
+	 * @cfg {Boolean/String} hashtag
 	 *
-	 * `true` if Hashtags ("#example") should be automatically linked, `false`
-	 * if they should not be.
+	 * A string for the service name to have hashtags (ex: "#myHashtag")
+	 * auto-linked to. The currently-supported values are:
+	 *
+	 * - 'twitter'
+	 * - 'facebook'
+	 *
+	 * Pass `false` to skip auto-linking of hashtags.
 	 */
 	hashtag : false,
 
@@ -151,8 +168,8 @@ Autolinker.prototype = {
 	/**
 	 * @cfg {Boolean} stripPrefix
 	 *
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped from the beginning of URL links' text,
-	 * `false` otherwise.
+	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
+	 * from the beginning of URL links' text, `false` otherwise.
 	 */
 	stripPrefix : true,
 

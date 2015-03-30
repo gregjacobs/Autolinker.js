@@ -15,52 +15,37 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 	/**
 	 * @cfg {Boolean} urls
-	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if
-	 * they should not.
+	 * @inheritdoc Autolinker#urls
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
-	 *
-	 * `true` if email addresses should be automatically linked, `false` if they
-	 * should not.
+	 * @inheritdoc Autolinker#email
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
-	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked,
-	 * `false` if they should not.
+	 * @inheritdoc Autolinker#twitter
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
-	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
-	 * `false` if they should not.
+	 * @inheritdoc Autolinker#phone
 	 */
 	phone: true,
 
 	/**
-	 * @cfg {Boolean} hashtag
-	 *
-	 * `true` if Hashtags ("#example") should be automatically linked, `false`
-	 * if they should not.
+	 * @cfg {Boolean/String} hashtag
+	 * @inheritdoc Autolinker#hashtag
 	 */
-	hashtag : true,
+	hashtag : false,
 
 	/**
 	 * @cfg {Boolean} stripPrefix
-	 *
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
-	 * from the beginning of URL links' text in {@link Autolinker.match.Url URL matches},
-	 * `false` otherwise.
-	 *
-	 * TODO: Handle this before a URL Match object is instantiated.
+	 * @inheritdoc Autolinker#stripPrefix
 	 */
 	stripPrefix : true,
 
@@ -117,7 +102,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	matcherRegex : (function() {
 		var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
 
-		    hashtagRegex = /(^|[^\w])#(\w{1,15})/,       // For matching a Hashtag. Ex: #games
+		    hashtagRegex = /(^|[^\w])#(\w{1,15})/,              // For matching a Hashtag. Ex: #games
 
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 		    phoneRegex = /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
@@ -317,7 +302,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle,
 		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch,
 		tldProtocolRelativeMatch, phoneMatch, hashtagMatch,
-		hashtagPrefixWhitespaceChar, hashtag ) {
+		hashtagPrefixWhitespaceChar, hashtag
+	) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will
 		// be added to `prefixStr` and `suffixStr`).
 
@@ -330,7 +316,11 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		// Return out with `null` for match types that are disabled (url, email, twitter, hashtag), or for matches that are
 		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
 		if(
-			( twitterMatch && !this.twitter ) || ( emailAddressMatch && !this.email ) || ( urlMatch && !this.urls ) || (phoneMatch && !this.phone) || ( hashtagMatch && !this.hashtag ) ||
+			( urlMatch && !this.urls ) ||
+			( emailAddressMatch && !this.email ) ||
+			( phoneMatch && !this.phone ) ||
+			( twitterMatch && !this.twitter ) ||
+			( hashtagMatch && !this.hashtag ) ||
 			!this.matchValidator.isValidMatch( urlMatch, protocolUrlMatch, protocolRelativeMatch )
 		) {
 			return null;
@@ -355,7 +345,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			}
 			match = new Autolinker.match.Twitter( { matchedText: matchStr, twitterHandle: twitterHandle } );
 
-		} else if ( phoneMatch ) {
+		} else if( phoneMatch ) {
 			// remove non-numeric values from phone number string
 			var cleanNumber = matchStr.replace( /\D/g, '' );
  			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
@@ -367,7 +357,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 				prefixStr = hashtagPrefixWhitespaceChar;
 				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
 			}
-			match = new Autolinker.match.Hashtag( { matchedText: matchStr, hashtag: hashtag } );
+			match = new Autolinker.match.Hashtag( { matchedText: matchStr, serviceName: this.hashtag, hashtag: hashtag } );
 
 		} else {  // url match
 			// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed

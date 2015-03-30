@@ -65,6 +65,7 @@ module.exports = function(grunt) {
 					'src/matchParser/MatchValidator.js',
 					'src/match/Match.js',
 					'src/match/Email.js',
+					'src/match/Hashtag.js',
 					'src/match/Phone.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js'

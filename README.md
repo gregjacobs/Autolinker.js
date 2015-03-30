@@ -133,9 +133,10 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) : Boolean<br />
   `true` to have Twitter handles auto-linked, `false` to skip auto-linking of
   Twitter handles. Defaults to `true`.<br /><br />
-- [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean<br />
-  `true` to have hashtags auto-linked, `false` to skip auto-linking of
-  hashtags. Defaults to `false`.<br /><br />
+- [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
+  A string for the service name to have hashtags auto-linked to. Supported
+  values at this time are 'twitter' and 'facebook'. Pass `false` to skip
+  auto-linking of hashtags. Defaults to `false`.<br /><br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
   input string, one at a time. See the section
@@ -228,9 +229,9 @@ var linkedText = Autolinker.link( input, {
 
             case 'phone' :
                 var phoneNumber = match.getPhoneNumber();
-                console.log( twitterHandle );
+                console.log( phoneNumber );
 
-                return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
+                return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
 
             case 'twitter' :
                 var twitterHandle = match.getTwitterHandle();

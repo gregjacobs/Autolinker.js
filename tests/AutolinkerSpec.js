@@ -12,6 +12,33 @@ describe( "Autolinker", function() {
 
 	} );
 
+
+	describe( "config checking", function() {
+
+		describe( "`hashtag` cfg", function() {
+
+			it( "should throw if `hashtag` is a value other than `false` or one of the valid service names", function() {
+				expect( function() {
+					new Autolinker( { hashtag: true } );  // `true` is an invalid value - must be a service name
+				} ).toThrowError( "invalid `hashtag` cfg - see docs" );
+
+				expect( function() {
+					new Autolinker( { hashtag: 'non-existent-service' } );
+				} ).toThrowError( "invalid `hashtag` cfg - see docs" );
+			} );
+
+
+			it( "should not throw for a valid service name", function() {
+				expect( function() {
+					new Autolinker( { hashtag: 'twitter' } );
+				} ).not.toThrow();
+			} );
+
+		} );
+
+	} );
+
+
 	describe( "link() method", function() {
 		var autolinker;
 
@@ -752,7 +779,7 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should automatically liny fully capitalized twitter handles", function() {
+			it( "should automatically link fully capitalized twitter handles", function() {
 				var result = autolinker.link( "@GREG is tweeting @JOE with @JOSH" );
 				expect( result ).toBe( '<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>' );
 			} );
@@ -800,6 +827,58 @@ describe( "Autolinker", function() {
 			it( "should NOT automatically link a phone number when there are no delimiters, since we don't know for sure if this is a phone number or some other number", function() {
 				expect( autolinker.link( "5556667777" ) ).toBe( '5556667777' );
 				expect( autolinker.link( "15417543010" ) ).toBe( '15417543010' );
+			} );
+
+		} );
+
+
+		describe( "hashtag linking", function() {
+			var twitterHashtagAutolinker,
+			    facebookHashtagAutolinker;
+
+			beforeEach( function() {
+				twitterHashtagAutolinker = new Autolinker( { hashtag: 'twitter', newWindow: false } );
+				facebookHashtagAutolinker = new Autolinker( { hashtag: 'facebook', newWindow: false } );
+			} );
+
+
+			it( "should NOT autolink hashtags by default for both backward compatibility, and because we don't know which service (twitter, facebook, etc.) to point them to", function() {
+				expect( autolinker.link( "#test" ) ).toBe( '#test' );
+			} );
+
+
+			it( "should NOT autolink hashtags the `hashtag` cfg is explicitly false", function() {
+				var result = Autolinker.link( "#test", { hashtag: false } );
+
+				expect( result ).toBe( "#test" );
+			} );
+
+
+			it( "should automatically link hashtags to twitter when the `hashtag` option is 'twitter'", function() {
+				var result = twitterHashtagAutolinker.link( "#test" );
+
+				expect( result ).toBe( '<a href="https://twitter.com/hashtag/test">#test</a>' );
+			} );
+
+
+			it( "should automatically link hashtags to facebook when the `hashtag` option is 'facebook'", function() {
+				var result = facebookHashtagAutolinker.link( "#test" );
+
+				expect( result ).toBe( '<a href="https://www.facebook.com/hashtag/test">#test</a>' );
+			} );
+
+
+			it( "should automatically link hashtags which are part of a full string", function() {
+				var result = twitterHashtagAutolinker.link( "my hashtag is #test these days" );
+
+				expect( result ).toBe( 'my hashtag is <a href="https://twitter.com/hashtag/test">#test</a> these days' );
+			} );
+
+
+			it( "should NOT automatically link a hashtag when the '#' belongs to part of another string", function() {
+				var result = twitterHashtagAutolinker.link( "test as#df test" );
+
+				expect( result ).toBe( 'test as#df test' );
 			} );
 
 		} );
@@ -1188,59 +1267,83 @@ describe( "Autolinker", function() {
 
 
 		describe( "`urls`, `email`, `phone`, and `twitter` options", function() {
-			var inputStr = "Website: asdf.com, Email: asdf@asdf.com, Phone: (123) 456-7890, Twitter: @asdf";
+			var inputStr = [
+				"Website: asdf.com",
+				"Email: asdf@asdf.com",
+				"Phone: (123) 456-7890",
+				"Twitter: @asdf",
+				"Hashtag: #asdf"
+			].join( ", " );
 
-			it( "should link all 4 types if all 4 urls/email/phone/twitter options are enabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false } );
+
+			it( "should link all 5 types if all 5 urls/email/phone/twitter/hashtag options are enabled", function() {
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter' } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
 					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
 				].join( ", " ) );
 			} );
 
 
 			it( "should not link urls when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, urls: false } );
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', urls: false } );
 				expect( result ).toBe( [
 					'Website: asdf.com',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
 					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
 				].join( ", " ) );
 			} );
 
 
 			it( "should not link email addresses when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, email: false } );
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', email: false } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: asdf@asdf.com',
 					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
 				].join( ", " ) );
 			} );
 
 
 			it( "should not link phone numbers when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, phone: false } );
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', phone: false } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
 					'Phone: (123) 456-7890',
-					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>'
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
 				].join( ", " ) );
 			} );
 
 
 			it( "should not link Twitter handles when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, twitter: false } );
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: false } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
 					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Twitter: @asdf'
+					'Twitter: @asdf',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
+				].join( ", " ) );
+			} );
+
+
+			it( "should not link Hashtags when they are disabled", function() {
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: false } );
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Twitter: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: #asdf'
 				].join( ", " ) );
 			} );
 
