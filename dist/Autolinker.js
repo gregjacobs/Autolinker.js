@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.17.0
+ * 0.17.1
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
@@ -285,7 +285,7 @@ Autolinker.prototype = {
 	 *
 	 * @param {String} textOrHtml The HTML or text to autolink matches within
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
-	 *   {@link #twitter}, and {@link #hashtags} options are enabled).
+	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
@@ -310,8 +310,8 @@ Autolinker.prototype = {
 				}
 				resultHtml.push( nodeText );  // now add the text of the tag itself verbatim
 
-			} else if( nodeType === 'entity' ) {
-				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') verbatim
+			} else if( nodeType === 'entity' || nodeType === 'comment' ) {
+				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') or HTML comments (such as '<!-- Comment -->') verbatim
 
 			} else {
 				// Process text nodes in the input `textOrHtml`
@@ -332,8 +332,9 @@ Autolinker.prototype = {
 	},
 
 	/**
-	 * Process the text that lies in between HTML tags, performing the anchor tag replacements for
-	 * the matches, and returns the string with the replacements made.
+	 * Process the text that lies in between HTML tags, performing the anchor
+	 * tag replacements for the matches, and returns the string with the
+	 * replacements made.
 	 *
 	 * This method does the actual wrapping of matches with anchor tags.
 	 *
@@ -347,7 +348,8 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Creates the return string value for a given match in the input string, for the {@link #processTextNode} method.
+	 * Creates the return string value for a given match in the input string,
+	 * for the {@link #linkifyStr} method.
 	 *
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 *
@@ -466,8 +468,8 @@ Autolinker.prototype = {
  * and Hashtags found in the given chunk of HTML. Does not link URLs found
  * within HTML tags.
  *
- * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
- * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+ * For instance, if given the text: `You should go to http://www.yahoo.com`,
+ * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
  *
  * Example:
  *
@@ -475,10 +477,12 @@ Autolinker.prototype = {
  *     // Produces: "Go to <a href="http://google.com">google.com</a>"
  *
  * @static
- * @param {String} textOrHtml The HTML or text to find matches within (depending on if
- *   the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and {@link #hashtags} options are enabled).
- * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
- *   See the class description for an example call.
+ * @param {String} textOrHtml The HTML or text to find matches within (depending
+ *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
+ *   and {@link #hashtag} options are enabled).
+ * @param {Object} [options] Any of the configuration options for the Autolinker
+ *   class, specified in an Object (map). See the class description for an
+ *   example call.
  * @return {String} The HTML text, with matches automatically linked.
  */
 Autolinker.link = function( textOrHtml, options ) {
@@ -497,22 +501,32 @@ Autolinker.matchParser = {};
 /**
  * @class Autolinker.Util
  * @singleton
- * 
+ *
  * A few utility methods for Autolinker.
  */
 Autolinker.Util = {
-	
+
 	/**
 	 * @property {Function} abstractMethod
-	 * 
+	 *
 	 * A function object which represents an abstract method.
 	 */
 	abstractMethod : function() { throw "abstract"; },
-	
-	
+
+
+	/**
+	 * @private
+	 * @property {RegExp} trimRegex
+	 *
+	 * The regular expression used to trim the leading and trailing whitespace
+	 * from a string.
+	 */
+	trimRegex : /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,
+
+
 	/**
 	 * Assigns (shallow copies) the properties of `src` onto `dest`.
-	 * 
+	 *
 	 * @param {Object} dest The destination object.
 	 * @param {Object} src The source object.
 	 * @return {Object} The destination object (`dest`)
@@ -523,14 +537,14 @@ Autolinker.Util = {
 				dest[ prop ] = src[ prop ];
 			}
 		}
-		
+
 		return dest;
 	},
-	
-	
+
+
 	/**
 	 * Extends `superclass` to create a new subclass, adding the `protoProps` to the new subclass's prototype.
-	 * 
+	 *
 	 * @param {Function} superclass The constructor function for the superclass.
 	 * @param {Object} protoProps The methods/properties to add to the subclass's prototype. This may contain the
 	 *   special property `constructor`, which will be used as the new subclass's constructor function.
@@ -538,33 +552,33 @@ Autolinker.Util = {
 	 */
 	extend : function( superclass, protoProps ) {
 		var superclassProto = superclass.prototype;
-		
+
 		var F = function() {};
 		F.prototype = superclassProto;
-		
+
 		var subclass;
 		if( protoProps.hasOwnProperty( 'constructor' ) ) {
 			subclass = protoProps.constructor;
 		} else {
 			subclass = function() { superclassProto.constructor.apply( this, arguments ); };
 		}
-		
+
 		var subclassProto = subclass.prototype = new F();  // set up prototype chain
 		subclassProto.constructor = subclass;  // fix constructor property
 		subclassProto.superclass = superclassProto;
-		
+
 		delete protoProps.constructor;  // don't re-assign constructor property to the prototype, since a new function may have been created (`subclass`), which is now already there
 		Autolinker.Util.assign( subclassProto, protoProps );
-		
+
 		return subclass;
 	},
-	
-	
+
+
 	/**
 	 * Truncates the `str` at `len - ellipsisChars.length`, and adds the `ellipsisChars` to the
-	 * end of the string (by default, two periods: '..'). If the `str` length does not exceed 
+	 * end of the string (by default, two periods: '..'). If the `str` length does not exceed
 	 * `len`, the string will be returned unchanged.
-	 * 
+	 *
 	 * @param {String} str The string to truncate and add an ellipsis to.
 	 * @param {Number} truncateLen The length to truncate the string at.
 	 * @param {String} [ellipsisChars=..] The ellipsis character(s) to add to the end of `str`
@@ -577,11 +591,11 @@ Autolinker.Util = {
 		}
 		return str;
 	},
-	
-	
+
+
 	/**
 	 * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
-	 * 
+	 *
 	 * @param {Array} arr The array to find an element of.
 	 * @param {*} element The element to find in the array, and return the index of.
 	 * @return {Number} The index of the `element`, or -1 if it was not found.
@@ -589,7 +603,7 @@ Autolinker.Util = {
 	indexOf : function( arr, element ) {
 		if( Array.prototype.indexOf ) {
 			return arr.indexOf( element );
-			
+
 		} else {
 			for( var i = 0, len = arr.length; i < len; i++ ) {
 				if( arr[ i ] === element ) return i;
@@ -597,50 +611,61 @@ Autolinker.Util = {
 			return -1;
 		}
 	},
-	
-	
-	
+
+
+
 	/**
 	 * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
 	 * with a regular expression that contains capturing parenthesis.
-	 * 
+	 *
 	 * For example:
-	 * 
-	 *     // Modern browsers: 
+	 *
+	 *     // Modern browsers:
 	 *     "a,b,c".split( /(,)/ );  // --> [ 'a', ',', 'b', ',', 'c' ]
-	 *     
+	 *
 	 *     // Old IE (including IE8):
 	 *     "a,b,c".split( /(,)/ );  // --> [ 'a', 'b', 'c' ]
-	 *     
+	 *
 	 * This method emulates the functionality of modern browsers for the old IE case.
-	 * 
+	 *
 	 * @param {String} str The string to split.
 	 * @param {RegExp} splitRegex The regular expression to split the input `str` on. The splitting
-	 *   character(s) will be spliced into the array, as in the "modern browsers" example in the 
-	 *   description of this method. 
+	 *   character(s) will be spliced into the array, as in the "modern browsers" example in the
+	 *   description of this method.
 	 *   Note #1: the supplied regular expression **must** have the 'g' flag specified.
-	 *   Note #2: for simplicity's sake, the regular expression does not need 
+	 *   Note #2: for simplicity's sake, the regular expression does not need
 	 *   to contain capturing parenthesis - it will be assumed that any match has them.
 	 * @return {String[]} The split array of strings, with the splitting character(s) included.
 	 */
 	splitAndCapture : function( str, splitRegex ) {
 		if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
-		
+
 		var result = [],
 		    lastIdx = 0,
 		    match;
-		
+
 		while( match = splitRegex.exec( str ) ) {
 			result.push( str.substring( lastIdx, match.index ) );
 			result.push( match[ 0 ] );  // push the splitting char(s)
-			
+
 			lastIdx = match.index + match[ 0 ].length;
 		}
 		result.push( str.substring( lastIdx ) );
-		
+
 		return result;
+	},
+
+
+	/**
+	 * Trims the leading and trailing whitespace from a string.
+	 *
+	 * @param {String} str The string to trim.
+	 * @return {String}
+	 */
+	trim : function( str ) {
+		return str.replace( this.trimRegex, '' );
 	}
-	
+
 };
 /*global Autolinker */
 /*jshint boss:true */
@@ -1146,88 +1171,101 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
  * @private
  * @class Autolinker.htmlParser.HtmlParser
  * @extends Object
- * 
- * An HTML parser implementation which simply walks an HTML string and returns an array of 
+ *
+ * An HTML parser implementation which simply walks an HTML string and returns an array of
  * {@link Autolinker.htmlParser.HtmlNode HtmlNodes} that represent the basic HTML structure of the input string.
- * 
+ *
  * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, effectively ignoring / "walking
  * around" HTML tags.
  */
 Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
-	
+
 	/**
 	 * @private
 	 * @property {RegExp} htmlRegex
-	 * 
+	 *
 	 * The regular expression used to pull out HTML tags from a string. Handles namespaced HTML tags and
 	 * attribute names, as specified by http://www.w3.org/TR/html-markup/syntax.html.
-	 * 
+	 *
 	 * Capturing groups:
-	 * 
+	 *
 	 * 1. The "!DOCTYPE" tag name, if a tag is a &lt;!DOCTYPE&gt; tag.
 	 * 2. If it is an end tag, this group will have the '/'.
-	 * 3. The tag name for all tags (other than the &lt;!DOCTYPE&gt; tag)
+	 * 3. If it is a comment tag, this group will hold the comment text (i.e.
+	 *    the text inside the `&lt;!--` and `--&gt;`.
+	 * 4. The tag name for all tags (other than the &lt;!DOCTYPE&gt; tag)
 	 */
 	htmlRegex : (function() {
-		var tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
+		var commentTagRegex = /!--([\s\S]+?)--/,
+		    tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
 		    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
 		    attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 		    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
-		
+
 		return new RegExp( [
-			// for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
+			// for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
 			'(?:',
 				'<(!DOCTYPE)',  // *** Capturing Group 1 - If it's a doctype tag
-					
+
 					// Zero or more attributes following the tag name
 					'(?:',
 						'\\s+',  // one or more whitespace chars before an attribute
-						
+
 						// Either:
-						// A. attr="value", or 
-						// B. "value" alone (To cover example doctype tag: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">) 
+						// A. attr="value", or
+						// B. "value" alone (To cover example doctype tag: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
 						'(?:', nameEqualsValueRegex, '|', attrValueRegex.source + ')',
 					')*',
 				'>',
 			')',
-			
+
 			'|',
-			
+
 			// All other HTML tags (i.e. tags that are not <!DOCTYPE>)
 			'(?:',
-				'<(/)?',  // Beginning of a tag. Either '<' for a start tag, or '</' for an end tag. 
+				'<(/)?',  // Beginning of a tag or comment. Either '<' for a start tag, or '</' for an end tag.
 				          // *** Capturing Group 2: The slash or an empty string. Slash ('/') for end tag, empty string for start or self-closing tag.
-			
-					// *** Capturing Group 3 - The tag name
-					'(' + tagNameRegex.source + ')',
-					
-					// Zero or more attributes following the tag name
+
 					'(?:',
-						'\\s+',                // one or more whitespace chars before an attribute
-						nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
-					')*',
-					
-					'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
+						commentTagRegex.source,  // *** Capturing Group 3 - A Comment Tag's Text
+
+						'|',
+
+						'(?:',
+
+							// *** Capturing Group 4 - The tag name
+							'(' + tagNameRegex.source + ')',
+
+							// Zero or more attributes following the tag name
+							'(?:',
+								'\\s+',                // one or more whitespace chars before an attribute
+								nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
+							')*',
+
+							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
+
+						')',
+					')',
 				'>',
 			')'
 		].join( "" ), 'gi' );
 	} )(),
-	
+
 	/**
 	 * @private
 	 * @property {RegExp} htmlCharacterEntitiesRegex
 	 *
 	 * The regular expression that matches common HTML character entities.
-	 * 
+	 *
 	 * Ignoring &amp; as it could be part of a query string -- handling it separately.
 	 */
 	htmlCharacterEntitiesRegex: /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi,
-	
-	
+
+
 	/**
-	 * Parses an HTML string and returns a simple array of {@link Autolinker.htmlParser.HtmlNode HtmlNodes} to represent
-	 * the HTML structure of the input string. 
-	 * 
+	 * Parses an HTML string and returns a simple array of {@link Autolinker.htmlParser.HtmlNode HtmlNodes}
+	 * to represent the HTML structure of the input string.
+	 *
 	 * @param {String} html The HTML to parse.
 	 * @return {Autolinker.htmlParser.HtmlNode[]}
 	 */
@@ -1237,74 +1275,99 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		    lastIndex = 0,
 		    textAndEntityNodes,
 		    nodes = [];  // will be the result of the method
-		
+
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
-			    tagName = currentResult[ 1 ] || currentResult[ 3 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img") 
+			    commentText = currentResult[ 3 ], // if we've matched a comment
+			    tagName = currentResult[ 1 ] || currentResult[ 4 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
 			    isClosingTag = !!currentResult[ 2 ],
 			    inBetweenTagsText = html.substring( lastIndex, currentResult.index );
-			
+
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( inBetweenTagsText ) {
 				textAndEntityNodes = this.parseTextAndEntityNodes( inBetweenTagsText );
 				nodes.push.apply( nodes, textAndEntityNodes );
 			}
-			
-			// Push the ElementNode
-			nodes.push( this.createElementNode( tagText, tagName, isClosingTag ) );
-			
+
+			// Push the CommentNode or ElementNode
+			if( commentText ) {
+				nodes.push( this.createCommentNode( tagText, commentText ) );
+			} else {
+				nodes.push( this.createElementNode( tagText, tagName, isClosingTag ) );
+			}
+
 			lastIndex = currentResult.index + tagText.length;
 		}
-		
+
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
 		if( lastIndex < html.length ) {
 			var text = html.substring( lastIndex );
-			
+
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( text ) {
 				textAndEntityNodes = this.parseTextAndEntityNodes( text );
 				nodes.push.apply( nodes, textAndEntityNodes );
 			}
 		}
-		
+
 		return nodes;
 	},
-	
-	
+
+
 	/**
-	 * Parses text and HTML entity nodes from a given string. The input string should not have any HTML tags (elements)
-	 * within it.
-	 * 
+	 * Parses text and HTML entity nodes from a given string. The input string
+	 * should not have any HTML tags (elements) within it.
+	 *
 	 * @private
 	 * @param {String} text The text to parse.
-	 * @return {Autolinker.htmlParser.HtmlNode[]} An array of HtmlNodes to represent the 
-	 *   {@link Autolinker.htmlParser.TextNode TextNodes} and {@link Autolinker.htmlParser.EntityNode EntityNodes} found.
+	 * @return {Autolinker.htmlParser.HtmlNode[]} An array of HtmlNodes to
+	 *   represent the {@link Autolinker.htmlParser.TextNode TextNodes} and
+	 *   {@link Autolinker.htmlParser.EntityNode EntityNodes} found.
 	 */
 	parseTextAndEntityNodes : function( text ) {
 		var nodes = [],
 		    textAndEntityTokens = Autolinker.Util.splitAndCapture( text, this.htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
-		
+
 		// Every even numbered token is a TextNode, and every odd numbered token is an EntityNode
-		// For example: an input `text` of "Test &quot;this&quot; today" would turn into the 
+		// For example: an input `text` of "Test &quot;this&quot; today" would turn into the
 		//   `textAndEntityTokens`: [ 'Test ', '&quot;', 'this', '&quot;', ' today' ]
 		for( var i = 0, len = textAndEntityTokens.length; i < len; i += 2 ) {
 			var textToken = textAndEntityTokens[ i ],
 			    entityToken = textAndEntityTokens[ i + 1 ];
-			
+
 			if( textToken ) nodes.push( this.createTextNode( textToken ) );
 			if( entityToken ) nodes.push( this.createEntityNode( entityToken ) );
 		}
 		return nodes;
 	},
-	
-	
+
+
+	/**
+	 * Factory method to create an {@link Autolinker.htmlParser.CommentNode CommentNode}.
+	 *
+	 * @private
+	 * @param {String} tagText The full text of the tag (comment) that was
+	 *   matched, including its &lt;!-- and --&gt;.
+	 * @param {String} comment The full text of the comment that was matched.
+	 */
+	createCommentNode : function( tagText, commentText ) {
+		return new Autolinker.htmlParser.CommentNode( {
+			text: tagText,
+			comment: Autolinker.Util.trim( commentText )
+		} );
+	},
+
+
 	/**
 	 * Factory method to create an {@link Autolinker.htmlParser.ElementNode ElementNode}.
-	 * 
+	 *
 	 * @private
-	 * @param {String} tagText The full text of the tag (element) that was matched, including its attributes.
-	 * @param {String} tagName The name of the tag. Ex: An &lt;img&gt; tag would be passed to this method as "img".
-	 * @param {Boolean} isClosingTag `true` if it's a closing tag, false otherwise.
+	 * @param {String} tagText The full text of the tag (element) that was
+	 *   matched, including its attributes.
+	 * @param {String} tagName The name of the tag. Ex: An &lt;img&gt; tag would
+	 *   be passed to this method as "img".
+	 * @param {Boolean} isClosingTag `true` if it's a closing tag, false
+	 *   otherwise.
 	 * @return {Autolinker.htmlParser.ElementNode}
 	 */
 	createElementNode : function( tagText, tagName, isClosingTag ) {
@@ -1314,23 +1377,24 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			closing : isClosingTag
 		} );
 	},
-	
-	
+
+
 	/**
 	 * Factory method to create a {@link Autolinker.htmlParser.EntityNode EntityNode}.
-	 * 
+	 *
 	 * @private
-	 * @param {String} text The text that was matched for the HTML entity (such as '&amp;nbsp;').
+	 * @param {String} text The text that was matched for the HTML entity (such
+	 *   as '&amp;nbsp;').
 	 * @return {Autolinker.htmlParser.EntityNode}
 	 */
 	createEntityNode : function( text ) {
 		return new Autolinker.htmlParser.EntityNode( { text: text } );
 	},
-	
-	
+
+
 	/**
 	 * Factory method to create a {@link Autolinker.htmlParser.TextNode TextNode}.
-	 * 
+	 *
 	 * @private
 	 * @param {String} text The text that was matched.
 	 * @return {Autolinker.htmlParser.TextNode}
@@ -1338,7 +1402,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	createTextNode : function( text ) {
 		return new Autolinker.htmlParser.TextNode( { text: text } );
 	}
-	
+
 } );
 /*global Autolinker */
 /**
@@ -1393,6 +1457,48 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	 */
 	getText : function() {
 		return this.text;
+	}
+
+} );
+/*global Autolinker */
+/**
+ * @class Autolinker.htmlParser.CommentNode
+ * @extends Autolinker.htmlParser.HtmlNode
+ *
+ * Represents an HTML comment node that has been parsed by the
+ * {@link Autolinker.htmlParser.HtmlParser}.
+ *
+ * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+ * details.
+ */
+Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
+
+	/**
+	 * @cfg {String} comment (required)
+	 *
+	 * The text inside the comment tag. This text is stripped of any leading or
+	 * trailing whitespace.
+	 */
+	comment : '',
+
+
+	/**
+	 * Returns a string name for the type of node that this class represents.
+	 *
+	 * @return {String}
+	 */
+	getType : function() {
+		return 'comment';
+	},
+
+
+	/**
+	 * Returns the comment inside the comment tag.
+	 *
+	 * @return {String}
+	 */
+	getComment : function() {
+		return this.comment;
 	}
 
 } );
@@ -1508,9 +1614,9 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
  * Used by Autolinker to parse potential matches, given an input string of text.
  *
  * The MatchParser is fed a non-HTML string in order to search for matches.
- * Autolinker first uses the {@link HtmlParser} to "walk around" HTML tags,
- * and then the text around the HTML tags is passed into the MatchParser in
- * order to find the actual matches.
+ * Autolinker first uses the {@link Autolinker.htmlParser.HtmlParser} to "walk
+ * around" HTML tags, and then the text around the HTML tags is passed into the
+ * MatchParser in order to find the actual matches.
  */
 Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
@@ -1682,11 +1788,13 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} charBeforeProtocolRelMatchRegex
 	 *
-	 * The regular expression used to retrieve the character before a protocol-relative URL match.
+	 * The regular expression used to retrieve the character before a
+	 * protocol-relative URL match.
 	 *
-	 * This is used in conjunction with the {@link #matcherRegex}, which needs to grab the character before a protocol-relative
-	 * '//' due to the lack of a negative look-behind in JavaScript regular expressions. The character before the match is stripped
-	 * from the URL.
+	 * This is used in conjunction with the {@link #matcherRegex}, which needs
+	 * to grab the character before a protocol-relative '//' due to the lack of
+	 * a negative look-behind in JavaScript regular expressions. The character
+	 * before the match is stripped from the URL.
 	 */
 	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
 
@@ -1694,14 +1802,15 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {Autolinker.MatchValidator} matchValidator
 	 *
-	 * The MatchValidator object, used to filter out any false positives from the {@link #matcherRegex}. See
-	 * {@link Autolinker.MatchValidator} for details.
+	 * The MatchValidator object, used to filter out any false positives from
+	 * the {@link #matcherRegex}. See {@link Autolinker.MatchValidator} for details.
 	 */
 
 
 	/**
 	 * @constructor
-	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
+	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder
+	 * instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
@@ -1712,7 +1821,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 	/**
 	 * Parses the input `text` to search for matches, and calls the `replaceFn`
-	 * to allow replacements of the matches. Returns the `text` with matches replaced.
+	 * to allow replacements of the matches. Returns the `text` with matches
+	 * replaced.
 	 *
 	 * @param {String} text The text to search and repace matches in.
 	 * @param {Function} replaceFn The iterator function to handle the
@@ -1814,8 +1924,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		    prefixStr = "",  // A string to use to prefix the anchor tag that is created. This is needed for the Twitter and Hashtag matches.
 		    suffixStr = "";  // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
 
-		// Return out with `null` for match types that are disabled (url, email, twitter, hashtag), or for matches that are
-		// invalid (false positives from the matcherRegex, which can't use look-behinds since they are unavailable in JS).
+		// Return out with `null` for match types that are disabled (url, email,
+		// twitter, hashtag), or for matches that are invalid (false positives
+		// from the matcherRegex, which can't use look-behinds since they are
+		// unavailable in JS).
 		if(
 			( urlMatch && !this.urls ) ||
 			( emailAddressMatch && !this.email ) ||
@@ -1827,7 +1939,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			return null;
 		}
 
-		// Handle a closing parenthesis at the end of the match, and exclude it if there is not a matching open parenthesis
+		// Handle a closing parenthesis at the end of the match, and exclude it
+		// if there is not a matching open parenthesis
 		// in the match itself.
 		if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
 			matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
@@ -1838,8 +1951,9 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			match = new Autolinker.match.Email( { matchedText: matchStr, email: emailAddressMatch } );
 
 		} else if( twitterMatch ) {
-			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match
-			// itself (since there are no look-behinds in JS regexes)
+			// fix up the `matchStr` if there was a preceding whitespace char,
+			// which was needed to determine the match itself (since there are
+			// no look-behinds in JS regexes)
 			if( twitterHandlePrefixWhitespaceChar ) {
 				prefixStr = twitterHandlePrefixWhitespaceChar;
 				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
@@ -1852,8 +1966,9 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
  			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
 
 		} else if( hashtagMatch ) {
-			// fix up the `matchStr` if there was a preceding whitespace char, which was needed to determine the match
-			// itself (since there are no look-behinds in JS regexes)
+			// fix up the `matchStr` if there was a preceding whitespace char,
+			// which was needed to determine the match itself (since there are
+			// no look-behinds in JS regexes)
 			if( hashtagPrefixWhitespaceChar ) {
 				prefixStr = hashtagPrefixWhitespaceChar;
 				matchStr = matchStr.slice( 1 );  // remove the prefixed whitespace char from the match
@@ -1861,8 +1976,10 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			match = new Autolinker.match.Hashtag( { matchedText: matchStr, serviceName: this.hashtag, hashtag: hashtag } );
 
 		} else {  // url match
-			// If it's a protocol-relative '//' match, remove the character before the '//' (which the matcherRegex needed
-			// to match due to the lack of a negative look-behind in JavaScript regular expressions)
+			// If it's a protocol-relative '//' match, remove the character
+			// before the '//' (which the matcherRegex needed to match due to
+			// the lack of a negative look-behind in JavaScript regular
+			// expressions)
 			if( protocolRelativeMatch ) {
 				var charBeforeMatch = protocolRelativeMatch.match( this.charBeforeProtocolRelMatchRegex )[ 1 ] || "";
 
@@ -1890,19 +2007,23 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Determines if a match found has an unmatched closing parenthesis. If so, this parenthesis will be removed
-	 * from the match itself, and appended after the generated anchor tag in {@link #processTextNode}.
+	 * Determines if a match found has an unmatched closing parenthesis. If so,
+	 * this parenthesis will be removed from the match itself, and appended
+	 * after the generated anchor tag in {@link #processCandidateMatch}.
 	 *
-	 * A match may have an extra closing parenthesis at the end of the match because the regular expression must include parenthesis
-	 * for URLs such as "wikipedia.com/something_(disambiguation)", which should be auto-linked.
+	 * A match may have an extra closing parenthesis at the end of the match
+	 * because the regular expression must include parenthesis for URLs such as
+	 * "wikipedia.com/something_(disambiguation)", which should be auto-linked.
 	 *
-	 * However, an extra parenthesis *will* be included when the URL itself is wrapped in parenthesis, such as in the case of
-	 * "(wikipedia.com/something_(disambiguation))". In this case, the last closing parenthesis should *not* be part of the URL
-	 * itself, and this method will return `true`.
+	 * However, an extra parenthesis *will* be included when the URL itself is
+	 * wrapped in parenthesis, such as in the case of "(wikipedia.com/something_(disambiguation))".
+	 * In this case, the last closing parenthesis should *not* be part of the
+	 * URL itself, and this method will return `true`.
 	 *
 	 * @private
 	 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
-	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at the end of the `matchStr`, `false` otherwise.
+	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
+	 *   the end of the `matchStr`, `false` otherwise.
 	 */
 	matchHasUnbalancedClosingParen : function( matchStr ) {
 		var lastChar = matchStr.charAt( matchStr.length - 1 );
@@ -1928,78 +2049,91 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
  * @private
  * @class Autolinker.MatchValidator
  * @extends Object
- * 
- * Used by Autolinker to filter out false positives from the {@link Autolinker#matcherRegex}.
- * 
- * Due to the limitations of regular expressions (including the missing feature of look-behinds in JS regular expressions),
- * we cannot always determine the validity of a given match. This class applies a bit of additional logic to filter out any
- * false positives that have been matched by the {@link Autolinker#matcherRegex}.
+ *
+ * Used by Autolinker to filter out false positives from the
+ * {@link Autolinker.matchParser.MatchParser#matcherRegex}.
+ *
+ * Due to the limitations of regular expressions (including the missing feature
+ * of look-behinds in JS regular expressions), we cannot always determine the
+ * validity of a given match. This class applies a bit of additional logic to
+ * filter out any false positives that have been matched by the
+ * {@link Autolinker.matchParser.MatchParser#matcherRegex}.
  */
 Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
-	
+
 	/**
 	 * @private
 	 * @property {RegExp} invalidProtocolRelMatchRegex
-	 * 
-	 * The regular expression used to check a potential protocol-relative URL match, coming from the 
-	 * {@link Autolinker#matcherRegex}. A protocol-relative URL is, for example, "//yahoo.com"
-	 * 
-	 * This regular expression checks to see if there is a word character before the '//' match in order to determine if 
-	 * we should actually autolink a protocol-relative URL. This is needed because there is no negative look-behind in 
-	 * JavaScript regular expressions. 
-	 * 
-	 * For instance, we want to autolink something like "Go to: //google.com", but we don't want to autolink something 
-	 * like "abc//google.com"
+	 *
+	 * The regular expression used to check a potential protocol-relative URL
+	 * match, coming from the {@link Autolinker.matchParser.MatchParser#matcherRegex}.
+	 * A protocol-relative URL is, for example, "//yahoo.com"
+	 *
+	 * This regular expression checks to see if there is a word character before
+	 * the '//' match in order to determine if we should actually autolink a
+	 * protocol-relative URL. This is needed because there is no negative
+	 * look-behind in JavaScript regular expressions.
+	 *
+	 * For instance, we want to autolink something like "Go to: //google.com",
+	 * but we don't want to autolink something like "abc//google.com"
 	 */
 	invalidProtocolRelMatchRegex : /^[\w]\/\//,
-	
+
 	/**
 	 * Regex to test for a full protocol, with the two trailing slashes. Ex: 'http://'
-	 * 
+	 *
 	 * @private
 	 * @property {RegExp} hasFullProtocolRegex
 	 */
 	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
-	
+
 	/**
 	 * Regex to find the URI scheme, such as 'mailto:'.
-	 * 
+	 *
 	 * This is used to filter out 'javascript:' and 'vbscript:' schemes.
-	 * 
+	 *
 	 * @private
 	 * @property {RegExp} uriSchemeRegex
 	 */
 	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
-	
+
 	/**
 	 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
-	 * 
+	 *
 	 * @private
 	 * @property {RegExp} hasWordCharAfterProtocolRegex
 	 */
 	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z]/,
-	
-	
+
+
 	/**
-	 * Determines if a given match found by {@link Autolinker#processTextNode} is valid. Will return `false` for:
-	 * 
-	 * 1) URL matches which do not have at least have one period ('.') in the domain name (effectively skipping over 
-	 *    matches like "abc:def"). However, URL matches with a protocol will be allowed (ex: 'http://localhost')
-	 * 2) URL matches which do not have at least one word character in the domain name (effectively skipping over
-	 *    matches like "git:1.0").
-	 * 3) A protocol-relative url match (a URL beginning with '//') whose previous character is a word character 
-	 *    (effectively skipping over strings like "abc//google.com")
-	 * 
+	 * Determines if a given match found by the {@link Autolinker.matchParser.MatchParser}
+	 * is valid. Will return `false` for:
+	 *
+	 * 1) URL matches which do not have at least have one period ('.') in the
+	 *    domain name (effectively skipping over matches like "abc:def").
+	 *    However, URL matches with a protocol will be allowed (ex: 'http://localhost')
+	 * 2) URL matches which do not have at least one word character in the
+	 *    domain name (effectively skipping over matches like "git:1.0").
+	 * 3) A protocol-relative url match (a URL beginning with '//') whose
+	 *    previous character is a word character (effectively skipping over
+	 *    strings like "abc//google.com")
+	 *
 	 * Otherwise, returns `true`.
-	 * 
-	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
-	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to match
-	 *   something like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
-	 * @param {String} protocolRelativeMatch The protocol-relative string for a URL match (i.e. '//'), possibly with a preceding
-	 *   character (ex, a space, such as: ' //', or a letter, such as: 'a//'). The match is invalid if there is a word character
-	 *   preceding the '//'.
-	 * @return {Boolean} `true` if the match given is valid and should be processed, or `false` if the match is invalid and/or 
-	 *   should just not be processed.
+	 *
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol
+	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
+	 *   'http://localhost', where we won't double check that the domain name
+	 *   has at least one '.' in it.
+	 * @param {String} protocolRelativeMatch The protocol-relative string for a
+	 *   URL match (i.e. '//'), possibly with a preceding character (ex, a
+	 *   space, such as: ' //', or a letter, such as: 'a//'). The match is
+	 *   invalid if there is a word character preceding the '//'.
+	 * @return {Boolean} `true` if the match given is valid and should be
+	 *   processed, or `false` if the match is invalid and/or should just not be
+	 *   processed.
 	 */
 	isValidMatch : function( urlMatch, protocolUrlMatch, protocolRelativeMatch ) {
 		if(
@@ -2010,61 +2144,69 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 		) {
 			return false;
 		}
-		
+
 		return true;
 	},
-	
-	
+
+
 	/**
-	 * Determines if the URI scheme is a valid scheme to be autolinked. Returns `false` if the scheme is 
-	 * 'javascript:' or 'vbscript:'
-	 * 
+	 * Determines if the URI scheme is a valid scheme to be autolinked. Returns
+	 * `false` if the scheme is 'javascript:' or 'vbscript:'
+	 *
 	 * @private
-	 * @param {String} uriSchemeMatch The match URL string for a full URI scheme match. Ex: 'http://yahoo.com' 
-	 *   or 'mailto:a@a.com'.
+	 * @param {String} uriSchemeMatch The match URL string for a full URI scheme
+	 *   match. Ex: 'http://yahoo.com' or 'mailto:a@a.com'.
 	 * @return {Boolean} `true` if the scheme is a valid one, `false` otherwise.
 	 */
 	isValidUriScheme : function( uriSchemeMatch ) {
 		var uriScheme = uriSchemeMatch.match( this.uriSchemeRegex )[ 0 ].toLowerCase();
-		
+
 		return ( uriScheme !== 'javascript:' && uriScheme !== 'vbscript:' );
 	},
-	
-	
+
+
 	/**
 	 * Determines if a URL match does not have either:
-	 * 
+	 *
 	 * a) a full protocol (i.e. 'http://'), or
-	 * b) at least one dot ('.') in the domain name (for a non-full-protocol match).
-	 * 
-	 * Either situation is considered an invalid URL (ex: 'git:d' does not have either the '://' part, or at least one dot
-	 * in the domain name. If the match was 'git:abc.com', we would consider this valid.)
-	 * 
+	 * b) at least one dot ('.') in the domain name (for a non-full-protocol
+	 *    match).
+	 *
+	 * Either situation is considered an invalid URL (ex: 'git:d' does not have
+	 * either the '://' part, or at least one dot in the domain name. If the
+	 * match was 'git:abc.com', we would consider this valid.)
+	 *
 	 * @private
-	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
-	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to match
-	 *   something like 'http://localhost', where we won't double check that the domain name has at least one '.' in it.
-	 * @return {Boolean} `true` if the URL match does not have a full protocol, or at least one dot ('.') in a non-full-protocol
-	 *   match.
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol
+	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
+	 *   'http://localhost', where we won't double check that the domain name
+	 *   has at least one '.' in it.
+	 * @return {Boolean} `true` if the URL match does not have a full protocol,
+	 *   or at least one dot ('.') in a non-full-protocol match.
 	 */
 	urlMatchDoesNotHaveProtocolOrDot : function( urlMatch, protocolUrlMatch ) {
 		return ( !!urlMatch && ( !protocolUrlMatch || !this.hasFullProtocolRegex.test( protocolUrlMatch ) ) && urlMatch.indexOf( '.' ) === -1 );
 	},
-	
-	
+
+
 	/**
-	 * Determines if a URL match does not have at least one word character after the protocol (i.e. in the domain name).
-	 * 
-	 * At least one letter character must exist in the domain name after a protocol match. Ex: skip over something 
-	 * like "git:1.0"
-	 * 
+	 * Determines if a URL match does not have at least one word character after
+	 * the protocol (i.e. in the domain name).
+	 *
+	 * At least one letter character must exist in the domain name after a
+	 * protocol match. Ex: skip over something like "git:1.0"
+	 *
 	 * @private
-	 * @param {String} urlMatch The matched URL, if there was one. Will be an empty string if the match is not a URL match.
-	 * @param {String} protocolUrlMatch The match URL string for a protocol match. Ex: 'http://yahoo.com'. This is used to
-	 *   know whether or not we have a protocol in the URL string, in order to check for a word character after the protocol
-	 *   separator (':').
-	 * @return {Boolean} `true` if the URL match does not have at least one word character in it after the protocol, `false`
-	 *   otherwise.
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol
+	 *   match. Ex: 'http://yahoo.com'. This is used to know whether or not we
+	 *   have a protocol in the URL string, in order to check for a word
+	 *   character after the protocol separator (':').
+	 * @return {Boolean} `true` if the URL match does not have at least one word
+	 *   character in it after the protocol, `false` otherwise.
 	 */
 	urlMatchDoesNotHaveAtLeastOneWordChar : function( urlMatch, protocolUrlMatch ) {
 		if( urlMatch && protocolUrlMatch ) {
@@ -2073,18 +2215,21 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 			return false;
 		}
 	},
-	
-	
+
+
 	/**
-	 * Determines if a protocol-relative match is an invalid one. This method returns `true` if there is a `protocolRelativeMatch`,
-	 * and that match contains a word character before the '//' (i.e. it must contain whitespace or nothing before the '//' in
-	 * order to be considered valid).
-	 * 
+	 * Determines if a protocol-relative match is an invalid one. This method
+	 * returns `true` if there is a `protocolRelativeMatch`, and that match
+	 * contains a word character before the '//' (i.e. it must contain
+	 * whitespace or nothing before the '//' in order to be considered valid).
+	 *
 	 * @private
-	 * @param {String} protocolRelativeMatch The protocol-relative string for a URL match (i.e. '//'), possibly with a preceding
-	 *   character (ex, a space, such as: ' //', or a letter, such as: 'a//'). The match is invalid if there is a word character
-	 *   preceding the '//'.
-	 * @return {Boolean} `true` if it is an invalid protocol-relative match, `false` otherwise.
+	 * @param {String} protocolRelativeMatch The protocol-relative string for a
+	 *   URL match (i.e. '//'), possibly with a preceding character (ex, a
+	 *   space, such as: ' //', or a letter, such as: 'a//'). The match is
+	 *   invalid if there is a word character preceding the '//'.
+	 * @return {Boolean} `true` if it is an invalid protocol-relative match,
+	 *   `false` otherwise.
 	 */
 	isInvalidProtocolRelativeMatch : function( protocolRelativeMatch ) {
 		return ( !!protocolRelativeMatch && this.invalidProtocolRelMatchRegex.test( protocolRelativeMatch ) );

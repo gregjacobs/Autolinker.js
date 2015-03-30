@@ -285,8 +285,8 @@ Autolinker.prototype = {
 				}
 				resultHtml.push( nodeText );  // now add the text of the tag itself verbatim
 
-			} else if( nodeType === 'entity' ) {
-				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') verbatim
+			} else if( nodeType === 'entity' || nodeType === 'comment' ) {
+				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') or HTML comments (such as '<!-- Comment -->') verbatim
 
 			} else {
 				// Process text nodes in the input `textOrHtml`

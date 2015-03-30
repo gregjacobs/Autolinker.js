@@ -970,6 +970,34 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should NOT automatically link within comment tags", function() {
+				var result = autolinker.link( '<!-- google.com -->' );
+
+				expect( result ).toBe( '<!-- google.com -->' );
+			} );
+
+
+			it( "should NOT automatically link within multi-line comment tags", function() {
+				var result = autolinker.link( '<!--\n\tgoogle.com\n\t-->' );
+
+				expect( result ).toBe( '<!--\n\tgoogle.com\n\t-->' );
+			} );
+
+
+			it( "should automatically link between comment tags, but not the comment tags themselves", function() {
+				var result = autolinker.link( '<!-- google.com -->\nweather.com\n<!-- http://yahoo.com -->' );
+
+				expect( result ).toBe( '<!-- google.com -->\n<a href="http://weather.com">weather.com</a>\n<!-- http://yahoo.com -->' );
+			} );
+
+
+			it( "should NOT automatically link within comment tags, using part of the comment tag as the URL (Issue #88)", function() {
+				var result = autolinker.link( '<!--.post-author-->' );
+
+				expect( result ).toBe( '<!--.post-author-->' );
+			} );
+
+
 			it( "should automatically link tags after a !DOCTYPE tag", function() {
 				var input = [
 					'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',

@@ -58,6 +58,7 @@ module.exports = function(grunt) {
 					'src/AnchorTagBuilder.js',
 					'src/htmlParser/HtmlParser.js',
 					'src/htmlParser/HtmlNode.js',
+					'src/htmlParser/CommentNode.js',
 					'src/htmlParser/ElementNode.js',
 					'src/htmlParser/EntityNode.js',
 					'src/htmlParser/TextNode.js',
