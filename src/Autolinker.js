@@ -32,12 +32,14 @@
  *
  * ## Custom Replacements of Links
  *
- * If the configuration options do not provide enough flexibility, a {@link #replaceFn} may be provided to fully customize
- * the output of Autolinker. This function is called once for each URL/Email/Phone#/Twitter Handle/TwitterHashtag match that is encountered.
+ * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
+ * may be provided to fully customize the output of Autolinker. This function is
+ * called once for each URL/Email/Phone#/Twitter Handle/Hashtag match that is
+ * encountered.
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Twitter Handles, and Twitter Hashtags
+ *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Twitter Handles, and Hashtags
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
@@ -75,11 +77,11 @@
  *
  *                     return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
  *
- *                 case 'twitterHashtag' :
- *                     var twitterHashtag = match.getHashtag();
- *                     console.log( twitterHashtag );
+ *                 case 'hashtag' :
+ *                     var hashtag = match.getHashtag();
+ *                     console.log( hashtag );
  *
- *                     return '<a href="http://newplace.to.link.twitterHashtag.handles.to/">' + twitterHashtag + '</a>';
+ *                     return '<a href="http://newplace.to.link.hashtag.handles.to/">' + hashtag + '</a>';
  *             }
  *         }
  *     } );
@@ -132,12 +134,12 @@ Autolinker.prototype = {
 	phone: true,
 
 	/**
-	 * @cfg {Boolean} twitterHashtag
+	 * @cfg {Boolean} hashtag
 	 *
-	 * `true` if Twitter Hashtags ("@example") should be automatically linked,
-	 * `false` if they should not be.
+	 * `true` if Hashtags ("#example") should be automatically linked, `false`
+	 * if they should not be.
 	 */
-	twitterHashtag : false,
+	hashtag : false,
 
 	/**
 	 * @cfg {Boolean} newWindow
@@ -170,7 +172,7 @@ Autolinker.prototype = {
 	 * @cfg {String} className
 	 *
 	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
-	 * plus match suffixes for styling url/email/phone/twitter/twitterHashtag links differently.
+	 * plus match suffixes for styling url/email/phone/twitter/hashtag links differently.
 	 *
 	 * For example, if this config is provided as "myLink", then:
 	 *
@@ -178,7 +180,7 @@ Autolinker.prototype = {
 	 * - Email links will have the CSS classes: "myLink myLink-email", and
 	 * - Twitter links will have the CSS classes: "myLink myLink-twitter"
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
-	 * - TwitterHashtag links will have the CSS classes: "myLink myLink-twitterHashtag"
+	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 	 */
 	className : "",
 
@@ -226,17 +228,22 @@ Autolinker.prototype = {
 	tagBuilder : undefined,
 
 	/**
-	 * Automatically links URLs, email addresses, phone numbers, Twitter handles, and Twitter Hashtags found in the given chunk of HTML.
-	 * Does not link URLs found within HTML tags.
+	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
+	 * handles, and Hashtags found in the given chunk of HTML. Does not link
+	 * URLs found within HTML tags.
 	 *
-	 * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
-	 * will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+	 * For instance, if given the text: `You should go to http://www.yahoo.com`,
+	 * then the result will be `You should go to
+	 * &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
 	 *
-	 * This method finds the text around any HTML elements in the input `textOrHtml`, which will be the text that is processed.
-	 * Any original HTML elements will be left as-is, as well as the text that is already wrapped in anchor (&lt;a&gt;) tags.
+	 * This method finds the text around any HTML elements in the input
+	 * `textOrHtml`, which will be the text that is processed. Any original HTML
+	 * elements will be left as-is, as well as the text that is already wrapped
+	 * in anchor (&lt;a&gt;) tags.
 	 *
-	 * @param {String} textOrHtml The HTML or text to autolink matches within (depending on if
-	 *   the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and {@link #twitterHashtags} options are enabled).
+	 * @param {String} textOrHtml The HTML or text to autolink matches within
+	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
+	 *   {@link #twitter}, and {@link #hashtags} options are enabled).
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
@@ -361,11 +368,11 @@ Autolinker.prototype = {
 
 		if( !matchParser ) {
 			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
-				urls : this.urls,
-				email : this.email,
-				twitter : this.twitter,
-				phone: this.phone,
-				twitterHashtag : this.twitterHashtag,
+				urls        : this.urls,
+				email       : this.email,
+				twitter     : this.twitter,
+				phone       : this.phone,
+				hashtag     : this.hashtag,
 				stripPrefix : this.stripPrefix
 			} );
 		}
@@ -413,8 +420,8 @@ Autolinker.prototype = {
 
 
 /**
- * Automatically links URLs, email addresses, Twitter handles, and
- * TwitterHashtags found in the given chunk of HTML. Does not link URLs found
+ * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
+ * and Hashtags found in the given chunk of HTML. Does not link URLs found
  * within HTML tags.
  *
  * For instance, if given the text: `You should go to http://www.yahoo.com`, then the result
@@ -427,7 +434,7 @@ Autolinker.prototype = {
  *
  * @static
  * @param {String} textOrHtml The HTML or text to find matches within (depending on if
- *   the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and {@link #twitterHashtags} options are enabled).
+ *   the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and {@link #hashtags} options are enabled).
  * @param {Object} [options] Any of the configuration options for the Autolinker class, specified in an Object (map).
  *   See the class description for an example call.
  * @return {String} The HTML text, with matches automatically linked.

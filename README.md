@@ -15,7 +15,7 @@ So, this utility attempts to handle everything. It:
 - Will autolink email addresses.
 - Will autolink phone numbers.
 - Will autolink Twitter handles.
-- Will autolink Twitter hashtags.
+- Will autolink hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that
   matter), and will not accidentally wrap the inner text of an anchor tag with a
@@ -110,16 +110,16 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added
-  to all links, as well as this class plus "url"/"email"/"phone""twitter"/"twitterHashtag"
-  suffixes for styling url/email/twitter/twitterHashtag links differently.
+  to all links, as well as this class plus "url"/"email"/"phone"/"twitter"/"hashtag"
+  suffixes for styling url/email/phone/twitter/hashtag links differently.
 
   For example, if this config is provided as "myLink", then:
 
   1) URL links will have the CSS classes: "myLink myLink-url"<br />
   2) Email links will have the CSS classes: "myLink myLink-email"<br />
-  2) Phone links will have the CSS classes: "myLink myLink-phone"<br />
-  3) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
-  4) TwitterHashtag links will have the CSS classes: "myLink myLink-twitterHashtag"<br />
+  3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
+  4) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
+  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 
 - [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
@@ -133,9 +133,9 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) : Boolean<br />
   `true` to have Twitter handles auto-linked, `false` to skip auto-linking of
   Twitter handles. Defaults to `true`.<br /><br />
-- [twitterHashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitterHashtag) : Boolean<br />
-  `true` to have Twitter hashtags auto-linked, `false` to skip auto-linking of
-  Twitter hashtags. Defaults to `false`.<br /><br />
+- [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean<br />
+  `true` to have hashtags auto-linked, `false` to skip auto-linking of
+  hashtags. Defaults to `false`.<br /><br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
   input string, one at a time. See the section
@@ -188,13 +188,13 @@ autolinker.link( "Go to www.google.com" );
 ## Custom Replacement Function
 
 A custom replacement function ([replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn))
-may be provided to replace url/email/phone/Twitter handle/Twitter hashtag
-matches on an individual basis, based on the return from this function.
+may be provided to replace url/email/phone/Twitter handle/hashtag matches on an
+individual basis, based on the return from this function.
 
 Full example, for purposes of documenting the API:
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and TwitterHashtags
+var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and Hashtags
 
 var linkedText = Autolinker.link( input, {
     replaceFn : function( autolinker, match ) {
@@ -238,11 +238,11 @@ var linkedText = Autolinker.link( input, {
 
                 return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
 
-            case 'twitterHashtag' :
+            case 'hashtag' :
                 var hashtag = match.getHashtag();
                 console.log( hashtag );
 
-                return '<a href="http://newplace.to.link.twitterHashtag.handles.to/">' + hashtag + '</a>';
+                return '<a href="http://newplace.to.link.hashtag.handles.to/">' + hashtag + '</a>';
         }
     }
 } );

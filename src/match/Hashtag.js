@@ -1,20 +1,20 @@
 /*global Autolinker */
 /**
- * @class Autolinker.match.TwitterHashtag
+ * @class Autolinker.match.Hashtag
  * @extends Autolinker.match.Match
  *
- * Represents a Twitter Hashtag match found in an input string which should be
+ * Represents a Hashtag match found in an input string which should be
  * Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more
  * details.
  */
-Autolinker.match.TwitterHashtag = Autolinker.Util.extend( Autolinker.match.Match, {
+Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @cfg {String} hashtag (required)
 	 *
-	 * The Twitter Hashtag that was matched.
+	 * The Hashtag that was matched, without the '#'.
 	 */
 
 
@@ -24,12 +24,12 @@ Autolinker.match.TwitterHashtag = Autolinker.Util.extend( Autolinker.match.Match
 	 * @return {String}
 	 */
 	getType : function() {
-		return 'twitterHashtag';
+		return 'hashtag';
 	},
 
 
 	/**
-	 * Returns a string name for the type of match that this class represents.
+	 * Returns the matched hashtag.
 	 *
 	 * @return {String}
 	 */
