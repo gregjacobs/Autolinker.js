@@ -51,7 +51,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	
 	
 	/**
-	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of the matched URL/email/Twitter text,
+	 * Generates the actual anchor (&lt;a&gt;) tag to use in place of the matched URL/email/Twitter/TwitterHashtag text,
 	 * via its `match` object.
 	 * 
 	 * @param {Autolinker.match.Match} match The Match instance to generate an anchor tag from.
@@ -72,7 +72,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * Creates the Object (map) of the HTML attributes for the anchor (&lt;a&gt;) tag being generated.
 	 * 
 	 * @protected
-	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
+	 * @param {"url"/"email"/"twitter"/"twitterHashtag"} matchType The type of match that an anchor tag is being generated for.
 	 * @param {String} href The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes. 
 	 */
@@ -98,7 +98,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * config.
 	 * 
 	 * @private
-	 * @param {"url"/"email"/"twitter"} matchType The type of match that an anchor tag is being generated for.
+	 * @param {"url"/"email"/"twitter"/"twitterHashtag"} matchType The type of match that an anchor tag is being generated for.
 	 * @return {String} The CSS class string for the link. Example return: "myLink myLink-url". If no {@link #className}
 	 *   was configured, returns an empty string.
 	 */
@@ -108,7 +108,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		if( !className ) 
 			return "";
 		else
-			return className + " " + className + "-" + matchType;  // ex: "myLink myLink-url", "myLink myLink-email", or "myLink myLink-twitter"
+			return className + " " + className + "-" + matchType;  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-twitter", or "myLink myLink-twitterHashtag"
 	},
 	
 	
