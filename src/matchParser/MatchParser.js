@@ -217,7 +217,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * to allow replacements of the matches. Returns the `text` with matches
 	 * replaced.
 	 *
-	 * @param {String} text The text to search and repace matches in.
+	 * @param {String} text The text to search and replace matches in.
 	 * @param {Function} replaceFn The iterator function to handle the
 	 *   replacements. The function takes a single argument, a {@link Autolinker.match.Match}
 	 *   object, and should return the text that should make the replacement.

@@ -228,12 +228,14 @@ Autolinker.prototype = {
 
 	/**
 	 * @private
-	 * @property {Autolinker.matchParser.MatchParser} matchParser
+	 * @property {Autolinker.matcherEngine.MatcherEngine} matcherEngine
 	 *
-	 * The MatchParser instance used to find matches in the text nodes of an input string passed to
-	 * {@link #link}. This is lazily instantiated in the {@link #getMatchParser} method.
+	 * The MatcherEngine instance used to find and replace matches in the text
+	 * nodes of an input string passed to {@link #link}.
+	 *
+	 * This is lazily instantiated in the {@link #getMatcherEngine} method.
 	 */
-	matchParser : undefined,
+	matcherEngine : undefined,
 
 	/**
 	 * @private
@@ -318,7 +320,7 @@ Autolinker.prototype = {
 	 * @return {String} The text with anchor tags auto-filled.
 	 */
 	linkifyStr : function( str ) {
-		return this.getMatchParser().replace( str, this.createMatchReturnVal, this );
+		return this.getMatcherEngine().replace( str, this.createMatchReturnVal, this );
 	},
 
 
@@ -377,26 +379,33 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Lazily instantiates and returns the {@link #matchParser} instance for this Autolinker instance.
+	 * Lazily instantiates and returns the {@link #matcherEngine} instance for
+	 * this Autolinker instance.
 	 *
 	 * @protected
-	 * @return {Autolinker.matchParser.MatchParser}
+	 * @return {Autolinker.matcherEngine.MatcherEngine}
 	 */
-	getMatchParser : function() {
-		var matchParser = this.matchParser;
+	getMatcherEngine : function() {
+		var matcherEngine = this.matcherEngine;
 
-		if( !matchParser ) {
-			matchParser = this.matchParser = new Autolinker.matchParser.MatchParser( {
-				urls        : this.urls,
-				email       : this.email,
-				twitter     : this.twitter,
-				phone       : this.phone,
-				hashtag     : this.hashtag,
-				stripPrefix : this.stripPrefix
+		if( !matcherEngine ) {
+			var matchersNs = Autolinker.matchers,
+			    matchers = [];
+
+			// NOTE: Ordering is important here. TwitterMatcher must come before
+			// email matcher, and email matcher before URL matcher, etc.
+			if( this.twitter ) matchers.push( new matchersNs.Twitter() );
+			if( this.email )   matchers.push( new matchersNs.Email() );
+			if( this.urls )    matchers.push( new matchersNs.Url( { stripPrefix: this.stripPrefix } ) );
+			if( this.phone )   matchers.push( new matchersNs.Phone() );
+			if( this.hashtag ) matchers.push( new matchersNs.Hashtag( { serviceName: this.hashtag } ) );
+
+			matcherEngine = this.matcherEngine = new Autolinker.matcher.MatcherEngine( {
+				matchers : matchers
 			} );
 		}
 
-		return matchParser;
+		return matcherEngine;
 	},
 
 
@@ -468,5 +477,5 @@ Autolinker.link = function( textOrHtml, options ) {
 
 // Autolinker Namespaces
 Autolinker.match = {};
+Autolinker.matchers = {};
 Autolinker.htmlParser = {};
-Autolinker.matchParser = {};
