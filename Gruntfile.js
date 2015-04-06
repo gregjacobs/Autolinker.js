@@ -5,7 +5,8 @@ module.exports = function(grunt) {
 
 	// Tasks
 	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
-	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
+	grunt.registerTask( 'build', [ 'build_dev', 'umd', 'uglify:production' ] );
+	grunt.registerTask( 'build_dev', [ 'concat:development', 'preprocess:development' ] );
 	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
 	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
@@ -75,6 +76,19 @@ module.exports = function(grunt) {
 			}
 		},
 
+		preprocess: {
+			development : {
+				src  : distPath,
+				dest : distPath,
+				options : {
+					inline : true,  // required to overwrite the src file
+					context : {
+						DEBUG : true
+					}
+				}
+			}
+		},
+
 		uglify: {
 			production: {
 				options: {
@@ -119,6 +133,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jsduck' );
+	grunt.loadNpmTasks( 'grunt-preprocess' );
 	grunt.loadNpmTasks( 'grunt-umd' );
 
 

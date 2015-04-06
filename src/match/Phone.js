@@ -14,8 +14,24 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	/**
 	 * @cfg {String} number (required)
 	 *
-	 * The phone number that was matched.
+	 * The phone number that was matched, without any delimiter characters.
+	 *
+	 * Note: This is a string to allow for prefixed 0's.
 	 */
+
+
+	// @if DEBUG
+	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function() {
+		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+
+		if( !this.number ) throw new Error( '`number` cfg required' );
+	},
+	// @endif
 
 
 	/**
@@ -29,7 +45,10 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
-	 * Returns the phone number that was matched.
+	 * Returns the phone number that was matched as a string, without any
+	 * delimiter characters.
+	 *
+	 * Note: This is a string to allow for prefixed 0's.
 	 *
 	 * @return {String}
 	 */

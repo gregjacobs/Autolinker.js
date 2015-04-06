@@ -10,6 +10,12 @@
 Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
+	 * @cfg {Boolean} stripPrefix (required)
+	 * @inheritdoc Autolinker#stripPrefix
+	 */
+
+
+	/**
 	 * @private
 	 * @property {String} matcherRegexStr
 	 *
@@ -35,7 +41,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *     auto-link.
 	 * 3.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
-	 *     See #6 for more info.
+	 *     See #2 for more info.
 	 */
 	matcherRegexStr : (function() {
 		var protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
@@ -91,6 +97,20 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
 
 
+	// @if DEBUG
+	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function() {
+		Autolinker.matcher.Matcher.prototype.constructor.apply( this, arguments );
+
+		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+	},
+	// @endif
+
+
 	/**
 	 * @inheritdoc
 	 */
@@ -102,8 +122,41 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	/**
 	 * @inheritdoc
 	 */
-	getNumCapturingGroups : function() {
-		return 3;
+	processCandidateMatch : function( matchStr, capturingGroups, offset ) {
+		var protocolUrlMatch = capturingGroups[ 0 ],
+		    wwwProtocolRelativeMatch = capturingGroups[ 1 ],
+		    tldProtocolRelativeMatch = capturingGroups[ 2 ],
+		    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
+		    prefixStr = '';
+
+		if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, protocolUrlMatch, protocolRelativeMatch ) ) {
+			return null;
+		}
+
+		// If it's a protocol-relative '//' match, remove the character
+		// before the '//' (which the matcherRegex needed to match due to
+		// the lack of a negative look-behind in JavaScript regular
+		// expressions)
+		if( protocolRelativeMatch ) {
+			var charBeforeMatch = protocolRelativeMatch.match( this.charBeforeProtocolRelMatchRegex )[ 1 ] || "";
+
+			if( charBeforeMatch ) {  // fix up the `matchStr` if there was a preceding char before a protocol-relative match, which was needed to determine the match itself (since there are no look-behinds in JS regexes)
+				prefixStr = charBeforeMatch;
+				matchStr = matchStr.slice( 1 );  // remove the prefixed char from the match
+				offset += 1;  // the '//' characters start at the next character in the match after the whitespace char, so fix the offset
+			}
+		}
+
+		var match = new Autolinker.match.Url( {
+			matchedText : matchStr,
+			offset      : offset,
+			url         : matchStr,
+			protocolUrlMatch : !!protocolUrlMatch,
+			protocolRelativeMatch : !!protocolRelativeMatch,
+			stripPrefix : this.stripPrefix
+		} );
+
+		return new Autolinker.matcher.ReplacementDescriptor( match, prefixStr );
 	}
 
 } );
