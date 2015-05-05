@@ -185,21 +185,15 @@ describe( "Autolinker", function() {
 					} );
 
 
-					it( "should autolink protocols with at least two characters", function() {
-						var result = autolinker.link( 'link this: gg://example.com/' );
-						expect( result ).toBe( 'link this: <a href="gg://example.com/">gg://example.com</a>' );
+					it( "should autolink protocols with at least one character", function() {
+						var result = autolinker.link( 'link this: g://example.com/' );
+						expect( result ).toBe( 'link this: <a href="g://example.com/">g://example.com</a>' );
 					} );
 
 
 					it( "should autolink protocols with more than 9 characters (as was the previous upper bound, but it seems protocols may be longer)", function() {
 						var result = autolinker.link( 'link this: opaquelocktoken://example' );
 						expect( result ).toBe( 'link this: <a href="opaquelocktoken://example">opaquelocktoken://example</a>' );
-					} );
-
-
-					it( "should NOT autolink a protocol with only one character", function() {
-						var result = autolinker.link( 'do not link this: a://example' );
-						expect( result ).toBe( 'do not link this: a://example' );
 					} );
 
 
@@ -223,17 +217,20 @@ describe( "Autolinker", function() {
 
 
 					it( "should NOT autolink protocols that start with a digit, dash, plus sign, or dot, as per http://tools.ietf.org/html/rfc3986#section-3.1", function() {
-						var result = autolinker.link( 'do not link this: 1a://example' );
-						expect( result ).toBe( 'do not link this: 1a://example' );
+						var result = autolinker.link( 'do not link first char: 1a://example' );
+						expect( result ).toBe( 'do not link first char: 1<a href="a://example">a://example</a>' );
 
-						var result2 = autolinker.link( 'do not link this: -a://example' );
-						expect( result2 ).toBe( 'do not link this: -a://example' );
+						var result2 = autolinker.link( 'do not link first char: -a://example' );
+						expect( result2 ).toBe( 'do not link first char: -<a href="a://example">a://example</a>' );
 
-						var result3 = autolinker.link( 'do not link this: +a://example' );
-						expect( result3 ).toBe( 'do not link this: +a://example' );
+						var result3 = autolinker.link( 'do not link first char: +a://example' );
+						expect( result3 ).toBe( 'do not link first char: +<a href="a://example">a://example</a>' );
 
-						var result4 = autolinker.link( 'do not link this: .a://example' );
-						expect( result4 ).toBe( 'do not link this: .a://example' );
+						var result4 = autolinker.link( 'do not link first char: .a://example' );
+						expect( result4 ).toBe( 'do not link first char: .<a href="a://example">a://example</a>' );
+
+						var result5 = autolinker.link( 'do not link first char: .aa://example' );
+						expect( result5 ).toBe( 'do not link first char: .<a href="aa://example">aa://example</a>' );
 					} );
 
 
