@@ -87,7 +87,7 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include [?!:,.;'] chars if at the end of the URL", function() {
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
 					var result1 = autolinker.link( "Joe went to http://localhost:8000? today" );
 					expect( result1 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>? today' );
 					var result2 = autolinker.link( "Joe went to http://localhost:8000! today" );
@@ -100,9 +100,7 @@ describe( "Autolinker", function() {
 					expect( result5 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>. today' );
 					var result6 = autolinker.link( "Joe went to http://localhost:8000; today" );
 					expect( result6 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>; today' );
-					var result7 = autolinker.link( "Joe went to http://localhost:8000' today" );
-					expect( result7 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>\' today' );
-				} );
+        } );
 
 
 				it( "should automatically link URLs in the form of http://www.yahoo.com (i.e. protocol and 'www' prefix)", function() {
@@ -377,7 +375,7 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include [?!:,.;'] chars if at the end of the URL", function() {
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
 					var result1 = autolinker.link( "Joe went to www.yahoo.com? today" );
 					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>? today' );
 					var result2 = autolinker.link( "Joe went to www.yahoo.com! today" );
@@ -390,8 +388,16 @@ describe( "Autolinker", function() {
 					expect( result5 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>. today' );
 					var result6 = autolinker.link( "Joe went to www.yahoo.com; today" );
 					expect( result6 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>; today' );
-					var result7 = autolinker.link( "Joe went to www.yahoo.com' today" );
-					expect( result7 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\' today' );
+        } );
+
+
+        it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to www.yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to www.yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://www.yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to www.yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
 			} );
@@ -459,7 +465,7 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include [?!:,.;'] chars if at the end of the URL", function() {
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
 					var result1 = autolinker.link( "Joe went to yahoo.com? today" );
 					expect( result1 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>? today' );
 					var result2 = autolinker.link( "Joe went to yahoo.com! today" );
@@ -472,8 +478,15 @@ describe( "Autolinker", function() {
 					expect( result5 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>. today' );
 					var result6 = autolinker.link( "Joe went to yahoo.com; today" );
 					expect( result6 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>; today' );
-					var result7 = autolinker.link( "Joe went to yahoo.com' today" );
-					expect( result7 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\' today' );
+        } );
+
+        it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
 			} );
