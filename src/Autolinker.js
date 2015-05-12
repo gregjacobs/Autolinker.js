@@ -264,6 +264,10 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
+		if (textOrHtml === null || 'undefined' === typeof textOrHtml) {
+			return textOrHtml;
+		}
+
 		var htmlParser = this.getHtmlParser(),
 		    htmlNodes = htmlParser.parse( textOrHtml ),
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
