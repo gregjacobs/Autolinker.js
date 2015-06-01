@@ -289,6 +289,8 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
+		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
+
 		var htmlParser = this.getHtmlParser(),
 		    htmlNodes = htmlParser.parse( textOrHtml ),
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
@@ -1408,51 +1410,61 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 /**
  * @abstract
  * @class Autolinker.htmlParser.HtmlNode
- * 
- * Represents an HTML node found in an input string. An HTML node is one of the following:
- * 
- * 1. An {@link Autolinker.htmlParser.ElementNode ElementNode}, which represents HTML tags.
- * 2. A {@link Autolinker.htmlParser.TextNode TextNode}, which represents text outside or within HTML tags.
- * 3. A {@link Autolinker.htmlParser.EntityNode EntityNode}, which represents one of the known HTML
- *    entities that Autolinker looks for. This includes common ones such as &amp;quot; and &amp;nbsp;
+ *
+ * Represents an HTML node found in an input string. An HTML node is one of the
+ * following:
+ *
+ * 1. An {@link Autolinker.htmlParser.ElementNode ElementNode}, which represents
+ *    HTML tags.
+ * 2. A {@link Autolinker.htmlParser.CommentNode CommentNode}, which represents
+ *    HTML comments.
+ * 3. A {@link Autolinker.htmlParser.TextNode TextNode}, which represents text
+ *    outside or within HTML tags.
+ * 4. A {@link Autolinker.htmlParser.EntityNode EntityNode}, which represents
+ *    one of the known HTML entities that Autolinker looks for. This includes
+ *    common ones such as &amp;quot; and &amp;nbsp;
  */
 Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
-	
+
 	/**
 	 * @cfg {String} text (required)
-	 * 
-	 * The original text that was matched for the HtmlNode. 
-	 * 
-	 * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode}, this will be the tag's
-	 *   text.
-	 * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this will be the text itself.
-	 * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode}, this will be the text of
-	 *   the HTML entity.
+	 *
+	 * The original text that was matched for the HtmlNode.
+	 *
+	 * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
+	 *   this will be the tag's text.
+	 * - In the case of an {@link Autolinker.htmlParser.CommentNode CommentNode},
+	 *   this will be the comment's text.
+	 * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this
+	 *   will be the text itself.
+	 * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
+	 *   this will be the text of the HTML entity.
 	 */
 	text : "",
-	
-	
+
+
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance, specified in an Object (map).
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 * specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
 	},
 
-	
+
 	/**
 	 * Returns a string name for the type of node that this class represents.
-	 * 
+	 *
 	 * @abstract
 	 * @return {String}
 	 */
 	getType : Autolinker.Util.abstractMethod,
-	
-	
+
+
 	/**
 	 * Retrieves the {@link #text} for the HtmlNode.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getText : function() {
@@ -1506,104 +1518,110 @@ Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParse
 /**
  * @class Autolinker.htmlParser.ElementNode
  * @extends Autolinker.htmlParser.HtmlNode
- * 
+ *
  * Represents an HTML element node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
- * 
- * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more details.
+ *
+ * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+ * details.
  */
 Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
-	
+
 	/**
 	 * @cfg {String} tagName (required)
-	 * 
+	 *
 	 * The name of the tag that was matched.
 	 */
 	tagName : '',
-	
+
 	/**
 	 * @cfg {Boolean} closing (required)
-	 * 
-	 * `true` if the element (tag) is a closing tag, `false` if its an opening tag.
+	 *
+	 * `true` if the element (tag) is a closing tag, `false` if its an opening
+	 * tag.
 	 */
 	closing : false,
 
-	
+
 	/**
 	 * Returns a string name for the type of node that this class represents.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getType : function() {
 		return 'element';
 	},
-	
+
 
 	/**
-	 * Returns the HTML element's (tag's) name. Ex: for an &lt;img&gt; tag, returns "img".
-	 * 
+	 * Returns the HTML element's (tag's) name. Ex: for an &lt;img&gt; tag,
+	 * returns "img".
+	 *
 	 * @return {String}
 	 */
 	getTagName : function() {
 		return this.tagName;
 	},
-	
-	
+
+
 	/**
-	 * Determines if the HTML element (tag) is a closing tag. Ex: &lt;div&gt; returns
-	 * `false`, while &lt;/div&gt; returns `true`.
-	 * 
+	 * Determines if the HTML element (tag) is a closing tag. Ex: &lt;div&gt;
+	 * returns `false`, while &lt;/div&gt; returns `true`.
+	 *
 	 * @return {Boolean}
 	 */
 	isClosing : function() {
 		return this.closing;
 	}
-	
+
 } );
 /*global Autolinker */
 /**
  * @class Autolinker.htmlParser.EntityNode
  * @extends Autolinker.htmlParser.HtmlNode
- * 
+ *
  * Represents a known HTML entity node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
- * Ex: '&amp;nbsp;', or '&amp#160;' (which will be retrievable from the {@link #getText} method.
- * 
- * Note that this class will only be returned from the HtmlParser for the set of checked HTML entity nodes 
- * defined by the {@link Autolinker.htmlParser.HtmlParser#htmlCharacterEntitiesRegex}.
- * 
- * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more details.
+ * Ex: '&amp;nbsp;', or '&amp#160;' (which will be retrievable from the {@link #getText}
+ * method.
+ *
+ * Note that this class will only be returned from the HtmlParser for the set of
+ * checked HTML entity nodes  defined by the {@link Autolinker.htmlParser.HtmlParser#htmlCharacterEntitiesRegex}.
+ *
+ * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+ * details.
  */
 Autolinker.htmlParser.EntityNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
-	
+
 	/**
 	 * Returns a string name for the type of node that this class represents.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getType : function() {
 		return 'entity';
 	}
-	
+
 } );
 /*global Autolinker */
 /**
  * @class Autolinker.htmlParser.TextNode
  * @extends Autolinker.htmlParser.HtmlNode
- * 
+ *
  * Represents a text node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
- * 
- * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more details.
+ *
+ * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+ * details.
  */
 Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
-	
+
 	/**
 	 * Returns a string name for the type of node that this class represents.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getType : function() {
 		return 'text';
 	}
-	
+
 } );
 /*global Autolinker */
 /**
