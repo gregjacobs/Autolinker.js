@@ -25,11 +25,11 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			domainNameRegex = Autolinker.matcher.domainNameRegex,
 			tldRegex = Autolinker.matcher.tldRegex;  // match our known top level domains (TLDs)
 
-		return new RegExp( [
+		return [
 			emailRegex.source,
 			domainNameRegex.source,
 			tldRegex.source
-		].join( "" ) );
+		].join( "" );
 	} )(),
 
 
@@ -44,8 +44,14 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	/**
 	 * @inheritdoc
 	 */
-	getNumCapturingGroups : function() {
-		return 0;
+	processCandidateMatch : function( matchStr, capturingGroups, offset ) {
+		var match = new Autolinker.match.Email( {
+			matchedText : matchStr,
+			offset      : offset,
+			email       : matchStr
+		} );
+
+		return new Autolinker.matcher.ReplacementDescriptor( match );
 	}
 
 } );

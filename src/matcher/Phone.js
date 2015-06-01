@@ -35,8 +35,17 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	/**
 	 * @inheritdoc
 	 */
-	getNumCapturingGroups : function() {
-		return 0;
+	processCandidateMatch : function( matchStr, capturingGroups, offset ) {
+		// Remove non-numeric values from phone number string
+		var cleanNumber = matchStr.replace( /\D/g, '' );
+
+		var match = new Autolinker.match.Phone( {
+			matchedText : matchStr,
+			offset      : offset,
+			number      : cleanNumber
+		} );
+
+		return new Autolinker.matcher.ReplacementDescriptor( match );
 	}
 
 } );

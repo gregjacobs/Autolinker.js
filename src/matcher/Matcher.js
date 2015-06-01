@@ -23,9 +23,9 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 	 * matches in the input string.
 	 *
 	 * This regular expression string is combined (OR'd) with the regular
-	 * expressions for other requested matchers to provide a single regular
-	 * expression to scan and find matches in the input string. It is then
-	 * instantiated with the 'gi' (global and case-insensitive).
+	 * expressions for other requested Matchers to provide a single regular
+	 * expression to scan and find matches in the input string. It is
+	 * instantiated with the 'gi' flags (global and case-insensitive).
 	 *
 	 * @abstract
 	 * @return {String}
@@ -34,28 +34,19 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Returns the number of capturing groups in the regular expression returned
-	 * by {@link #getMatcherRegex}.
-	 *
-	 * This is needed by the {@link MatcherEngine} so that it can determine
-	 * which capturing groups belong to which {@link Matcher Matchers}. In the
-	 * future, this may be handled automatically by using a simple regex parser,
-	 * but for now simplicity dictates to just provide it.
-	 *
-	 * Note: Must be kept in sync with the regular expression returned by
-	 * {@link #getMatcherRegex}!
+	 * Processes a candidate match found by the {@link Autolinker.matcher.MatcherEngine}.
 	 *
 	 * @abstract
-	 * @return {Number}
-	 */
-	getNumCapturingGroups : Autolinker.Util.abstractMethod,
-
-
-	/**
-	 *
-	 *
-	 * @abstract
-	 * @return {Autolinker.matcher.MatchDescriptor}
+	 * @param {String} matchStr The full matching string that was found by the
+	 *   regular expression returned by {@link #getMatcherRegexStr}.
+	 * @param {String[]} capturingGroups An array of the capturing group
+	 *   matches. Note: This array starts at index 0 (like all arrays), where
+	 *   the element at index 0 would normally correspond to '$1'.
+	 * @param {Number} offset The offset in the original input string that the
+	 *   match was made on.
+	 * @return {Autolinker.matcher.MatchDescriptor} The MatchDescriptor object
+	 *   used to tell the MatcherEngine how to replace the match, or `null` if
+	 *   no replacement should occur.
 	 */
 	processCandidateMatch : Autolinker.Util.abstractMethod
 
