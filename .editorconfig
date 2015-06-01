@@ -1,0 +1,8 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Tab indentation (no size specified)
+[**.js,**.html]
+indent_style = tab
