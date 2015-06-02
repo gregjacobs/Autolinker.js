@@ -47,6 +47,15 @@ describe( "Autolinker", function() {
 		} );
 
 
+		it( 'should return an empty string when provided `undefined` as its argument', function() {
+			expect( autolinker.link( undefined ) ).toBe( '' );
+		} );
+
+		it( 'should return an empty string when provided `null` as its argument', function() {
+			expect( autolinker.link( null ) ).toBe( '' );
+		} );
+
+
 		describe( "URL linking", function() {
 
 			describe( "protocol-prefixed URLs (i.e. URLs starting with http:// or https://)", function() {
