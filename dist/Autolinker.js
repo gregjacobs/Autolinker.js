@@ -2084,17 +2084,29 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
    *   no such character was found, returns -1
    */
   matchHasInvalidCharAfterTld : function( urlMatch, protocolUrlMatch ) {
-    if ( !urlMatch || protocolUrlMatch ) {
+    if ( !urlMatch ) {
       return -1;
     }
 
-    var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)[^.A-Za-z:\/?#]/;
-    var res = re.exec(urlMatch);
-    if (res === null) {
+    var offset = 0;
+    if ( protocolUrlMatch ) {
+      offset = urlMatch.indexOf(':');
+      urlMatch = urlMatch.slice(offset);
+    }
+
+    var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+    var res = re.exec( urlMatch );
+    if ( res === null ) {
       return -1;
     }
 
-    return res[1].length;
+    offset += res[1].length;
+    urlMatch = urlMatch.slice(res[1].length);
+    if (/^[^.A-Za-z:\/?#]/.test(urlMatch)) {
+      return offset;
+    }
+
+    return -1;
   }
 
 } );

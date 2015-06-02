@@ -112,6 +112,16 @@ describe( "Autolinker", function() {
         } );
 
 
+        it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to http://www.yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to https://www.yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="https://www.yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to http://www.yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
+				} );
+
+
 				it( "should automatically link URLs in the form of http://www.yahoo.com (i.e. protocol and 'www' prefix)", function() {
 					var result = autolinker.link( "Joe went to http://www.yahoo.com" );
 					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>' );
