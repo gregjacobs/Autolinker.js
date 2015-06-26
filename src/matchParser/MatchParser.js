@@ -338,6 +338,13 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
 			matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
 			suffixStr = ")";  // this will be added after the generated <a> tag
+		} else {
+			// Handle an invalid character after the TLD
+			var pos = this.matchHasInvalidCharAfterTld( urlMatch, protocolUrlMatch );
+			if( pos > -1 ) {
+				suffixStr = matchStr.substr(pos);  // this will be added after the generated <a> tag
+				matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
+			}
 		}
 
 		if( emailAddressMatch ) {
@@ -433,6 +440,48 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		}
 
 		return false;
+	},
+
+
+	/**
+	 * Determine if there's an invalid character after the TLD in a URL. Valid
+	 * characters after TLD are ':/?#'. Exclude protocol matched URLs from this
+	 * check.
+	 *
+	 * @private
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} protocolUrlMatch The match URL string for a protocol
+	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
+	 *   'http://localhost', where we won't double check that the domain name
+	 *   has at least one '.' in it.
+	 * @return {Number} the position where the invalid character was found. If
+	 *   no such character was found, returns -1
+	 */
+	matchHasInvalidCharAfterTld : function( urlMatch, protocolUrlMatch ) {
+		if ( !urlMatch ) {
+			return -1;
+		}
+
+		var offset = 0;
+		if ( protocolUrlMatch ) {
+			offset = urlMatch.indexOf(':');
+			urlMatch = urlMatch.slice(offset);
+		}
+
+		var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+		var res = re.exec( urlMatch );
+		if ( res === null ) {
+			return -1;
+		}
+
+		offset += res[1].length;
+		urlMatch = urlMatch.slice(res[1].length);
+		if (/^[^.A-Za-z:\/?#]/.test(urlMatch)) {
+			return offset;
+		}
+
+		return -1;
 	}
 
 } );
