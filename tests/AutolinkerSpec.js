@@ -950,6 +950,13 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should automatically link hashtags that are longer than 15 chars (original version of hashtag implementation limited to 15 chars, now it's at 139 chars)", function() {
+				var result = twitterHashtagAutolinker.link( "my hashtag is #AHashtagThatIsWorthyOfMordorAndStuff these days" );
+
+				expect( result ).toBe( 'my hashtag is <a href="https://twitter.com/hashtag/AHashtagThatIsWorthyOfMordorAndStuff">#AHashtagThatIsWorthyOfMordorAndStuff</a> these days' );
+			} );
+
+
 			it( "should NOT automatically link a hashtag when the '#' belongs to part of another string", function() {
 				var result = twitterHashtagAutolinker.link( "test as#df test" );
 
