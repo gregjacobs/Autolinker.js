@@ -135,7 +135,7 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   Twitter handles. Defaults to `true`.<br /><br />
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
   A string for the service name to have hashtags auto-linked to. Supported
-  values at this time are 'twitter' and 'facebook'. Pass `false` to skip
+  values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.<br /><br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
@@ -282,7 +282,7 @@ The full API docs for Autolinker may be referenced at:
 
 Pull requests definitely welcome.
 
-- Make sure to add tests to cover your new functionality/bugfix. 
+- Make sure to add tests to cover your new functionality/bugfix.
 - Run the `grunt` command to build/test (or alternatively, open the `tests/index.html` file to run the tests).
 - When committing, please omit checking in the files in the `dist/` folder after building/testing. These are only committed to the repository for users downloading Autolinker via Bower. I will build these files and assign them a version number when merging your PR.
 - Please use tabs for indents! Tabs are better for everybody (individuals can set their editors to different tab sizes based on their visual preferences).
