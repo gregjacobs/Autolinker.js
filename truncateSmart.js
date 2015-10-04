@@ -60,10 +60,10 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
       + ellipsisChars
       + end;
   };
-  var availableLength = truncateLen - ellipsisChars.length;
-  if (url.length <= availableLength) {
+  if (url.length <= truncateLen) {
     return url;
   }
+  var availableLength = truncateLen - ellipsisChars.length;
   var urlObj = parse_url(url);
   // Clean up the URL
   if (urlObj.query) {
@@ -96,8 +96,7 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
     if (str.length == truncateLen) {
       return str.substr(0, ellipsisChars.length) + ellipsisChars;
     }
-    var remainingAvailableLength = availableLength;
-    return buildSegment(str, remainingAvailableLength);
+    return buildSegment(str, availableLength);
   }
   var pathAndQuery = "";
   if (urlObj.path) {
@@ -135,7 +134,7 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
       return scheme + str;
     }
   }
-  if (str.length <= availableLength) {
+  if (str.length <= truncateLen) {
     return str;
   }
   var end = "";
