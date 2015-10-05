@@ -211,6 +211,30 @@ Autolinker.prototype = {
 	truncate : undefined,
 
 	/**
+	 * @cfg {Boolean} truncateMiddle
+	 *
+	 * When true, truncation will occur at the dead-center of a URL, as opposed to the end of a URL.
+	 * Requires: truncate
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
+	 * something like this: 'yahoo.com/s..th/to/a/file'
+	 */
+	truncateMiddle : false,
+
+	/**
+	 * @cfg {Boolean} truncateSmart
+	 *
+	 * When true, ellipsis characters will be placed within a section of the URL causing it to still be somewhat human
+	 * readable.
+	 * Requires: truncate
+	 * Overrides: truncateMiddle
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
+	 * something like this: 'yahoo.com/some..to/a/file'
+	 */
+	truncateSmart : false,
+
+	/**
 	 * @cfg {String} className
 	 *
 	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
@@ -455,13 +479,14 @@ Autolinker.prototype = {
 			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
+				truncateMiddle: this.truncateMiddle,
+				truncateSmart:  this.truncateSmart,
 				className   : this.className
 			} );
 		}
 
 		return tagBuilder;
-	}
-
+	},
 };
 
 
@@ -497,6 +522,7 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.htmlParser = {};
 Autolinker.matchParser = {};
+Autolinker.addon = {};
 
 /*global Autolinker */
 /*jshint eqnull:true, boss:true */
@@ -1164,10 +1190,18 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {String} The truncated anchor text.
 	 */
 	doTruncate : function( anchorText ) {
-		return Autolinker.Util.ellipsis( anchorText, this.truncate || Number.POSITIVE_INFINITY );
+		var truncateLength = this.truncate || Number.POSITIVE_INFINITY;
+		if (this.truncateSmart) {
+			return Autolinker.addon.TruncateSmart( anchorText, truncateLength, ".." );
+		}
+		if (this.truncateMiddle) {
+			return Autolinker.addon.TruncateMiddle( anchorText, truncateLength, ".." );
+		}
+		return Autolinker.Util.ellipsis( anchorText, truncateLength );
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @private
