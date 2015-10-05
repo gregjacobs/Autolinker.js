@@ -8,6 +8,7 @@
  * @param {String} url             A URL.
  * @param {Number} truncateLen     The maximum length of the truncated output URL string.
  * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
+ * @return {String} The truncated URL.
  */
 Autolinker.addon.TruncateSmart = function(url, truncateLen, ellipsisChars){
   var parse_url = function(url){ // Functionality inspired by PHP function of same name
