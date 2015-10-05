@@ -4,7 +4,7 @@
  *
  * These tests target the "TruncateSmart" addition to Autolinker (Autolinker.addon.TruncateSmart), exclusively.
  */
-describe("TruncateSmart", function(){
+describe("Truncate.addon.TruncateSmart", function(){
   it("Will not truncate a URL which is shorter than the specified length", function(){
     var truncatedUrl = Autolinker.addon.TruncateSmart("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 999, "..");
     expect(truncatedUrl).toBe("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee");
