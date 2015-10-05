@@ -186,6 +186,15 @@ Autolinker.prototype = {
 	truncate : undefined,
 
 	/**
+	 * @cfg {Boolean} truncateMiddle
+	 *
+	 * When true, truncation will occur at the dead-center of a URL, as opposed to the end of a URL.
+	 * Requires: truncate
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
+	 * something like this: 'yahoo.com/s..th/to/a/file'
+	 */
+	truncateMiddle : false,
 
 	/**
 	 * @cfg {Boolean} truncateSmart
@@ -445,6 +454,7 @@ Autolinker.prototype = {
 			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
+				truncateMiddle: this.truncateMiddle,
 				truncateSmart:  this.truncateSmart,
 				className   : this.className
 			} );

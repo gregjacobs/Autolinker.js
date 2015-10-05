@@ -148,6 +148,9 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		if (this.truncateSmart) {
 			return Autolinker.addon.TruncateSmart( anchorText, truncateLength, ".." );
 		}
+		if (this.truncateMiddle) {
+			return Autolinker.addon.TruncateMiddle( anchorText, truncateLength, ".." );
+		}
 		return Autolinker.Util.ellipsis( anchorText, truncateLength );
 	}
 
