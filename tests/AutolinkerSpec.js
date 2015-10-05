@@ -1342,6 +1342,25 @@ describe( "Autolinker", function() {
 
 		} );
 
+		describe( "`truncateMiddle` option", function() {
+
+			it( "should work with 'Autolinker.addon.TruncateMiddle' when 'truncateMiddle' option is specified", function() {
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12, truncateMiddle: true, newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.c../path</a>' );
+			} );
+
+		} );
+
+		describe( "`truncateSmart` option", function() {
+
+			it( "should work with 'Autolinker.addon.TruncateSmart' when 'truncateSmart' option is specified", function() {
+				var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12, truncateSmart: true, newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/w..h</a>' );
+			} );
+
+		} );
+
+
 		describe( "`className` option", function() {
 
 			it( "should not add className when the 'className' option is not a string with at least 1 character", function() {
