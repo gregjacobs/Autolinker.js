@@ -1,5 +1,5 @@
 var truncateSmart = function(url, truncateLen, ellipsisChars){
-  var parse_url = function(url){
+  var parse_url = function(url){ // Functionality inspired by PHP function of same name
     var urlObj = {};
     var urlSub = url;
     var match = urlSub.match(/^([a-z]+)\:\/\//i);
@@ -17,7 +17,7 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
       urlObj["path"] = match[1];
       urlSub = urlSub.substr(match[0].length);
     }
-    match = urlSub.match(/^\?(.*?)(?=(\#))/i);
+    match = urlSub.match(/^\?(.*?)(?=(\#|$))/i);
     if (match) {
       urlObj["query"] = match[1];
       urlSub = urlSub.substr(match[0].length);
@@ -87,14 +87,11 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
   // Process and build the URL
   var str = "";
   if (urlObj.host) {
-    if (urlObj.host.length == truncateLen) {
-      return urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars;
-    }
     str += urlObj.host;
   }
   if (str.length >= availableLength) {
-    if (str.length == truncateLen) {
-      return str.substr(0, ellipsisChars.length) + ellipsisChars;
+    if (urlObj.host.length == truncateLen) {
+      return urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars;
     }
     return buildSegment(str, availableLength);
   }

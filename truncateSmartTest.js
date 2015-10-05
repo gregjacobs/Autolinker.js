@@ -47,9 +47,39 @@ describe("truncateSmart", function(){
     assert.equal("yah..om", truncatedUrl);
     assert.equal(7, truncatedUrl.length);
   });
+  it("Will truncate 'path' when no 'query' exists", function(){
+    var truncatedUrl = truncateSmart("http://www.yahoo.com/some/long/path/to/a/file#baz=bee", 17, "..");
+    assert.equal("yahoo.com/so..ile", truncatedUrl);
+    assert.equal(17, truncatedUrl.length);
+  });
   it("Will truncate 'query' when no 'path' exists", function(){
     var truncatedUrl = truncateSmart("http://www.yahoo.com?foo=bar?ignorethis#baz=bee", 17, "..");
     assert.equal("yahoo.com?foo=bar", truncatedUrl);
     assert.equal(17, truncatedUrl.length);
+  });
+  it("Works when no 'scheme' or 'host' exists", function(){
+    var truncatedUrl = truncateSmart("/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 17, "..");
+    assert.equal("/some/lo..foo=bar", truncatedUrl);
+    assert.equal(17, truncatedUrl.length);
+  });
+  it("Works when only 'query' exists", function(){
+    var truncatedUrl = truncateSmart("?foo=bar?ignorethis#baz=bee", 15, "..");
+    assert.equal("?foo=bar#ba..ee", truncatedUrl);
+    assert.equal(15, truncatedUrl.length);
+  });
+  it("Works when only 'fragment' exists", function(){
+    var truncatedUrl = truncateSmart("#baz=bee", 5, "..");
+    assert.equal("#b..e", truncatedUrl);
+    assert.equal(5, truncatedUrl.length);
+  });
+  it("Works with a standard Google search URL", function(){
+    var truncatedUrl = truncateSmart("https://www.google.com/search?q=cake&oq=cake&aqs=chrome..69i57j69i60l5.573j0j7&sourceid=chrome&es_sm=93&ie=UTF-8", 80, "..");
+    assert.equal("google.com/search?q=cake&oq=cake&aqs=chrome...&sourceid=chrome&es_sm=93&ie=UTF-8", truncatedUrl);
+    assert.equal(80, truncatedUrl.length);
+  });
+  it("Works with a long URL", function(){
+    var truncatedUrl = truncateSmart("https://www.google.com/search?q=cake&safe=off&es_sm=93&tbas=0&tbs=qdr:d,itp:photo,ic:specific,isc:red,isz:l&tbm=isch&source=lnt&sa=X&ved=0CBQQpwVqFQoTCMCUxfOErMgCFeFrcgodUDwD1w&dpr=1&biw=1920&bih=955", 80, "..");
+    assert.equal("google.com/search?q=cake&safe=off&es_sm=93&t..rcgodUDwD1w&dpr=1&biw=1920&bih=955", truncatedUrl);
+    assert.equal(80, truncatedUrl.length);
   });
 });
