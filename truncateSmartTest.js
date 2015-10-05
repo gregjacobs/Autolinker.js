@@ -82,4 +82,24 @@ describe("truncateSmart", function(){
     assert.equal("google.com/search?q=cake&safe=off&es_sm=93&t..rcgodUDwD1w&dpr=1&biw=1920&bih=955", truncatedUrl);
     assert.equal(80, truncatedUrl.length);
   });
+  it("Will start with a character from the URL and then append the ellipsis character(s)", function(){
+    var truncatedUrl = truncateSmart("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 3, "..");
+    assert.equal("y..", truncatedUrl);
+    assert.equal(3, truncatedUrl.length);
+  });
+  it("Will write only the ellipsis character(s) ('..') when truncate length is 2", function(){
+    var truncatedUrl = truncateSmart("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 2, "..");
+    assert.equal("..", truncatedUrl);
+    assert.equal(2, truncatedUrl.length);
+  });
+  it("Will write only the ellipsis character ('.') when truncate length is 1", function(){
+    var truncatedUrl = truncateSmart("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 1, "..");
+    assert.equal(".", truncatedUrl);
+    assert.equal(1, truncatedUrl.length);
+  });
+  it("Will write nothing (empty string) when truncate length is 0", function(){
+    var truncatedUrl = truncateSmart("http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee", 0, "..");
+    assert.equal("", truncatedUrl);
+    assert.equal(0, truncatedUrl.length);
+  });
 });

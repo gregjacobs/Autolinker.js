@@ -91,9 +91,9 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
   }
   if (str.length >= availableLength) {
     if (urlObj.host.length == truncateLen) {
-      return urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars;
+      return (urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars).substr(0, truncateLen);
     }
-    return buildSegment(str, availableLength);
+    return buildSegment(str, availableLength).substr(0, truncateLen);
   }
   var pathAndQuery = "";
   if (urlObj.path) {
@@ -105,10 +105,10 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
   if (pathAndQuery) {
     if ((str+pathAndQuery).length >= availableLength) {
       if ((str+pathAndQuery).length == truncateLen) {
-        return str + pathAndQuery;
+        return (str + pathAndQuery).substr(0, truncateLen);
       }
       var remainingAvailableLength = availableLength - str.length;
-      return str + buildSegment(pathAndQuery, remainingAvailableLength);
+      return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, truncateLen);
     } else {
       str += pathAndQuery;
     }
@@ -117,10 +117,10 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
     var fragment = "#"+urlObj.fragment;
     if ((str+fragment).length >= availableLength) {
       if ((str+fragment).length == truncateLen) {
-        return str + fragment;
+        return (str + fragment).substr(0, truncateLen);
       }
       var remainingAvailableLength = availableLength - str.length;
-      return str + buildSegment(fragment, remainingAvailableLength);
+      return (str + buildSegment(fragment, remainingAvailableLength)).substr(0, truncateLen);
     } else {
       str += fragment;
     }
@@ -128,7 +128,7 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
   if (urlObj.scheme && urlObj.host) {
     var scheme = urlObj.scheme + "://";
     if ((str+scheme).length < availableLength) {
-      return scheme + str;
+      return (scheme + str).substr(0, truncateLen);
     }
   }
   if (str.length <= truncateLen) {
@@ -138,9 +138,7 @@ var truncateSmart = function(url, truncateLen, ellipsisChars){
   if (availableLength > 0) {
     end = str.substr((-1)*Math.floor(availableLength/2));
   }
-  return str.substr(0, Math.ceil(availableLength/2))
-    + ellipsisChars
-    + end;
+  return (str.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
 };
 
 if (typeof(module) != "object") {
