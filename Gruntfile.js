@@ -69,7 +69,9 @@ module.exports = function(grunt) {
 					'src/match/Hashtag.js',
 					'src/match/Phone.js',
 					'src/match/Twitter.js',
-					'src/match/Url.js'
+					'src/match/Url.js',
+					'src/addon/TruncateMiddle.js',
+					'src/addon/TruncateSmart.js'
 				],
 				dest: distPath
 			}
