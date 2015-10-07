@@ -105,4 +105,19 @@ describe("Truncate.addon.TruncateSmart", function(){
     expect(truncatedUrl).toBe("");
     expect(truncatedUrl.length).toBe(0);
   });
+  it("Will truncate 'hashtag routing' nicely", function(){
+    var truncatedUrl = Autolinker.addon.TruncateSmart("/app#my/little/hashtag/route", 20, "..");
+    expect(truncatedUrl).toBe("/app#my/lit..g/route");
+    expect(truncatedUrl.length).toBe(20);
+  });
+  it("Allows a 'query' section in 'hashtag routing'", function(){
+    var truncatedUrl = Autolinker.addon.TruncateSmart("/app#my/little/hashtag/route?foo=bar", 20, "..");
+    expect(truncatedUrl).toBe("/app#my/lit..foo=bar");
+    expect(truncatedUrl.length).toBe(20);
+  });
+  it("Removes 'hashtag routing' when truncate length is very small", function(){
+    var truncatedUrl = Autolinker.addon.TruncateSmart("/app#my/little/hashtag/route?foo=bar", 4, "..");
+    expect(truncatedUrl).toBe("/app");
+    expect(truncatedUrl.length).toBe(4);
+  });
 });
