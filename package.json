@@ -22,7 +22,7 @@
     "anchor"
   ],
   "author": "Gregory Jacobs <greg@greg-jacobs.com>",
-  "license": "MIT Licensed. http://www.opensource.org/licenses/mit-license.php",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/gregjacobs/Autolinker.js/issues"
   },
