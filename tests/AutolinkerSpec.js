@@ -914,6 +914,7 @@ describe( "Autolinker", function() {
 			beforeEach( function() {
 				twitterHashtagAutolinker = new Autolinker( { hashtag: 'twitter', newWindow: false } );
 				facebookHashtagAutolinker = new Autolinker( { hashtag: 'facebook', newWindow: false } );
+				instagramHashtagAutolinker = new Autolinker( { hashtag: 'instagram', newWindow: false } );
 			} );
 
 
@@ -940,6 +941,12 @@ describe( "Autolinker", function() {
 				var result = facebookHashtagAutolinker.link( "#test" );
 
 				expect( result ).toBe( '<a href="https://www.facebook.com/hashtag/test">#test</a>' );
+			} );
+
+			it( "should automatically link hashtags to instagram when the `hashtag` option is 'instagram'", function() {
+				var result = instagramHashtagAutolinker.link( "#test" );
+
+				expect( result ).toBe( '<a href="https://instagram.com/explore/tags/test">#test</a>' );
 			} );
 
 
