@@ -96,9 +96,29 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include the '?' char if it is at the end of the URL", function() {
-					var result = autolinker.link( "Joe went to http://localhost:8000? today" );
-					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>? today' );
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
+					var result1 = autolinker.link( "Joe went to http://localhost:8000? today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>? today' );
+					var result2 = autolinker.link( "Joe went to http://localhost:8000! today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>! today' );
+					var result3 = autolinker.link( "Joe went to http://localhost:8000: today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>: today' );
+					var result4 = autolinker.link( "Joe went to http://localhost:8000, today" );
+					expect( result4 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>, today' );
+					var result5 = autolinker.link( "Joe went to http://localhost:8000. today" );
+					expect( result5 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>. today' );
+					var result6 = autolinker.link( "Joe went to http://localhost:8000; today" );
+					expect( result6 ).toBe( 'Joe went to <a href="http://localhost:8000">localhost:8000</a>; today' );
+				} );
+
+
+				it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to http://www.yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to https://www.yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="https://www.yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to http://www.yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
 
@@ -194,21 +214,15 @@ describe( "Autolinker", function() {
 					} );
 
 
-					it( "should autolink protocols with at least two characters", function() {
-						var result = autolinker.link( 'link this: gg://example.com/' );
-						expect( result ).toBe( 'link this: <a href="gg://example.com/">gg://example.com</a>' );
+					it( "should autolink protocols with at least one character", function() {
+						var result = autolinker.link( 'link this: g://example.com/' );
+						expect( result ).toBe( 'link this: <a href="g://example.com/">g://example.com</a>' );
 					} );
 
 
 					it( "should autolink protocols with more than 9 characters (as was the previous upper bound, but it seems protocols may be longer)", function() {
 						var result = autolinker.link( 'link this: opaquelocktoken://example' );
 						expect( result ).toBe( 'link this: <a href="opaquelocktoken://example">opaquelocktoken://example</a>' );
-					} );
-
-
-					it( "should NOT autolink a protocol with only one character", function() {
-						var result = autolinker.link( 'do not link this: a://example' );
-						expect( result ).toBe( 'do not link this: a://example' );
 					} );
 
 
@@ -232,17 +246,20 @@ describe( "Autolinker", function() {
 
 
 					it( "should NOT autolink protocols that start with a digit, dash, plus sign, or dot, as per http://tools.ietf.org/html/rfc3986#section-3.1", function() {
-						var result = autolinker.link( 'do not link this: 1a://example' );
-						expect( result ).toBe( 'do not link this: 1a://example' );
+						var result = autolinker.link( 'do not link first char: 1a://example' );
+						expect( result ).toBe( 'do not link first char: 1<a href="a://example">a://example</a>' );
 
-						var result2 = autolinker.link( 'do not link this: -a://example' );
-						expect( result2 ).toBe( 'do not link this: -a://example' );
+						var result2 = autolinker.link( 'do not link first char: -a://example' );
+						expect( result2 ).toBe( 'do not link first char: -<a href="a://example">a://example</a>' );
 
-						var result3 = autolinker.link( 'do not link this: +a://example' );
-						expect( result3 ).toBe( 'do not link this: +a://example' );
+						var result3 = autolinker.link( 'do not link first char: +a://example' );
+						expect( result3 ).toBe( 'do not link first char: +<a href="a://example">a://example</a>' );
 
-						var result4 = autolinker.link( 'do not link this: .a://example' );
-						expect( result4 ).toBe( 'do not link this: .a://example' );
+						var result4 = autolinker.link( 'do not link first char: .a://example' );
+						expect( result4 ).toBe( 'do not link first char: .<a href="a://example">a://example</a>' );
+
+						var result5 = autolinker.link( 'do not link first char: .aa://example' );
+						expect( result5 ).toBe( 'do not link first char: .<a href="aa://example">aa://example</a>' );
 					} );
 
 
@@ -374,9 +391,29 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include the '?' char if it is at the end of the URL", function() {
-					var result = autolinker.link( "Joe went to www.yahoo.com? today" );
-					expect( result ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>? today' );
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
+					var result1 = autolinker.link( "Joe went to www.yahoo.com? today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>? today' );
+					var result2 = autolinker.link( "Joe went to www.yahoo.com! today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>! today' );
+					var result3 = autolinker.link( "Joe went to www.yahoo.com: today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>: today' );
+					var result4 = autolinker.link( "Joe went to www.yahoo.com, today" );
+					expect( result4 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>, today' );
+					var result5 = autolinker.link( "Joe went to www.yahoo.com. today" );
+					expect( result5 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>. today' );
+					var result6 = autolinker.link( "Joe went to www.yahoo.com; today" );
+					expect( result6 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>; today' );
+				} );
+
+
+				it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to www.yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to www.yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://www.yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to www.yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
 			} );
@@ -444,9 +481,28 @@ describe( "Autolinker", function() {
 				} );
 
 
-				it( "should not include the '?' char if it is at the end of the URL", function() {
-					var result = autolinker.link( "Joe went to yahoo.com? today" );
-					expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>? today' );
+				it( "should not include [?!:,.;] chars if at the end of the URL", function() {
+					var result1 = autolinker.link( "Joe went to yahoo.com? today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>? today' );
+					var result2 = autolinker.link( "Joe went to yahoo.com! today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>! today' );
+					var result3 = autolinker.link( "Joe went to yahoo.com: today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>: today' );
+					var result4 = autolinker.link( "Joe went to yahoo.com, today" );
+					expect( result4 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>, today' );
+					var result5 = autolinker.link( "Joe went to yahoo.com. today" );
+					expect( result5 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>. today' );
+					var result6 = autolinker.link( "Joe went to yahoo.com; today" );
+					expect( result6 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>; today' );
+				} );
+
+				it( "should exclude invalid chars after TLD", function() {
+					var result1 = autolinker.link( "Joe went to yahoo.com's today" );
+					expect( result1 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s today' );
+					var result2 = autolinker.link( "Joe went to yahoo.com/foo's today" );
+					expect( result2 ).toBe( 'Joe went to <a href="http://yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+					var result3 = autolinker.link( "Joe went to yahoo.com's/foo today" );
+					expect( result3 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
 			} );
@@ -855,6 +911,7 @@ describe( "Autolinker", function() {
 			beforeEach( function() {
 				twitterHashtagAutolinker = new Autolinker( { hashtag: 'twitter', newWindow: false } );
 				facebookHashtagAutolinker = new Autolinker( { hashtag: 'facebook', newWindow: false } );
+				instagramHashtagAutolinker = new Autolinker( { hashtag: 'instagram', newWindow: false } );
 			} );
 
 
@@ -883,11 +940,24 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( '<a href="https://www.facebook.com/hashtag/test">#test</a>' );
 			} );
 
+			it( "should automatically link hashtags to instagram when the `hashtag` option is 'instagram'", function() {
+				var result = instagramHashtagAutolinker.link( "#test" );
+
+				expect( result ).toBe( '<a href="https://instagram.com/explore/tags/test">#test</a>' );
+			} );
+
 
 			it( "should automatically link hashtags which are part of a full string", function() {
 				var result = twitterHashtagAutolinker.link( "my hashtag is #test these days" );
 
 				expect( result ).toBe( 'my hashtag is <a href="https://twitter.com/hashtag/test">#test</a> these days' );
+			} );
+
+
+			it( "should automatically link hashtags that are longer than 15 chars (original version of hashtag implementation limited to 15 chars, now it's at 139 chars)", function() {
+				var result = twitterHashtagAutolinker.link( "my hashtag is #AHashtagThatIsWorthyOfMordorAndStuff these days" );
+
+				expect( result ).toBe( 'my hashtag is <a href="https://twitter.com/hashtag/AHashtagThatIsWorthyOfMordorAndStuff">#AHashtagThatIsWorthyOfMordorAndStuff</a> these days' );
 			} );
 
 
