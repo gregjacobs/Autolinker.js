@@ -3,7 +3,7 @@ if (Package.templating) {
 	var Blaze = Package.blaze.Blaze; // implied by `templating`
 	var HTML = Package.htmljs.HTML; // implied by `blaze`
 
-	Blaze.Template.registerHelper("autolink", new Template('autolink', function() {
+	Blaze.Template.registerHelper("autolinker", new Template('autolinker', function() {
 		var view = this;
 		var content = '';
 		var linkerOptions = {};
