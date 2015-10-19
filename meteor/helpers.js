@@ -9,10 +9,6 @@ if (Package.templating) {
 		var linkerOptions = {};
 		var linker;
 
-		if (this.outputMarkdown) {
-			linkerOptions.outputMarkdown = true;
-		}
-
 		if (view.templateContentBlock) {
 			content = Blaze._toText(view.templateContentBlock, HTML.TEXTMODE.STRING);
 		}
