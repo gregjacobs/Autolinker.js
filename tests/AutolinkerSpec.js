@@ -1346,6 +1346,20 @@ describe( "Autolinker", function() {
 
 		} );
 
+		describe( "`keepOriginalText` option", function() {
+
+			it( "should not remove 'http://www.' when the 'keepOriginalText' option is set to `true`", function() {
+				var result = Autolinker.link( "Test http://www.url.com", { keepOriginalText: true, newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://www.url.com">http://www.url.com</a>' );
+			} );
+
+			it( "should not prepend a protocol when the 'keepOriginalText' option is set to `true`", function() {
+				var result = Autolinker.link( "Test www.url.com", { keepOriginalText: true, newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://www.url.com">www.url.com</a>' );
+			} );
+
+		} );
+
 		describe( "`className` option", function() {
 
 			it( "should not add className when the 'className' option is not a string with at least 1 character", function() {

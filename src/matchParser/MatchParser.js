@@ -394,7 +394,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 				url : matchStr,
 				protocolUrlMatch : !!protocolUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
-				stripPrefix : this.stripPrefix
+				stripPrefix : this.stripPrefix,
+				keepOriginalText : this.keepOriginalText
 			} );
 		}
 

@@ -60,7 +60,6 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * {@link #url} did not have a protocol)
 	 */
 	protocolPrepended : false,
-	
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
@@ -81,6 +80,10 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	getUrl : function() {
 		var url = this.url;
 		
+		if ( this.keepOriginalText && !this.originalText ) {
+			this.originalText = url;
+		}
+
 		// if the url string doesn't begin with a protocol, assume 'http://'
 		if( !this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended ) {
 			url = this.url = 'http://' + url;
@@ -110,7 +113,13 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		var anchorText = this.getUrl();
+		var anchorText;
+
+		if ( this.keepOriginalText ) {
+			return this.originalText;
+		}
+
+		anchorText = this.getUrl();
 		
 		if( this.protocolRelativeMatch ) {
 			// Strip off any protocol-relative '//' from the anchor text
@@ -120,7 +129,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = this.stripUrlPrefix( anchorText );
 		}
 		anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
-		
+
 		return anchorText;
 	},
 	
