@@ -901,6 +901,13 @@ describe( "Autolinker", function() {
 				expect( autolinker.link( "15417543010" ) ).toBe( '15417543010' );
 			} );
 
+
+			it( "should NOT automatically link numbers when there are non-space empty characters (such as newlines) in between", function() {
+				expect( autolinker.link( "555 666  7777" ) ).toBe( '555 666  7777' );
+				expect( autolinker.link( "555	666 7777" ) ).toBe( '555	666 7777' );
+				expect( autolinker.link( "555\n666 7777" ) ).toBe( '555\n666 7777' );
+			} );
+
 		} );
 
 
