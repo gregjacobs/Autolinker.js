@@ -109,7 +109,7 @@ var Autolinker = function( cfg ) {
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
-	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' ) {
+	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
 };
@@ -153,6 +153,7 @@ Autolinker.prototype = {
 	 *
 	 * - 'twitter'
 	 * - 'facebook'
+	 * - 'instagram'
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
