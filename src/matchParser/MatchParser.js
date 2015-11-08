@@ -163,16 +163,17 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			'|',
 
 			// this setup does not scale well for open extension :( Need to rethink design of autolinker...
-			// ***  Capturing group $9, which matches a (USA for now) phone number
+			// *** Capturing group $9, which matches a (USA for now) phone number, and
+			// *** Capturing group $10, which matches the '+' sign for international numbers, if it exists
 			'(',
 				phoneRegex.source,
 			')',
 
 			'|',
 
-			'(',  // *** Capturing group $10, which can be used to check for a Hashtag match. Use group $12 for the actual Hashtag though. $11 may be used to reconstruct the original string in a replace()
-				// *** Capturing group $11, which matches the whitespace character before the '#' sign (needed because of no lookbehinds), and
-				// *** Capturing group $12, which matches the actual Hashtag
+			'(',  // *** Capturing group $11, which can be used to check for a Hashtag match. Use group $12 for the actual Hashtag though. $11 may be used to reconstruct the original string in a replace()
+				// *** Capturing group $12, which matches the whitespace character before the '#' sign (needed because of no lookbehinds), and
+				// *** Capturing group $13, which matches the actual Hashtag
 				hashtagRegex.source,
 			')'
 		].join( "" ), 'gi' );
