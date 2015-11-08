@@ -9,7 +9,7 @@
  * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
  * @return {String} The truncated URL.
  */
-Autolinker.addon.TruncateMiddle = function(url, truncateLen, ellipsisChars){
+Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
   if (url.length <= truncateLen) {
     return url;
   }

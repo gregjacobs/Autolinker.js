@@ -70,8 +70,8 @@ module.exports = function(grunt) {
 					'src/match/Phone.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js',
-					'src/addon/TruncateMiddle.js',
-					'src/addon/TruncateSmart.js'
+					'src/truncate/TruncateMiddle.js',
+					'src/truncate/TruncateSmart.js'
 				],
 				dest: distPath
 			}

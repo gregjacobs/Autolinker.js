@@ -146,10 +146,10 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	doTruncate : function( anchorText ) {
 		var truncateLength = this.truncate || Number.POSITIVE_INFINITY;
 		if (this.truncateSmart) {
-			return Autolinker.addon.TruncateSmart( anchorText, truncateLength, ".." );
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, ".." );
 		}
 		if (this.truncateMiddle) {
-			return Autolinker.addon.TruncateMiddle( anchorText, truncateLength, ".." );
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, ".." );
 		}
 		return Autolinker.Util.ellipsis( anchorText, truncateLength );
 	}

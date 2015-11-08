@@ -498,4 +498,4 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.htmlParser = {};
 Autolinker.matchParser = {};
-Autolinker.addon = {};
+Autolinker.truncate = {};
