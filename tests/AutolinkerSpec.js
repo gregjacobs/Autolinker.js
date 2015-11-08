@@ -1322,6 +1322,21 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( 'should leave the original text as-is when the `stripPrefix` option is `false`', function() {
+				var result1 = Autolinker.link( 'My url.com', { stripPrefix: false, newWindow: false } );
+				expect( result1 ).toBe( 'My <a href="http://url.com">url.com</a>' );
+
+				var result2 = Autolinker.link( 'My www.url.com', { stripPrefix: false, newWindow: false } );
+				expect( result2 ).toBe( 'My <a href="http://www.url.com">www.url.com</a>' );
+
+				var result3 = Autolinker.link( 'My http://url.com', { stripPrefix: false, newWindow: false } );
+				expect( result3 ).toBe( 'My <a href="http://url.com">http://url.com</a>' );
+
+				var result4 = Autolinker.link( 'My http://www.url.com', { stripPrefix: false, newWindow: false } );
+				expect( result4 ).toBe( 'My <a href="http://www.url.com">http://www.url.com</a>' );
+			} );
+
+
 			it( "should remove the prefix by default", function() {
 				var result = Autolinker.link( "Test http://www.url.com", { newWindow: false } );
 				expect( result ).toBe( 'Test <a href="http://www.url.com">url.com</a>' );
