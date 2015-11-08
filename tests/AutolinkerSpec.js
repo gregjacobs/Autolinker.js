@@ -871,7 +871,7 @@ describe( "Autolinker", function() {
 
 
 			it( "should automatically link an international phone number", function() {
-				expect( autolinker.link( "+1-541-754-3010" ) ).toBe(  '<a href="tel:15417543010">+1-541-754-3010</a>' );
+				expect( autolinker.link( "+1-541-754-3010" ) ).toBe(  '<a href="tel:+15417543010">+1-541-754-3010</a>' );
 				expect( autolinker.link( "1-541-754-3010" ) ).toBe(   '<a href="tel:15417543010">1-541-754-3010</a>' );
 				expect( autolinker.link( "1 (541) 754-3010" ) ).toBe( '<a href="tel:15417543010">1 (541) 754-3010</a>' );
 				expect( autolinker.link( "1.541.754.3010" ) ).toBe(   '<a href="tel:15417543010">1.541.754.3010</a>' );

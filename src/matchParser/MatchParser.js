@@ -86,17 +86,18 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * 8.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #6 for more info.
-	 * 9.  Group that is used to determine if there is a phone number match. The
-	 *     next 3 groups give segments of the phone number.
-	 * 10. Group that is used to determine if there is a Hashtag match
+	 * 9.  Group that is used to determine if there is a phone number match.
+	 * 10. If there is a phone number match, and a '+' sign was included with
+	 *     the phone number, this group will be populated with the '+' sign.
+	 * 11. Group that is used to determine if there is a Hashtag match
 	 *     (i.e. \#someHashtag). Simply check for its existence to determine if
 	 *     there is a Hashtag match. The next couple of capturing groups give
 	 *     information about the Hashtag match.
-	 * 11. The whitespace character before the #sign in a Hashtag handle. This
+	 * 12. The whitespace character before the #sign in a Hashtag handle. This
 	 *     is needed because there are no look-behinds in JS regular
 	 *     expressions, and can be used to reconstruct the original string in a
 	 *     replace().
-	 * 12. The Hashtag itself in a Hashtag match. If the match is
+	 * 13. The Hashtag itself in a Hashtag match. If the match is
 	 *     '#someHashtag', the hashtag is 'someHashtag'.
 	 */
 	matcherRegex : (function() {
@@ -105,7 +106,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		    hashtagRegex = /(^|[^\w])#(\w{1,139})/,              // For matching a Hashtag. Ex: #games
 
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
-		    phoneRegex = /(?:\+?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+		    phoneRegex = /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 		    protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
 		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
@@ -228,8 +229,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 ) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 );  // "match description" object
+		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 ) {
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 );  // "match description" object
 
 			// Return out with no changes for match types that are disabled (url,
 			// email, phone, etc.), or for matches that are invalid (false
@@ -279,6 +280,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *   match from a TLD (top level domain) match, with the character that
 	 *   comes before the '//'.
 	 * @param {String} phoneMatch The matched text of a phone number
+	 * @param {String} phonePlusSignMatch The '+' sign in the phone number, if
+	 *   it was there.
 	 * @param {String} hashtagMatch The matched text of a Twitter
 	 *   Hashtag, if the match is a Hashtag match.
 	 * @param {String} hashtagPrefixWhitespaceChar The whitespace char
@@ -305,7 +308,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	processCandidateMatch : function(
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle,
 		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch,
-		tldProtocolRelativeMatch, phoneMatch, hashtagMatch,
+		tldProtocolRelativeMatch, phoneMatch, phonePlusSignMatch, hashtagMatch,
 		hashtagPrefixWhitespaceChar, hashtag
 	) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will
@@ -363,7 +366,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		} else if( phoneMatch ) {
 			// remove non-numeric values from phone number string
 			var cleanNumber = matchStr.replace( /\D/g, '' );
- 			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
+ 			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber, plusSign: !!phonePlusSignMatch } );
 
 		} else if( hashtagMatch ) {
 			// fix up the `matchStr` if there was a preceding whitespace char,
