@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.19.1
+ * 0.20.0
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT
@@ -127,7 +127,7 @@
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
@@ -136,6 +136,15 @@ var Autolinker = function( cfg ) {
 	var hashtag = this.hashtag;
 	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
+	}
+
+	// Normalize the `truncate` option
+	var truncate = this.truncate = this.truncate || {};
+	if( typeof truncate === 'number' ) {
+		this.truncate = { length: truncate, location: 'end' };
+	} else if( typeof truncate === 'object' ) {
+		this.truncate.length = truncate.length || Number.POSITIVE_INFINITY;
+		this.truncate.location = truncate.location || 'end';
 	}
 };
 
@@ -200,40 +209,50 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Number/Object} truncate
 	 *
-	 * A number for how many characters long matched text should be truncated to inside the text of
-	 * a link. If the matched text is over this number of characters, it will be truncated to this length by
-	 * adding a two period ellipsis ('..') to the end of the string.
+	 * ## Number Form
 	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'yahoo.com/some/long/pat..'
+	 * A number for how many characters matched text should be truncated to
+	 * inside the text of a link. If the matched text is over this number of
+	 * characters, it will be truncated to this length by adding a two period
+	 * ellipsis ('..') to the end of the string.
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file'
+	 * truncated to 25 characters might look something like this:
+	 * 'yahoo.com/some/long/pat..'
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: 25
+	 *
+	 *
+	 * ## Object Form
+	 *
+	 * An Object may also be provided with two properties: `length` (Number) and
+	 * `location` (String). `location` may be one of the following: 'end'
+	 * (default), 'middle', or 'smart'.
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: { length: 25, location: 'middle' }
+	 *
+	 * @cfg {Number} truncate.length How many characters to allow before
+	 *   truncation will occur.
+	 * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
+	 *
+	 * - 'end' (default): will truncate up to the number of characters, and then
+	 *   add an ellipsis at the end. Ex: 'yahoo.com/some/long/pat..'
+	 * - 'middle': will truncate and add the ellipsis in the middle. Ex:
+	 *   'yahoo.com/s..th/to/a/file'
+	 * - 'smart': for URLs where the algorithm attempts to strip out unnecessary
+	 *   parts first (such as the 'www.', then URL scheme, hash, etc.),
+	 *   attempting to make the URL human-readable before looking for a good
+	 *   point to insert the ellipsis if it is still too long. Ex:
+	 *   'yahoo.com/some..to/a/file'. For more details, see
+	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
 	truncate : undefined,
-
-	/**
-	 * @cfg {Boolean} truncateMiddle
-	 *
-	 * When true, truncation will occur at the dead-center of a URL, as opposed to the end of a URL.
-	 * Requires: truncate
-	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
-	 * something like this: 'yahoo.com/s..th/to/a/file'
-	 */
-	truncateMiddle : false,
-
-	/**
-	 * @cfg {Boolean} truncateSmart
-	 *
-	 * When true, ellipsis characters will be placed within a section of the URL causing it to still be somewhat human
-	 * readable.
-	 * Requires: truncate
-	 * Overrides: truncateMiddle
-	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
-	 * something like this: 'yahoo.com/some..to/a/file'
-	 */
-	truncateSmart : false,
 
 	/**
 	 * @cfg {String} className
@@ -480,14 +499,13 @@ Autolinker.prototype = {
 			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
-				truncateMiddle: this.truncateMiddle,
-				truncateSmart:  this.truncateSmart,
 				className   : this.className
 			} );
 		}
 
 		return tagBuilder;
-	},
+	}
+
 };
 
 
@@ -523,7 +541,7 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.htmlParser = {};
 Autolinker.matchParser = {};
-Autolinker.addon = {};
+Autolinker.truncate = {};
 
 /*global Autolinker */
 /*jshint eqnull:true, boss:true */
@@ -868,7 +886,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	/**
 	 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
 	 *
-	 * @param {String} name The attribute name to retrieve.
+	 * @param {String} attrName The attribute name to retrieve.
 	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
 	 */
 	getAttr : function( attrName ) {
@@ -1054,9 +1072,11 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
  *
  * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
  *
- * Normally this class is instantiated, configured, and used internally by an {@link Autolinker} instance, but may
- * actually be retrieved in a {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag} instances
- * which may be modified before returning from the {@link Autolinker#replaceFn replaceFn}. For example:
+ * Normally this class is instantiated, configured, and used internally by an
+ * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}
+ * to create {@link Autolinker.HtmlTag HtmlTag} instances which may be modified
+ * before returning from the {@link Autolinker#replaceFn replaceFn}. For
+ * example:
  *
  *     var html = Autolinker.link( "Test google.com", {
  *         replaceFn : function( autolinker, match ) {
@@ -1078,7 +1098,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
 
@@ -1106,13 +1126,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
 	build : function( match ) {
-		var tag = new Autolinker.HtmlTag( {
+		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
 			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
-
-		return tag;
 	},
 
 
@@ -1123,7 +1141,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @protected
 	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
 	 *   match that an anchor tag is being generated for.
-	 * @param {String} href The href for the anchor tag.
+	 * @param {String} anchorHref The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
 	createAttrs : function( matchType, anchorHref ) {
@@ -1181,24 +1199,32 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Performs the truncation of the `anchorText`, if the `anchorText` is
-	 * longer than the {@link #truncate} option. Truncates the text to 2
-	 * characters fewer than the {@link #truncate} option, and adds ".." to the
-	 * end.
+	 * Performs the truncation of the `anchorText` based on the {@link #truncate}
+	 * option. If the `anchorText` is longer than the length specified by the
+	 * {@link #truncate} option, the truncation is performed based on the
+	 * `location` property. See {@link #truncate} for details.
 	 *
 	 * @private
-	 * @param {String} text The anchor tag's text (i.e. what will be displayed).
+	 * @param {String} anchorText The anchor tag's text (i.e. what will be
+	 *   displayed).
 	 * @return {String} The truncated anchor text.
 	 */
 	doTruncate : function( anchorText ) {
-		var truncateLength = this.truncate || Number.POSITIVE_INFINITY;
-		if (this.truncateSmart) {
-			return Autolinker.addon.TruncateSmart( anchorText, truncateLength, ".." );
+		var truncate = this.truncate;
+		if( !truncate ) return anchorText;
+
+		var truncateLength = truncate.length,
+			truncateLocation = truncate.location;
+
+		if( truncateLocation === 'smart' ) {
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, '..' );
+
+		} else if( truncateLocation === 'middle' ) {
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, '..' );
+
+		} else {
+			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength, '..' );
 		}
-		if (this.truncateMiddle) {
-			return Autolinker.addon.TruncateMiddle( anchorText, truncateLength, ".." );
-		}
-		return Autolinker.Util.ellipsis( anchorText, truncateLength );
 	}
 
 } );
@@ -2858,6 +2884,20 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	}
 	
 } );
+/*global Autolinker */
+/**
+ * A truncation feature where the ellipsis will be placed at the end of the URL.
+ *
+ * @param {String} anchorText
+ * @param {Number} truncateLen The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars The characters to place within the url, e.g. "..".
+ * @return {String} The truncated URL.
+ */
+Autolinker.truncate.TruncateEnd = function(anchorText, truncateLen, ellipsisChars){
+	return Autolinker.Util.ellipsis( anchorText, truncateLen, ellipsisChars );
+};
+
+/*global Autolinker */
 /**
  * Date: 2015-10-05
  * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
@@ -2869,7 +2909,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
  * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
  * @return {String} The truncated URL.
  */
-Autolinker.addon.TruncateMiddle = function(url, truncateLen, ellipsisChars){
+Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
   if (url.length <= truncateLen) {
     return url;
   }
@@ -2881,159 +2921,160 @@ Autolinker.addon.TruncateMiddle = function(url, truncateLen, ellipsisChars){
   return (url.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
 };
 
+/*global Autolinker */
 /**
  * Date: 2015-10-05
  * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
  *
- * A truncation feature, where the ellipsis will be placed at a section within the URL making it still somewhat human
- * readable.
+ * A truncation feature, where the ellipsis will be placed at a section within
+ * the URL making it still somewhat human readable.
  *
- * @param {String} url             A URL.
- * @param {Number} truncateLen     The maximum length of the truncated output URL string.
- * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
+ * @param {String} url						 A URL.
+ * @param {Number} truncateLen		 The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars	 The characters to place within the url, e.g. "..".
  * @return {String} The truncated URL.
  */
-Autolinker.addon.TruncateSmart = function(url, truncateLen, ellipsisChars){
-  var parse_url = function(url){ // Functionality inspired by PHP function of same name
-    var urlObj = {};
-    var urlSub = url;
-    var match = urlSub.match(/^([a-z]+)\:\/\//i);
-    if (match) {
-      urlObj["scheme"] = match[1];
-      urlSub = urlSub.substr(match[0].length);
-    }
-    match = urlSub.match(/^(.*?)(?=(\?|\#|\/|$))/i);
-    if (match) {
-      urlObj["host"] = match[1];
-      urlSub = urlSub.substr(match[0].length);
-    }
-    match = urlSub.match(/^\/(.*?)(?=(\?|\#|$))/i);
-    if (match) {
-      urlObj["path"] = match[1];
-      urlSub = urlSub.substr(match[0].length);
-    }
-    match = urlSub.match(/^\?(.*?)(?=(\#|$))/i);
-    if (match) {
-      urlObj["query"] = match[1];
-      urlSub = urlSub.substr(match[0].length);
-    }
-    match = urlSub.match(/^\#(.*?)$/i);
-    if (match) {
-      urlObj["fragment"] = match[1];
-      urlSub = urlSub.substr(match[0].length);
-    }
-    return urlObj;
-  };
-  var buildUrl = function(urlObj){
-    var url = "";
-    if (urlObj.scheme && urlObj.host) {
-      url += urlObj.scheme + "://";
-    }
-    if (urlObj.host) {
-      url += urlObj.host;
-    }
-    if (urlObj.path) {
-      url += "/" + urlObj.path;
-    }
-    if (urlObj.query) {
-      url += "?" + urlObj.query;
-    }
-    if (urlObj.fragment) {
-      url += "#" + urlObj.fragment;
-    }
-    return url;
-  };
-  var buildSegment = function(segment, remainingAvailableLength){
-    var remainingAvailableLengthHalf = remainingAvailableLength/2
-      , startOffset = Math.ceil(remainingAvailableLengthHalf)
-      , endOffset = (-1)*Math.floor(remainingAvailableLengthHalf)
-      , end = "";
-    if (endOffset < 0) {
-      end = segment.substr(endOffset);
-    }
-    return segment.substr(0, startOffset)
-      + ellipsisChars
-      + end;
-  };
-  if (url.length <= truncateLen) {
-    return url;
-  }
-  var availableLength = truncateLen - ellipsisChars.length;
-  var urlObj = parse_url(url);
-  // Clean up the URL
-  if (urlObj.query) {
-    var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
-    if (matchQuery) {
-      // Malformed URL; two or more "?". Removed any content behind the 2nd.
-      urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
-      url = buildUrl(urlObj);
-    }
-  }
-  if (url.length <= truncateLen) {
-    return url;
-  }
-  if (urlObj.host) {
-    urlObj.host = urlObj.host.replace(/^www\./, "");
-    url = buildUrl(urlObj);
-  }
-  if (url.length <= truncateLen) {
-    return url;
-  }
-  // Process and build the URL
-  var str = "";
-  if (urlObj.host) {
-    str += urlObj.host;
-  }
-  if (str.length >= availableLength) {
-    if (urlObj.host.length == truncateLen) {
-      return (urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars).substr(0, truncateLen);
-    }
-    return buildSegment(str, availableLength).substr(0, truncateLen);
-  }
-  var pathAndQuery = "";
-  if (urlObj.path) {
-    pathAndQuery += "/" + urlObj.path;
-  }
-  if (urlObj.query) {
-    pathAndQuery += "?" + urlObj.query;
-  }
-  if (pathAndQuery) {
-    if ((str+pathAndQuery).length >= availableLength) {
-      if ((str+pathAndQuery).length == truncateLen) {
-        return (str + pathAndQuery).substr(0, truncateLen);
-      }
-      var remainingAvailableLength = availableLength - str.length;
-      return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, truncateLen);
-    } else {
-      str += pathAndQuery;
-    }
-  }
-  if (urlObj.fragment) {
-    var fragment = "#"+urlObj.fragment;
-    if ((str+fragment).length >= availableLength) {
-      if ((str+fragment).length == truncateLen) {
-        return (str + fragment).substr(0, truncateLen);
-      }
-      var remainingAvailableLength = availableLength - str.length;
-      return (str + buildSegment(fragment, remainingAvailableLength)).substr(0, truncateLen);
-    } else {
-      str += fragment;
-    }
-  }
-  if (urlObj.scheme && urlObj.host) {
-    var scheme = urlObj.scheme + "://";
-    if ((str+scheme).length < availableLength) {
-      return (scheme + str).substr(0, truncateLen);
-    }
-  }
-  if (str.length <= truncateLen) {
-    return str;
-  }
-  var end = "";
-  if (availableLength > 0) {
-    end = str.substr((-1)*Math.floor(availableLength/2));
-  }
-  return (str.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
+Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
+	var parse_url = function(url){ // Functionality inspired by PHP function of same name
+		var urlObj = {};
+		var urlSub = url;
+		var match = urlSub.match(/^([a-z]+):\/\//i);
+		if (match) {
+			urlObj.scheme = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
+		if (match) {
+			urlObj.host = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
+		if (match) {
+			urlObj.path = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
+		if (match) {
+			urlObj.query = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^#(.*?)$/i);
+		if (match) {
+			urlObj.fragment = match[1];
+			//urlSub = urlSub.substr(match[0].length);  -- not used. Uncomment if adding another block.
+		}
+		return urlObj;
+	};
+
+	var buildUrl = function(urlObj){
+		var url = "";
+		if (urlObj.scheme && urlObj.host) {
+			url += urlObj.scheme + "://";
+		}
+		if (urlObj.host) {
+			url += urlObj.host;
+		}
+		if (urlObj.path) {
+			url += "/" + urlObj.path;
+		}
+		if (urlObj.query) {
+			url += "?" + urlObj.query;
+		}
+		if (urlObj.fragment) {
+			url += "#" + urlObj.fragment;
+		}
+		return url;
+	};
+
+	var buildSegment = function(segment, remainingAvailableLength){
+		var remainingAvailableLengthHalf = remainingAvailableLength/ 2,
+				startOffset = Math.ceil(remainingAvailableLengthHalf),
+				endOffset = (-1)*Math.floor(remainingAvailableLengthHalf),
+				end = "";
+		if (endOffset < 0) {
+			end = segment.substr(endOffset);
+		}
+		return segment.substr(0, startOffset) + ellipsisChars + end;
+	};
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	var availableLength = truncateLen - ellipsisChars.length;
+	var urlObj = parse_url(url);
+	// Clean up the URL
+	if (urlObj.query) {
+		var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
+		if (matchQuery) {
+			// Malformed URL; two or more "?". Removed any content behind the 2nd.
+			urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
+			url = buildUrl(urlObj);
+		}
+	}
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	if (urlObj.host) {
+		urlObj.host = urlObj.host.replace(/^www\./, "");
+		url = buildUrl(urlObj);
+	}
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	// Process and build the URL
+	var str = "";
+	if (urlObj.host) {
+		str += urlObj.host;
+	}
+	if (str.length >= availableLength) {
+		if (urlObj.host.length == truncateLen) {
+			return (urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars).substr(0, truncateLen);
+		}
+		return buildSegment(str, availableLength).substr(0, truncateLen);
+	}
+	var pathAndQuery = "";
+	if (urlObj.path) {
+		pathAndQuery += "/" + urlObj.path;
+	}
+	if (urlObj.query) {
+		pathAndQuery += "?" + urlObj.query;
+	}
+	if (pathAndQuery) {
+		if ((str+pathAndQuery).length >= availableLength) {
+			if ((str+pathAndQuery).length == truncateLen) {
+				return (str + pathAndQuery).substr(0, truncateLen);
+			}
+			var remainingAvailableLength = availableLength - str.length;
+			return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, truncateLen);
+		} else {
+			str += pathAndQuery;
+		}
+	}
+	if (urlObj.fragment) {
+		var fragment = "#"+urlObj.fragment;
+		if ((str+fragment).length >= availableLength) {
+			if ((str+fragment).length == truncateLen) {
+				return (str + fragment).substr(0, truncateLen);
+			}
+			var remainingAvailableLength2 = availableLength - str.length;
+			return (str + buildSegment(fragment, remainingAvailableLength2)).substr(0, truncateLen);
+		} else {
+			str += fragment;
+		}
+	}
+	if (urlObj.scheme && urlObj.host) {
+		var scheme = urlObj.scheme + "://";
+		if ((str+scheme).length < availableLength) {
+			return (scheme + str).substr(0, truncateLen);
+		}
+	}
+	if (str.length <= truncateLen) {
+		return str;
+	}
+	var end = "";
+	if (availableLength > 0) {
+		end = str.substr((-1)*Math.floor(availableLength/2));
+	}
+	return (str.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
 };
 
 return Autolinker;
