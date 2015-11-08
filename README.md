@@ -121,7 +121,8 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   The 'smart' truncation option is for URLs where the algorithm attempts to 
   strip out unnecessary parts of the URL (such as the 'www.', then URL scheme, 
   hash, etc.) before trying to find a good point to insert the ellipsis if it is 
-  still too long. For details, see source code of: (TruncateSmart)[http://gregjacobs.github.io/Autolinker.js/gh-pages/docs/#!/api/Autolinker.truncate.TruncateSmart]
+  still too long. For details, see source code of: 
+  [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.truncate.TruncateSmart)
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added
   to all links, as well as this class plus "url"/"email"/"phone"/"twitter"/"hashtag"
