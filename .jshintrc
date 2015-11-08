@@ -1,4 +1,12 @@
 {
 	"undef": true,
-	"smarttabs": true
+	"smarttabs": true,
+	"eqnull": true,
+	"globals" : {
+		"describe" : true,
+		"beforeEach" : true,
+		"åfterEach" : true,
+		"it" : true,
+		"expect" : true
+	}
 }
