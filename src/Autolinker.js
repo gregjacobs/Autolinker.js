@@ -102,7 +102,7 @@
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
@@ -111,6 +111,15 @@ var Autolinker = function( cfg ) {
 	var hashtag = this.hashtag;
 	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
+	}
+
+	// Normalize the `truncate` option
+	var truncate = this.truncate = this.truncate || {};
+	if( typeof truncate === 'number' ) {
+		this.truncate = { length: truncate, location: 'end' };
+	} else if( typeof truncate === 'object' ) {
+		this.truncate.length = truncate.length || Number.POSITIVE_INFINITY;
+		this.truncate.location = truncate.location || 'end';
 	}
 };
 
@@ -175,40 +184,50 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Number/Object} truncate
 	 *
-	 * A number for how many characters long matched text should be truncated to inside the text of
-	 * a link. If the matched text is over this number of characters, it will be truncated to this length by
-	 * adding a two period ellipsis ('..') to the end of the string.
+	 * ## Number Form
 	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'yahoo.com/some/long/pat..'
+	 * A number for how many characters matched text should be truncated to
+	 * inside the text of a link. If the matched text is over this number of
+	 * characters, it will be truncated to this length by adding a two period
+	 * ellipsis ('..') to the end of the string.
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file'
+	 * truncated to 25 characters might look something like this:
+	 * 'yahoo.com/some/long/pat..'
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: 25
+	 *
+	 *
+	 * ## Object Form
+	 *
+	 * An Object may also be provided with two properties: `length` (Number) and
+	 * `location` (String). `location` may be one of the following: 'end'
+	 * (default), 'middle', or 'smart'.
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: { length: 25, location: 'middle' }
+	 *
+	 * @cfg {Number} truncate.length How many characters to allow before
+	 *   truncation will occur.
+	 * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
+	 *
+	 * - 'end' (default): will truncate up to the number of characters, and then
+	 *   add an ellipsis at the end. Ex: 'yahoo.com/some/long/pat..'
+	 * - 'middle': will truncate and add the ellipsis in the middle. Ex:
+	 *   'yahoo.com/s..th/to/a/file'
+	 * - 'smart': for URLs where the algorithm attempts to strip out unnecessary
+	 *   parts first (such as the 'www.', then URL scheme, hash, etc.),
+	 *   attempting to make the URL human-readable before looking for a good
+	 *   point to insert the ellipsis if it is still too long. Ex:
+	 *   'yahoo.com/some..to/a/file'. For more details, see
+	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
 	truncate : undefined,
-
-	/**
-	 * @cfg {Boolean} truncateMiddle
-	 *
-	 * When true, truncation will occur at the dead-center of a URL, as opposed to the end of a URL.
-	 * Requires: truncate
-	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
-	 * something like this: 'yahoo.com/s..th/to/a/file'
-	 */
-	truncateMiddle : false,
-
-	/**
-	 * @cfg {Boolean} truncateSmart
-	 *
-	 * When true, ellipsis characters will be placed within a section of the URL causing it to still be somewhat human
-	 * readable.
-	 * Requires: truncate
-	 * Overrides: truncateMiddle
-	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 character might look
-	 * something like this: 'yahoo.com/some..to/a/file'
-	 */
-	truncateSmart : false,
 
 	/**
 	 * @cfg {String} className
@@ -455,14 +474,13 @@ Autolinker.prototype = {
 			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
-				truncateMiddle: this.truncateMiddle,
-				truncateSmart:  this.truncateSmart,
 				className   : this.className
 			} );
 		}
 
 		return tagBuilder;
-	},
+	}
+
 };
 
 

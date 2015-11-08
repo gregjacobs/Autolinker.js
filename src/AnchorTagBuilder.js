@@ -7,9 +7,11 @@
  *
  * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
  *
- * Normally this class is instantiated, configured, and used internally by an {@link Autolinker} instance, but may
- * actually be retrieved in a {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag} instances
- * which may be modified before returning from the {@link Autolinker#replaceFn replaceFn}. For example:
+ * Normally this class is instantiated, configured, and used internally by an
+ * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}
+ * to create {@link Autolinker.HtmlTag HtmlTag} instances which may be modified
+ * before returning from the {@link Autolinker#replaceFn replaceFn}. For
+ * example:
  *
  *     var html = Autolinker.link( "Test google.com", {
  *         replaceFn : function( autolinker, match ) {
@@ -31,7 +33,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
 
@@ -59,13 +61,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
 	build : function( match ) {
-		var tag = new Autolinker.HtmlTag( {
+		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
 			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
-
-		return tag;
 	},
 
 
@@ -76,7 +76,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @protected
 	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
 	 *   match that an anchor tag is being generated for.
-	 * @param {String} href The href for the anchor tag.
+	 * @param {String} anchorHref The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
 	createAttrs : function( matchType, anchorHref ) {
@@ -134,24 +134,32 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Performs the truncation of the `anchorText`, if the `anchorText` is
-	 * longer than the {@link #truncate} option. Truncates the text to 2
-	 * characters fewer than the {@link #truncate} option, and adds ".." to the
-	 * end.
+	 * Performs the truncation of the `anchorText` based on the {@link #truncate}
+	 * option. If the `anchorText` is longer than the length specified by the
+	 * {@link #truncate} option, the truncation is performed based on the
+	 * `location` property. See {@link #truncate} for details.
 	 *
 	 * @private
-	 * @param {String} text The anchor tag's text (i.e. what will be displayed).
+	 * @param {String} anchorText The anchor tag's text (i.e. what will be
+	 *   displayed).
 	 * @return {String} The truncated anchor text.
 	 */
 	doTruncate : function( anchorText ) {
-		var truncateLength = this.truncate || Number.POSITIVE_INFINITY;
-		if (this.truncateSmart) {
-			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, ".." );
+		var truncate = this.truncate;
+		if( !truncate ) return anchorText;
+
+		var truncateLength = truncate.length,
+			truncateLocation = truncate.location;
+
+		if( truncateLocation === 'smart' ) {
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, '..' );
+
+		} else if( truncateLocation === 'middle' ) {
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, '..' );
+
+		} else {
+			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength, '..' );
 		}
-		if (this.truncateMiddle) {
-			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, ".." );
-		}
-		return Autolinker.Util.ellipsis( anchorText, truncateLength );
 	}
 
 } );

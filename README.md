@@ -101,13 +101,27 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
   `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
   beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
-- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number<br />
+- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number/Object<br />
   A number for how many characters long URLs/emails/Twitter handles/Twitter
   hashtags should be truncated to inside the text of a link. If the match is
   over the number of characters, it will be truncated to this length by
   replacing the end of the string with a two period ellipsis ('..').<br /><br />
+  
   Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
   to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+  
+  In the object form, both `length` and `location` may be specified to perform 
+  truncation. Available options for `location` are: 'end' (default), 'middle', 
+  or 'smart'. Example usage: 
+  
+    ```javascript
+    truncate: { length: 32, location: 'middle' }
+    ```
+  
+  The 'smart' truncation option is for URLs where the algorithm attempts to 
+  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme, 
+  hash, etc.) before trying to find a good point to insert the ellipsis if it is 
+  still too long. For details, see source code of: (TruncateSmart)[http://gregjacobs.github.io/Autolinker.js/gh-pages/docs/#!/api/Autolinker.truncate.TruncateSmart]
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added
   to all links, as well as this class plus "url"/"email"/"phone"/"twitter"/"hashtag"

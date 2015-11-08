@@ -73,6 +73,7 @@ module.exports = function(grunt) {
 					'src/match/Phone.js',
 					'src/match/Twitter.js',
 					'src/match/Url.js',
+					'src/truncate/TruncateEnd.js',
 					'src/truncate/TruncateMiddle.js',
 					'src/truncate/TruncateSmart.js'
 				],

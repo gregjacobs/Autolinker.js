@@ -170,7 +170,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	/**
 	 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
 	 *
-	 * @param {String} name The attribute name to retrieve.
+	 * @param {String} attrName The attribute name to retrieve.
 	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
 	 */
 	getAttr : function( attrName ) {

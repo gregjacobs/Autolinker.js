@@ -1,4 +1,5 @@
-/**
+/*global Autolinker */
+/*
  * Date: 2015-10-05
  * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
  *
