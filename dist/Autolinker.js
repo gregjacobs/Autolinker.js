@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.20.0
+ * 0.21.0
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT
@@ -1772,17 +1772,18 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * 8.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #6 for more info.
-	 * 9.  Group that is used to determine if there is a phone number match. The
-	 *     next 3 groups give segments of the phone number.
-	 * 10. Group that is used to determine if there is a Hashtag match
+	 * 9.  Group that is used to determine if there is a phone number match.
+	 * 10. If there is a phone number match, and a '+' sign was included with
+	 *     the phone number, this group will be populated with the '+' sign.
+	 * 11. Group that is used to determine if there is a Hashtag match
 	 *     (i.e. \#someHashtag). Simply check for its existence to determine if
 	 *     there is a Hashtag match. The next couple of capturing groups give
 	 *     information about the Hashtag match.
-	 * 11. The whitespace character before the #sign in a Hashtag handle. This
+	 * 12. The whitespace character before the #sign in a Hashtag handle. This
 	 *     is needed because there are no look-behinds in JS regular
 	 *     expressions, and can be used to reconstruct the original string in a
 	 *     replace().
-	 * 12. The Hashtag itself in a Hashtag match. If the match is
+	 * 13. The Hashtag itself in a Hashtag match. If the match is
 	 *     '#someHashtag', the hashtag is 'someHashtag'.
 	 */
 	matcherRegex : (function() {
@@ -1791,7 +1792,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		    hashtagRegex = /(^|[^\w])#(\w{1,139})/,              // For matching a Hashtag. Ex: #games
 
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
-		    phoneRegex = /(?:\+?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+		    phoneRegex = /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 		    protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                             // starting with 'www.'
 		    domainNameRegex = /[A-Za-z0-9\.\-]*[A-Za-z0-9\-]/,  // anything looking at all like a domain, non-unicode domains, not ending in a period
@@ -1914,8 +1915,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 ) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 );  // "match description" object
+		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 ) {
+			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 );  // "match description" object
 
 			// Return out with no changes for match types that are disabled (url,
 			// email, phone, etc.), or for matches that are invalid (false
@@ -1965,6 +1966,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *   match from a TLD (top level domain) match, with the character that
 	 *   comes before the '//'.
 	 * @param {String} phoneMatch The matched text of a phone number
+	 * @param {String} phonePlusSignMatch The '+' sign in the phone number, if
+	 *   it was there.
 	 * @param {String} hashtagMatch The matched text of a Twitter
 	 *   Hashtag, if the match is a Hashtag match.
 	 * @param {String} hashtagPrefixWhitespaceChar The whitespace char
@@ -1991,7 +1994,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	processCandidateMatch : function(
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle,
 		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch,
-		tldProtocolRelativeMatch, phoneMatch, hashtagMatch,
+		tldProtocolRelativeMatch, phoneMatch, phonePlusSignMatch, hashtagMatch,
 		hashtagPrefixWhitespaceChar, hashtag
 	) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will
@@ -2049,7 +2052,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		} else if( phoneMatch ) {
 			// remove non-numeric values from phone number string
 			var cleanNumber = matchStr.replace( /\D/g, '' );
- 			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber } );
+ 			match = new Autolinker.match.Phone( { matchedText: matchStr, number: cleanNumber, plusSign: !!phonePlusSignMatch } );
 
 		} else if( hashtagMatch ) {
 			// fix up the `matchStr` if there was a preceding whitespace char,
@@ -2611,6 +2614,15 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * The phone number that was matched.
 	 */
 
+	/**
+	 * @cfg {Boolean} plusSign (required)
+	 *
+	 * `true` if the matched phone number started with a '+' sign. We'll include
+	 * it in the `tel:` URL if so, as this is needed for international numbers.
+	 *
+	 * Ex: '+1 (123) 456 7879'
+	 */
+
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
@@ -2638,7 +2650,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return 'tel:' + this.number;
+		return 'tel:' + ( this.plusSign ? '+' : '' ) + this.number;
 	},
 
 
@@ -2715,116 +2727,116 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 /**
  * @class Autolinker.match.Url
  * @extends Autolinker.match.Match
- * 
+ *
  * Represents a Url match found in an input string which should be Autolinked.
- * 
+ *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
 Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
-	
+
 	/**
 	 * @cfg {String} url (required)
-	 * 
+	 *
 	 * The url that was matched.
 	 */
-	
+
 	/**
 	 * @cfg {Boolean} protocolUrlMatch (required)
-	 * 
+	 *
 	 * `true` if the URL is a match which already has a protocol (i.e. 'http://'), `false` if the match was from a 'www' or
 	 * known TLD match.
 	 */
-	
+
 	/**
 	 * @cfg {Boolean} protocolRelativeMatch (required)
-	 * 
+	 *
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match is a URL that starts with '//',
 	 * and will be either http:// or https:// based on the protocol that the site is loaded under.
 	 */
-	
+
 	/**
 	 * @cfg {Boolean} stripPrefix (required)
 	 * @inheritdoc Autolinker#stripPrefix
 	 */
-	
+
 
 	/**
 	 * @private
 	 * @property {RegExp} urlPrefixRegex
-	 * 
+	 *
 	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
 	 */
 	urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
-	
+
 	/**
 	 * @private
 	 * @property {RegExp} protocolRelativeRegex
-	 * 
+	 *
 	 * The regular expression used to remove the protocol-relative '//' from the {@link #url} string, for purposes
 	 * of {@link #getAnchorText}. A protocol-relative URL is, for example, "//yahoo.com"
 	 */
 	protocolRelativeRegex : /^\/\//,
-	
+
 	/**
 	 * @private
 	 * @property {Boolean} protocolPrepended
-	 * 
+	 *
 	 * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
 	 * {@link #url} did not have a protocol)
 	 */
 	protocolPrepended : false,
-	
+
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getType : function() {
 		return 'url';
 	},
-	
-	
+
+
 	/**
 	 * Returns the url that was matched, assuming the protocol to be 'http://' if the original
 	 * match was missing a protocol.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getUrl : function() {
 		var url = this.url;
-		
+
 		// if the url string doesn't begin with a protocol, assume 'http://'
 		if( !this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended ) {
 			url = this.url = 'http://' + url;
-			
+
 			this.protocolPrepended = true;
 		}
-		
+
 		return url;
 	},
-	
+
 
 	/**
 	 * Returns the anchor href that should be generated for the match.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
 		var url = this.getUrl();
-		
-		return url.replace( /&amp;/g, '&' );  // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html 
+
+		return url.replace( /&amp;/g, '&' );  // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
 	},
-	
-	
+
+
 	/**
 	 * Returns the anchor text that should be generated for the match.
-	 * 
+	 *
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		var anchorText = this.getUrl();
-		
+		var anchorText = this.getMatchedText();
+
 		if( this.protocolRelativeMatch ) {
 			// Strip off any protocol-relative '//' from the anchor text
 			anchorText = this.stripProtocolRelativePrefix( anchorText );
@@ -2833,18 +2845,18 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = this.stripUrlPrefix( anchorText );
 		}
 		anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
-		
+
 		return anchorText;
 	},
-	
-	
+
+
 	// ---------------------------------------
-	
+
 	// Utility Functionality
-	
+
 	/**
 	 * Strips the URL prefix (such as "http://" or "https://") from the given text.
-	 * 
+	 *
 	 * @private
 	 * @param {String} text The text of the anchor that is being generated, for which to strip off the
 	 *   url prefix (such as stripping off "http://")
@@ -2853,11 +2865,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	stripUrlPrefix : function( text ) {
 		return text.replace( this.urlPrefixRegex, '' );
 	},
-	
-	
+
+
 	/**
 	 * Strips any protocol-relative '//' from the anchor text.
-	 * 
+	 *
 	 * @private
 	 * @param {String} text The text of the anchor that is being generated, for which to strip off the
 	 *   protocol-relative prefix (such as stripping off "//")
@@ -2866,11 +2878,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	stripProtocolRelativePrefix : function( text ) {
 		return text.replace( this.protocolRelativeRegex, '' );
 	},
-	
-	
+
+
 	/**
 	 * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
-	 * 
+	 *
 	 * @private
 	 * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
 	 *   slash ('/') that may exist.
@@ -2882,7 +2894,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		}
 		return anchorText;
 	}
-	
+
 } );
 /*global Autolinker */
 /**
