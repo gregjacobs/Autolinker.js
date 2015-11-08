@@ -1,3 +1,6 @@
+If you love and use Autolinker, please consider a $5 donation. Many many hours have gone into this project, and I hope it helps you out! <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9HX848RTS975Y&lc=US&item_name=Autolinker%2ejs&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" alt="Preview Image"></a>
+
+
 # Autolinker.js
 
 Because I had so much trouble finding a good auto-linking implementation out in
