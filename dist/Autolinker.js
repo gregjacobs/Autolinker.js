@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.21.0
+ * 0.22.0
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT
@@ -138,44 +138,59 @@ var Autolinker = function( cfg ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
 
-	// Normalize the `truncate` option
-	var truncate = this.truncate = this.truncate || {};
-	if( typeof truncate === 'number' ) {
-		this.truncate = { length: truncate, location: 'end' };
-	} else if( typeof truncate === 'object' ) {
-		this.truncate.length = truncate.length || Number.POSITIVE_INFINITY;
-		this.truncate.location = truncate.location || 'end';
-	}
+	// Normalize the configs
+	this.urls     = this.normalizeUrlsCfg( this.urls );
+	this.truncate = this.normalizeTruncateCfg( this.truncate );
 };
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean} urls
+	 * @cfg {Boolean/Object} urls
 	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+	 * `true` if URLs should be automatically linked, `false` if they should not
+	 * be.
+	 *
+	 * This option also accepts an Object form with 3 properties, to allow for
+	 * more customization of what exactly gets linked. All default to `true`:
+	 *
+	 * @param {Boolean} schemeMatches `true` to match URLs found prefixed with a
+	 *   scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+	 *   `false` to prevent these types of matches.
+	 * @param {Boolean} wwwMatches `true` to match urls found prefixed with
+	 *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+	 *   matches. Note that if the URL had a prefixed scheme, and
+	 *   `schemeMatches` is true, it will still be linked.
+	 * @param {Boolean} tldMatches `true` to match URLs with known top level
+	 *   domains (.com, .net, etc.) that are not prefixed with a scheme or
+	 *   `'www.'`. This option attempts to match anything that looks like a URL
+	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+	 *   to prevent these types of matches.
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
 	 *
-	 * `true` if email addresses should be automatically linked, `false` if they should not be.
+	 * `true` if email addresses should be automatically linked, `false` if they
+	 * should not be.
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
 	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+	 * `true` if Twitter handles ("@example") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
 	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked, `false` if they should not be.
+	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	phone: true,
 
@@ -312,6 +327,49 @@ Autolinker.prototype = {
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
+
+
+	/**
+	 * Normalizes the {@link #urls} config into an Object with 3 properties:
+	 * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
+	 *
+	 * See {@link #urls} config for details.
+	 *
+	 * @private
+	 * @param {Boolean/Object} urls
+	 * @return {Object}
+	 */
+	normalizeUrlsCfg : function( urls ) {
+		if( typeof urls === 'boolean' ) {
+			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
+		} else {
+			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+		}
+	},
+
+
+	/**
+	 * Normalizes the {@link #truncate} config into an Object with 2 properties:
+	 * `length` (Number), and `location` (String).
+	 *
+	 * See {@link #truncate} config for details.
+	 *
+	 * @private
+	 * @param {Number/Object} truncate
+	 * @return {Object}
+	 */
+	normalizeTruncateCfg : function( truncate ) {
+		if( typeof truncate === 'number' ) {
+			return { length: truncate, location: 'end' };
+
+		} else {  // object, or undefined/null
+			return Autolinker.Util.defaults( truncate || {}, {
+				length   : Number.POSITIVE_INFINITY,
+				location : 'end'
+			} );
+		}
+	},
+
 
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
@@ -581,6 +639,25 @@ Autolinker.Util = {
 	assign : function( dest, src ) {
 		for( var prop in src ) {
 			if( src.hasOwnProperty( prop ) ) {
+				dest[ prop ] = src[ prop ];
+			}
+		}
+
+		return dest;
+	},
+
+
+	/**
+	 * Assigns (shallow copies) the properties of `src` onto `dest`, if the
+	 * corresponding property on `dest` === `undefined`.
+	 *
+	 * @param {Object} dest The destination object.
+	 * @param {Object} src The source object.
+	 * @return {Object} The destination object (`dest`)
+	 */
+	defaults : function( dest, src ) {
+		for( var prop in src ) {
+			if( src.hasOwnProperty( prop ) && dest[ prop ] === undefined ) {
 				dest[ prop ] = src[ prop ];
 			}
 		}
@@ -1700,7 +1777,7 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
 Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 	/**
-	 * @cfg {Boolean} urls
+	 * @cfg {Object} urls
 	 * @inheritdoc Autolinker#urls
 	 */
 	urls : true,
@@ -1764,26 +1841,31 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *     used to match protocol URLs with just a single word, like 'http://localhost',
 	 *     where we won't double check that the domain name has at least one '.'
 	 *     in it.
-	 * 7.  A protocol-relative ('//') match for the case of a 'www.' prefixed
+	 * 7.  Group that matches a 'www.' prefixed URL. This is only matched if the
+	 *     'www.' text was not prefixed by a scheme (i.e.: not prefixed by
+	 *     'http://', 'ftp:', etc.)
+	 * 8.  A protocol-relative ('//') match for the case of a 'www.' prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     We need to know the character before the '//' in order to determine
 	 *     if it is a valid match or the // was in a string we don't want to
 	 *     auto-link.
-	 * 8.  A protocol-relative ('//') match for the case of a known TLD prefixed
+	 * 9.  Group that matches a known TLD (top level domain), when a scheme
+	 *     or 'www.'-prefixed domain is not matched.
+	 * 10.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #6 for more info.
-	 * 9.  Group that is used to determine if there is a phone number match.
-	 * 10. If there is a phone number match, and a '+' sign was included with
+	 * 11. Group that is used to determine if there is a phone number match.
+	 * 12. If there is a phone number match, and a '+' sign was included with
 	 *     the phone number, this group will be populated with the '+' sign.
-	 * 11. Group that is used to determine if there is a Hashtag match
+	 * 13. Group that is used to determine if there is a Hashtag match
 	 *     (i.e. \#someHashtag). Simply check for its existence to determine if
 	 *     there is a Hashtag match. The next couple of capturing groups give
 	 *     information about the Hashtag match.
-	 * 12. The whitespace character before the #sign in a Hashtag handle. This
+	 * 14. The whitespace character before the #sign in a Hashtag handle. This
 	 *     is needed because there are no look-behinds in JS regular
 	 *     expressions, and can be used to reconstruct the original string in a
 	 *     replace().
-	 * 13. The Hashtag itself in a Hashtag match. If the match is
+	 * 15. The Hashtag itself in a Hashtag match. If the match is
 	 *     '#someHashtag', the hashtag is 'someHashtag'.
 	 */
 	matcherRegex : (function() {
@@ -1821,23 +1903,23 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 			'(',  // *** Capturing group $5, which is used to match a URL
 				'(?:', // parens to cover match for protocol (optional), and domain
-					'(',  // *** Capturing group $6, for a protocol-prefixed url (ex: http://google.com)
+					'(',  // *** Capturing group $6, for a scheme-prefixed url (ex: http://google.com)
 						protocolRegex.source,
 						domainNameRegex.source,
 					')',
 
 					'|',
 
-					'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
-						'(.?//)?',  // *** Capturing group $7 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+					'(',  // *** Capturing group $7, for a 'www.' prefixed url (ex: www.google.com)
+						'(.?//)?',  // *** Capturing group $8 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 						wwwRegex.source,
 						domainNameRegex.source,
 					')',
 
 					'|',
 
-					'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
-						'(.?//)?',  // *** Capturing group $8 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+					'(',  // *** Capturing group $9, for known a TLD url (ex: google.com)
+						'(.?//)?',  // *** Capturing group $10 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 						domainNameRegex.source,
 						tldRegex.source,
 					')',
@@ -1849,16 +1931,17 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			'|',
 
 			// this setup does not scale well for open extension :( Need to rethink design of autolinker...
-			// ***  Capturing group $9, which matches a (USA for now) phone number
+			// *** Capturing group $11, which matches a (USA for now) phone number, and
+			// *** Capturing group $12, which matches the '+' sign for international numbers, if it exists
 			'(',
 				phoneRegex.source,
 			')',
 
 			'|',
 
-			'(',  // *** Capturing group $10, which can be used to check for a Hashtag match. Use group $12 for the actual Hashtag though. $11 may be used to reconstruct the original string in a replace()
-				// *** Capturing group $11, which matches the whitespace character before the '#' sign (needed because of no lookbehinds), and
-				// *** Capturing group $12, which matches the actual Hashtag
+			'(',  // *** Capturing group $13, which can be used to check for a Hashtag match. Use group $12 for the actual Hashtag though. $11 may be used to reconstruct the original string in a replace()
+				// *** Capturing group $14, which matches the whitespace character before the '#' sign (needed because of no lookbehinds), and
+				// *** Capturing group $15, which matches the actual Hashtag
 				hashtagRegex.source,
 			')'
 		].join( "" ), 'gi' );
@@ -1915,8 +1998,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 ) {
-			var matchDescObj = me.processCandidateMatch( matchStr, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13 );  // "match description" object
+		return text.replace( this.matcherRegex, function( matchStr/*, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15*/ ) {
+			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // "match description" object
 
 			// Return out with no changes for match types that are disabled (url,
 			// email, phone, etc.), or for matches that are invalid (false
@@ -1956,12 +2039,17 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 * @param {String} emailAddressMatch The matched email address for an email
 	 *   address match.
 	 * @param {String} urlMatch The matched URL string for a URL match.
-	 * @param {String} protocolUrlMatch The match URL string for a protocol
+	 * @param {String} schemeUrlMatch The match URL string for a protocol
 	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
 	 *   'http://localhost', where we won't double check that the domain name
 	 *   has at least one '.' in it.
+	 * @param {String} wwwMatch The matched string of a 'www.'-prefixed URL that
+	 *   was matched. This is only matched if the 'www.' text was not prefixed
+	 *   by a scheme (i.e.: not prefixed by 'http://', 'ftp:', etc.).
 	 * @param {String} wwwProtocolRelativeMatch The '//' for a protocol-relative
 	 *   match from a 'www' url, with the character that comes before the '//'.
+	 * @param {String} tldMatch The matched string of a known TLD (top level
+	 *   domain), when a scheme or 'www.'-prefixed domain is not matched.
 	 * @param {String} tldProtocolRelativeMatch The '//' for a protocol-relative
 	 *   match from a TLD (top level domain) match, with the character that
 	 *   comes before the '//'.
@@ -1993,8 +2081,8 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 */
 	processCandidateMatch : function(
 		matchStr, twitterMatch, twitterHandlePrefixWhitespaceChar, twitterHandle,
-		emailAddressMatch, urlMatch, protocolUrlMatch, wwwProtocolRelativeMatch,
-		tldProtocolRelativeMatch, phoneMatch, phonePlusSignMatch, hashtagMatch,
+		emailAddressMatch, urlMatch, schemeUrlMatch, wwwMatch, wwwProtocolRelativeMatch,
+		tldMatch, tldProtocolRelativeMatch, phoneMatch, phonePlusSignMatch, hashtagMatch,
 		hashtagPrefixWhitespaceChar, hashtag
 	) {
 		// Note: The `matchStr` variable wil be fixed up to remove characters that are no longer needed (which will
@@ -2004,19 +2092,23 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 		    match,  // Will be an Autolinker.match.Match object
 
 		    prefixStr = "",  // A string to use to prefix the anchor tag that is created. This is needed for the Twitter and Hashtag matches.
-		    suffixStr = "";  // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+		    suffixStr = "",  // A string to suffix the anchor tag that is created. This is used if there is a trailing parenthesis that should not be auto-linked.
+
+		    urls = this.urls;  // the 'urls' config
 
 		// Return out with `null` for match types that are disabled (url, email,
 		// twitter, hashtag), or for matches that are invalid (false positives
 		// from the matcherRegex, which can't use look-behinds since they are
 		// unavailable in JS).
 		if(
-			( urlMatch && !this.urls ) ||
+			( schemeUrlMatch && !urls.schemeMatches ) ||
+			( wwwMatch && !urls.wwwMatches ) ||
+			( tldMatch && !urls.tldMatches ) ||
 			( emailAddressMatch && !this.email ) ||
 			( phoneMatch && !this.phone ) ||
 			( twitterMatch && !this.twitter ) ||
 			( hashtagMatch && !this.hashtag ) ||
-			!this.matchValidator.isValidMatch( urlMatch, protocolUrlMatch, protocolRelativeMatch )
+			!this.matchValidator.isValidMatch( urlMatch, schemeUrlMatch, protocolRelativeMatch )
 		) {
 			return null;
 		}
@@ -2029,7 +2121,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			suffixStr = ")";  // this will be added after the generated <a> tag
 		} else {
 			// Handle an invalid character after the TLD
-			var pos = this.matchHasInvalidCharAfterTld( urlMatch, protocolUrlMatch );
+			var pos = this.matchHasInvalidCharAfterTld( urlMatch, schemeUrlMatch );
 			if( pos > -1 ) {
 				suffixStr = matchStr.substr(pos);  // this will be added after the generated <a> tag
 				matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
@@ -2081,7 +2173,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 			match = new Autolinker.match.Url( {
 				matchedText : matchStr,
 				url : matchStr,
-				protocolUrlMatch : !!protocolUrlMatch,
+				protocolUrlMatch : !!schemeUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
 				stripPrefix : this.stripPrefix
 			} );
