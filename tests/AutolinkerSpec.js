@@ -1438,7 +1438,95 @@ describe( "Autolinker", function() {
 		} );
 
 
-		describe( "`urls`, `email`, `phone`, and `twitter` options", function() {
+		describe( '`urls` option', function() {
+			var str = 'http://google.com www.google.com google.com';  // the 3 types: scheme URL, www URL, and TLD (top level domain) URL
+
+
+			it( 'should link all 3 types if the `urls` option is `true`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: true } );
+
+				expect( result ).toBe( [
+					'<a href="http://google.com">http://google.com</a>',
+					'<a href="http://www.google.com">www.google.com</a>',
+					'<a href="http://google.com">google.com</a>'
+				].join( ' ' ) );
+			} );
+
+
+			it( 'should not link any of the 3 types if the `urls` option is `false`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: false } );
+
+				expect( result ).toBe( [
+					'http://google.com',
+					'www.google.com',
+					'google.com'
+				].join( ' ' ) );
+			} );
+
+
+			it( 'should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: {
+					schemeMatches : true,
+					wwwMatches    : false,
+					tldMatches    : false
+				} } );
+
+				expect( result ).toBe( [
+					'<a href="http://google.com">http://google.com</a>',
+					'www.google.com',
+					'google.com'
+				].join( ' ' ) );
+			} );
+
+
+			it( 'should only link www URLs if `wwwMatches` is the only `urls` option that is `true`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: {
+					schemeMatches : false,
+					wwwMatches    : true,
+					tldMatches    : false
+				} } );
+
+				expect( result ).toBe( [
+					'http://google.com',
+					'<a href="http://www.google.com">www.google.com</a>',
+					'google.com'
+				].join( ' ' ) );
+			} );
+
+
+			it( 'should only link TLD URLs if `tldMatches` is the only `urls` option that is `true`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: {
+					schemeMatches : false,
+					wwwMatches    : false,
+					tldMatches    : true
+				} } );
+
+				expect( result ).toBe( [
+					'http://google.com',
+					'www.google.com',
+					'<a href="http://google.com">google.com</a>'
+				].join( ' ' ) );
+			} );
+
+
+			it( 'should link both scheme and www matches, but not TLD matches when `tldMatches` is the only option that is `false`', function() {
+				var result = Autolinker.link( str, { newWindow: false, stripPrefix: false, urls: {
+					schemeMatches : true,
+					wwwMatches    : true,
+					tldMatches    : false
+				} } );
+
+				expect( result ).toBe( [
+					'<a href="http://google.com">http://google.com</a>',
+					'<a href="http://www.google.com">www.google.com</a>',
+					'google.com'
+				].join( ' ' ) );
+			} );
+
+		} );
+
+
+		describe( "`urls` (as boolean), `email`, `phone`, and `twitter` options", function() {
 			var inputStr = [
 				"Website: asdf.com",
 				"Email: asdf@asdf.com",

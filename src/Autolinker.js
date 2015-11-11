@@ -113,44 +113,59 @@ var Autolinker = function( cfg ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
 
-	// Normalize the `truncate` option
-	var truncate = this.truncate = this.truncate || {};
-	if( typeof truncate === 'number' ) {
-		this.truncate = { length: truncate, location: 'end' };
-	} else if( typeof truncate === 'object' ) {
-		this.truncate.length = truncate.length || Number.POSITIVE_INFINITY;
-		this.truncate.location = truncate.location || 'end';
-	}
+	// Normalize the configs
+	this.urls     = this.normalizeUrlsCfg( this.urls );
+	this.truncate = this.normalizeTruncateCfg( this.truncate );
 };
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean} urls
+	 * @cfg {Boolean/Object} urls
 	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+	 * `true` if URLs should be automatically linked, `false` if they should not
+	 * be.
+	 *
+	 * This option also accepts an Object form with 3 properties, to allow for
+	 * more customization of what exactly gets linked. All default to `true`:
+	 *
+	 * @param {Boolean} schemeMatches `true` to match URLs found prefixed with a
+	 *   scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+	 *   `false` to prevent these types of matches.
+	 * @param {Boolean} wwwMatches `true` to match urls found prefixed with
+	 *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+	 *   matches. Note that if the URL had a prefixed scheme, and
+	 *   `schemeMatches` is true, it will still be linked.
+	 * @param {Boolean} tldMatches `true` to match URLs with known top level
+	 *   domains (.com, .net, etc.) that are not prefixed with a scheme or
+	 *   `'www.'`. This option attempts to match anything that looks like a URL
+	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+	 *   to prevent these types of matches.
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
 	 *
-	 * `true` if email addresses should be automatically linked, `false` if they should not be.
+	 * `true` if email addresses should be automatically linked, `false` if they
+	 * should not be.
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
 	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+	 * `true` if Twitter handles ("@example") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
 	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked, `false` if they should not be.
+	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	phone: true,
 
@@ -287,6 +302,49 @@ Autolinker.prototype = {
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
+
+
+	/**
+	 * Normalizes the {@link #urls} config into an Object with 3 properties:
+	 * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
+	 *
+	 * See {@link #urls} config for details.
+	 *
+	 * @private
+	 * @param {Boolean/Object} urls
+	 * @return {Object}
+	 */
+	normalizeUrlsCfg : function( urls ) {
+		if( typeof urls === 'boolean' ) {
+			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
+		} else {
+			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+		}
+	},
+
+
+	/**
+	 * Normalizes the {@link #truncate} config into an Object with 2 properties:
+	 * `length` (Number), and `location` (String).
+	 *
+	 * See {@link #truncate} config for details.
+	 *
+	 * @private
+	 * @param {Number/Object} truncate
+	 * @return {Object}
+	 */
+	normalizeTruncateCfg : function( truncate ) {
+		if( typeof truncate === 'number' ) {
+			return { length: truncate, location: 'end' };
+
+		} else {  // object, or undefined/null
+			return Autolinker.Util.defaults( truncate || {}, {
+				length   : Number.POSITIVE_INFINITY,
+				location : 'end'
+			} );
+		}
+	},
+
 
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter

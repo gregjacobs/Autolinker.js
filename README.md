@@ -139,9 +139,29 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   4) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 
-- [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean<br />
+- [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
-  Defaults to `true`.<br />
+  Defaults to `true`.<br>
+  
+  This option also accepts an Object form with 3 properties, to allow for more
+  customization of what exactly gets linked. All default to `true`:
+   
+    - schemeMatches (Boolean): `true` to match URLs found prefixed with a scheme,
+      i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
+      prevent these types of matches.
+    - wwwMatches (Boolean): `true` to match urls found prefixed with `'www.'`,
+      i.e. `www.google.com`. `false` to prevent these types of matches. Note 
+      that if the URL had a prefixed scheme, and `schemeMatches` is true, it 
+      will still be linked.
+    - tldMatches: `true` to match URLs with known top level domains (.com, .net,
+      etc.) that are not prefixed with a scheme or `'www.'`. This option 
+      attempts to match anything that looks like a URL in the given text. 
+      Ex: `google.com`, `asdf.org/?page=1`, etc. `false` to prevent these types
+      of matches.
+      <br />
+      
+  Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
+    
 - [email](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-email) : Boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
   email addresses. Defaults to `true`.<br /><br />
