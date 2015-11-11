@@ -154,10 +154,8 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
       that if the URL had a prefixed scheme, and `schemeMatches` is true, it 
       will still be linked.
     - tldMatches: `true` to match URLs with known top level domains (.com, .net,
-      etc.) that are not prefixed with a scheme or `'www.'`. This option 
-      attempts to match anything that looks like a URL in the given text. 
-      Ex: `google.com`, `asdf.org/?page=1`, etc. `false` to prevent these types
-      of matches.
+      etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`, 
+      `asdf.org/?page=1`, etc. `false` to prevent these types of matches.
       <br />
       
   Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
