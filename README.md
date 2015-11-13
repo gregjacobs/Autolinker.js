@@ -1,4 +1,4 @@
-If you love and use Autolinker, please consider a $5 donation to support continued development. Many, many hours have gone into this project, and I hope it's helping you out! <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9HX848RTS975Y&lc=US&item_name=Autolinker%2ejs&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" alt="Preview Image"></a>
+If you love and use Autolinker, please consider a $5 donation to support continued development. Many, many hours have gone into this project, and I hope it's helping you out! <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9HX848RTS975Y&lc=US&item_name=Autolinker%2ejs%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" alt="Preview Image"></a>
 
 
 # Autolinker.js
