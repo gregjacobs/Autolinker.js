@@ -1645,6 +1645,23 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should populate a HashtagMatch object with the appropriate properties", function() {
+				var replaceFnCallCount = 0;
+				var result = Autolinker.link( "Hashtag: #myHashtag ", {  // purposeful trailing space
+					hashtag: 'twitter',
+					replaceFn : function( autolinker, match ) {
+						replaceFnCallCount++;
+
+						expect( match.getType() ).toBe( 'hashtag' );
+						expect( match.getMatchedText() ).toBe( '#myHashtag' );
+						expect( match.getHashtag() ).toBe( 'myHashtag' );
+					}
+				} );
+
+				expect( replaceFnCallCount ).toBe( 1 );  // make sure the replaceFn was called
+			} );
+
+
 			it( "should populate a TwitterMatch object with the appropriate properties", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
