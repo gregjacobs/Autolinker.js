@@ -58,7 +58,7 @@ Autolinker.MatchValidator = Autolinker.Util.extend( Object, {
 	 * @private
 	 * @property {RegExp} hasWordCharAfterProtocolRegex
 	 */
-	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z]/,
+	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z\u00C0-\u017F]/,
 
 
 	/**

@@ -205,6 +205,10 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#page=index">localhost:8000#page=index</a> today.' );
 				} );
 
+				it( "should automatically link a URL with accented characters", function() {
+					var result = autolinker.link( "Joe went to http://mañana.com today." );
+					expect( result ).toBe( 'Joe went to <a href="http://mañana.com">mañana.com</a> today.' );
+				} );
 
 				describe( "protocol linking", function() {
 
@@ -416,6 +420,11 @@ describe( "Autolinker", function() {
 					expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
 				} );
 
+				it( "should automatically link a URL with accented characters", function() {
+					var result = autolinker.link( "Joe went to http://www.mañana.com today." );
+					expect( result ).toBe( 'Joe went to <a href="http://www.mañana.com">mañana.com</a> today.' );
+				} );
+
 			} );
 
 
@@ -503,6 +512,11 @@ describe( "Autolinker", function() {
 					expect( result2 ).toBe( 'Joe went to <a href="http://yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
 					var result3 = autolinker.link( "Joe went to yahoo.com's/foo today" );
 					expect( result3 ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s/foo today' );
+				} );
+
+				it( "should automatically link a URL with accented characters", function() {
+					var result = autolinker.link( "Joe went to mañana.com today." );
+					expect( result ).toBe( 'Joe went to <a href="http://mañana.com">mañana.com</a> today.' );
 				} );
 
 			} );
