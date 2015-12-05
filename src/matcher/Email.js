@@ -10,42 +10,43 @@
 Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * @private
-	 * @property {String} matcherRegexStr
-	 *
-	 * The regular expression string, which when compiled, will match email
-	 * addresses. Example match:
+	 * The regular expression to match email addresses. Example match:
 	 *
 	 *     person@place.com
-	 *
-	 * This regular expression has no capturing groups.
+	 * 
+	 * @private
+	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegexStr : (function() {
-		var emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,  // something@ for email addresses (a.k.a. local-part)
+	matcherRegex : (function() {
+		var emailRegex = /[\-;:&=\+\$,\w\.]+@/,  // something@ for email addresses (a.k.a. local-part)
 			domainNameRegex = Autolinker.matcher.domainNameRegex,
 			tldRegex = Autolinker.matcher.tldRegex;  // match our known top level domains (TLDs)
 
 		return new RegExp( [
 			emailRegex.source,
 			domainNameRegex.source,
-			tldRegex.source
-		].join( "" ) );
+			'\\.', tldRegex.source   // '.com', '.net', etc
+		].join( "" ), 'gi' );
 	} )(),
 
 
 	/**
 	 * @inheritdoc
 	 */
-	getMatcherRegexStr : function() {
-		return this.matcherRegexStr;
-	},
-
-
-	/**
-	 * @inheritdoc
-	 */
-	getNumCapturingGroups : function() {
-		return 0;
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    matches = [],
+		    match;
+		
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			matches.push( new Autolinker.match.Email( {
+				matchedText : match[ 0 ],
+				offset      : match.index,
+				email       : match[ 0 ]
+			} ) );
+		}
+		
+		return matches;
 	}
 
 } );

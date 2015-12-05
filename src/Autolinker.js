@@ -246,6 +246,7 @@ Autolinker.prototype = {
 	 */
 	tagBuilder : undefined,
 
+
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
 	 * handles, and Hashtags found in the given chunk of HTML. Does not link
@@ -389,7 +390,7 @@ Autolinker.prototype = {
 		var matcherEngine = this.matcherEngine;
 
 		if( !matcherEngine ) {
-			var matchersNs = Autolinker.matchers,
+			var matchersNs = Autolinker.matcher,
 			    matchers = [];
 
 			// NOTE: Ordering is important here. TwitterMatcher must come before
@@ -400,9 +401,7 @@ Autolinker.prototype = {
 			if( this.phone )   matchers.push( new matchersNs.Phone() );
 			if( this.hashtag ) matchers.push( new matchersNs.Hashtag( { serviceName: this.hashtag } ) );
 
-			matcherEngine = this.matcherEngine = new Autolinker.matcher.MatcherEngine( {
-				matchers : matchers
-			} );
+			matcherEngine = this.matcherEngine = new Autolinker.matcherEngine.MatcherEngine( matchers );
 		}
 
 		return matcherEngine;
@@ -476,6 +475,9 @@ Autolinker.link = function( textOrHtml, options ) {
 
 
 // Autolinker Namespaces
+
 Autolinker.match = {};
-Autolinker.matchers = {};
+Autolinker.matcher = {};
+Autolinker.matcherEngine = {};
+Autolinker.matchParser = {};   // LEGACY. TODO: Remove
 Autolinker.htmlParser = {};

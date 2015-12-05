@@ -10,11 +10,17 @@
 Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
+	 * @cfg {Boolean} stripPrefix (required)
+	 * @inheritdoc Autolinker#stripPrefix
+	 */
+
+
+	/**
 	 * @private
-	 * @property {String} matcherRegexStr
+	 * @property {RegExp} matcherRegex
 	 *
-	 * The regular expression string, which when compiled, will match URLs with
-	 * an optional protocol, port number, path, query string, and hash anchor.
+	 * The regular expression to match URLs with an optional protocol, port number, path,
+	 * query string, and hash anchor.
 	 * Example matches:
 	 *
 	 *     http://google.com
@@ -35,9 +41,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *     auto-link.
 	 * 3.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
-	 *     See #6 for more info.
+	 *     See #2 for more info.
 	 */
-	matcherRegexStr : (function() {
+	matcherRegex : (function() {
 		var protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
 		    domainNameRegex = Autolinker.matcher.domainNameRegex,
@@ -47,7 +53,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    // http://blog.codinghorror.com/the-problem-with-urls/
 		    urlSuffixRegex = /[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]]/;
 
-		return [
+		return new RegExp( [
 			'(?:', // parens to cover match for protocol (optional), and domain
 				'(',  // *** Capturing group $1, for a protocol-prefixed url (ex: http://google.com)
 					protocolRegex.source,
@@ -57,7 +63,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				'|',
 
 				'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
-					'(.?//)?',  // *** Capturing group $2 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+					'(//)?',  // *** Capturing group $2 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 					wwwRegex.source,
 					domainNameRegex.source,
 				')',
@@ -65,45 +71,91 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				'|',
 
 				'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
-					'(.?//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
 					domainNameRegex.source + '\\.',
 					tldRegex.source,
 				')',
 			')',
 
 			'(?:' + urlSuffixRegex.source + ')?'  // match for path, query string, and/or hash anchor - optional
-		].join( "" );
+		].join( "" ), 'gi' );
 	} )(),
-
-
+	
+	
 	/**
+	 * A regular expression to use to check the character before a protocol-relative URL
+	 * match. We don't want to match a protocol-relative URL if it is part of another 
+	 * word.
+	 * 
+	 * For example, we want to match something like "Go to: //google.com",
+	 * but we don't want to match something like "abc//google.com"
+	 * 
+	 * This regular expression is used to test the character before the '//'.
+	 * 
 	 * @private
-	 * @property {RegExp} charBeforeProtocolRelMatchRegex
-	 *
-	 * The regular expression used to retrieve the character before a
-	 * protocol-relative URL match.
-	 *
-	 * This is used in conjunction with the {@link #matcherRegex}, which needs
-	 * to grab the character before a protocol-relative '//' due to the lack of
-	 * a negative look-behind in JavaScript regular expressions. The character
-	 * before the match is stripped from the URL.
+	 * @type {RegExp} wordCharRegExp
 	 */
-	charBeforeProtocolRelMatchRegex : /^(.)?\/\//,
+	wordCharRegExp : /\w/,
 
 
+	// @if DEBUG
 	/**
-	 * @inheritdoc
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
 	 */
-	getMatcherRegexStr : function() {
-		return this.matcherRegexStr;
+	constructor : function() {
+		Autolinker.matcher.Matcher.prototype.constructor.apply( this, arguments );
+
+		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
 	},
+	// @endif
 
 
 	/**
 	 * @inheritdoc
 	 */
-	getNumCapturingGroups : function() {
-		return 3;
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    matches = [],
+		    match;
+		
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			console.log( match );
+			var matchStr = match[ 0 ],
+			    protocolUrlMatch = match[ 1 ],
+			    wwwProtocolRelativeMatch = match[ 2 ],
+			    tldProtocolRelativeMatch = match[ 3 ],
+			    offset = match.index,
+			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch;
+
+			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, protocolUrlMatch ) ) {
+				continue;
+			}
+
+			// If it's a protocol-relative '//' match, but the character before the '//' 
+			// was a word character (i.e. a letter/number), then we found the '//' in the 
+			// middle of another word (such as "asdf//asdf.com"). In this case, skip the
+			// match.
+			if( offset > 0 && protocolRelativeMatch ) {
+				var prevChar = matchStr.charAt( offset - 1 );
+				
+				if( this.wordCharRegExp.test( prevChar ) ) {
+					continue;
+				}
+			}
+		
+			matches.push( new Autolinker.match.Url( {
+				matchedText : matchStr,
+				offset      : offset,
+				url         : matchStr,
+				protocolUrlMatch      : !!protocolUrlMatch,
+				protocolRelativeMatch : !!protocolRelativeMatch,
+				stripPrefix : this.stripPrefix
+			} ) );
+		}
+		
+		return matches;
 	}
 
 } );

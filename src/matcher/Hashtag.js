@@ -4,46 +4,79 @@
  * @extends Autolinker.matcher.Matcher
  *
  * Matcher to find Hashtag matches in an input string.
- *
- * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more
- * details.
  */
 Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * @private
-	 * @property {String} matcherRegexStr
+	 * @cfg {String} serviceName (required)
 	 *
-	 * The regular expression string, which when compiled, will match Hashtags.
-	 * Example match:
+	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
+	 * for available values.
+	 */
+
+	/**
+	 * The regular expression to match Hashtags. Example match:
 	 *
 	 *     #asdf
 	 *
-	 * This regular expression has the following capturing groups:
+	 * @private
+	 * @property {RegExp} matcherRegex
+	 */
+	matcherRegex : /#(\w{1,15})/g,
+	
+	/**
+	 * The regular expression to use to check the character before a username match to
+	 * make sure we didn't accidentally match an email address.
 	 *
-	 * 1. The whitespace character before the #sign in a Hashtag handle. This
-	 *    is needed because there are no look-behinds in JS regular
-	 *    expressions, and can be used to reconstruct the original string in a
-	 *    replace().
-	 * 2. The Hashtag itself in a Hashtag match. If the matching string is
-	 *    '#someHashtag', the hashtag is 'someHashtag'.
+	 * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
+	 * 
+	 * @private
+	 * @property {RegExp} nonWordCharRegex
 	 */
-	matcherRegexStr : /(^|[^\w])#(\w{1,15})/.source,
+	nonWordCharRegex : /[^\w]/,
 
 
+	// @if DEBUG
 	/**
-	 * @inheritdoc
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
 	 */
-	getMatcherRegexStr : function() {
-		return this.matcherRegexStr;
+	constructor : function() {
+		Autolinker.matcher.Matcher.prototype.constructor.apply( this, arguments );
+
+		if( !this.serviceName ) throw new Error( '`serviceName` cfg required' );
 	},
+	// @endif
 
 
 	/**
 	 * @inheritdoc
 	 */
-	getNumCapturingGroups : function() {
-		return 2;
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    nonWordCharRegex = this.nonWordCharRegex,
+		    matches = [],
+		    match;
+		
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			var offset = match.index,
+			    prevChar = text.charAt( offset - 1 );
+			
+			// If we found the match at the beginning of the string, or we found the match
+			// and there is a whitespace char in front of it (meaning it is not a '#' char
+			// in the middle of a word), then it is a hashtag match.
+			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
+				matches.push( new Autolinker.match.Hashtag( {
+					matchedText : match[ 0 ],
+					offset      : offset,
+					serviceName : this.serviceName,
+					hashtag     : match[ 0 ].slice( 1 )  // strip off the '#' character at the beginning
+				} ) );
+			}
+		}
+		
+		return matches;
 	}
 
 } );
