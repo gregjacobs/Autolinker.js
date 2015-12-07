@@ -15,13 +15,14 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *
 	 *     (123) 456-7890
 	 *
-	 * This regular expression has no capturing groups.
+	 * This regular expression has the following capturing groups:
+	 *
+	 * 1. The prefixed '+' sign, if there is one.
 	 *
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
-
+	matcherRegex : /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 
 	/**
 	 * @inheritdoc
@@ -37,6 +38,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 			matches.push( new Autolinker.match.Phone( {
 				matchedText : match[ 0 ],
+				plusSign    : !!match[ 1 ],  // match[ 1 ] is the prefixed plus sign, if there is one
 				offset      : match.index,
 				number      : cleanNumber
 			} ) );

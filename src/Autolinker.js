@@ -102,46 +102,70 @@
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
-	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' ) {
+	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
+
+	// Normalize the configs
+	this.urls     = this.normalizeUrlsCfg( this.urls );
+	this.truncate = this.normalizeTruncateCfg( this.truncate );
 };
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean} urls
+	 * @cfg {Boolean/Object} urls
 	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+	 * `true` if URLs should be automatically linked, `false` if they should not
+	 * be.
+	 *
+	 * This option also accepts an Object form with 3 properties, to allow for
+	 * more customization of what exactly gets linked. All default to `true`:
+	 *
+	 * @param {Boolean} schemeMatches `true` to match URLs found prefixed with a
+	 *   scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+	 *   `false` to prevent these types of matches.
+	 * @param {Boolean} wwwMatches `true` to match urls found prefixed with
+	 *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+	 *   matches. Note that if the URL had a prefixed scheme, and
+	 *   `schemeMatches` is true, it will still be linked.
+	 * @param {Boolean} tldMatches `true` to match URLs with known top level
+	 *   domains (.com, .net, etc.) that are not prefixed with a scheme or
+	 *   `'www.'`. This option attempts to match anything that looks like a URL
+	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+	 *   to prevent these types of matches.
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
 	 *
-	 * `true` if email addresses should be automatically linked, `false` if they should not be.
+	 * `true` if email addresses should be automatically linked, `false` if they
+	 * should not be.
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
 	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+	 * `true` if Twitter handles ("@example") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
 	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked, `false` if they should not be.
+	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	phone: true,
 
@@ -153,6 +177,7 @@ Autolinker.prototype = {
 	 *
 	 * - 'twitter'
 	 * - 'facebook'
+	 * - 'instagram'
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
@@ -174,14 +199,48 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Number/Object} truncate
 	 *
-	 * A number for how many characters long matched text should be truncated to inside the text of
-	 * a link. If the matched text is over this number of characters, it will be truncated to this length by
-	 * adding a two period ellipsis ('..') to the end of the string.
+	 * ## Number Form
 	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'yahoo.com/some/long/pat..'
+	 * A number for how many characters matched text should be truncated to
+	 * inside the text of a link. If the matched text is over this number of
+	 * characters, it will be truncated to this length by adding a two period
+	 * ellipsis ('..') to the end of the string.
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file'
+	 * truncated to 25 characters might look something like this:
+	 * 'yahoo.com/some/long/pat..'
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: 25
+	 *
+	 *
+	 * ## Object Form
+	 *
+	 * An Object may also be provided with two properties: `length` (Number) and
+	 * `location` (String). `location` may be one of the following: 'end'
+	 * (default), 'middle', or 'smart'.
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: { length: 25, location: 'middle' }
+	 *
+	 * @cfg {Number} truncate.length How many characters to allow before
+	 *   truncation will occur.
+	 * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
+	 *
+	 * - 'end' (default): will truncate up to the number of characters, and then
+	 *   add an ellipsis at the end. Ex: 'yahoo.com/some/long/pat..'
+	 * - 'middle': will truncate and add the ellipsis in the middle. Ex:
+	 *   'yahoo.com/s..th/to/a/file'
+	 * - 'smart': for URLs where the algorithm attempts to strip out unnecessary
+	 *   parts first (such as the 'www.', then URL scheme, hash, etc.),
+	 *   attempting to make the URL human-readable before looking for a good
+	 *   point to insert the ellipsis if it is still too long. Ex:
+	 *   'yahoo.com/some..to/a/file'. For more details, see
+	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
 	truncate : undefined,
 
@@ -234,6 +293,48 @@ Autolinker.prototype = {
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
+
+
+	/**
+	 * Normalizes the {@link #urls} config into an Object with 3 properties:
+	 * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
+	 *
+	 * See {@link #urls} config for details.
+	 *
+	 * @private
+	 * @param {Boolean/Object} urls
+	 * @return {Object}
+	 */
+	normalizeUrlsCfg : function( urls ) {
+		if( typeof urls === 'boolean' ) {
+			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
+		} else {
+			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+		}
+	},
+
+
+	/**
+	 * Normalizes the {@link #truncate} config into an Object with 2 properties:
+	 * `length` (Number), and `location` (String).
+	 *
+	 * See {@link #truncate} config for details.
+	 *
+	 * @private
+	 * @param {Number/Object} truncate
+	 * @return {Object}
+	 */
+	normalizeTruncateCfg : function( truncate ) {
+		if( typeof truncate === 'number' ) {
+			return { length: truncate, location: 'end' };
+
+		} else {  // object, or undefined/null
+			return Autolinker.Util.defaults( truncate || {}, {
+				length   : Number.POSITIVE_INFINITY,
+				location : 'end'
+			} );
+		}
+	},
 
 
 	/**
@@ -292,9 +393,16 @@ Autolinker.prototype = {
 		if( !this.email )   matches = matches.filter( function( match ) { return match.getType() !== 'email'; } );
 		if( !this.phone )   matches = matches.filter( function( match ) { return match.getType() !== 'phone'; } );
 		if( !this.twitter ) matches = matches.filter( function( match ) { return match.getType() !== 'twitter'; } );
-		if( !this.urls )    matches = matches.filter( function( match ) { return match.getType() !== 'url'; } );
+		if( !this.urls.schemeMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'scheme'; } );
+		}
+		if( !this.urls.wwwMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'www'; } );
+		}
+		if( !this.urls.tldMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'tld'; } );
+		}
 
-		console.log( matches );
 		return matches;
 	},
 
@@ -369,7 +477,6 @@ Autolinker.prototype = {
 	},
 
 
-
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
 	 * handles, and Hashtags found in the given chunk of HTML. Does not link
@@ -390,6 +497,8 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
+		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
+
 		var matches = this.parse( textOrHtml ),
 			newHtml = [],
 			lastIndex = 0;
@@ -562,3 +671,4 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.matcher = {};
 Autolinker.htmlParser = {};
+Autolinker.truncate = {};

@@ -19,8 +19,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 *
-	 * The regular expression to match URLs with an optional protocol, port number, path,
-	 * query string, and hash anchor.
+	 * The regular expression to match URLs with an optional scheme, port
+	 * number, path, query string, and hash anchor.
+	 *
 	 * Example matches:
 	 *
 	 *     http://google.com
@@ -30,21 +31,26 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *
 	 * This regular expression will have the following capturing groups:
 	 *
-	 * 1.  Group that matches a protocol URL (i.e. 'http://google.com'). This is
-	 *     used to match protocol URLs with just a single word, like 'http://localhost',
-	 *     where we won't double check that the domain name has at least one '.'
-	 *     in it.
-	 * 2.  A protocol-relative ('//') match for the case of a 'www.' prefixed
+	 * 1.  Group that matches a scheme-prefixed URL (i.e. 'http://google.com').
+	 *     This is used to match scheme URLs with just a single word, such as
+	 *     'http://localhost', where we won't double check that the domain name
+	 *     has at least one dot ('.') in it.
+	 * 2.  Group that matches a 'www.' prefixed URL. This is only matched if the
+	 *     'www.' text was not prefixed by a scheme (i.e.: not prefixed by
+	 *     'http://', 'ftp:', etc.)
+	 * 3.  A protocol-relative ('//') match for the case of a 'www.' prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     We need to know the character before the '//' in order to determine
 	 *     if it is a valid match or the // was in a string we don't want to
 	 *     auto-link.
-	 * 3.  A protocol-relative ('//') match for the case of a known TLD prefixed
+	 * 4.  Group that matches a known TLD (top level domain), when a scheme
+	 *     or 'www.'-prefixed domain is not matched.
+	 * 5.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
-	 *     See #2 for more info.
+	 *     See #3 for more info.
 	 */
 	matcherRegex : (function() {
-		var protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
 		    domainNameRegex = Autolinker.matcher.domainNameRegex,
 		    tldRegex = Autolinker.matcher.tldRegex,  // match our known top level domains (TLDs)
@@ -54,24 +60,24 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    urlSuffixRegex = /[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]]/;
 
 		return new RegExp( [
-			'(?:', // parens to cover match for protocol (optional), and domain
-				'(',  // *** Capturing group $1, for a protocol-prefixed url (ex: http://google.com)
-					protocolRegex.source,
+			'(?:', // parens to cover match for scheme (optional), and domain
+				'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
+					schemeRegex.source,
 					domainNameRegex.source,
 				')',
 
 				'|',
 
-				'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
-					'(//)?',  // *** Capturing group $2 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+				'(',  // *** Capturing group $2, for a 'www.' prefixed url (ex: www.google.com)
+					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
 					wwwRegex.source,
 					domainNameRegex.source,
 				')',
 
 				'|',
 
-				'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
-					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+				'(',  // *** Capturing group $4, for known a TLD url (ex: google.com)
+					'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
 					domainNameRegex.source + '\\.',
 					tldRegex.source,
 				')',
@@ -83,9 +89,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 
 	/**
-	 * A regular expression to use to check the character before a protocol-relative URL
-	 * match. We don't want to match a protocol-relative URL if it is part of another
-	 * word.
+	 * A regular expression to use to check the character before a protocol-relative
+	 * URL match. We don't want to match a protocol-relative URL if it is part
+	 * of another word.
 	 *
 	 * For example, we want to match something like "Go to: //google.com",
 	 * but we don't want to match something like "abc//google.com"
@@ -148,14 +154,16 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var matchStr = match[ 0 ],
-			    protocolUrlMatch = match[ 1 ],
-			    wwwProtocolRelativeMatch = match[ 2 ],
-			    tldProtocolRelativeMatch = match[ 3 ],
+			    schemeUrlMatch = match[ 1 ],
+			    wwwUrlMatch = match[ 2 ],
+			    wwwProtocolRelativeMatch = match[ 3 ],
+			    //tldUrlMatch = match[ 4 ],  -- not needed at the moment
+			    tldProtocolRelativeMatch = match[ 5 ],
 			    offset = match.index,
 			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 				prevChar = text.charAt( offset - 1 );
 
-			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, protocolUrlMatch ) ) {
+			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, schemeUrlMatch ) ) {
 				continue;
 			}
 
@@ -173,15 +181,25 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				continue;
 			}
 
+			// Handle a closing parenthesis at the end of the match, and exclude
+			// it if there is not a matching open parenthesis in the match
+			// itself.
 			if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
 				matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+			} else {
+				// Handle an invalid character after the TLD
+				var pos = this.matchHasInvalidCharAfterTld( matchStr, schemeUrlMatch );
+				if( pos > -1 ) {
+					matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
+				}
 			}
 
 			matches.push( new Autolinker.match.Url( {
-				matchedText : matchStr,
-				offset      : offset,
-				url         : matchStr,
-				protocolUrlMatch      : !!protocolUrlMatch,
+				matchedText  : matchStr,
+				offset       : offset,
+				url          : matchStr,
+				urlMatchType : schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
+				protocolUrlMatch      : !!schemeUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
 				stripPrefix : this.stripPrefix
 			} ) );
@@ -225,6 +243,48 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		}
 
 		return false;
+	},
+
+
+	/**
+	 * Determine if there's an invalid character after the TLD in a URL. Valid
+	 * characters after TLD are ':/?#'. Exclude scheme matched URLs from this
+	 * check.
+	 *
+	 * @private
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} schemeUrlMatch The match URL string for a scheme
+	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
+	 *   'http://localhost', where we won't double check that the domain name
+	 *   has at least one '.' in it.
+	 * @return {Number} the position where the invalid character was found. If
+	 *   no such character was found, returns -1
+	 */
+	matchHasInvalidCharAfterTld : function( urlMatch, schemeUrlMatch ) {
+		if( !urlMatch ) {
+			return -1;
+		}
+
+		var offset = 0;
+		if ( schemeUrlMatch ) {
+			offset = urlMatch.indexOf(':');
+			urlMatch = urlMatch.slice(offset);
+		}
+
+		var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+		var res = re.exec( urlMatch );
+		if ( res === null ) {
+			return -1;
+		}
+
+		offset += res[1].length;
+		urlMatch = urlMatch.slice(res[1].length);
+		if (/^[^.A-Za-z:\/?#]/.test(urlMatch)) {
+			return offset;
+		}
+
+		return -1;
 	}
 
 } );

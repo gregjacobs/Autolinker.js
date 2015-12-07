@@ -16,6 +16,15 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
+	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
+	 *
+	 * The type of URL match that this class represents. This helps to determine
+	 * if the match was made in the original text with a prefixed scheme (ex:
+	 * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
+	 * was matched by a known top-level domain (ex: 'google.com').
+	 */
+
+	/**
 	 * @cfg {Boolean} protocolUrlMatch (required)
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
@@ -45,6 +54,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function() {
 		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
 
+		if( this.urlMatchType !== 'scheme' && this.urlMatchType !== 'www' && this.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
 		if( !this.url ) throw new Error( '`url` cfg required' );
 		if( this.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
 		if( this.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
@@ -91,6 +101,22 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
+	 * Returns a string name for the type of URL match that this class
+	 * represents.
+	 *
+	 * This helps to determine if the match was made in the original text with a
+	 * prefixed scheme (ex: 'http://www.google.com'), a prefixed 'www' (ex:
+	 * 'www.google.com'), or was matched by a known top-level domain (ex:
+	 * 'google.com').
+	 *
+	 * @return {"scheme"/"www"/"tld"}
+	 */
+	getUrlMatchType : function() {
+		return this.urlMatchType;
+	},
+
+
+	/**
 	 * Returns the url that was matched, assuming the protocol to be 'http://' if the original
 	 * match was missing a protocol.
 	 *
@@ -128,7 +154,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		var anchorText = this.getUrl();
+		var anchorText = this.getMatchedText();
 
 		if( this.protocolRelativeMatch ) {
 			// Strip off any protocol-relative '//' from the anchor text

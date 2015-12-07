@@ -13,12 +13,12 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * The regular expression to match email addresses. Example match:
 	 *
 	 *     person@place.com
-	 * 
+	 *
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
 	matcherRegex : (function() {
-		var emailRegex = /[\-;:&=\+\$,\w\.]+@/,  // something@ for email addresses (a.k.a. local-part)
+		var emailRegex = /[\w\-;:&=+$.,]+@/,  // something@ for email addresses (a.k.a. local-part)
 			domainNameRegex = Autolinker.matcher.domainNameRegex,
 			tldRegex = Autolinker.matcher.tldRegex;  // match our known top level domains (TLDs)
 
@@ -37,7 +37,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var matcherRegex = this.matcherRegex,
 		    matches = [],
 		    match;
-		
+
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			matches.push( new Autolinker.match.Email( {
 				matchedText : match[ 0 ],
@@ -45,7 +45,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				email       : match[ 0 ]
 			} ) );
 		}
-		
+
 		return matches;
 	}
 

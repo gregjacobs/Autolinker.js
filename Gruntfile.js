@@ -32,6 +32,9 @@ module.exports = function(grunt) {
 		},
 
 		jshint: {
+			options : {
+				jshintrc: true
+			},
 			files: {
 				src: [ 'src/**/*.js', 'tests/**/*.js' ]
 			}
@@ -77,7 +80,10 @@ module.exports = function(grunt) {
 					'src/matcher/Phone.js',
 					'src/matcher/Twitter.js',
 					'src/matcher/Url.js',
-					'src/matcher/UrlMatchValidator.js'
+					'src/matcher/UrlMatchValidator.js',
+					'src/truncate/TruncateEnd.js',
+					'src/truncate/TruncateMiddle.js',
+					'src/truncate/TruncateSmart.js'
 				],
 				dest: distPath
 			}

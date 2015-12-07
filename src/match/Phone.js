@@ -19,6 +19,15 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * Note: This is a string to allow for prefixed 0's.
 	 */
 
+	/**
+	 * @cfg {Boolean} plusSign (required)
+	 *
+	 * `true` if the matched phone number started with a '+' sign. We'll include
+	 * it in the `tel:` URL if so, as this is needed for international numbers.
+	 *
+	 * Ex: '+1 (123) 456 7879'
+	 */
+
 
 	// @if DEBUG
 	/**
@@ -30,6 +39,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
 
 		if( !this.number ) throw new Error( '`number` cfg required' );
+		if( this.plusSign == null ) throw new Error( '`plusSign` cfg required' );
 	},
 	// @endif
 
@@ -63,7 +73,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return 'tel:' + this.number;
+		return 'tel:' + ( this.plusSign ? '+' : '' ) + this.number;
 	},
 
 

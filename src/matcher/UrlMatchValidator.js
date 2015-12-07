@@ -22,7 +22,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} hasFullProtocolRegex
 	 */
-	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
+	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]*:\/\//,
 
 	/**
 	 * Regex to find the URI scheme, such as 'mailto:'.
@@ -32,7 +32,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} uriSchemeRegex
 	 */
-	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
+	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]*:/,
 
 	/**
 	 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
@@ -44,7 +44,7 @@ Autolinker.matcher.UrlMatchValidator = {
 
 
 	/**
-	 * Determines if a given URL match found by the {@link Autolinker.matcherEngine.MatcherEngine}
+	 * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
 	 * is valid. Will return `false` for:
 	 *
 	 * 1) URL matches which do not have at least have one period ('.') in the

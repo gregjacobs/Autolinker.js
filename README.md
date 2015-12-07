@@ -1,3 +1,6 @@
+If you love and use Autolinker, please consider a $5 donation to support continued development. Many, many hours have gone into this project, and I hope it's helping you out! <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9HX848RTS975Y&lc=US&item_name=Autolinker%2ejs%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" alt="Preview Image"></a>
+
+
 # Autolinker.js
 
 Because I had so much trouble finding a good auto-linking implementation out in
@@ -101,13 +104,28 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
   `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
   beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
-- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number<br />
+- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number/Object<br />
   A number for how many characters long URLs/emails/Twitter handles/Twitter
   hashtags should be truncated to inside the text of a link. If the match is
   over the number of characters, it will be truncated to this length by
   replacing the end of the string with a two period ellipsis ('..').<br /><br />
+  
   Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
   to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+  
+  In the object form, both `length` and `location` may be specified to perform 
+  truncation. Available options for `location` are: 'end' (default), 'middle', 
+  or 'smart'. Example usage: 
+  
+    ```javascript
+    truncate: { length: 32, location: 'middle' }
+    ```
+  
+  The 'smart' truncation option is for URLs where the algorithm attempts to 
+  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme, 
+  hash, etc.) before trying to find a good point to insert the ellipsis if it is 
+  still too long. For details, see source code of: 
+  [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.truncate.TruncateSmart)
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added
   to all links, as well as this class plus "url"/"email"/"phone"/"twitter"/"hashtag"
@@ -121,9 +139,27 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   4) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 
-- [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean<br />
+- [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
-  Defaults to `true`.<br />
+  Defaults to `true`.<br>
+  
+  This option also accepts an Object form with 3 properties, to allow for more
+  customization of what exactly gets linked. All default to `true`:
+   
+    - schemeMatches (Boolean): `true` to match URLs found prefixed with a scheme,
+      i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
+      prevent these types of matches.
+    - wwwMatches (Boolean): `true` to match urls found prefixed with `'www.'`,
+      i.e. `www.google.com`. `false` to prevent these types of matches. Note 
+      that if the URL had a prefixed scheme, and `schemeMatches` is true, it 
+      will still be linked.
+    - tldMatches: `true` to match URLs with known top level domains (.com, .net,
+      etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`, 
+      `asdf.org/?page=1`, etc. `false` to prevent these types of matches.
+      <br />
+      
+  Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
+    
 - [email](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-email) : Boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
   email addresses. Defaults to `true`.<br /><br />
@@ -135,7 +171,7 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   Twitter handles. Defaults to `true`.<br /><br />
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
   A string for the service name to have hashtags auto-linked to. Supported
-  values at this time are 'twitter' and 'facebook'. Pass `false` to skip
+  values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.<br /><br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
@@ -276,6 +312,16 @@ The following return values may be provided:
 
 The full API docs for Autolinker may be referenced at:
 [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)
+
+
+## Contributing
+
+Pull requests definitely welcome.
+
+- Make sure to add tests to cover your new functionality/bugfix.
+- Run the `grunt` command to build/test (or alternatively, open the `tests/index.html` file to run the tests).
+- When committing, please omit checking in the files in the `dist/` folder after building/testing. These are only committed to the repository for users downloading Autolinker via Bower. I will build these files and assign them a version number when merging your PR.
+- Please use tabs for indents! Tabs are better for everybody (individuals can set their editors to different tab sizes based on their visual preferences).
 
 
 ## Changelog
