@@ -228,23 +228,147 @@ Autolinker.prototype = {
 
 	/**
 	 * @private
-	 * @property {Autolinker.matcherEngine.MatcherEngine} matcherEngine
-	 *
-	 * The MatcherEngine instance used to find and replace matches in the text
-	 * nodes of an input string passed to {@link #link}.
-	 *
-	 * This is lazily instantiated in the {@link #getMatcherEngine} method.
-	 */
-	matcherEngine : undefined,
-
-	/**
-	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
 	 *
 	 * The AnchorTagBuilder instance used to build match replacement anchor tags. Note: this is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
+
+
+	/**
+	 * Parses the input `textOrHtml` looking for URLs, email addresses, phone
+	 * numbers, username handles, and hashtags (depending on the configuration
+	 * of the Autolinker instance), and returns an array of {@link Autolinker.match.Match}
+	 * objects describing those matches.
+	 *
+	 * This method is used by the {@link #link} method, but can also be used to
+	 * simply do parsing of the input in order to discover what kinds of links
+	 * there are and how many.
+	 *
+	 * @param {String} textOrHtml The HTML or text to find matches within
+	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
+	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
+	 * @return {Autolinker.match.Match[]} The array of Matches found in the
+	 *   given input `textOrHtml`.
+	 */
+	parse : function( textOrHtml ) {
+		var htmlParser = this.getHtmlParser(),
+		    htmlNodes = htmlParser.parse( textOrHtml ),
+		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have;
+		    matches = [];
+
+		// Find all matches within the `textOrHtml` (but not matches that are
+		// already nested within <a> tags)
+		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
+			var node = htmlNodes[ i ],
+			    nodeType = node.getType();
+
+			if( nodeType === 'element' && node.getTagName() === 'a' ) {  // Process HTML anchor element nodes in the input `textOrHtml` to find out when we're within an <a> tag
+				if( !node.isClosing() ) {  // it's the start <a> tag
+					anchorTagStackCount++;
+				} else {  // it's the end </a> tag
+					anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
+				}
+
+			} else if( nodeType === 'text' && anchorTagStackCount === 0 ) {  // Process text nodes that are not within an <a> tag
+				var textNodeMatches = this.parseText( node.getText(), node.getOffset() );
+
+				matches.push.apply( matches, textNodeMatches );
+			}
+		}
+
+
+		// After we have found all matches, remove subsequent matches that
+		// overlap with a previous match. This can happen for instance with URLs,
+		// where the url 'google.com/#link' would match '#link' as a hashtag.
+		matches = this.compactMatches( matches );
+
+		// And finally, remove matches for match types that have been turned
+		// off. We needed to have all match types turned on initially so that
+		// things like hashtags could be filtered out if they were really just
+		// part of a URL match (as a named anchor).
+		if( !this.hashtag ) matches = matches.filter( function( match ) { return match.getType() !== 'hashtag'; } );
+		if( !this.email )   matches = matches.filter( function( match ) { return match.getType() !== 'email'; } );
+		if( !this.phone )   matches = matches.filter( function( match ) { return match.getType() !== 'phone'; } );
+		if( !this.twitter ) matches = matches.filter( function( match ) { return match.getType() !== 'twitter'; } );
+		if( !this.urls )    matches = matches.filter( function( match ) { return match.getType() !== 'url'; } );
+
+		console.log( matches );
+		return matches;
+	},
+
+
+	/**
+	 * After we have found all matches, we need to remove subsequent matches
+	 * that overlap with a previous match. This can happen for instance with
+	 * URLs, where the url 'google.com/#link' would match '#link' as a hashtag.
+	 *
+	 * @private
+	 * @param {Autolinker.match.Match[]} matches
+	 * @return {Autolinker.match.Match[]}
+	 */
+	compactMatches : function( matches ) {
+		// First, the matches need to be sorted in order of offset
+		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
+
+		for( var i = 0; i < matches.length - 1; i++ ) {
+			var match = matches[ i ],
+			    endIdx = match.getOffset() + match.getMatchedText().length;
+
+			// Remove subsequent matches that overlap with the current match
+			while( i + 1 < matches.length && matches[ i + 1 ].getOffset() <= endIdx ) {
+				matches.splice( i + 1, 1 );
+			}
+		}
+
+		return matches;
+	},
+
+
+	/**
+	 * Parses the input `text` looking for URLs, email addresses, phone
+	 * numbers, username handles, and hashtags (depending on the configuration
+	 * of the Autolinker instance), and returns an array of {@link Autolinker.match.Match}
+	 * objects describing those matches.
+	 *
+	 * This method processes a **non-HTML string**, and is used to parse and
+	 * match within the text nodes of an HTML string. This method is used
+	 * internally by {@link #parse}.
+	 *
+	 * @private
+	 * @param {String} text The text to find matches within (depending on if the
+	 *   {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and
+	 *   {@link #hashtag} options are enabled). This must be a non-HTML string.
+	 * @param {Number} [offset=0] The offset of the text node within the
+	 *   original string. This is used when parsing with the {@link #parse}
+	 *   method to generate correct offsets within the {@link Autolinker.match.Match}
+	 *   instances, but may be omitted if calling this method publicly.
+	 * @return {Autolinker.match.Match[]} The array of Matches found in the
+	 *   given input `text`.
+	 */
+	parseText : function( text, offset ) {
+		offset = offset || 0;
+		var matchers = this.getMatchers(),
+		    matches = [];
+
+		for( var i = 0, numMatchers = matchers.length; i < numMatchers; i++ ) {
+			var textMatches = matchers[ i ].parseMatches( text );
+
+			// Correct the offset of each of the matches. They are originally
+			// the offset of the match within the provided text node, but we
+			// need to correct them to be relative to the original HTML input
+			// string (i.e. the one provided to #parse).
+			for( var j = 0, numTextMatches = textMatches.length; j < numTextMatches; j++ ) {
+				textMatches[ j ].setOffset( offset + textMatches[ j ].getOffset() );
+			}
+
+			matches.push.apply( matches, textMatches );
+		}
+		return matches;
+	},
+
+
 
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
@@ -266,61 +390,21 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
-		var htmlParser = this.getHtmlParser(),
-		    htmlNodes = htmlParser.parse( textOrHtml ),
-		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have
-		    resultHtml = [];
+		var matches = this.parse( textOrHtml ),
+			newHtml = [],
+			lastIndex = 0;
 
-		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
-			var node = htmlNodes[ i ],
-			    nodeType = node.getType(),
-			    nodeText = node.getText();
+		for( var i = 0, len = matches.length; i < len; i++ ) {
+			var match = matches[ i ];
 
-			if( nodeType === 'element' ) {
-				// Process HTML nodes in the input `textOrHtml`
-				if( node.getTagName() === 'a' ) {
-					if( !node.isClosing() ) {  // it's the start <a> tag
-						anchorTagStackCount++;
-					} else {   // it's the end </a> tag
-						anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
-					}
-				}
-				resultHtml.push( nodeText );  // now add the text of the tag itself verbatim
+			newHtml.push( textOrHtml.substring( lastIndex, match.getOffset() ) );
+			newHtml.push( this.createMatchReturnVal( match ) );
 
-			} else if( nodeType === 'entity' || nodeType === 'comment' ) {
-				resultHtml.push( nodeText );  // append HTML entity nodes (such as '&nbsp;') or HTML comments (such as '<!-- Comment -->') verbatim
-
-			} else {
-				// Process text nodes in the input `textOrHtml`
-				if( anchorTagStackCount === 0 ) {
-					// If we're not within an <a> tag, process the text node to linkify
-					var linkifiedStr = this.linkifyStr( nodeText );
-					resultHtml.push( linkifiedStr );
-
-				} else {
-					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything
-					// already within an <a>...</a> tag
-					resultHtml.push( nodeText );
-				}
-			}
+			lastIndex = match.getOffset() + match.getMatchedText().length;
 		}
+		newHtml.push( textOrHtml.substring( lastIndex ) );  // handle the text after the last match
 
-		return resultHtml.join( "" );
-	},
-
-	/**
-	 * Process the text that lies in between HTML tags, performing the anchor
-	 * tag replacements for the matches, and returns the string with the
-	 * replacements made.
-	 *
-	 * This method does the actual wrapping of matches with anchor tags.
-	 *
-	 * @private
-	 * @param {String} str The string of text to auto-link.
-	 * @return {String} The text with anchor tags auto-filled.
-	 */
-	linkifyStr : function( str ) {
-		return this.getMatcherEngine().replace( str, this.createMatchReturnVal, this );
+		return newHtml.join( '' );
 	},
 
 
@@ -331,9 +415,11 @@ Autolinker.prototype = {
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 *
 	 * @private
-	 * @param {Autolinker.match.Match} match The Match object that represents the match.
-	 * @return {String} The string that the `match` should be replaced with. This is usually the anchor tag string, but
-	 *   may be the `matchStr` itself if the match is not to be replaced.
+	 * @param {Autolinker.match.Match} match The Match object that represents
+	 *   the match.
+	 * @return {String} The string that the `match` should be replaced with.
+	 *   This is usually the anchor tag string, but may be the `matchStr` itself
+	 *   if the match is not to be replaced.
 	 */
 	createMatchReturnVal : function( match ) {
 		// Handle a custom `replaceFn` being provided
@@ -362,7 +448,8 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Lazily instantiates and returns the {@link #htmlParser} instance for this Autolinker instance.
+	 * Lazily instantiates and returns the {@link #htmlParser} instance for this
+	 * Autolinker instance.
 	 *
 	 * @protected
 	 * @return {Autolinker.htmlParser.HtmlParser}
@@ -379,33 +466,28 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Lazily instantiates and returns the {@link #matcherEngine} instance for
-	 * this Autolinker instance.
+	 * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
+	 * instances for this Autolinker instance.
 	 *
 	 * @protected
-	 * @return {Autolinker.matcherEngine.MatcherEngine}
+	 * @return {Autolinker.matcher.Matcher[]}
 	 */
-	getMatcherEngine : function() {
-		var matcherEngine = this.matcherEngine;
+	getMatchers : function() {
+		if( !this.matchers ) {
+			var matchersNs = Autolinker.matcher;
+			var matchers = [
+				new matchersNs.Hashtag( { serviceName: this.hashtag } ),
+				new matchersNs.Email(),
+				new matchersNs.Phone(),
+				new matchersNs.Twitter(),
+				new matchersNs.Url( { stripPrefix: this.stripPrefix } )
+			];
 
-		if( !matcherEngine ) {
-			var matchersNs = Autolinker.matchers,
-			    matchers = [];
+			return ( this.matchers = matchers );
 
-			// NOTE: Ordering is important here. TwitterMatcher must come before
-			// email matcher, and email matcher before URL matcher, etc.
-			if( this.twitter ) matchers.push( new matchersNs.Twitter() );
-			if( this.email )   matchers.push( new matchersNs.Email() );
-			if( this.urls )    matchers.push( new matchersNs.Url( { stripPrefix: this.stripPrefix } ) );
-			if( this.phone )   matchers.push( new matchersNs.Phone() );
-			if( this.hashtag ) matchers.push( new matchersNs.Hashtag( { serviceName: this.hashtag } ) );
-
-			matcherEngine = this.matcherEngine = new Autolinker.matcher.MatcherEngine( {
-				matchers : matchers
-			} );
+		} else {
+			return this.matchers;
 		}
-
-		return matcherEngine;
 	},
 
 
@@ -476,6 +558,7 @@ Autolinker.link = function( textOrHtml, options ) {
 
 
 // Autolinker Namespaces
+
 Autolinker.match = {};
-Autolinker.matchers = {};
+Autolinker.matcher = {};
 Autolinker.htmlParser = {};

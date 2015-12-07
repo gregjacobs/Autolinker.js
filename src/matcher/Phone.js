@@ -11,32 +11,38 @@
 Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * @private
-	 * @property {String} matcherRegexStr
-	 *
-	 * The regular expression string, which when compiled, will match Phone
-	 * numbers. Example match:
+	 * The regular expression to match Phone numbers. Example match:
 	 *
 	 *     (123) 456-7890
 	 *
 	 * This regular expression has no capturing groups.
+	 *
+	 * @private
+	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegexStr : /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/.source,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+	matcherRegex : /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 
 
 	/**
 	 * @inheritdoc
 	 */
-	getMatcherRegexStr : function() {
-		return this.matcherRegexStr;
-	},
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    matches = [],
+		    match;
 
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			// Remove non-numeric values from phone number string
+			var cleanNumber = match[ 0 ].replace( /\D/g, '' );
 
-	/**
-	 * @inheritdoc
-	 */
-	getNumCapturingGroups : function() {
-		return 0;
+			matches.push( new Autolinker.match.Phone( {
+				matchedText : match[ 0 ],
+				offset      : match.index,
+				number      : cleanNumber
+			} ) );
+		}
+
+		return matches;
 	}
 
 } );

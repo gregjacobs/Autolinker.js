@@ -13,26 +13,30 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	} );
 
 
-	function expectCommentNode( node, text, comment ) {
+	function expectCommentNode( node, offset, text, comment ) {
 		expect( node ).toEqual( jasmine.any( CommentNode ) );
+		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
 		expect( node.getComment() ).toBe( comment );
 	}
 
-	function expectElementNode( node, tagText, tagName, isClosingTag ) {
+	function expectElementNode( node, offset, tagText, tagName, isClosingTag ) {
 		expect( node ).toEqual( jasmine.any( ElementNode ) );
+		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( tagText );
 		expect( node.getTagName() ).toBe( tagName );
 		expect( node.isClosing() ).toBe( isClosingTag );
 	}
 
-	function expectEntityNode( node, text ) {
+	function expectEntityNode( node, offset, text ) {
 		expect( node ).toEqual( jasmine.any( EntityNode ) );
+		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
 	}
 
-	function expectTextNode( node, text ) {
+	function expectTextNode( node, offset, text ) {
 		expect( node ).toEqual( jasmine.any( TextNode ) );
+		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
 	}
 
@@ -48,7 +52,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "Testing 123" );
 
 			expect( nodes.length ).toBe( 1 );
-			expectTextNode( nodes[ 0 ], 'Testing 123' );
+			expectTextNode( nodes[ 0 ], 0, 'Testing 123' );
 		} );
 
 	} );
@@ -60,7 +64,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "<!-- Testing 123 -->" );
 
 			expect( nodes.length ).toBe( 1 );
-			expectCommentNode( nodes[ 0 ], "<!-- Testing 123 -->", "Testing 123" );
+			expectCommentNode( nodes[ 0 ], 0, "<!-- Testing 123 -->", "Testing 123" );
 		} );
 
 
@@ -68,7 +72,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "<!-- \n  \t\n Testing 123  \n\t  \n\n -->" );
 
 			expect( nodes.length ).toBe( 1 );
-			expectCommentNode( nodes[ 0 ], "<!-- \n  \t\n Testing 123  \n\t  \n\n -->", "Testing 123" );
+			expectCommentNode( nodes[ 0 ], 0, "<!-- \n  \t\n Testing 123  \n\t  \n\n -->", "Testing 123" );
 		} );
 
 
@@ -76,9 +80,9 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "Test <!-- Comment --> Test" );
 
 			expect( nodes.length ).toBe( 3 );
-			expectTextNode   ( nodes[ 0 ], 'Test ' );
-			expectCommentNode( nodes[ 1 ], '<!-- Comment -->', 'Comment' );
-			expectTextNode   ( nodes[ 2 ], ' Test' );
+			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
+			expectCommentNode( nodes[ 1 ], 5, '<!-- Comment -->', 'Comment' );
+			expectTextNode   ( nodes[ 2 ], 21, ' Test' );
 		} );
 
 
@@ -86,10 +90,10 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "Test <!-- Comment --> Test <!-- Comment 2 -->" );
 
 			expect( nodes.length ).toBe( 4 );
-			expectTextNode   ( nodes[ 0 ], 'Test ' );
-			expectCommentNode( nodes[ 1 ], '<!-- Comment -->', 'Comment' );
-			expectTextNode   ( nodes[ 2 ], ' Test ' );
-			expectCommentNode( nodes[ 3 ], '<!-- Comment 2 -->', 'Comment 2' );
+			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
+			expectCommentNode( nodes[ 1 ], 5, '<!-- Comment -->', 'Comment' );
+			expectTextNode   ( nodes[ 2 ], 21, ' Test ' );
+			expectCommentNode( nodes[ 3 ], 27, '<!-- Comment 2 -->', 'Comment 2' );
 		} );
 
 	} );
@@ -101,7 +105,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "<div>" );
 
 			expect( nodes.length ).toBe( 1 );
-			expectElementNode( nodes[ 0 ], '<div>', 'div', false );
+			expectElementNode( nodes[ 0 ], 0, '<div>', 'div', false );
 		} );
 
 
@@ -109,9 +113,9 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( "Test <div> Test" );
 
 			expect( nodes.length ).toBe( 3 );
-			expectTextNode   ( nodes[ 0 ], 'Test ' );
-			expectElementNode( nodes[ 1 ], '<div>', 'div', false );
-			expectTextNode   ( nodes[ 2 ], ' Test' );
+			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
+			expectElementNode( nodes[ 1 ], 5, '<div>', 'div', false );
+			expectTextNode   ( nodes[ 2 ], 10, ' Test' );
 		} );
 
 
@@ -137,7 +141,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( 'Me&amp;You' );
 
 			expect( nodes.length ).toBe( 1 );
-			expectTextNode( nodes[ 0 ], 'Me&amp;You' );
+			expectTextNode( nodes[ 0 ], 0, 'Me&amp;You' );
 		} );
 
 
@@ -145,8 +149,8 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( '&quot;Test' );
 
 			expect( nodes.length ).toBe( 2 );
-			expectEntityNode( nodes[ 0 ], '&quot;' );
-			expectTextNode( nodes[ 1 ], 'Test' );
+			expectEntityNode( nodes[ 0 ], 0, '&quot;' );
+			expectTextNode(   nodes[ 1 ], 6, 'Test' );
 		} );
 
 
@@ -154,8 +158,8 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( 'Test&quot;' );
 
 			expect( nodes.length ).toBe( 2 );
-			expectTextNode( nodes[ 0 ], 'Test' );
-			expectEntityNode( nodes[ 1 ], '&quot;' );
+			expectTextNode(   nodes[ 0 ], 0, 'Test' );
+			expectEntityNode( nodes[ 1 ], 4, '&quot;' );
 		} );
 
 
@@ -163,9 +167,9 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( '&quot;Test&quot;' );
 
 			expect( nodes.length ).toBe( 3 );
-			expectEntityNode( nodes[ 0 ], '&quot;' );
-			expectTextNode( nodes[ 1 ], 'Test' );
-			expectEntityNode( nodes[ 2 ], '&quot;' );
+			expectEntityNode( nodes[ 0 ], 0,  '&quot;' );
+			expectTextNode(   nodes[ 1 ], 6,  'Test' );
+			expectEntityNode( nodes[ 2 ], 10, '&quot;' );
 		} );
 
 
@@ -173,9 +177,9 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( 'Test&quot;Test' );
 
 			expect( nodes.length ).toBe( 3 );
-			expectTextNode( nodes[ 0 ], 'Test' );
-			expectEntityNode( nodes[ 1 ], '&quot;' );
-			expectTextNode( nodes[ 2 ], 'Test' );
+			expectTextNode(   nodes[ 0 ], 0,  'Test' );
+			expectEntityNode( nodes[ 1 ], 4,  '&quot;' );
+			expectTextNode(   nodes[ 2 ], 10, 'Test' );
 		} );
 
 
@@ -183,7 +187,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			var nodes = htmlParser.parse( '&quot;' );
 
 			expect( nodes.length ).toBe( 1 );
-			expectEntityNode( nodes[ 0 ], '&quot;' );
+			expectEntityNode( nodes[ 0 ], 0, '&quot;' );
 		} );
 
 	} );
@@ -202,57 +206,61 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			expect( nodes.length ).toBe( 17 );
 
 			var i = -1;
-			expectEntityNode ( nodes[ ++i ], '&quot;' );
-			expectTextNode   ( nodes[ ++i ], 'Joe went to ' );
-			expectEntityNode ( nodes[ ++i ], '&quot;' );
-			expectElementNode( nodes[ ++i ], '<a href="google.com">', 'a', false );
-			expectTextNode   ( nodes[ ++i ], 'ebay.com' );
-			expectElementNode( nodes[ ++i ], '</a>', 'a', true );
-			expectEntityNode ( nodes[ ++i ], '&quot;' );
-			expectTextNode   ( nodes[ ++i ], ' today,' );
-			expectEntityNode ( nodes[ ++i ], '&nbsp;' );
-			expectTextNode   ( nodes[ ++i ], 'and ' );
-			expectCommentNode( nodes[ ++i ], '<!-- stuff -->', 'stuff' );
-			expectTextNode   ( nodes[ ++i ], 'bought ' );
-			expectElementNode( nodes[ ++i ], '<b>', 'b', false );
-			expectTextNode   ( nodes[ ++i ], 'big' );
-			expectElementNode( nodes[ ++i ], '</b>', 'b', true );
-			expectTextNode   ( nodes[ ++i ], ' items' );
-			expectEntityNode ( nodes[ ++i ], '&quot;' );
+			expectEntityNode ( nodes[ ++i ], 0,   '&quot;' );
+			expectTextNode   ( nodes[ ++i ], 6,   'Joe went to ' );
+			expectEntityNode ( nodes[ ++i ], 18,  '&quot;' );
+			expectElementNode( nodes[ ++i ], 24,  '<a href="google.com">', 'a', false );
+			expectTextNode   ( nodes[ ++i ], 45,  'ebay.com' );
+			expectElementNode( nodes[ ++i ], 53,  '</a>', 'a', true );
+			expectEntityNode ( nodes[ ++i ], 57,  '&quot;' );
+			expectTextNode   ( nodes[ ++i ], 63,  ' today,' );
+			expectEntityNode ( nodes[ ++i ], 70,  '&nbsp;' );
+			expectTextNode   ( nodes[ ++i ], 76,  'and ' );
+			expectCommentNode( nodes[ ++i ], 80,  '<!-- stuff -->', 'stuff' );
+			expectTextNode   ( nodes[ ++i ], 94,  'bought ' );
+			expectElementNode( nodes[ ++i ], 101, '<b>', 'b', false );
+			expectTextNode   ( nodes[ ++i ], 104, 'big' );
+			expectElementNode( nodes[ ++i ], 107, '</b>', 'b', true );
+			expectTextNode   ( nodes[ ++i ], 111, ' items' );
+			expectEntityNode ( nodes[ ++i ], 117, '&quot;' );
 		} );
 
 
 		it( 'should match tags of both upper and lower case', function() {
-			var inputStr = 'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> <b>big</b> <B><!-- Comment 2 -->items</B>',
-			    nodes = htmlParser.parse( inputStr );
+			var inputStr = [
+				'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
+				'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
+				'<b>big</b> <B><!-- Comment 2 -->items</B>'
+			].join( '' );
+			var nodes = htmlParser.parse( inputStr );
 
 			expect( nodes.length ).toBe( 24 );
 
 			var i = -1;
-			expectTextNode   ( nodes[ ++i ], 'Joe ' );
-			expectElementNode( nodes[ ++i ], '<!DOCTYPE html>', '!doctype', false );
-			expectCommentNode( nodes[ ++i ], '<!-- Comment -->', 'Comment' );
-			expectTextNode   ( nodes[ ++i ], 'went ' );
-			expectElementNode( nodes[ ++i ], '<!doctype "blah" "blah blah">', '!doctype', false );
-			expectTextNode   ( nodes[ ++i ], ' to ' );
-			expectElementNode( nodes[ ++i ], '<a href="google.com">', 'a', false );
-			expectTextNode   ( nodes[ ++i ], 'ebay.com' );
-			expectElementNode( nodes[ ++i ], '</a>', 'a', true );
-			expectTextNode   ( nodes[ ++i ], ' today,' );
-			expectEntityNode ( nodes[ ++i ], '&nbsp;' );
-			expectTextNode   ( nodes[ ++i ], 'and ' );
-			expectElementNode( nodes[ ++i ], '<A href="purchase.com">', 'a', false );
-			expectTextNode   ( nodes[ ++i ], 'purchased' );
-			expectElementNode( nodes[ ++i ], '</A>', 'a', true );
-			expectTextNode   ( nodes[ ++i ], ' ' );
-			expectElementNode( nodes[ ++i ], '<b>', 'b', false );
-			expectTextNode   ( nodes[ ++i ], 'big' );
-			expectElementNode( nodes[ ++i ], '</b>', 'b', true );
-			expectTextNode   ( nodes[ ++i ], ' ' );
-			expectElementNode( nodes[ ++i ], '<B>', 'b', false );
-			expectCommentNode( nodes[ ++i ], '<!-- Comment 2 -->', 'Comment 2' );
-			expectTextNode   ( nodes[ ++i ], 'items' );
-			expectElementNode( nodes[ ++i ], '</B>', 'b', true );
+			expectTextNode   ( nodes[ ++i ], 0,   'Joe ' );
+			expectElementNode( nodes[ ++i ], 4,   '<!DOCTYPE html>', '!doctype', false );
+			expectCommentNode( nodes[ ++i ], 19,  '<!-- Comment -->', 'Comment' );
+			expectTextNode   ( nodes[ ++i ], 35,  'went ' );
+			expectElementNode( nodes[ ++i ], 40,  '<!doctype "blah" "blah blah">', '!doctype', false );
+			expectTextNode   ( nodes[ ++i ], 69,  ' to ' );
+			expectElementNode( nodes[ ++i ], 73,  '<a href="google.com">', 'a', false );
+			expectTextNode   ( nodes[ ++i ], 94,  'ebay.com' );
+			expectElementNode( nodes[ ++i ], 102, '</a>', 'a', true );
+			expectTextNode   ( nodes[ ++i ], 106, ' today,' );
+			expectEntityNode ( nodes[ ++i ], 113, '&nbsp;' );
+			expectTextNode   ( nodes[ ++i ], 119, 'and ' );
+			expectElementNode( nodes[ ++i ], 123, '<A href="purchase.com">', 'a', false );
+			expectTextNode   ( nodes[ ++i ], 146, 'purchased' );
+			expectElementNode( nodes[ ++i ], 155, '</A>', 'a', true );
+			expectTextNode   ( nodes[ ++i ], 159, ' ' );
+			expectElementNode( nodes[ ++i ], 160, '<b>', 'b', false );
+			expectTextNode   ( nodes[ ++i ], 163, 'big' );
+			expectElementNode( nodes[ ++i ], 166, '</b>', 'b', true );
+			expectTextNode   ( nodes[ ++i ], 170, ' ' );
+			expectElementNode( nodes[ ++i ], 171, '<B>', 'b', false );
+			expectCommentNode( nodes[ ++i ], 174, '<!-- Comment 2 -->', 'Comment 2' );
+			expectTextNode   ( nodes[ ++i ], 192, 'items' );
+			expectElementNode( nodes[ ++i ], 197, '</B>', 'b', true );
 		} );
 
 	} );
@@ -263,7 +271,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 		    nodes = htmlParser.parse( inputStr );
 
 		expect( nodes.length ).toBe( 1 );
-		expectTextNode( nodes[ 0 ], inputStr );
+		expectTextNode( nodes[ 0 ], 0, inputStr );
 	} );
 
 } );

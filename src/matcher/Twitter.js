@@ -3,40 +3,58 @@
  * @class Autolinker.matcher.Twitter
  * @extends Autolinker.matcher.Matcher
  *
- * Matcher to find Twitter matches in an input string.
- *
- * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more
- * details.
+ * Matcher to find/replace username matches in an input string.
  */
 Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * @private
-	 * @property {String} matcherRegexStr
-	 *
-	 * The regular expression string, which when compiled, will match Twitter
-	 * handles. Example match:
+	 * The regular expression to match username handles. Example match:
 	 *
 	 *     @asdf
 	 *
-	 * This regular expression has no capturing groups.
+	 * @private
+	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegexStr : /(^|[^\w])@(\w{1,15})/.source,
+	matcherRegex : /@(\w{1,15})/g,
+
+	/**
+	 * The regular expression to use to check the character before a username match to
+	 * make sure we didn't accidentally match an email address.
+	 *
+	 * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
+	 *
+	 * @private
+	 * @property {RegExp} whitespaceRegex
+	 */
+	nonWordCharRegex : /[^\w]/,
 
 
 	/**
 	 * @inheritdoc
 	 */
-	getMatcherRegexStr : function() {
-		return this.matcherRegexStr;
-	},
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    nonWordCharRegex = this.nonWordCharRegex,
+		    matches = [],
+		    match;
 
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			var offset = match.index,
+			    prevChar = text.charAt( offset - 1 );
 
-	/**
-	 * @inheritdoc
-	 */
-	getNumCapturingGroups : function() {
-		return 0;
+			// If we found the match at the beginning of the string, or we found the match
+			// and there is a whitespace char in front of it (meaning it is not an email
+			// address), then it is a username match.
+			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
+				matches.push( new Autolinker.match.Twitter( {
+					matchedText   : match[ 0 ],
+					offset        : offset,
+					twitterHandle : match[ 0 ].slice( 1 )  // strip off the '@' character at the beginning
+				} ) );
+			}
+		}
+
+		return matches;
 	}
 
 } );

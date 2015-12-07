@@ -1,6 +1,5 @@
 /*global Autolinker */
 /**
- * @private
  * @class Autolinker.htmlParser.HtmlParser
  * @extends Object
  *
@@ -113,22 +112,23 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			    commentText = currentResult[ 3 ], // if we've matched a comment
 			    tagName = currentResult[ 1 ] || currentResult[ 4 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
 			    isClosingTag = !!currentResult[ 2 ],
-			    inBetweenTagsText = html.substring( lastIndex, currentResult.index );
+			    offset = currentResult.index,
+			    inBetweenTagsText = html.substring( lastIndex, offset );
 
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( inBetweenTagsText ) {
-				textAndEntityNodes = this.parseTextAndEntityNodes( inBetweenTagsText );
+				textAndEntityNodes = this.parseTextAndEntityNodes( lastIndex, inBetweenTagsText );
 				nodes.push.apply( nodes, textAndEntityNodes );
 			}
 
 			// Push the CommentNode or ElementNode
 			if( commentText ) {
-				nodes.push( this.createCommentNode( tagText, commentText ) );
+				nodes.push( this.createCommentNode( offset, tagText, commentText ) );
 			} else {
-				nodes.push( this.createElementNode( tagText, tagName, isClosingTag ) );
+				nodes.push( this.createElementNode( offset, tagText, tagName, isClosingTag ) );
 			}
 
-			lastIndex = currentResult.index + tagText.length;
+			lastIndex = offset + tagText.length;
 		}
 
 		// Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
@@ -137,7 +137,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( text ) {
-				textAndEntityNodes = this.parseTextAndEntityNodes( text );
+				textAndEntityNodes = this.parseTextAndEntityNodes( lastIndex, text );
 				nodes.push.apply( nodes, textAndEntityNodes );
 			}
 		}
@@ -151,12 +151,15 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * should not have any HTML tags (elements) within it.
 	 *
 	 * @private
-	 * @param {String} text The text to parse.
+	 * @param {Number} offset The offset of the text node match within the
+	 *   original HTML string.
+	 * @param {String} text The string of text to parse. This is from an HTML
+	 *   text node.
 	 * @return {Autolinker.htmlParser.HtmlNode[]} An array of HtmlNodes to
 	 *   represent the {@link Autolinker.htmlParser.TextNode TextNodes} and
 	 *   {@link Autolinker.htmlParser.EntityNode EntityNodes} found.
 	 */
-	parseTextAndEntityNodes : function( text ) {
+	parseTextAndEntityNodes : function( offset, text ) {
 		var nodes = [],
 		    textAndEntityTokens = Autolinker.Util.splitAndCapture( text, this.htmlCharacterEntitiesRegex );  // split at HTML entities, but include the HTML entities in the results array
 
@@ -167,8 +170,14 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			var textToken = textAndEntityTokens[ i ],
 			    entityToken = textAndEntityTokens[ i + 1 ];
 
-			if( textToken ) nodes.push( this.createTextNode( textToken ) );
-			if( entityToken ) nodes.push( this.createEntityNode( entityToken ) );
+			if( textToken ) {
+				nodes.push( this.createTextNode( offset, textToken ) );
+				offset += textToken.length;
+			}
+			if( entityToken ) {
+				nodes.push( this.createEntityNode( offset, entityToken ) );
+				offset += entityToken.length;
+			}
 		}
 		return nodes;
 	},
@@ -178,13 +187,16 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * Factory method to create an {@link Autolinker.htmlParser.CommentNode CommentNode}.
 	 *
 	 * @private
+	 * @param {Number} offset The offset of the match within the original HTML
+	 *   string.
 	 * @param {String} tagText The full text of the tag (comment) that was
 	 *   matched, including its &lt;!-- and --&gt;.
-	 * @param {String} comment The full text of the comment that was matched.
+	 * @param {String} commentText The full text of the comment that was matched.
 	 */
-	createCommentNode : function( tagText, commentText ) {
+	createCommentNode : function( offset, tagText, commentText ) {
 		return new Autolinker.htmlParser.CommentNode( {
-			text: tagText,
+			offset : offset,
+			text   : tagText,
 			comment: Autolinker.Util.trim( commentText )
 		} );
 	},
@@ -194,6 +206,8 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * Factory method to create an {@link Autolinker.htmlParser.ElementNode ElementNode}.
 	 *
 	 * @private
+	 * @param {Number} offset The offset of the match within the original HTML
+	 *   string.
 	 * @param {String} tagText The full text of the tag (element) that was
 	 *   matched, including its attributes.
 	 * @param {String} tagName The name of the tag. Ex: An &lt;img&gt; tag would
@@ -202,8 +216,9 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 *   otherwise.
 	 * @return {Autolinker.htmlParser.ElementNode}
 	 */
-	createElementNode : function( tagText, tagName, isClosingTag ) {
+	createElementNode : function( offset, tagText, tagName, isClosingTag ) {
 		return new Autolinker.htmlParser.ElementNode( {
+			offset  : offset,
 			text    : tagText,
 			tagName : tagName.toLowerCase(),
 			closing : isClosingTag
@@ -215,12 +230,14 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * Factory method to create a {@link Autolinker.htmlParser.EntityNode EntityNode}.
 	 *
 	 * @private
+	 * @param {Number} offset The offset of the match within the original HTML
+	 *   string.
 	 * @param {String} text The text that was matched for the HTML entity (such
 	 *   as '&amp;nbsp;').
 	 * @return {Autolinker.htmlParser.EntityNode}
 	 */
-	createEntityNode : function( text ) {
-		return new Autolinker.htmlParser.EntityNode( { text: text } );
+	createEntityNode : function( offset, text ) {
+		return new Autolinker.htmlParser.EntityNode( { offset: offset, text: text } );
 	},
 
 
@@ -228,11 +245,13 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * Factory method to create a {@link Autolinker.htmlParser.TextNode TextNode}.
 	 *
 	 * @private
+	 * @param {Number} offset The offset of the match within the original HTML
+	 *   string.
 	 * @param {String} text The text that was matched.
 	 * @return {Autolinker.htmlParser.TextNode}
 	 */
-	createTextNode : function( text ) {
-		return new Autolinker.htmlParser.TextNode( { text: text } );
+	createTextNode : function( offset, text ) {
+		return new Autolinker.htmlParser.TextNode( { offset: offset, text: text } );
 	}
 
 } );

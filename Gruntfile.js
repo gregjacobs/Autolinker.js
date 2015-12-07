@@ -5,7 +5,8 @@ module.exports = function(grunt) {
 
 	// Tasks
 	grunt.registerTask( 'default', [ 'jshint', 'build', 'jasmine' ] );
-	grunt.registerTask( 'build', [ 'concat:development', 'umd', 'uglify:production' ] );
+	grunt.registerTask( 'build', [ 'build_dev', 'umd', 'uglify:production' ] );
+	grunt.registerTask( 'build_dev', [ 'concat:development', 'preprocess:development' ] );
 	grunt.registerTask( 'test', [ 'build', 'jasmine' ] );
 	grunt.registerTask( 'doc', "Builds the documentation.", [ 'jshint', 'jsduck' ] );
 	grunt.registerTask( 'serve', [ 'connect:server:keepalive' ] );
@@ -39,7 +40,7 @@ module.exports = function(grunt) {
 		jasmine: {
 			dist: {
 				options: {
-					specs: 'tests/**/*Spec.js'
+					specs: [ 'tests/match/MatchChecker.js', 'tests/**/*Spec.js' ]
 				},
 				src: minDistPath
 			}
@@ -62,16 +63,36 @@ module.exports = function(grunt) {
 					'src/htmlParser/ElementNode.js',
 					'src/htmlParser/EntityNode.js',
 					'src/htmlParser/TextNode.js',
-					'src/matchParser/MatchParser.js',
-					'src/matchParser/MatchValidator.js',
 					'src/match/Match.js',
 					'src/match/Email.js',
 					'src/match/Hashtag.js',
 					'src/match/Phone.js',
 					'src/match/Twitter.js',
-					'src/match/Url.js'
+					'src/match/Url.js',
+					'src/matcher/domainNameRegex.js',
+					'src/matcher/tldRegex.js',
+					'src/matcher/Matcher.js',
+					'src/matcher/Email.js',
+					'src/matcher/Hashtag.js',
+					'src/matcher/Phone.js',
+					'src/matcher/Twitter.js',
+					'src/matcher/Url.js',
+					'src/matcher/UrlMatchValidator.js'
 				],
 				dest: distPath
+			}
+		},
+
+		preprocess: {
+			development : {
+				src  : distPath,
+				dest : distPath,
+				options : {
+					inline : true,  // required to overwrite the src file
+					context : {
+						DEBUG : true
+					}
+				}
 			}
 		},
 
@@ -119,6 +140,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jsduck' );
+	grunt.loadNpmTasks( 'grunt-preprocess' );
 	grunt.loadNpmTasks( 'grunt-umd' );
 
 

@@ -19,9 +19,16 @@
 Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 
 	/**
+	 * @cfg {Number} offset (required)
+	 *
+	 * The offset of the HTML node in the original text that was parsed.
+	 */
+	offset : undefined,
+
+	/**
 	 * @cfg {String} text (required)
 	 *
-	 * The original text that was matched for the HtmlNode.
+	 * The text that was matched for the HtmlNode.
 	 *
 	 * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
 	 *   this will be the tag's text.
@@ -32,7 +39,7 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	 * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
 	 *   this will be the text of the HTML entity.
 	 */
-	text : "",
+	text : undefined,
 
 
 	/**
@@ -42,6 +49,11 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	 */
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
+
+		// @if DEBUG
+		if( this.offset == null ) throw new Error( '`offset` cfg required' );
+		if( this.text == null ) throw new Error( '`text` cfg required' );
+		// @endif
 	},
 
 
@@ -52,6 +64,17 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	 * @return {String}
 	 */
 	getType : Autolinker.Util.abstractMethod,
+
+
+	/**
+	 * Retrieves the {@link #offset} of the HtmlNode. This is the offset of the
+	 * HTML node in the original string that was parsed.
+	 *
+	 * @return {Number}
+	 */
+	getOffset : function() {
+		return this.offset;
+	},
 
 
 	/**

@@ -836,6 +836,14 @@ describe( "Autolinker", function() {
 				expect( autolinker.link( "15417543010" ) ).toBe( '15417543010' );
 			} );
 
+
+			it( "should NOT automatically link a username that is actually part of an email address **when email address linking is turned off**", function() {
+				var noUsernameAutolinker = new Autolinker( { email: false, twitter: true, newWindow: false } ),
+				    result = noUsernameAutolinker.link( "asdf@asdf.com" );
+
+				expect( result ).toBe( 'asdf@asdf.com' );
+			} );
+
 		} );
 
 
@@ -886,6 +894,21 @@ describe( "Autolinker", function() {
 				var result = twitterHashtagAutolinker.link( "test as#df test" );
 
 				expect( result ).toBe( 'test as#df test' );
+			} );
+
+
+			it( "should NOT automatically link a hashtag that is actually a named anchor within a URL", function() {
+				var result = twitterHashtagAutolinker.link( "http://google.com/#link" );
+
+				expect( result ).toBe( '<a href="http://google.com/#link">google.com/#link</a>' );
+			} );
+
+
+			it( "should NOT automatically link a hashtag that is actually a named anchor within a URL **when URL linking is turned off**", function() {
+				var noUrlTwitterHashtagAutolinker = new Autolinker( { urls: false, hashtag: 'twitter', newWindow: false } ),
+				    result = noUrlTwitterHashtagAutolinker.link( "http://google.com/#link" );
+
+				expect( result ).toBe( 'http://google.com/#link' );
 			} );
 
 		} );

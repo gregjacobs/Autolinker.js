@@ -4,11 +4,11 @@
 	<title>Autolinker.js Tests</title>
 
 	<!-- Jasmine -->
-	<link rel="shortcut icon" type="image/png" href="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine_favicon.png">
-	<link rel="stylesheet" type="text/css" href="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine.css">
-	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine.js"></script>
-	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/jasmine-html.js"></script>
-	<script src="../node_modules/grunt-contrib-jasmine/vendor/jasmine-2.0.0/boot.js"></script>
+	<link rel="shortcut icon" type="image/png" href="../node_modules/grunt-contrib-jasmine/node_modules/jasmine-core/lib/jasmine-core/jasmine_favicon.png">
+	<link rel="stylesheet" type="text/css" href="../node_modules/grunt-contrib-jasmine/node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
+	<script src="../node_modules/grunt-contrib-jasmine/node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+	<script src="../node_modules/grunt-contrib-jasmine/node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+	<script src="../node_modules/grunt-contrib-jasmine/node_modules/jasmine-core/lib/jasmine-core/boot.js"></script>
 
 	<!-- Code under test -->
 	<script type="text/javascript" src="../src/Autolinker.js"></script>
@@ -21,20 +21,34 @@
 	<script type="text/javascript" src="../src/htmlParser/ElementNode.js"></script>
 	<script type="text/javascript" src="../src/htmlParser/EntityNode.js"></script>
 	<script type="text/javascript" src="../src/htmlParser/TextNode.js"></script>
-	<script type="text/javascript" src="../src/matchParser/MatchParser.js"></script>
-	<script type="text/javascript" src="../src/matchParser/MatchValidator.js"></script>
 	<script type="text/javascript" src="../src/match/Match.js"></script>
 	<script type="text/javascript" src="../src/match/Email.js"></script>
-    <script type="text/javascript" src="../src/match/Hashtag.js"></script>
+	<script type="text/javascript" src="../src/match/Hashtag.js"></script>
 	<script type="text/javascript" src="../src/match/Phone.js"></script>
 	<script type="text/javascript" src="../src/match/Twitter.js"></script>
 	<script type="text/javascript" src="../src/match/Url.js"></script>
+	<script type="text/javascript" src="../src/matcher/domainNameRegex.js"></script>
+	<script type="text/javascript" src="../src/matcher/tldRegex.js"></script>
+	<script type="text/javascript" src="../src/matcher/Matcher.js"></script>
+	<script type="text/javascript" src="../src/matcher/Email.js"></script>
+	<script type="text/javascript" src="../src/matcher/Hashtag.js"></script>
+	<script type="text/javascript" src="../src/matcher/Phone.js"></script>
+	<script type="text/javascript" src="../src/matcher/Twitter.js"></script>
+	<script type="text/javascript" src="../src/matcher/Url.js"></script>
+	<script type="text/javascript" src="../src/matcher/UrlMatchValidator.js"></script>
 
-	<!-- Tests -->
+	<!-- Tests and Testing Utilities -->
 	<script type="text/javascript" src="AutolinkerSpec.js"></script>
 	<script type="text/javascript" src="HtmlTagSpec.js"></script>
 	<script type="text/javascript" src="UtilSpec.js"></script>
 	<script type="text/javascript" src="htmlParser/HtmlParserSpec.js"></script>
+	<script type="text/javascript" src="match/MatchChecker.js"></script>
+	<script type="text/javascript" src="match/MatchSpec.js"></script>
+	<script type="text/javascript" src="matcher/EmailSpec.js"></script>
+	<script type="text/javascript" src="matcher/HashtagSpec.js"></script>
+	<script type="text/javascript" src="matcher/PhoneSpec.js"></script>
+	<script type="text/javascript" src="matcher/TwitterSpec.js"></script>
+	<script type="text/javascript" src="matcher/UrlSpec.js"></script>
 </head>
 
 <body>

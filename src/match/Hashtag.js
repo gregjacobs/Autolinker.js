@@ -25,6 +25,21 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 
+	// @if DEBUG
+	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function() {
+		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+
+		// TODO: if( !this.serviceName ) throw new Error( '`serviceName` cfg required' );
+		if( !this.hashtag ) throw new Error( '`hashtag` cfg required' );
+	},
+	// @endif
+
+
 	/**
 	 * Returns the type of match that this class represents.
 	 *
@@ -36,7 +51,18 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
-	 * Returns the matched hashtag.
+	 * Returns the configured {@link #serviceName} to point the Hashtag to.
+	 * Ex: 'facebook', 'twitter'.
+	 *
+	 * @return {String}
+	 */
+	getServiceName : function() {
+		return this.serviceName;
+	},
+
+
+	/**
+	 * Returns the matched hashtag, without the '#' character.
 	 *
 	 * @return {String}
 	 */
