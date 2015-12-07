@@ -1,3 +1,4 @@
+/*global Autolinker */
 /**
  * @class Autolinker.match.MatchChecker
  * @singleton

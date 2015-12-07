@@ -16,10 +16,10 @@
 
 /*!
  * Autolinker.js
- * 0.17.1
+ * 0.22.0
  *
  * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
- * MIT Licensed. http://www.opensource.org/licenses/mit-license.php
+ * MIT
  *
  * https://github.com/gregjacobs/Autolinker.js
  */
@@ -127,46 +127,70 @@
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [config] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
 	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
-	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' ) {
+	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
+
+	// Normalize the configs
+	this.urls     = this.normalizeUrlsCfg( this.urls );
+	this.truncate = this.normalizeTruncateCfg( this.truncate );
 };
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean} urls
+	 * @cfg {Boolean/Object} urls
 	 *
-	 * `true` if miscellaneous URLs should be automatically linked, `false` if they should not be.
+	 * `true` if URLs should be automatically linked, `false` if they should not
+	 * be.
+	 *
+	 * This option also accepts an Object form with 3 properties, to allow for
+	 * more customization of what exactly gets linked. All default to `true`:
+	 *
+	 * @param {Boolean} schemeMatches `true` to match URLs found prefixed with a
+	 *   scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+	 *   `false` to prevent these types of matches.
+	 * @param {Boolean} wwwMatches `true` to match urls found prefixed with
+	 *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+	 *   matches. Note that if the URL had a prefixed scheme, and
+	 *   `schemeMatches` is true, it will still be linked.
+	 * @param {Boolean} tldMatches `true` to match URLs with known top level
+	 *   domains (.com, .net, etc.) that are not prefixed with a scheme or
+	 *   `'www.'`. This option attempts to match anything that looks like a URL
+	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+	 *   to prevent these types of matches.
 	 */
 	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
 	 *
-	 * `true` if email addresses should be automatically linked, `false` if they should not be.
+	 * `true` if email addresses should be automatically linked, `false` if they
+	 * should not be.
 	 */
 	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
 	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked, `false` if they should not be.
+	 * `true` if Twitter handles ("@example") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
 	 *
-	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked, `false` if they should not be.
+	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+	 * `false` if they should not be.
 	 */
 	phone: true,
 
@@ -178,6 +202,7 @@ Autolinker.prototype = {
 	 *
 	 * - 'twitter'
 	 * - 'facebook'
+	 * - 'instagram'
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
@@ -199,14 +224,48 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Number/Object} truncate
 	 *
-	 * A number for how many characters long matched text should be truncated to inside the text of
-	 * a link. If the matched text is over this number of characters, it will be truncated to this length by
-	 * adding a two period ellipsis ('..') to the end of the string.
+	 * ## Number Form
 	 *
-	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated to 25 characters might look
-	 * something like this: 'yahoo.com/some/long/pat..'
+	 * A number for how many characters matched text should be truncated to
+	 * inside the text of a link. If the matched text is over this number of
+	 * characters, it will be truncated to this length by adding a two period
+	 * ellipsis ('..') to the end of the string.
+	 *
+	 * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file'
+	 * truncated to 25 characters might look something like this:
+	 * 'yahoo.com/some/long/pat..'
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: 25
+	 *
+	 *
+	 * ## Object Form
+	 *
+	 * An Object may also be provided with two properties: `length` (Number) and
+	 * `location` (String). `location` may be one of the following: 'end'
+	 * (default), 'middle', or 'smart'.
+	 *
+	 * Example Usage:
+	 *
+	 *     truncate: { length: 25, location: 'middle' }
+	 *
+	 * @cfg {Number} truncate.length How many characters to allow before
+	 *   truncation will occur.
+	 * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
+	 *
+	 * - 'end' (default): will truncate up to the number of characters, and then
+	 *   add an ellipsis at the end. Ex: 'yahoo.com/some/long/pat..'
+	 * - 'middle': will truncate and add the ellipsis in the middle. Ex:
+	 *   'yahoo.com/s..th/to/a/file'
+	 * - 'smart': for URLs where the algorithm attempts to strip out unnecessary
+	 *   parts first (such as the 'www.', then URL scheme, hash, etc.),
+	 *   attempting to make the URL human-readable before looking for a good
+	 *   point to insert the ellipsis if it is still too long. Ex:
+	 *   'yahoo.com/some..to/a/file'. For more details, see
+	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
 	truncate : undefined,
 
@@ -259,6 +318,48 @@ Autolinker.prototype = {
 	 * in the {@link #getTagBuilder} method.
 	 */
 	tagBuilder : undefined,
+
+
+	/**
+	 * Normalizes the {@link #urls} config into an Object with 3 properties:
+	 * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
+	 *
+	 * See {@link #urls} config for details.
+	 *
+	 * @private
+	 * @param {Boolean/Object} urls
+	 * @return {Object}
+	 */
+	normalizeUrlsCfg : function( urls ) {
+		if( typeof urls === 'boolean' ) {
+			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
+		} else {
+			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+		}
+	},
+
+
+	/**
+	 * Normalizes the {@link #truncate} config into an Object with 2 properties:
+	 * `length` (Number), and `location` (String).
+	 *
+	 * See {@link #truncate} config for details.
+	 *
+	 * @private
+	 * @param {Number/Object} truncate
+	 * @return {Object}
+	 */
+	normalizeTruncateCfg : function( truncate ) {
+		if( typeof truncate === 'number' ) {
+			return { length: truncate, location: 'end' };
+
+		} else {  // object, or undefined/null
+			return Autolinker.Util.defaults( truncate || {}, {
+				length   : Number.POSITIVE_INFINITY,
+				location : 'end'
+			} );
+		}
+	},
 
 
 	/**
@@ -317,9 +418,16 @@ Autolinker.prototype = {
 		if( !this.email )   matches = matches.filter( function( match ) { return match.getType() !== 'email'; } );
 		if( !this.phone )   matches = matches.filter( function( match ) { return match.getType() !== 'phone'; } );
 		if( !this.twitter ) matches = matches.filter( function( match ) { return match.getType() !== 'twitter'; } );
-		if( !this.urls )    matches = matches.filter( function( match ) { return match.getType() !== 'url'; } );
+		if( !this.urls.schemeMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'scheme'; } );
+		}
+		if( !this.urls.wwwMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'www'; } );
+		}
+		if( !this.urls.tldMatches ) {
+			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'tld'; } );
+		}
 
-		console.log( matches );
 		return matches;
 	},
 
@@ -394,7 +502,6 @@ Autolinker.prototype = {
 	},
 
 
-
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
 	 * handles, and Hashtags found in the given chunk of HTML. Does not link
@@ -415,6 +522,8 @@ Autolinker.prototype = {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
+		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
+
 		var matches = this.parse( textOrHtml ),
 			newHtml = [],
 			lastIndex = 0;
@@ -587,6 +696,7 @@ Autolinker.link = function( textOrHtml, options ) {
 Autolinker.match = {};
 Autolinker.matcher = {};
 Autolinker.htmlParser = {};
+Autolinker.truncate = {};
 
 /*global Autolinker */
 /*jshint eqnull:true, boss:true */
@@ -626,6 +736,25 @@ Autolinker.Util = {
 	assign : function( dest, src ) {
 		for( var prop in src ) {
 			if( src.hasOwnProperty( prop ) ) {
+				dest[ prop ] = src[ prop ];
+			}
+		}
+
+		return dest;
+	},
+
+
+	/**
+	 * Assigns (shallow copies) the properties of `src` onto `dest`, if the
+	 * corresponding property on `dest` === `undefined`.
+	 *
+	 * @param {Object} dest The destination object.
+	 * @param {Object} src The source object.
+	 * @return {Object} The destination object (`dest`)
+	 */
+	defaults : function( dest, src ) {
+		for( var prop in src ) {
+			if( src.hasOwnProperty( prop ) && dest[ prop ] === undefined ) {
 				dest[ prop ] = src[ prop ];
 			}
 		}
@@ -931,7 +1060,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	/**
 	 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
 	 *
-	 * @param {String} name The attribute name to retrieve.
+	 * @param {String} attrName The attribute name to retrieve.
 	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
 	 */
 	getAttr : function( attrName ) {
@@ -1117,9 +1246,11 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
  *
  * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
  *
- * Normally this class is instantiated, configured, and used internally by an {@link Autolinker} instance, but may
- * actually be retrieved in a {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag} instances
- * which may be modified before returning from the {@link Autolinker#replaceFn replaceFn}. For example:
+ * Normally this class is instantiated, configured, and used internally by an
+ * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}
+ * to create {@link Autolinker.HtmlTag HtmlTag} instances which may be modified
+ * before returning from the {@link Autolinker#replaceFn replaceFn}. For
+ * example:
  *
  *     var html = Autolinker.link( "Test google.com", {
  *         replaceFn : function( autolinker, match ) {
@@ -1141,7 +1272,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 
 	/**
-	 * @cfg {Number} truncate
+	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
 
@@ -1169,13 +1300,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
 	build : function( match ) {
-		var tag = new Autolinker.HtmlTag( {
+		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
 			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
-
-		return tag;
 	},
 
 
@@ -1186,7 +1315,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @protected
 	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
 	 *   match that an anchor tag is being generated for.
-	 * @param {String} href The href for the anchor tag.
+	 * @param {String} anchorHref The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
 	createAttrs : function( matchType, anchorHref ) {
@@ -1244,20 +1373,36 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Performs the truncation of the `anchorText`, if the `anchorText` is
-	 * longer than the {@link #truncate} option. Truncates the text to 2
-	 * characters fewer than the {@link #truncate} option, and adds ".." to the
-	 * end.
+	 * Performs the truncation of the `anchorText` based on the {@link #truncate}
+	 * option. If the `anchorText` is longer than the length specified by the
+	 * {@link #truncate} option, the truncation is performed based on the
+	 * `location` property. See {@link #truncate} for details.
 	 *
 	 * @private
-	 * @param {String} text The anchor tag's text (i.e. what will be displayed).
+	 * @param {String} anchorText The anchor tag's text (i.e. what will be
+	 *   displayed).
 	 * @return {String} The truncated anchor text.
 	 */
 	doTruncate : function( anchorText ) {
-		return Autolinker.Util.ellipsis( anchorText, this.truncate || Number.POSITIVE_INFINITY );
+		var truncate = this.truncate;
+		if( !truncate ) return anchorText;
+
+		var truncateLength = truncate.length,
+			truncateLocation = truncate.location;
+
+		if( truncateLocation === 'smart' ) {
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, '..' );
+
+		} else if( truncateLocation === 'middle' ) {
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, '..' );
+
+		} else {
+			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength, '..' );
+		}
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.htmlParser.HtmlParser
@@ -2029,6 +2174,8 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 				return 'https://twitter.com/hashtag/' + hashtag;
 			case 'facebook' :
 				return 'https://www.facebook.com/hashtag/' + hashtag;
+			case 'instagram' :
+				return 'https://instagram.com/explore/tags/' + hashtag;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
 				throw new Error( 'Unknown service name to point hashtag to: ', serviceName );
@@ -2046,6 +2193,7 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.match.Phone
@@ -2067,6 +2215,15 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * Note: This is a string to allow for prefixed 0's.
 	 */
 
+	/**
+	 * @cfg {Boolean} plusSign (required)
+	 *
+	 * `true` if the matched phone number started with a '+' sign. We'll include
+	 * it in the `tel:` URL if so, as this is needed for international numbers.
+	 *
+	 * Ex: '+1 (123) 456 7879'
+	 */
+
 
 	/**
 	 * @constructor
@@ -2077,6 +2234,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
 
 		if( !this.number ) throw new Error( '`number` cfg required' );
+		if( this.plusSign == null ) throw new Error( '`plusSign` cfg required' );
 	},
 	/**
 	 * Returns a string name for the type of match that this class represents.
@@ -2107,7 +2265,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return 'tel:' + this.number;
+		return 'tel:' + ( this.plusSign ? '+' : '' ) + this.number;
 	},
 
 
@@ -2208,6 +2366,15 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
+	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
+	 *
+	 * The type of URL match that this class represents. This helps to determine
+	 * if the match was made in the original text with a prefixed scheme (ex:
+	 * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
+	 * was matched by a known top-level domain (ex: 'google.com').
+	 */
+
+	/**
 	 * @cfg {Boolean} protocolUrlMatch (required)
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
@@ -2236,6 +2403,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function() {
 		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
 
+		if( this.urlMatchType !== 'scheme' && this.urlMatchType !== 'www' && this.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
 		if( !this.url ) throw new Error( '`url` cfg required' );
 		if( this.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
 		if( this.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
@@ -2279,6 +2447,22 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
+	 * Returns a string name for the type of URL match that this class
+	 * represents.
+	 *
+	 * This helps to determine if the match was made in the original text with a
+	 * prefixed scheme (ex: 'http://www.google.com'), a prefixed 'www' (ex:
+	 * 'www.google.com'), or was matched by a known top-level domain (ex:
+	 * 'google.com').
+	 *
+	 * @return {"scheme"/"www"/"tld"}
+	 */
+	getUrlMatchType : function() {
+		return this.urlMatchType;
+	},
+
+
+	/**
 	 * Returns the url that was matched, assuming the protocol to be 'http://' if the original
 	 * match was missing a protocol.
 	 *
@@ -2316,7 +2500,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		var anchorText = this.getUrl();
+		var anchorText = this.getMatchedText();
 
 		if( this.protocolRelativeMatch ) {
 			// Strip off any protocol-relative '//' from the anchor text
@@ -2387,7 +2571,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
  * This is shared by {@link Autolinker.matcher.Url} and {@link Autolinker.matcher.Email},
  * and thus needed to exist as a seperate entity.
  */
-Autolinker.matcher.domainNameRegex = /[A-Za-z0-9.-]*?[A-Za-z0-9-]/;  // anything looking at all like a domain. Non-unicode domains, not ending in a period.
+Autolinker.matcher.domainNameRegex = /[A-Za-z0-9.\-]*[A-Za-z0-9\-]/;  // anything looking at all like a domain. Non-unicode domains, not ending in a period.
+
 /*global Autolinker */
 /**
  * @property Autolinker.matcher.tldRegex
@@ -2398,7 +2583,7 @@ Autolinker.matcher.domainNameRegex = /[A-Za-z0-9.-]*?[A-Za-z0-9-]/;  // anything
  * This is shared by {@link Autolinker.matcher.Url} and {@link Autolinker.matcher.Email},
  * and thus needed to exist as a seperate entity.
  */
-Autolinker.matcher.tldRegex = /(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/;
+Autolinker.matcher.tldRegex = /(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|press|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/;
 /*global Autolinker */
 /**
  * @abstract
@@ -2448,12 +2633,12 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * The regular expression to match email addresses. Example match:
 	 *
 	 *     person@place.com
-	 * 
+	 *
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
 	matcherRegex : (function() {
-		var emailRegex = /[\-;:&=\+\$,\w\.]+@/,  // something@ for email addresses (a.k.a. local-part)
+		var emailRegex = /[\w\-;:&=+$.,]+@/,  // something@ for email addresses (a.k.a. local-part)
 			domainNameRegex = Autolinker.matcher.domainNameRegex,
 			tldRegex = Autolinker.matcher.tldRegex;  // match our known top level domains (TLDs)
 
@@ -2472,7 +2657,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var matcherRegex = this.matcherRegex,
 		    matches = [],
 		    match;
-		
+
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			matches.push( new Autolinker.match.Email( {
 				matchedText : match[ 0 ],
@@ -2480,7 +2665,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				email       : match[ 0 ]
 			} ) );
 		}
-		
+
 		return matches;
 	}
 
@@ -2509,7 +2694,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /#(\w{1,15})/g,
+	matcherRegex : /#\w{1,139}/g,
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -2580,13 +2765,14 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *
 	 *     (123) 456-7890
 	 *
-	 * This regular expression has no capturing groups.
+	 * This regular expression has the following capturing groups:
+	 *
+	 * 1. The prefixed '+' sign, if there is one.
 	 *
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /(?:\+?\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
-
+	matcherRegex : /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
 
 	/**
 	 * @inheritdoc
@@ -2602,6 +2788,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 			matches.push( new Autolinker.match.Phone( {
 				matchedText : match[ 0 ],
+				plusSign    : !!match[ 1 ],  // match[ 1 ] is the prefixed plus sign, if there is one
 				offset      : match.index,
 				number      : cleanNumber
 			} ) );
@@ -2628,7 +2815,7 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /@(\w{1,15})/g,
+	matcherRegex : /@\w{1,15}/g,
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -2692,8 +2879,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 *
-	 * The regular expression to match URLs with an optional protocol, port number, path,
-	 * query string, and hash anchor.
+	 * The regular expression to match URLs with an optional scheme, port
+	 * number, path, query string, and hash anchor.
+	 *
 	 * Example matches:
 	 *
 	 *     http://google.com
@@ -2703,21 +2891,26 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *
 	 * This regular expression will have the following capturing groups:
 	 *
-	 * 1.  Group that matches a protocol URL (i.e. 'http://google.com'). This is
-	 *     used to match protocol URLs with just a single word, like 'http://localhost',
-	 *     where we won't double check that the domain name has at least one '.'
-	 *     in it.
-	 * 2.  A protocol-relative ('//') match for the case of a 'www.' prefixed
+	 * 1.  Group that matches a scheme-prefixed URL (i.e. 'http://google.com').
+	 *     This is used to match scheme URLs with just a single word, such as
+	 *     'http://localhost', where we won't double check that the domain name
+	 *     has at least one dot ('.') in it.
+	 * 2.  Group that matches a 'www.' prefixed URL. This is only matched if the
+	 *     'www.' text was not prefixed by a scheme (i.e.: not prefixed by
+	 *     'http://', 'ftp:', etc.)
+	 * 3.  A protocol-relative ('//') match for the case of a 'www.' prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     We need to know the character before the '//' in order to determine
 	 *     if it is a valid match or the // was in a string we don't want to
 	 *     auto-link.
-	 * 3.  A protocol-relative ('//') match for the case of a known TLD prefixed
+	 * 4.  Group that matches a known TLD (top level domain), when a scheme
+	 *     or 'www.'-prefixed domain is not matched.
+	 * 5.  A protocol-relative ('//') match for the case of a known TLD prefixed
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
-	 *     See #2 for more info.
+	 *     See #3 for more info.
 	 */
 	matcherRegex : (function() {
-		var protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
 		    domainNameRegex = Autolinker.matcher.domainNameRegex,
 		    tldRegex = Autolinker.matcher.tldRegex,  // match our known top level domains (TLDs)
@@ -2727,24 +2920,24 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    urlSuffixRegex = /[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]]/;
 
 		return new RegExp( [
-			'(?:', // parens to cover match for protocol (optional), and domain
-				'(',  // *** Capturing group $1, for a protocol-prefixed url (ex: http://google.com)
-					protocolRegex.source,
+			'(?:', // parens to cover match for scheme (optional), and domain
+				'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
+					schemeRegex.source,
 					domainNameRegex.source,
 				')',
 
 				'|',
 
-				'(?:',  // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
-					'(//)?',  // *** Capturing group $2 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+				'(',  // *** Capturing group $2, for a 'www.' prefixed url (ex: www.google.com)
+					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
 					wwwRegex.source,
 					domainNameRegex.source,
 				')',
 
 				'|',
 
-				'(?:',  // non-capturing paren for known a TLD url (ex: google.com)
-					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+				'(',  // *** Capturing group $4, for known a TLD url (ex: google.com)
+					'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
 					domainNameRegex.source + '\\.',
 					tldRegex.source,
 				')',
@@ -2756,9 +2949,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 
 	/**
-	 * A regular expression to use to check the character before a protocol-relative URL
-	 * match. We don't want to match a protocol-relative URL if it is part of another
-	 * word.
+	 * A regular expression to use to check the character before a protocol-relative
+	 * URL match. We don't want to match a protocol-relative URL if it is part
+	 * of another word.
 	 *
 	 * For example, we want to match something like "Go to: //google.com",
 	 * but we don't want to match something like "abc//google.com"
@@ -2817,14 +3010,16 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var matchStr = match[ 0 ],
-			    protocolUrlMatch = match[ 1 ],
-			    wwwProtocolRelativeMatch = match[ 2 ],
-			    tldProtocolRelativeMatch = match[ 3 ],
+			    schemeUrlMatch = match[ 1 ],
+			    wwwUrlMatch = match[ 2 ],
+			    wwwProtocolRelativeMatch = match[ 3 ],
+			    //tldUrlMatch = match[ 4 ],  -- not needed at the moment
+			    tldProtocolRelativeMatch = match[ 5 ],
 			    offset = match.index,
 			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 				prevChar = text.charAt( offset - 1 );
 
-			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, protocolUrlMatch ) ) {
+			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, schemeUrlMatch ) ) {
 				continue;
 			}
 
@@ -2842,15 +3037,25 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				continue;
 			}
 
+			// Handle a closing parenthesis at the end of the match, and exclude
+			// it if there is not a matching open parenthesis in the match
+			// itself.
 			if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
 				matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
+			} else {
+				// Handle an invalid character after the TLD
+				var pos = this.matchHasInvalidCharAfterTld( matchStr, schemeUrlMatch );
+				if( pos > -1 ) {
+					matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
+				}
 			}
 
 			matches.push( new Autolinker.match.Url( {
-				matchedText : matchStr,
-				offset      : offset,
-				url         : matchStr,
-				protocolUrlMatch      : !!protocolUrlMatch,
+				matchedText  : matchStr,
+				offset       : offset,
+				url          : matchStr,
+				urlMatchType : schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
+				protocolUrlMatch      : !!schemeUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
 				stripPrefix : this.stripPrefix
 			} ) );
@@ -2894,6 +3099,48 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		}
 
 		return false;
+	},
+
+
+	/**
+	 * Determine if there's an invalid character after the TLD in a URL. Valid
+	 * characters after TLD are ':/?#'. Exclude scheme matched URLs from this
+	 * check.
+	 *
+	 * @private
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} schemeUrlMatch The match URL string for a scheme
+	 *   match. Ex: 'http://yahoo.com'. This is used to match something like
+	 *   'http://localhost', where we won't double check that the domain name
+	 *   has at least one '.' in it.
+	 * @return {Number} the position where the invalid character was found. If
+	 *   no such character was found, returns -1
+	 */
+	matchHasInvalidCharAfterTld : function( urlMatch, schemeUrlMatch ) {
+		if( !urlMatch ) {
+			return -1;
+		}
+
+		var offset = 0;
+		if ( schemeUrlMatch ) {
+			offset = urlMatch.indexOf(':');
+			urlMatch = urlMatch.slice(offset);
+		}
+
+		var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+		var res = re.exec( urlMatch );
+		if ( res === null ) {
+			return -1;
+		}
+
+		offset += res[1].length;
+		urlMatch = urlMatch.slice(res[1].length);
+		if (/^[^.A-Za-z:\/?#]/.test(urlMatch)) {
+			return offset;
+		}
+
+		return -1;
 	}
 
 } );
@@ -2921,7 +3168,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} hasFullProtocolRegex
 	 */
-	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]+:\/\//,
+	hasFullProtocolRegex : /^[A-Za-z][-.+A-Za-z0-9]*:\/\//,
 
 	/**
 	 * Regex to find the URI scheme, such as 'mailto:'.
@@ -2931,7 +3178,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} uriSchemeRegex
 	 */
-	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]+:/,
+	uriSchemeRegex : /^[A-Za-z][-.+A-Za-z0-9]*:/,
 
 	/**
 	 * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
@@ -2943,7 +3190,7 @@ Autolinker.matcher.UrlMatchValidator = {
 
 
 	/**
-	 * Determines if a given URL match found by the {@link Autolinker.matcherEngine.MatcherEngine}
+	 * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
 	 * is valid. Will return `false` for:
 	 *
 	 * 1) URL matches which do not have at least have one period ('.') in the
@@ -3048,6 +3295,199 @@ Autolinker.matcher.UrlMatchValidator = {
 	}
 
 };
+/*global Autolinker */
+/**
+ * A truncation feature where the ellipsis will be placed at the end of the URL.
+ *
+ * @param {String} anchorText
+ * @param {Number} truncateLen The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars The characters to place within the url, e.g. "..".
+ * @return {String} The truncated URL.
+ */
+Autolinker.truncate.TruncateEnd = function(anchorText, truncateLen, ellipsisChars){
+	return Autolinker.Util.ellipsis( anchorText, truncateLen, ellipsisChars );
+};
+
+/*global Autolinker */
+/**
+ * Date: 2015-10-05
+ * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
+ *
+ * A truncation feature, where the ellipsis will be placed in the dead-center of the URL.
+ *
+ * @param {String} url             A URL.
+ * @param {Number} truncateLen     The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
+ * @return {String} The truncated URL.
+ */
+Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
+  if (url.length <= truncateLen) {
+    return url;
+  }
+  var availableLength = truncateLen - ellipsisChars.length;
+  var end = "";
+  if (availableLength > 0) {
+    end = url.substr((-1)*Math.floor(availableLength/2));
+  }
+  return (url.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
+};
+
+/*global Autolinker */
+/**
+ * Date: 2015-10-05
+ * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
+ *
+ * A truncation feature, where the ellipsis will be placed at a section within
+ * the URL making it still somewhat human readable.
+ *
+ * @param {String} url						 A URL.
+ * @param {Number} truncateLen		 The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars	 The characters to place within the url, e.g. "..".
+ * @return {String} The truncated URL.
+ */
+Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
+	var parse_url = function(url){ // Functionality inspired by PHP function of same name
+		var urlObj = {};
+		var urlSub = url;
+		var match = urlSub.match(/^([a-z]+):\/\//i);
+		if (match) {
+			urlObj.scheme = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
+		if (match) {
+			urlObj.host = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
+		if (match) {
+			urlObj.path = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
+		if (match) {
+			urlObj.query = match[1];
+			urlSub = urlSub.substr(match[0].length);
+		}
+		match = urlSub.match(/^#(.*?)$/i);
+		if (match) {
+			urlObj.fragment = match[1];
+			//urlSub = urlSub.substr(match[0].length);  -- not used. Uncomment if adding another block.
+		}
+		return urlObj;
+	};
+
+	var buildUrl = function(urlObj){
+		var url = "";
+		if (urlObj.scheme && urlObj.host) {
+			url += urlObj.scheme + "://";
+		}
+		if (urlObj.host) {
+			url += urlObj.host;
+		}
+		if (urlObj.path) {
+			url += "/" + urlObj.path;
+		}
+		if (urlObj.query) {
+			url += "?" + urlObj.query;
+		}
+		if (urlObj.fragment) {
+			url += "#" + urlObj.fragment;
+		}
+		return url;
+	};
+
+	var buildSegment = function(segment, remainingAvailableLength){
+		var remainingAvailableLengthHalf = remainingAvailableLength/ 2,
+				startOffset = Math.ceil(remainingAvailableLengthHalf),
+				endOffset = (-1)*Math.floor(remainingAvailableLengthHalf),
+				end = "";
+		if (endOffset < 0) {
+			end = segment.substr(endOffset);
+		}
+		return segment.substr(0, startOffset) + ellipsisChars + end;
+	};
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	var availableLength = truncateLen - ellipsisChars.length;
+	var urlObj = parse_url(url);
+	// Clean up the URL
+	if (urlObj.query) {
+		var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
+		if (matchQuery) {
+			// Malformed URL; two or more "?". Removed any content behind the 2nd.
+			urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
+			url = buildUrl(urlObj);
+		}
+	}
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	if (urlObj.host) {
+		urlObj.host = urlObj.host.replace(/^www\./, "");
+		url = buildUrl(urlObj);
+	}
+	if (url.length <= truncateLen) {
+		return url;
+	}
+	// Process and build the URL
+	var str = "";
+	if (urlObj.host) {
+		str += urlObj.host;
+	}
+	if (str.length >= availableLength) {
+		if (urlObj.host.length == truncateLen) {
+			return (urlObj.host.substr(0, (truncateLen - ellipsisChars.length)) + ellipsisChars).substr(0, truncateLen);
+		}
+		return buildSegment(str, availableLength).substr(0, truncateLen);
+	}
+	var pathAndQuery = "";
+	if (urlObj.path) {
+		pathAndQuery += "/" + urlObj.path;
+	}
+	if (urlObj.query) {
+		pathAndQuery += "?" + urlObj.query;
+	}
+	if (pathAndQuery) {
+		if ((str+pathAndQuery).length >= availableLength) {
+			if ((str+pathAndQuery).length == truncateLen) {
+				return (str + pathAndQuery).substr(0, truncateLen);
+			}
+			var remainingAvailableLength = availableLength - str.length;
+			return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, truncateLen);
+		} else {
+			str += pathAndQuery;
+		}
+	}
+	if (urlObj.fragment) {
+		var fragment = "#"+urlObj.fragment;
+		if ((str+fragment).length >= availableLength) {
+			if ((str+fragment).length == truncateLen) {
+				return (str + fragment).substr(0, truncateLen);
+			}
+			var remainingAvailableLength2 = availableLength - str.length;
+			return (str + buildSegment(fragment, remainingAvailableLength2)).substr(0, truncateLen);
+		} else {
+			str += fragment;
+		}
+	}
+	if (urlObj.scheme && urlObj.host) {
+		var scheme = urlObj.scheme + "://";
+		if ((str+scheme).length < availableLength) {
+			return (scheme + str).substr(0, truncateLen);
+		}
+	}
+	if (str.length <= truncateLen) {
+		return str;
+	}
+	var end = "";
+	if (availableLength > 0) {
+		end = str.substr((-1)*Math.floor(availableLength/2));
+	}
+	return (str.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
+};
+
 return Autolinker;
 
 }));
