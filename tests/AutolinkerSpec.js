@@ -205,6 +205,10 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#page=index">localhost:8000#page=index</a> today.' );
 				} );
 
+				it( "should automatically link cyrillic URLs", function() {
+					var result = autolinker.link( "Joe went to https://ru.wikipedia.org/wiki/Кириллица" );
+					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица">ru.wikipedia.org/wiki/Кириллица</a>' );
+				} );
 
 				describe( "protocol linking", function() {
 
