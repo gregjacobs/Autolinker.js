@@ -199,6 +199,14 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
+	 * @cfg {Boolean} doJoin
+	 *
+	 * `true` if the nodes (text or links) should be joined into one string,
+	 * `false` to return an array.
+	 */
+	doJoin : true,
+
+	/**
 	 * @cfg {Number/Object} truncate
 	 *
 	 * ## Number Form
@@ -363,7 +371,7 @@ Autolinker.prototype = {
 	 * @param {String} textOrHtml The HTML or text to autolink matches within
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
 	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
-	 * @return {String} The HTML, with matches automatically linked.
+	 * @return {String|Array} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
 		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
@@ -396,9 +404,13 @@ Autolinker.prototype = {
 				// Process text nodes in the input `textOrHtml`
 				if( anchorTagStackCount === 0 ) {
 					// If we're not within an <a> tag, process the text node to linkify
-					var linkifiedStr = this.linkifyStr( nodeText );
-					resultHtml.push( linkifiedStr );
+					var linkified = this.linkifyStr( nodeText );
 
+					if ( Array.isArray(linkified )) {
+						Array.prototype.push.apply(resultHtml, linkified);
+					} else {
+						resultHtml.push( linkified );
+					}
 				} else {
 					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything
 					// already within an <a>...</a> tag
@@ -407,7 +419,12 @@ Autolinker.prototype = {
 			}
 		}
 
-		return resultHtml.join( "" );
+		if ( this.doJoin ) {
+			return resultHtml.join( "" );
+		} else {
+			return resultHtml;
+		}
+
 	},
 
 	/**
@@ -452,6 +469,9 @@ Autolinker.prototype = {
 
 		} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
 			return replaceFnResult.toAnchorString();
+
+		} else if( this.React && this.React.isValidElement(replaceFnResult)) {
+			return replaceFnResult; // React element returned, use that
 
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation

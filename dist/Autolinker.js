@@ -224,6 +224,14 @@ Autolinker.prototype = {
 	stripPrefix : true,
 
 	/**
+	 * @cfg {Boolean} doJoin
+	 *
+	 * `true` if the nodes (text or links) should be joined into one string,
+	 * `false` to return an array.
+	 */
+	doJoin : true,
+
+	/**
 	 * @cfg {Number/Object} truncate
 	 *
 	 * ## Number Form
@@ -388,7 +396,7 @@ Autolinker.prototype = {
 	 * @param {String} textOrHtml The HTML or text to autolink matches within
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
 	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
-	 * @return {String} The HTML, with matches automatically linked.
+	 * @return {String|Array} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
 		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
@@ -421,9 +429,13 @@ Autolinker.prototype = {
 				// Process text nodes in the input `textOrHtml`
 				if( anchorTagStackCount === 0 ) {
 					// If we're not within an <a> tag, process the text node to linkify
-					var linkifiedStr = this.linkifyStr( nodeText );
-					resultHtml.push( linkifiedStr );
+					var linkified = this.linkifyStr( nodeText );
 
+					if ( Array.isArray(linkified )) {
+						Array.prototype.push.apply(resultHtml, linkified);
+					} else {
+						resultHtml.push( linkified );
+					}
 				} else {
 					// `text` is within an <a> tag, simply append the text - we do not want to autolink anything
 					// already within an <a>...</a> tag
@@ -432,7 +444,12 @@ Autolinker.prototype = {
 			}
 		}
 
-		return resultHtml.join( "" );
+		if ( this.doJoin ) {
+			return resultHtml.join( "" );
+		} else {
+			return resultHtml;
+		}
+
 	},
 
 	/**
@@ -477,6 +494,9 @@ Autolinker.prototype = {
 
 		} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
 			return replaceFnResult.toAnchorString();
+
+		} else if( this.React && this.React.isValidElement(replaceFnResult)) {
+			return replaceFnResult; // React element returned, use that
 
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
@@ -1871,7 +1891,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	matcherRegex : (function() {
 		var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
 
-		    hashtagRegex = /(^|[^\w])#(\w{1,139})/,              // For matching a Hashtag. Ex: #games
+		    hashtagRegex = /(^|[^\w])#(\w{1,139})/,             // For matching a Hashtag. Ex: #games
 
 		    emailRegex = /(?:[\-;:&=\+\$,\w\.]+@)/,             // something@ for email addresses (a.k.a. local-part)
 		    phoneRegex = /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
@@ -1985,7 +2005,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	/**
 	 * Parses the input `text` to search for matches, and calls the `replaceFn`
 	 * to allow replacements of the matches. Returns the `text` with matches
-	 * replaced.
+	 * replaced, or an array if `doJoin` is unset.
 	 *
 	 * @param {String} text The text to search and repace matches in.
 	 * @param {Function} replaceFn The iterator function to handle the
@@ -1993,12 +2013,44 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *   object, and should return the text that should make the replacement.
 	 * @param {Object} [contextObj=window] The context object ("scope") to run
 	 *   the `replaceFn` in.
-	 * @return {String}
+	 * @return {String|Array}
 	 */
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr/*, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15*/ ) {
+		var re = this.matcherRegex;
+		re.lastIndex = 0; // reset the regex
+
+		var nodes = [];
+		var reResult;
+		var lastEnd = 0;
+
+		while (( reResult = re.exec(text)) != null ) {
+
+			// if there's any text before the next index, add that
+			if ( reResult.index !== lastEnd ) {
+				nodes.push(text.substring(lastEnd, reResult.index));
+			}
+
+			// transform the matching string
+			nodes.push(transform.apply(this, reResult));
+
+			// move the index along
+			lastEnd = reResult.index + reResult[0].length;
+		}
+
+		// add a node for the remaining text
+		if ( lastEnd < text.length ) {
+			nodes.push(text.substring(lastEnd, text.length));
+		}
+
+		if ( contextObj.doJoin ) {
+			return nodes.join("");
+		} else {
+			return nodes;
+		}
+
+		function transform( matchStr/*, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15*/ ) {
 			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // "match description" object
 
 			// Return out with no changes for match types that are disabled (url,
@@ -2010,10 +2062,15 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 			} else {
 				// Generate replacement text for the match from the `replaceFn`
-				var replaceStr = replaceFn.call( contextObj, matchDescObj.match );
-				return matchDescObj.prefixStr + replaceStr + matchDescObj.suffixStr;
+				var replacement = replaceFn.call( contextObj, matchDescObj.match );
+
+				if ( typeof replacement === 'string' ) {
+					return matchDescObj.prefixStr + replacement + matchDescObj.suffixStr;
+				} else {
+					return replacement;
+				}
 			}
-		} );
+		}
 	},
 
 
