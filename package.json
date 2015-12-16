@@ -39,6 +39,7 @@
     "grunt-contrib-concat": "^0.4.0",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-jsduck": "^1.0.1",
-    "grunt-umd": "^2.0.1"
+    "grunt-umd": "^2.0.1",
+    "react": "^0.14.3"
   }
 }

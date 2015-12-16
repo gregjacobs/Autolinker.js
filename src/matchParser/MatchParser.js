@@ -222,7 +222,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	/**
 	 * Parses the input `text` to search for matches, and calls the `replaceFn`
 	 * to allow replacements of the matches. Returns the `text` with matches
-	 * replaced.
+	 * replaced, or an array if `doJoin` is unset.
 	 *
 	 * @param {String} text The text to search and repace matches in.
 	 * @param {Function} replaceFn The iterator function to handle the
@@ -230,12 +230,44 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *   object, and should return the text that should make the replacement.
 	 * @param {Object} [contextObj=window] The context object ("scope") to run
 	 *   the `replaceFn` in.
-	 * @return {String}
+	 * @return {String|Array}
 	 */
 	replace : function( text, replaceFn, contextObj ) {
 		var me = this;  // for closure
 
-		return text.replace( this.matcherRegex, function( matchStr/*, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15*/ ) {
+		var re = this.matcherRegex;
+		re.lastIndex = 0; // reset the regex
+
+		var nodes = [];
+		var reResult;
+		var lastEnd = 0;
+
+		while (( reResult = re.exec(text)) != null ) {
+
+			// if there's any text before the next index, add that
+			if ( reResult.index !== lastEnd ) {
+				nodes.push(text.substring(lastEnd, reResult.index));
+			}
+
+			// transform the matching string
+			nodes.push(transform.apply(this, reResult));
+
+			// move the index along
+			lastEnd = reResult.index + reResult[0].length;
+		}
+
+		// add a node for the remaining text
+		if ( lastEnd < text.length ) {
+			nodes.push(text.substring(lastEnd, text.length));
+		}
+
+		if ( contextObj.doJoin ) {
+			return nodes.join("");
+		} else {
+			return nodes;
+		}
+
+		function transform( matchStr/*, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15*/ ) {
 			var matchDescObj = me.processCandidateMatch.apply( me, arguments );  // "match description" object
 
 			// Return out with no changes for match types that are disabled (url,
@@ -247,10 +279,15 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 
 			} else {
 				// Generate replacement text for the match from the `replaceFn`
-				var replaceStr = replaceFn.call( contextObj, matchDescObj.match );
-				return matchDescObj.prefixStr + replaceStr + matchDescObj.suffixStr;
+				var replacement = replaceFn.call( contextObj, matchDescObj.match );
+
+				if ( typeof replacement === 'string' ) {
+					return matchDescObj.prefixStr + replacement + matchDescObj.suffixStr;
+				} else {
+					return replacement;
+				}
 			}
-		} );
+		}
 	},
 
 
