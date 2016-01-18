@@ -106,7 +106,7 @@ Autolinker.matchParser.MatchParser = Autolinker.Util.extend( Object, {
 	 *     '#someHashtag', the hashtag is 'someHashtag'.
 	 */
 	matcherRegex : (function() {
-		var twitterRegex = /(^|[^\w])@(\w{1,15})/,              // For matching a twitter handle. Ex: @gregory_jacobs
+		var twitterRegex = /(^|[^\w])@(\w{1,20})/,              // For matching a twitter handle. Ex: @gregory_jacobs
 
 		    hashtagRegex = /(^|[^\w])#(\w{1,139})/,             // For matching a Hashtag. Ex: #games
 
