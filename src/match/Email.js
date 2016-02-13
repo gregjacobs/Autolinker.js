@@ -10,24 +10,29 @@
 Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} email (required)
+	 * @protected
+	 * @property {String} email (required)
 	 *
 	 * The email address that was matched.
 	 */
 
 
-	// @if DEBUG
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} email The email address that was matched.
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, email ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		if( !this.email ) throw new Error( '`email` cfg required' );
+		// @if DEBUG
+		if( !email ) throw new Error( '`email` arg required' );
+		// @endif
+
+		this.email = email;
 	},
-	// @endif
 
 
 	/**

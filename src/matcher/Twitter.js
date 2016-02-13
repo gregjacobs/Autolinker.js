@@ -46,11 +46,10 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not an email
 			// address), then it is a username match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				matches.push( new Autolinker.match.Twitter( {
-					matchedText   : match[ 0 ],
-					offset        : offset,
-					twitterHandle : match[ 0 ].slice( 1 )  // strip off the '@' character at the beginning
-				} ) );
+				var matchedText = match[ 0 ],
+				    twitterHandle = match[ 0 ].slice( 1 );  // strip off the '@' character at the beginning
+
+				matches.push( new Autolinker.match.Twitter( matchedText, offset, twitterHandle ) );
 			}
 		}
 

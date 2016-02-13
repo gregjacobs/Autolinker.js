@@ -33,30 +33,19 @@
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 
 	/**
-	 * @cfg {String} matchedText (required)
-	 *
-	 * The original text that was matched.
-	 */
-
-	/**
-	 * @cfg {Number} offset (required)
-	 *
-	 * The offset of where the match was made in the input string.
-	 */
-
-
-	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 * specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
 	 */
-	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
-
+	constructor : function( matchedText, offset ) {
 		// @if DEBUG
-		if( this.matchedText == null ) throw new Error( '`matchedText` cfg required' );
-		if( this.offset == null ) throw new Error( '`offset` cfg required' );
+		if( matchedText == null ) throw new Error( '`matchedText` arg required' );
+		if( offset == null ) throw new Error( '`offset` arg required' );
 		// @endif
+
+		this.matchedText = matchedText;
+		this.offset = offset;
 	},
 
 

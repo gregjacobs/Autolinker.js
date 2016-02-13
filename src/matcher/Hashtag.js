@@ -56,6 +56,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
 		    nonWordCharRegex = this.nonWordCharRegex,
+		    serviceName = this.serviceName,
 		    matches = [],
 		    match;
 
@@ -67,12 +68,10 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not a '#' char
 			// in the middle of a word), then it is a hashtag match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				matches.push( new Autolinker.match.Hashtag( {
-					matchedText : match[ 0 ],
-					offset      : offset,
-					serviceName : this.serviceName,
-					hashtag     : match[ 0 ].slice( 1 )  // strip off the '#' character at the beginning
-				} ) );
+				var matchedText = match[ 0 ],
+				    hashTag = match[ 0 ].slice( 1 );  // strip off the '#' character at the beginning
+
+				matches.push( new Autolinker.match.Hashtag( matchedText, offset, serviceName, hashTag ) );
 			}
 		}
 

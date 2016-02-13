@@ -20,8 +20,9 @@
  *     // produces: 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'
  *
  *
- * The {@link #static-link static link()} method may also be used to inline options into a single call, which may
- * be more convenient for one-off uses. For example:
+ * The {@link #static-link static link()} method may also be used to inline
+ * options into a single call, which may be more convenient for one-off uses.
+ * For example:
  *
  *     var html = Autolinker.link( "Joe went to www.yahoo.com", {
  *         newWindow : false,
@@ -95,17 +96,28 @@
  *
  * The function may return the following values:
  *
- * - `true` (Boolean): Allow Autolinker to replace the match as it normally would.
+ * - `true` (Boolean): Allow Autolinker to replace the match as it normally
+ *   would.
  * - `false` (Boolean): Do not replace the current match at all - leave as-is.
- * - Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
- *   the match.
- * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
+ * - Any String: If a string is returned from the function, the string will be
+ *   used directly as the replacement HTML for the match.
+ * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
+ *   an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance,
+ *   specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
-	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
+	cfg = cfg || {};
+
+	this.urls = this.normalizeUrlsCfg( cfg.urls );
+	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
+	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
+	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
+	this.hashtag = cfg.hashtag || false;
+	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
+	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
@@ -113,9 +125,13 @@ var Autolinker = function( cfg ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
 
-	// Normalize the configs
-	this.urls     = this.normalizeUrlsCfg( this.urls );
-	this.truncate = this.normalizeTruncateCfg( this.truncate );
+	this.truncate = this.normalizeTruncateCfg( cfg.truncate );
+	this.className = cfg.className || '';
+	this.replaceFn = cfg.replaceFn || null;
+
+	this.htmlParser = null;
+	this.matchers = null;
+	this.tagBuilder = null;
 };
 
 Autolinker.prototype = {
@@ -143,7 +159,6 @@ Autolinker.prototype = {
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
 	 */
-	urls : true,
 
 	/**
 	 * @cfg {Boolean} email
@@ -151,7 +166,6 @@ Autolinker.prototype = {
 	 * `true` if email addresses should be automatically linked, `false` if they
 	 * should not be.
 	 */
-	email : true,
 
 	/**
 	 * @cfg {Boolean} twitter
@@ -159,7 +173,6 @@ Autolinker.prototype = {
 	 * `true` if Twitter handles ("@example") should be automatically linked,
 	 * `false` if they should not be.
 	 */
-	twitter : true,
 
 	/**
 	 * @cfg {Boolean} phone
@@ -167,7 +180,6 @@ Autolinker.prototype = {
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
 	 * `false` if they should not be.
 	 */
-	phone: true,
 
 	/**
 	 * @cfg {Boolean/String} hashtag
@@ -181,14 +193,12 @@ Autolinker.prototype = {
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
-	hashtag : false,
 
 	/**
 	 * @cfg {Boolean} newWindow
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
-	newWindow : true,
 
 	/**
 	 * @cfg {Boolean} stripPrefix
@@ -196,7 +206,6 @@ Autolinker.prototype = {
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise.
 	 */
-	stripPrefix : true,
 
 	/**
 	 * @cfg {Number/Object} truncate
@@ -242,7 +251,6 @@ Autolinker.prototype = {
 	 *   'yahoo.com/some..to/a/file'. For more details, see
 	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
-	truncate : undefined,
 
 	/**
 	 * @cfg {String} className
@@ -258,7 +266,6 @@ Autolinker.prototype = {
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 	 */
-	className : "",
 
 	/**
 	 * @cfg {Function} replaceFn
@@ -283,7 +290,16 @@ Autolinker.prototype = {
 	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
 	 * in the {@link #getHtmlParser} method.
 	 */
-	htmlParser : undefined,
+
+	/**
+	 * @private
+	 * @return {Autolinker.matcher.Matcher[]} matchers
+	 *
+	 * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
+	 * instance.
+	 *
+	 * This is lazily created in {@link #getMatchers}.
+	 */
 
 	/**
 	 * @private
@@ -292,7 +308,6 @@ Autolinker.prototype = {
 	 * The AnchorTagBuilder instance used to build match replacement anchor tags. Note: this is lazily instantiated
 	 * in the {@link #getTagBuilder} method.
 	 */
-	tagBuilder : undefined,
 
 
 	/**
@@ -306,10 +321,17 @@ Autolinker.prototype = {
 	 * @return {Object}
 	 */
 	normalizeUrlsCfg : function( urls ) {
+		if( urls == null ) urls = true;  // default to `true`
+
 		if( typeof urls === 'boolean' ) {
 			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
-		} else {
-			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+
+		} else {  // object form
+			return {
+				schemeMatches : typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
+				wwwMatches    : typeof urls.wwwMatches === 'boolean'    ? urls.wwwMatches    : true,
+				tldMatches    : typeof urls.tldMatches === 'boolean'    ? urls.tldMatches    : true
+			};
 		}
 	},
 

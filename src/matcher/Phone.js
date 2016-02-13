@@ -34,14 +34,11 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			// Remove non-numeric values from phone number string
-			var cleanNumber = match[ 0 ].replace( /\D/g, '' );
+			var matchedText = match[ 0 ],
+			    cleanNumber = matchedText.replace( /\D/g, '' ),  // strip out non-digit characters
+			    plusSign = !!match[ 1 ];  // match[ 1 ] is the prefixed plus sign, if there is one
 
-			matches.push( new Autolinker.match.Phone( {
-				matchedText : match[ 0 ],
-				plusSign    : !!match[ 1 ],  // match[ 1 ] is the prefixed plus sign, if there is one
-				offset      : match.index,
-				number      : cleanNumber
-			} ) );
+			matches.push( new Autolinker.match.Phone( matchedText, match.index, cleanNumber, plusSign ) );
 		}
 
 		return matches;

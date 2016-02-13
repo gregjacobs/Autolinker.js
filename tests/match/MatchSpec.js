@@ -4,17 +4,17 @@ describe( "Autolinker.match.Match", function() {
 
 	describe( 'constructor', function() {
 
-		it( "should require the `matchedText` cfg", function() {
+		it( "should require the `matchedText` arg", function() {
 			expect( function() {
-				new Match( {} );  // note: no `matchedText` cfg
-			} ).toThrowError( '`matchedText` cfg required' );
+				new Match();  // note: no `matchedText` cfg
+			} ).toThrowError( '`matchedText` arg required' );
 		} );
 
 
-		it( "should require the `offset` cfg", function() {
+		it( "should require the `offset` arg", function() {
 			expect( function() {
-				new Match( { matchedText: 'abc' } );  // note: no `offset` cfg
-			} ).toThrowError( '`offset` cfg required' );
+				new Match( 'abc' );  // note: no `offset` arg
+			} ).toThrowError( '`offset` arg required' );
 		} );
 
 	} );
@@ -23,14 +23,14 @@ describe( "Autolinker.match.Match", function() {
 	describe( 'getMatchedText()', function() {
 
 		it( "should return the configured `matchedText` if it was an empty string", function() {
-			var match = new Match( { matchedText: '', offset: 0 } );
+			var match = new Match( '', 0 );
 
 			expect( match.getMatchedText() ).toBe( '' );
 		} );
 
 
 		it( "should return the configured `matchedText` if it was a string other than an empty string", function() {
-			var match = new Match( { matchedText: 'abc', offset: 2 } );
+			var match = new Match( 'abc', 2 );
 
 			expect( match.getMatchedText() ).toBe( 'abc' );
 		} );
@@ -41,14 +41,14 @@ describe( "Autolinker.match.Match", function() {
 	describe( 'getOffset()', function() {
 
 		it( "should return the configured `offset` if it was 0", function() {
-			var match = new Match( { matchedText: 'abc', offset: 0 } );
+			var match = new Match( 'abc', 0 );
 
 			expect( match.getOffset() ).toBe( 0 );
 		} );
 
 
 		it( "should return the configured `offset` if it was a number other than 0", function() {
-			var match = new Match( { matchedText: 'abc', offset: 2 } );
+			var match = new Match( 'abc', 2 );
 
 			expect( match.getOffset() ).toBe( 2 );
 		} );

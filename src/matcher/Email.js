@@ -39,11 +39,10 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    match;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			matches.push( new Autolinker.match.Email( {
-				matchedText : match[ 0 ],
-				offset      : match.index,
-				email       : match[ 0 ]
-			} ) );
+			var matchedText = match[ 0 ],
+			    email = matchedText;
+
+			matches.push( new Autolinker.match.Email( matchedText, match.index, email ) );
 		}
 
 		return matches;

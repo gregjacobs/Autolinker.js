@@ -149,6 +149,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
+		    stripPrefix = this.stripPrefix,
 		    matches = [],
 		    match;
 
@@ -194,15 +195,18 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				}
 			}
 
-			matches.push( new Autolinker.match.Url( {
-				matchedText  : matchStr,
-				offset       : offset,
-				url          : matchStr,
-				urlMatchType : schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
-				protocolUrlMatch      : !!schemeUrlMatch,
-				protocolRelativeMatch : !!protocolRelativeMatch,
-				stripPrefix : this.stripPrefix
-			} ) );
+			var urlMatchType = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
+			    protocolUrlMatch = !!schemeUrlMatch;
+
+			matches.push( new Autolinker.match.Url(
+				matchStr,
+				offset,
+				matchStr,  // url
+				urlMatchType,
+				protocolUrlMatch,
+				!!protocolRelativeMatch,
+				stripPrefix
+			) );
 		}
 
 		return matches;

@@ -15,6 +15,14 @@ describe( "Autolinker", function() {
 
 	describe( "config checking", function() {
 
+		describe( "no configs", function() {
+
+			it( "should default to the default options if no `cfg` object is provided", function() {
+				expect( Autolinker.link( "Welcome to google.com" ) ).toBe( 'Welcome to <a href="http://google.com" target="_blank">google.com</a>' );
+			} );
+
+		} );
+
 		describe( "`hashtag` cfg", function() {
 
 			it( "should throw if `hashtag` is a value other than `false` or one of the valid service names", function() {
