@@ -138,7 +138,7 @@ Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean/Object} urls
+	 * @cfg {Boolean/Object} [urls=true]
 	 *
 	 * `true` if URLs should be automatically linked, `false` if they should not
 	 * be.
@@ -161,28 +161,28 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Boolean} email
+	 * @cfg {Boolean} [email=true]
 	 *
 	 * `true` if email addresses should be automatically linked, `false` if they
 	 * should not be.
 	 */
 
 	/**
-	 * @cfg {Boolean} twitter
+	 * @cfg {Boolean} [twitter=true]
 	 *
 	 * `true` if Twitter handles ("@example") should be automatically linked,
 	 * `false` if they should not be.
 	 */
 
 	/**
-	 * @cfg {Boolean} phone
+	 * @cfg {Boolean} [phone=true]
 	 *
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
 	 * `false` if they should not be.
 	 */
 
 	/**
-	 * @cfg {Boolean/String} hashtag
+	 * @cfg {Boolean/String} [hashtag=false]
 	 *
 	 * A string for the service name to have hashtags (ex: "#myHashtag")
 	 * auto-linked to. The currently-supported values are:
@@ -195,13 +195,13 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Boolean} newWindow
+	 * @cfg {Boolean} [newWindow=true]
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
 
 	/**
-	 * @cfg {Boolean} stripPrefix
+	 * @cfg {Boolean} [stripPrefix=true]
 	 *
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise.
@@ -255,8 +255,9 @@ Autolinker.prototype = {
 	/**
 	 * @cfg {String} className
 	 *
-	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
-	 * plus match suffixes for styling url/email/phone/twitter/hashtag links differently.
+	 * A CSS class name to add to the generated links. This class will be added
+	 * to all links, as well as this class plus match suffixes for styling
+	 * url/email/phone/twitter/hashtag links differently.
 	 *
 	 * For example, if this config is provided as "myLink", then:
 	 *
@@ -276,10 +277,13 @@ Autolinker.prototype = {
 	 *
 	 * This function is called with the following parameters:
 	 *
-	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may be used to retrieve child objects from (such
-	 *   as the instance's {@link #getTagBuilder tag builder}).
-	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which can be used to retrieve information about the
-	 *   match that the `replaceFn` is currently processing. See {@link Autolinker.match.Match} subclasses for details.
+	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may
+	 *   be used to retrieve child objects from (such as the instance's
+	 *   {@link #getTagBuilder tag builder}).
+	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
+	 *   can be used to retrieve information about the match that the `replaceFn`
+	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
+	 *   for details.
 	 */
 
 
@@ -287,8 +291,9 @@ Autolinker.prototype = {
 	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 *
-	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
-	 * in the {@link #getHtmlParser} method.
+	 * The HtmlParser instance used to skip over HTML tags, while finding text
+	 * nodes to process. This is lazily instantiated in the {@link #getHtmlParser}
+	 * method.
 	 */
 
 	/**
@@ -305,8 +310,8 @@ Autolinker.prototype = {
 	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
 	 *
-	 * The AnchorTagBuilder instance used to build match replacement anchor tags. Note: this is lazily instantiated
-	 * in the {@link #getTagBuilder} method.
+	 * The AnchorTagBuilder instance used to build match replacement anchor tags.
+	 * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
 	 */
 
 

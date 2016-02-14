@@ -1833,4 +1833,139 @@ describe( "Autolinker", function() {
 
 	} );
 
+
+	describe( 'all match types tests', function() {
+		var testCases = {
+			schemeUrl : {
+				unlinked : 'http://google.com/path?param1=value1&param2=value2#hash',
+				linked   : '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&param2=value2#hash</a>'
+			},
+			wwwUrl : {
+				unlinked : 'www.google.com/path?param1=value1&param2=value2#hash',
+				linked   : '<a href="http://www.google.com/path?param1=value1&param2=value2#hash">www.google.com/path?param1=value1&param2=value2#hash</a>'
+			},
+			tldUrl : {
+				unlinked : 'google.com/path?param1=value1&param2=value2#hash',
+				linked   : '<a href="http://google.com/path?param1=value1&param2=value2#hash">google.com/path?param1=value1&param2=value2#hash</a>'
+			},
+			email : {
+				unlinked : 'asdf@asdf.com',
+				linked   : '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>'
+			},
+			twitter : {
+				unlinked : '@asdf',
+				linked   : '<a href="https://twitter.com/asdf">@asdf</a>'
+			},
+			phone : {
+				unlinked : '123-456-7890',
+				linked   : '<a href="tel:1234567890">123-456-7890</a>'
+			},
+			hashtag : {
+				unlinked : '#Winning',
+				linked   : '<a href="https://twitter.com/hashtag/Winning">#Winning</a>'
+			}
+		};
+
+		var numTestCaseKeys = Object.keys( testCases ).length;
+
+		var paragraphTpl = _.template( [
+			'Check link 1: <%= schemeUrl %>.',
+			'Check link 2: <%= wwwUrl %>.',
+			'Check link 3: <%= tldUrl %>.',
+			'My email is: <%= email %>.',
+			'My twitter username is <%= twitter %>.',
+			'My phone number is <%= phone %>.',
+			'Hashtag <%= hashtag %>.'
+		].join( '\n' ) );
+
+		var sourceParagraph = paragraphTpl( {
+			schemeUrl : testCases.schemeUrl.unlinked,
+			wwwUrl    : testCases.wwwUrl.unlinked,
+			tldUrl    : testCases.tldUrl.unlinked,
+			email     : testCases.email.unlinked,
+			twitter   : testCases.twitter.unlinked,
+			phone     : testCases.phone.unlinked,
+			hashtag   : testCases.hashtag.unlinked
+		} );
+
+
+
+		it( 'should replace matches appropriately in a paragraph of text, using a variety of enabled matchers. Want to make sure that when one match type is disabled (such as emails), that other ones don\'t accidentally link part of them (such as from the url matcher)', function() {
+			// We're going to run through every combination of matcher settings
+			// possible.
+			// 7 different settings and two possibilities for each (on or off)
+			// is 2^7 == 128 settings possibilities
+			for( var i = 0, len = Math.pow( 2, numTestCaseKeys ); i < len; i++ ) {
+				var cfg = {
+					schemeMatches : !!( i & parseInt( '00000001', 2 ) ),
+				    wwwMatches    : !!( i & parseInt( '00000010', 2 ) ),
+				    tldMatches    : !!( i & parseInt( '00000100', 2 ) ),
+				    email         : !!( i & parseInt( '00001000', 2 ) ),
+				    twitter       : !!( i & parseInt( '00010000', 2 ) ),
+				    phone         : !!( i & parseInt( '00100000', 2 ) ),
+				    hashtag       : !!( i & parseInt( '01000000', 2 ) ) ? 'twitter' : false
+				};
+
+				var autolinker = new Autolinker( {
+					urls        : {
+						schemeMatches : cfg.schemeMatches,
+						wwwMatches    : cfg.wwwMatches,
+						tldMatches    : cfg.tldMatches
+					},
+					email       : cfg.email,
+					twitter     : cfg.twitter,
+					phone       : cfg.phone,
+					hashtag     : cfg.hashtag,
+
+					newWindow   : false,
+					stripPrefix : false
+				} );
+
+				var result = autolinker.link( sourceParagraph ),
+				    resultLines = result.split( '\n' ),  // splitting line-by-line to make it easier to see where a failure is
+				    expectedLines = generateExpectedLines( cfg );
+
+				expect( resultLines.length ).toBe( expectedLines.length );  // just in case
+
+				for( var j = 0, jlen = expectedLines.length; j < jlen; j++ ) {
+					if( resultLines[ j ] !== expectedLines[ j ] ) {
+						var errorMsg = generateErrMsg( resultLines[ j ], expectedLines[ j ], cfg );
+						throw new Error( errorMsg );
+					}
+				}
+			}
+
+
+			function generateExpectedLines( cfg ) {
+				var expectedLines = paragraphTpl( {
+					schemeUrl : cfg.schemeMatches ? testCases.schemeUrl.linked : testCases.schemeUrl.unlinked,
+					wwwUrl    : cfg.wwwMatches    ? testCases.wwwUrl.linked    : testCases.wwwUrl.unlinked,
+					tldUrl    : cfg.tldMatches    ? testCases.tldUrl.linked    : testCases.tldUrl.unlinked,
+					email     : cfg.email         ? testCases.email.linked     : testCases.email.unlinked,
+					twitter   : cfg.twitter       ? testCases.twitter.linked   : testCases.twitter.unlinked,
+					phone     : cfg.phone         ? testCases.phone.linked     : testCases.phone.unlinked,
+					hashtag   : cfg.hashtag       ? testCases.hashtag.linked   : testCases.hashtag.unlinked
+				} );
+
+				return expectedLines.split( '\n' );  // splitting line-by-line to make it easier to see where a failure is
+			}
+
+
+			function generateErrMsg( resultLine, expectedLine, cfg ) {
+				var errorMsg = [
+				    'Expected: \'' + resultLine + '\' to be \'' + expectedLine + '\'\n'
+				];
+
+				errorMsg.push( '{' );
+				_.forOwn( cfg, function( value, key ) {
+					errorMsg.push( '\t' + key + ': ' + value );
+				} );
+				errorMsg.push( '}' );
+
+				return errorMsg.join( '\n' );
+			}
+		} );
+
+	} );
+
 } );

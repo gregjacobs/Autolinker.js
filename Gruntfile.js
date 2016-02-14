@@ -43,7 +43,11 @@ module.exports = function(grunt) {
 		jasmine: {
 			dist: {
 				options: {
-					specs: [ 'tests/match/MatchChecker.js', 'tests/**/*Spec.js' ]
+					specs : [
+						'node_modules/lodash/lodash.js',  // spec helper
+						'tests/match/MatchChecker.js',    // spec helper
+						'tests/**/*Spec.js'
+					]
 				},
 				src: minDistPath
 			}

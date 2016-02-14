@@ -4,7 +4,7 @@
   "description": "Utility to automatically link the URLs, email addresses, and Twitter handles in a given block of text/HTML",
   "main": "dist/Autolinker.js",
   "files": [
-  	"dist"
+    "dist"
   ],
   "directories": {
     "test": "tests"
@@ -40,6 +40,7 @@
     "grunt-jsduck": "^1.0.1",
     "grunt-preprocess": "^4.1.0",
     "grunt-umd": "^2.0.1",
+    "lodash": "^4.3.0",
     "requirejs": "^2.1.11"
   }
 }
