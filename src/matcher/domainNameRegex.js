@@ -1,6 +1,7 @@
 /*global Autolinker */
 /**
- * @property Autolinker.matcher.domainNameRegex
+ * @member Autolinker.matcher
+ * @property {RegExp} domainNameRegex
  *
  * A regular expression to match domain names of a URL or email address. Ex:
  * 'google', 'yahoo', 'some-other-company', etc.

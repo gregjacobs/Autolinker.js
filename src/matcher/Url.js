@@ -216,7 +216,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	/**
 	 * Determines if a match found has an unmatched closing parenthesis. If so,
 	 * this parenthesis will be removed from the match itself, and appended
-	 * after the generated anchor tag in {@link #processCandidateMatch}.
+	 * after the generated anchor tag.
 	 *
 	 * A match may have an extra closing parenthesis at the end of the match
 	 * because the regular expression must include parenthesis for URLs such as

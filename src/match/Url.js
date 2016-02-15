@@ -11,14 +11,14 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property {String} url (required)
+	 * @property {String} url
 	 *
 	 * The url that was matched.
 	 */
 
 	/**
 	 * @protected
-	 * @property  {"scheme"/"www"/"tld"} urlMatchType (required)
+	 * @property  {"scheme"/"www"/"tld"} urlMatchType
 	 *
 	 * The type of URL match that this class represents. This helps to determine
 	 * if the match was made in the original text with a prefixed scheme (ex:
@@ -28,7 +28,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property  {Boolean} protocolUrlMatch (required)
+	 * @property  {Boolean} protocolUrlMatch
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
@@ -36,7 +36,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property  {Boolean} protocolRelativeMatch (required)
+	 * @property  {Boolean} protocolRelativeMatch
 	 *
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match
 	 * is a URL that starts with '//', and will be either http:// or https://
@@ -45,8 +45,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property {Boolean} stripPrefix (required)
-	 * @inheritdoc Autolinker#stripPrefix
+	 * @property {Boolean} stripPrefix
+	 * @inheritdoc Autolinker#cfg-stripPrefix
 	 */
 
 

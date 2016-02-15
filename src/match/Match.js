@@ -33,6 +33,17 @@
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 
 	/**
+	 * @protected
+	 * @property {String} matchedText
+	 */
+
+	/**
+	 * @protected
+	 * @property {Number} offset
+	 */
+
+
+	/**
 	 * @constructor
 	 * @param {String} matchedText The original text that was matched.
 	 * @param {Number} offset The offset of where the match was made in the

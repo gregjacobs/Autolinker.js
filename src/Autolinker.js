@@ -298,7 +298,7 @@ Autolinker.prototype = {
 
 	/**
 	 * @private
-	 * @return {Autolinker.matcher.Matcher[]} matchers
+	 * @property {Autolinker.matcher.Matcher[]} matchers
 	 *
 	 * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
 	 * instance.
@@ -545,8 +545,7 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Creates the return string value for a given match in the input string,
-	 * for the {@link #linkifyStr} method.
+	 * Creates the return string value for a given match in the input string.
 	 *
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 *

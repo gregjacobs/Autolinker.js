@@ -323,7 +323,7 @@ Autolinker.prototype = {
 
 	/**
 	 * @private
-	 * @return {Autolinker.matcher.Matcher[]} matchers
+	 * @property {Autolinker.matcher.Matcher[]} matchers
 	 *
 	 * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
 	 * instance.
@@ -570,8 +570,7 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Creates the return string value for a given match in the input string,
-	 * for the {@link #linkifyStr} method.
+	 * Creates the return string value for a given match in the input string.
 	 *
 	 * This method handles the {@link #replaceFn}, if one was provided.
 	 *
@@ -1960,6 +1959,17 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 
 	/**
+	 * @protected
+	 * @property {String} matchedText
+	 */
+
+	/**
+	 * @protected
+	 * @property {Number} offset
+	 */
+
+
+	/**
 	 * @constructor
 	 * @param {String} matchedText The original text that was matched.
 	 * @param {Number} offset The offset of where the match was made in the
@@ -2410,14 +2420,14 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property {String} url (required)
+	 * @property {String} url
 	 *
 	 * The url that was matched.
 	 */
 
 	/**
 	 * @protected
-	 * @property  {"scheme"/"www"/"tld"} urlMatchType (required)
+	 * @property  {"scheme"/"www"/"tld"} urlMatchType
 	 *
 	 * The type of URL match that this class represents. This helps to determine
 	 * if the match was made in the original text with a prefixed scheme (ex:
@@ -2427,7 +2437,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property  {Boolean} protocolUrlMatch (required)
+	 * @property  {Boolean} protocolUrlMatch
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
@@ -2435,7 +2445,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property  {Boolean} protocolRelativeMatch (required)
+	 * @property  {Boolean} protocolRelativeMatch
 	 *
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match
 	 * is a URL that starts with '//', and will be either http:// or https://
@@ -2444,8 +2454,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @protected
-	 * @property {Boolean} stripPrefix (required)
-	 * @inheritdoc Autolinker#stripPrefix
+	 * @property {Boolean} stripPrefix
+	 * @inheritdoc Autolinker#cfg-stripPrefix
 	 */
 
 
@@ -2633,7 +2643,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 } );
 /*global Autolinker */
 /**
- * @property Autolinker.matcher.domainNameRegex
+ * @member Autolinker.matcher
+ * @property {RegExp} domainNameRegex
  *
  * A regular expression to match domain names of a URL or email address. Ex:
  * 'google', 'yahoo', 'some-other-company', etc.
@@ -2645,7 +2656,8 @@ Autolinker.matcher.domainNameRegex = /[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u0
 
 /*global Autolinker */
 /**
- * @property Autolinker.matcher.tldRegex
+ * @member Autolinker.matcher
+ * @property {RegExp} tldRegex
  *
  * A regular expression to match top level domains (TLDs) for a URL or
  * email address. Ex: 'com', 'org', 'net', etc.
@@ -2678,8 +2690,8 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Parses the input `text` and returns the array of {@link Match Matches} for the
-	 * matcher.
+	 * Parses the input `text` and returns the array of {@link Autolinker.match.Match Matches}
+	 * for the matcher.
 	 *
 	 * @abstract
 	 * @param {String} text The text to scan and replace matches in.
@@ -3136,7 +3148,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	/**
 	 * Determines if a match found has an unmatched closing parenthesis. If so,
 	 * this parenthesis will be removed from the match itself, and appended
-	 * after the generated anchor tag in {@link #processCandidateMatch}.
+	 * after the generated anchor tag.
 	 *
 	 * A match may have an extra closing parenthesis at the end of the match
 	 * because the regular expression must include parenthesis for URLs such as

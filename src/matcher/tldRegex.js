@@ -1,6 +1,7 @@
 /*global Autolinker */
 /**
- * @property Autolinker.matcher.tldRegex
+ * @member Autolinker.matcher
+ * @property {RegExp} tldRegex
  *
  * A regular expression to match top level domains (TLDs) for a URL or
  * email address. Ex: 'com', 'org', 'net', etc.

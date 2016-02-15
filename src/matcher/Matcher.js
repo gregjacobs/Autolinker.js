@@ -22,8 +22,8 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 
 
 	/**
-	 * Parses the input `text` and returns the array of {@link Match Matches} for the
-	 * matcher.
+	 * Parses the input `text` and returns the array of {@link Autolinker.match.Match Matches}
+	 * for the matcher.
 	 *
 	 * @abstract
 	 * @param {String} text The text to scan and replace matches in.
