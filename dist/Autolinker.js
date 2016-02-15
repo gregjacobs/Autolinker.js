@@ -18,7 +18,7 @@
  * Autolinker.js
  * 0.22.0
  *
- * Copyright(c) 2015 Gregory Jacobs <greg@greg-jacobs.com>
+ * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT
  *
  * https://github.com/gregjacobs/Autolinker.js
@@ -45,8 +45,9 @@
  *     // produces: 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'
  *
  *
- * The {@link #static-link static link()} method may also be used to inline options into a single call, which may
- * be more convenient for one-off uses. For example:
+ * The {@link #static-link static link()} method may also be used to inline
+ * options into a single call, which may be more convenient for one-off uses.
+ * For example:
  *
  *     var html = Autolinker.link( "Joe went to www.yahoo.com", {
  *         newWindow : false,
@@ -120,17 +121,28 @@
  *
  * The function may return the following values:
  *
- * - `true` (Boolean): Allow Autolinker to replace the match as it normally would.
+ * - `true` (Boolean): Allow Autolinker to replace the match as it normally
+ *   would.
  * - `false` (Boolean): Do not replace the current match at all - leave as-is.
- * - Any String: If a string is returned from the function, the string will be used directly as the replacement HTML for
- *   the match.
- * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify an HTML tag before writing out its HTML text.
+ * - Any String: If a string is returned from the function, the string will be
+ *   used directly as the replacement HTML for the match.
+ * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
+ *   an HTML tag before writing out its HTML text.
  *
  * @constructor
- * @param {Object} [cfg] The configuration options for the Autolinker instance, specified in an Object (map).
+ * @param {Object} [cfg] The configuration options for the Autolinker instance,
+ *   specified in an Object (map).
  */
 var Autolinker = function( cfg ) {
-	Autolinker.Util.assign( this, cfg );  // assign the properties of `cfg` onto the Autolinker instance. Prototype properties will be used for missing configs.
+	cfg = cfg || {};
+
+	this.urls = this.normalizeUrlsCfg( cfg.urls );
+	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
+	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
+	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
+	this.hashtag = cfg.hashtag || false;
+	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
+	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
@@ -138,16 +150,20 @@ var Autolinker = function( cfg ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
 	}
 
-	// Normalize the configs
-	this.urls     = this.normalizeUrlsCfg( this.urls );
-	this.truncate = this.normalizeTruncateCfg( this.truncate );
+	this.truncate = this.normalizeTruncateCfg( cfg.truncate );
+	this.className = cfg.className || '';
+	this.replaceFn = cfg.replaceFn || null;
+
+	this.htmlParser = null;
+	this.matchers = null;
+	this.tagBuilder = null;
 };
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean/Object} urls
+	 * @cfg {Boolean/Object} [urls=true]
 	 *
 	 * `true` if URLs should be automatically linked, `false` if they should not
 	 * be.
@@ -168,34 +184,30 @@ Autolinker.prototype = {
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
 	 */
-	urls : true,
 
 	/**
-	 * @cfg {Boolean} email
+	 * @cfg {Boolean} [email=true]
 	 *
 	 * `true` if email addresses should be automatically linked, `false` if they
 	 * should not be.
 	 */
-	email : true,
 
 	/**
-	 * @cfg {Boolean} twitter
+	 * @cfg {Boolean} [twitter=true]
 	 *
 	 * `true` if Twitter handles ("@example") should be automatically linked,
 	 * `false` if they should not be.
 	 */
-	twitter : true,
 
 	/**
-	 * @cfg {Boolean} phone
+	 * @cfg {Boolean} [phone=true]
 	 *
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
 	 * `false` if they should not be.
 	 */
-	phone: true,
 
 	/**
-	 * @cfg {Boolean/String} hashtag
+	 * @cfg {Boolean/String} [hashtag=false]
 	 *
 	 * A string for the service name to have hashtags (ex: "#myHashtag")
 	 * auto-linked to. The currently-supported values are:
@@ -206,22 +218,19 @@ Autolinker.prototype = {
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
-	hashtag : false,
 
 	/**
-	 * @cfg {Boolean} newWindow
+	 * @cfg {Boolean} [newWindow=true]
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
-	newWindow : true,
 
 	/**
-	 * @cfg {Boolean} stripPrefix
+	 * @cfg {Boolean} [stripPrefix=true]
 	 *
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise.
 	 */
-	stripPrefix : true,
 
 	/**
 	 * @cfg {Number/Object} truncate
@@ -267,13 +276,13 @@ Autolinker.prototype = {
 	 *   'yahoo.com/some..to/a/file'. For more details, see
 	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
-	truncate : undefined,
 
 	/**
 	 * @cfg {String} className
 	 *
-	 * A CSS class name to add to the generated links. This class will be added to all links, as well as this class
-	 * plus match suffixes for styling url/email/phone/twitter/hashtag links differently.
+	 * A CSS class name to add to the generated links. This class will be added
+	 * to all links, as well as this class plus match suffixes for styling
+	 * url/email/phone/twitter/hashtag links differently.
 	 *
 	 * For example, if this config is provided as "myLink", then:
 	 *
@@ -283,7 +292,6 @@ Autolinker.prototype = {
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 	 */
-	className : "",
 
 	/**
 	 * @cfg {Function} replaceFn
@@ -294,10 +302,13 @@ Autolinker.prototype = {
 	 *
 	 * This function is called with the following parameters:
 	 *
-	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may be used to retrieve child objects from (such
-	 *   as the instance's {@link #getTagBuilder tag builder}).
-	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which can be used to retrieve information about the
-	 *   match that the `replaceFn` is currently processing. See {@link Autolinker.match.Match} subclasses for details.
+	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may
+	 *   be used to retrieve child objects from (such as the instance's
+	 *   {@link #getTagBuilder tag builder}).
+	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
+	 *   can be used to retrieve information about the match that the `replaceFn`
+	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
+	 *   for details.
 	 */
 
 
@@ -305,19 +316,28 @@ Autolinker.prototype = {
 	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 *
-	 * The HtmlParser instance used to skip over HTML tags, while finding text nodes to process. This is lazily instantiated
-	 * in the {@link #getHtmlParser} method.
+	 * The HtmlParser instance used to skip over HTML tags, while finding text
+	 * nodes to process. This is lazily instantiated in the {@link #getHtmlParser}
+	 * method.
 	 */
-	htmlParser : undefined,
+
+	/**
+	 * @private
+	 * @return {Autolinker.matcher.Matcher[]} matchers
+	 *
+	 * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
+	 * instance.
+	 *
+	 * This is lazily created in {@link #getMatchers}.
+	 */
 
 	/**
 	 * @private
 	 * @property {Autolinker.AnchorTagBuilder} tagBuilder
 	 *
-	 * The AnchorTagBuilder instance used to build match replacement anchor tags. Note: this is lazily instantiated
-	 * in the {@link #getTagBuilder} method.
+	 * The AnchorTagBuilder instance used to build match replacement anchor tags.
+	 * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
 	 */
-	tagBuilder : undefined,
 
 
 	/**
@@ -331,10 +351,17 @@ Autolinker.prototype = {
 	 * @return {Object}
 	 */
 	normalizeUrlsCfg : function( urls ) {
+		if( urls == null ) urls = true;  // default to `true`
+
 		if( typeof urls === 'boolean' ) {
 			return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
-		} else {
-			return Autolinker.Util.defaults( urls || {}, { schemeMatches: true, wwwMatches: true, tldMatches: true } );
+
+		} else {  // object form
+			return {
+				schemeMatches : typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
+				wwwMatches    : typeof urls.wwwMatches === 'boolean'    ? urls.wwwMatches    : true,
+				tldMatches    : typeof urls.tldMatches === 'boolean'    ? urls.tldMatches    : true
+			};
 		}
 	},
 
@@ -1933,28 +1960,16 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
 Autolinker.match.Match = Autolinker.Util.extend( Object, {
 
 	/**
-	 * @cfg {String} matchedText (required)
-	 *
-	 * The original text that was matched.
-	 */
-
-	/**
-	 * @cfg {Number} offset (required)
-	 *
-	 * The offset of where the match was made in the input string.
-	 */
-
-
-	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 * specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
 	 */
-	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
-
-		if( this.matchedText == null ) throw new Error( '`matchedText` cfg required' );
-		if( this.offset == null ) throw new Error( '`offset` cfg required' );
+	constructor : function( matchedText, offset ) {
+		if( matchedText == null ) throw new Error( '`matchedText` arg required' );
+		if( offset == null ) throw new Error( '`offset` arg required' );
+		this.matchedText = matchedText;
+		this.offset = offset;
 	},
 
 
@@ -2035,7 +2050,8 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} email (required)
+	 * @protected
+	 * @property {String} email (required)
 	 *
 	 * The email address that was matched.
 	 */
@@ -2043,14 +2059,19 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} email The email address that was matched.
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, email ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		if( !this.email ) throw new Error( '`email` cfg required' );
+		if( !email ) throw new Error( '`email` arg required' );
+		this.email = email;
 	},
+
+
 	/**
 	 * Returns a string name for the type of match that this class represents.
 	 *
@@ -2105,14 +2126,16 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} serviceName (required)
+	 * @protected
+	 * @property {String} serviceName
 	 *
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
 
 	/**
-	 * @cfg {String} hashtag (required)
+	 * @protected
+	 * @property {String} hashtag
 	 *
 	 * The Hashtag that was matched, without the '#'.
 	 */
@@ -2120,15 +2143,23 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} serviceName The service to point hashtag matches to. See
+	 *   {@link Autolinker#hashtag} for available values.
+	 * @param {String} hashtag The Hashtag that was matched, without the '#'.
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, serviceName, hashtag ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		// TODO: if( !this.serviceName ) throw new Error( '`serviceName` cfg required' );
-		if( !this.hashtag ) throw new Error( '`hashtag` cfg required' );
+		// TODO: if( !serviceName ) throw new Error( '`serviceName` arg required' );
+		if( !hashtag ) throw new Error( '`hashtag` arg required' );
+		this.serviceName = serviceName;
+		this.hashtag = hashtag;
 	},
+
+
 	/**
 	 * Returns the type of match that this class represents.
 	 *
@@ -2208,7 +2239,8 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} number (required)
+	 * @protected
+	 * @property {String} number (required)
 	 *
 	 * The phone number that was matched, without any delimiter characters.
 	 *
@@ -2216,7 +2248,8 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @cfg {Boolean} plusSign (required)
+	 * @protected
+	 * @property  {Boolean} plusSign (required)
 	 *
 	 * `true` if the matched phone number started with a '+' sign. We'll include
 	 * it in the `tel:` URL if so, as this is needed for international numbers.
@@ -2227,15 +2260,24 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} number The phone number that was matched, without any
+	 *   delimiter characters. See {@link #number} for more details.
+	 * @param {Boolean} plusSign `true` if the matched phone number started with
+	 *   a '+' sign. See {@link #plusSign} for more details.
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, number, plusSign ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		if( !this.number ) throw new Error( '`number` cfg required' );
-		if( this.plusSign == null ) throw new Error( '`plusSign` cfg required' );
+		if( !number ) throw new Error( '`number` arg required' );
+		if( plusSign == null ) throw new Error( '`plusSign` arg required' );
+		this.number = number;
+		this.plusSign = plusSign;
 	},
+
+
 	/**
 	 * Returns a string name for the type of match that this class represents.
 	 *
@@ -2292,7 +2334,8 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} twitterHandle (required)
+	 * @protected
+	 * @property {String} twitterHandle (required)
 	 *
 	 * The Twitter handle that was matched, without the '@' character.
 	 */
@@ -2300,14 +2343,20 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} twitterHandle The Twitter handle that was matched,
+	 *   without the '@' character.
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, twitterHandle ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		if( !this.twitterHandle ) throw new Error( '`twitterHandle` cfg required' );
+		if( !twitterHandle ) throw new Error( '`twitterHandle` arg required' );
+		this.twitterHandle = twitterHandle;
 	},
+
+
 	/**
 	 * Returns the type of match that this class represents.
 	 *
@@ -2360,13 +2409,15 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} url (required)
+	 * @protected
+	 * @property {String} url (required)
 	 *
 	 * The url that was matched.
 	 */
 
 	/**
-	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
+	 * @protected
+	 * @property  {"scheme"/"www"/"tld"} urlMatchType (required)
 	 *
 	 * The type of URL match that this class represents. This helps to determine
 	 * if the match was made in the original text with a prefixed scheme (ex:
@@ -2375,14 +2426,16 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @cfg {Boolean} protocolUrlMatch (required)
+	 * @protected
+	 * @property  {Boolean} protocolUrlMatch (required)
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
 	 */
 
 	/**
-	 * @cfg {Boolean} protocolRelativeMatch (required)
+	 * @protected
+	 * @property  {Boolean} protocolRelativeMatch (required)
 	 *
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match
 	 * is a URL that starts with '//', and will be either http:// or https://
@@ -2390,25 +2443,42 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @cfg {Boolean} stripPrefix (required)
+	 * @protected
+	 * @property {Boolean} stripPrefix (required)
 	 * @inheritdoc Autolinker#stripPrefix
 	 */
 
 
 	/**
 	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {String} matchedText The original text that was matched.
+	 * @param {Number} offset The offset of where the match was made in the
+	 *   input string.
+	 * @param {String} url The url that was matched.
+	 * @param {"scheme"/"www"/"tld"} urlMatchType The type of URL match that
+	 *   this class represents. See {@link #urlMatchType} for details.
+	 * @param {Boolean} protocolUrlMatch `true` if the URL is a match which
+	 *   already has a protocol. See {@link #protocolUrlMatch} for details.
+	 * @param {Boolean} protocolRelativeMatch `true` if the URL is a protocol-
+	 *   relative match. See {@link #protocolRelativeMatch} for details.
+	 * @param {Boolean} stripPrefix
 	 */
-	constructor : function() {
-		Autolinker.match.Match.prototype.constructor.apply( this, arguments );
+	constructor : function( matchedText, offset, url, urlMatchType, protocolUrlMatch, protocolRelativeMatch, stripPrefix ) {
+		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
-		if( this.urlMatchType !== 'scheme' && this.urlMatchType !== 'www' && this.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
-		if( !this.url ) throw new Error( '`url` cfg required' );
-		if( this.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
-		if( this.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
-		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		if( urlMatchType !== 'scheme' && urlMatchType !== 'www' && urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
+		if( !url ) throw new Error( '`url` arg required' );
+		if( protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` arg required' );
+		if( protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` arg required' );
+		if( stripPrefix == null ) throw new Error( '`stripPrefix` arg required' );
+		this.urlMatchType = urlMatchType;
+		this.url = url;
+		this.protocolUrlMatch = protocolUrlMatch;
+		this.protocolRelativeMatch = protocolRelativeMatch;
+		this.stripPrefix = stripPrefix;
 	},
+
+
 	/**
 	 * @private
 	 * @property {RegExp} urlPrefixRegex
@@ -2571,7 +2641,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
  * This is shared by {@link Autolinker.matcher.Url} and {@link Autolinker.matcher.Email},
  * and thus needed to exist as a seperate entity.
  */
-Autolinker.matcher.domainNameRegex = /[A-Za-z0-9.\-]*[A-Za-z0-9\-]/;  // anything looking at all like a domain. Non-unicode domains, not ending in a period.
+Autolinker.matcher.domainNameRegex = /[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u00C0-\u017F\-]/;  // anything looking at all like a domain, not ending in a period.
 
 /*global Autolinker */
 /**
@@ -2659,11 +2729,10 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    match;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			matches.push( new Autolinker.match.Email( {
-				matchedText : match[ 0 ],
-				offset      : match.index,
-				email       : match[ 0 ]
-			} ) );
+			var matchedText = match[ 0 ],
+			    email = matchedText;
+
+			matches.push( new Autolinker.match.Email( matchedText, match.index, email ) );
 		}
 
 		return matches;
@@ -2724,6 +2793,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
 		    nonWordCharRegex = this.nonWordCharRegex,
+		    serviceName = this.serviceName,
 		    matches = [],
 		    match;
 
@@ -2735,12 +2805,10 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not a '#' char
 			// in the middle of a word), then it is a hashtag match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				matches.push( new Autolinker.match.Hashtag( {
-					matchedText : match[ 0 ],
-					offset      : offset,
-					serviceName : this.serviceName,
-					hashtag     : match[ 0 ].slice( 1 )  // strip off the '#' character at the beginning
-				} ) );
+				var matchedText = match[ 0 ],
+				    hashTag = match[ 0 ].slice( 1 );  // strip off the '#' character at the beginning
+
+				matches.push( new Autolinker.match.Hashtag( matchedText, offset, serviceName, hashTag ) );
 			}
 		}
 
@@ -2784,14 +2852,11 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			// Remove non-numeric values from phone number string
-			var cleanNumber = match[ 0 ].replace( /\D/g, '' );
+			var matchedText = match[ 0 ],
+			    cleanNumber = matchedText.replace( /\D/g, '' ),  // strip out non-digit characters
+			    plusSign = !!match[ 1 ];  // match[ 1 ] is the prefixed plus sign, if there is one
 
-			matches.push( new Autolinker.match.Phone( {
-				matchedText : match[ 0 ],
-				plusSign    : !!match[ 1 ],  // match[ 1 ] is the prefixed plus sign, if there is one
-				offset      : match.index,
-				number      : cleanNumber
-			} ) );
+			matches.push( new Autolinker.match.Phone( matchedText, match.index, cleanNumber, plusSign ) );
 		}
 
 		return matches;
@@ -2846,11 +2911,10 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not an email
 			// address), then it is a username match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				matches.push( new Autolinker.match.Twitter( {
-					matchedText   : match[ 0 ],
-					offset        : offset,
-					twitterHandle : match[ 0 ].slice( 1 )  // strip off the '@' character at the beginning
-				} ) );
+				var matchedText = match[ 0 ],
+				    twitterHandle = match[ 0 ].slice( 1 );  // strip off the '@' character at the beginning
+
+				matches.push( new Autolinker.match.Twitter( matchedText, offset, twitterHandle ) );
 			}
 		}
 
@@ -2917,7 +2981,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = /[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]]/;
+		    urlSuffixRegex = /[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]]/;
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -3005,6 +3069,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
+		    stripPrefix = this.stripPrefix,
 		    matches = [],
 		    match;
 
@@ -3050,15 +3115,18 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				}
 			}
 
-			matches.push( new Autolinker.match.Url( {
-				matchedText  : matchStr,
-				offset       : offset,
-				url          : matchStr,
-				urlMatchType : schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
-				protocolUrlMatch      : !!schemeUrlMatch,
-				protocolRelativeMatch : !!protocolRelativeMatch,
-				stripPrefix : this.stripPrefix
-			} ) );
+			var urlMatchType = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
+			    protocolUrlMatch = !!schemeUrlMatch;
+
+			matches.push( new Autolinker.match.Url(
+				matchStr,
+				offset,
+				matchStr,  // url
+				urlMatchType,
+				protocolUrlMatch,
+				!!protocolRelativeMatch,
+				stripPrefix
+			) );
 		}
 
 		return matches;
@@ -3128,7 +3196,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			urlMatch = urlMatch.slice(offset);
 		}
 
-		var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+		var re = /^((.?\/\/)?[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u00C0-\u017F\-]\.[A-Za-z]+)/;
 		var res = re.exec( urlMatch );
 		if ( res === null ) {
 			return -1;
@@ -3186,7 +3254,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} hasWordCharAfterProtocolRegex
 	 */
-	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z]/,
+	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z\u00C0-\u017F]/,
 
 
 	/**

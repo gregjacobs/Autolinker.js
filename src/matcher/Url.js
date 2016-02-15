@@ -57,7 +57,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = /[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9+&@#\/%=~_()|'$*\[\]]/;
+		    urlSuffixRegex = /[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]]/;
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -276,7 +276,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			urlMatch = urlMatch.slice(offset);
 		}
 
-		var re = /^((.?\/\/)?[A-Za-z0-9\.\-]*[A-Za-z0-9\-]\.[A-Za-z]+)/;
+		var re = /^((.?\/\/)?[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u00C0-\u017F\-]\.[A-Za-z]+)/;
 		var res = re.exec( urlMatch );
 		if ( res === null ) {
 			return -1;
