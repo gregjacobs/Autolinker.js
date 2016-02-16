@@ -16,7 +16,7 @@
 
 /*!
  * Autolinker.js
- * 0.23.0
+ * 0.24.0
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT
