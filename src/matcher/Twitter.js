@@ -15,7 +15,7 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /@\w{1,20}/g,
+	matcherRegex : new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -26,7 +26,7 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	nonWordCharRegex : /[^\w]/,
+	nonWordCharRegex : new RegExp( '[^' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
 
 
 	/**

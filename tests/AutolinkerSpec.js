@@ -185,8 +185,8 @@ describe( "Autolinker", function() {
 
 
 				it( "should automatically link a localhost URL with a port number and a path", function() {
-					var result = autolinker.link( "Joe went to http://localhost:8000/page today." );
-					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000/page">localhost:8000/page</a> today.' );
+					var result = autolinker.link( "Joe went to http://localhost:8000/my-page today." );
+					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000/my-page">localhost:8000/my-page</a> today.' );
 				} );
 
 
@@ -213,14 +213,29 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#page=index">localhost:8000#page=index</a> today.' );
 				} );
 
+				it( "should automatically link domain names, paths, query strings, and hashes with numbers in them", function() {
+					var result = autolinker.link( "Joe went to https://abc123def.org/path1/2path?param1=value1#hash123z" );
+					expect( result ).toBe( 'Joe went to <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>' );
+				} );
+
+				it( "should automatically link domain names, paths, query strings, and hashes with dashes in them", function() {
+					var result = autolinker.link( "Joe went to https://abc-def.org/his-path/?the-param=the-value#the-hash" );
+					expect( result ).toBe( 'Joe went to <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>' );
+				} );
+
+				it( "should automatically link domain names, paths, query strings, and hashes with the set of allowed special characters in them", function() {
+					var result = autolinker.link( "Link: https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z" );
+					expect( result ).toBe( 'Link: <a href="https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z</a>' );
+				} );
+
 				it( "should automatically link a URL with accented characters", function() {
-					var result = autolinker.link( "Joe went to http://mañana.com today." );
-					expect( result ).toBe( 'Joe went to <a href="http://mañana.com">mañana.com</a> today.' );
+					var result = autolinker.link( "Joe went to http://mañana.com/mañana?mañana=1#mañana today." );
+					expect( result ).toBe( 'Joe went to <a href="http://mañana.com/mañana?mañana=1#mañana">mañana.com/mañana?mañana=1#mañana</a> today.' );
 				} );
 
 				it( "should automatically link cyrillic URLs", function() {
-					var result = autolinker.link( "Joe went to https://ru.wikipedia.org/wiki/Кириллица" );
-					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица">ru.wikipedia.org/wiki/Кириллица</a>' );
+					var result = autolinker.link( "Joe went to https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица" );
+					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 				} );
 
 				describe( "protocol linking", function() {
@@ -820,6 +835,18 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should automatically link an email address with accented characters", function() {
+				var result = autolinker.link( "Joe's email is mañana@mañana.com" );
+				expect( result ).toBe( 'Joe\'s email is <a href="mailto:mañana@mañana.com">mañana@mañana.com</a>' );
+			} );
+
+
+			it( "should automatically link an email address with cyrillic characters", function() {
+				var result = autolinker.link( "Joe's email is Кириллица@Кириллица.com" );
+				expect( result ).toBe( 'Joe\'s email is <a href="mailto:Кириллица@Кириллица.com">Кириллица@Кириллица.com</a>' );
+			} );
+
+
 			it( "should NOT automatically link any old word with an @ character in it", function() {
 				var result = autolinker.link( "Hi there@stuff" );
 				expect( result ).toBe( 'Hi there@stuff' );
@@ -831,6 +858,12 @@ describe( "Autolinker", function() {
 		describe( "twitter handle linking", function() {
 
 			it( "should automatically link a twitter handle which is the only thing in the string", function() {
+				var result = autolinker.link( "@joe" );
+				expect( result ).toBe( '<a href="https://twitter.com/joe">@joe</a>' );
+			} );
+
+
+			it( "should automatically link a twitter handle with underscores in it", function() {
 				var result = autolinker.link( "@joe_the_man12" );
 				expect( result ).toBe( '<a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>' );
 			} );
@@ -881,6 +914,22 @@ describe( "Autolinker", function() {
 			it( "should automatically link fully capitalized twitter handles", function() {
 				var result = autolinker.link( "@GREG is tweeting @JOE with @JOSH" );
 				expect( result ).toBe( '<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>' );
+			} );
+
+
+			// NOTE: Twitter itself does not accept cyrillic characters, but
+			// other services might so linking them anyway
+			it( "should automatically link username handles with accented characters", function() {
+				var result = autolinker.link( "Hello @mañana how are you?" );
+				expect( result ).toBe( 'Hello <a href="https://twitter.com/mañana">@mañana</a> how are you?' );
+			} );
+
+
+			// NOTE: Twitter itself does not accept cyrillic characters, but
+			// other services might so linking them anyway
+			it( "should automatically link username handles with cyrillic characters", function() {
+				var result = autolinker.link( "Hello @Кириллица how are you?" );
+				expect( result ).toBe( 'Hello <a href="https://twitter.com/Кириллица">@Кириллица</a> how are you?' );
 			} );
 
 
@@ -1000,6 +1049,24 @@ describe( "Autolinker", function() {
 				var result = twitterHashtagAutolinker.link( "my hashtag is #AHashtagThatIsWorthyOfMordorAndStuff these days" );
 
 				expect( result ).toBe( 'my hashtag is <a href="https://twitter.com/hashtag/AHashtagThatIsWorthyOfMordorAndStuff">#AHashtagThatIsWorthyOfMordorAndStuff</a> these days' );
+			} );
+
+
+			it( "should automatically link a hashtag with underscores", function() {
+				var result = twitterHashtagAutolinker.link( "Yay, #hello_world" );
+				expect( result ).toBe( 'Yay, <a href="https://twitter.com/hashtag/hello_world">#hello_world</a>' );
+			} );
+
+
+			it( "should automatically link a hashtag with accented characters", function() {
+				var result = twitterHashtagAutolinker.link( "Yay, #mañana" );
+				expect( result ).toBe( 'Yay, <a href="https://twitter.com/hashtag/mañana">#mañana</a>' );
+			} );
+
+
+			it( "should automatically link a hashtag with cyrillic characters", function() {
+				var result = twitterHashtagAutolinker.link( "Yay, #Кириллица" );
+				expect( result ).toBe( 'Yay, <a href="https://twitter.com/hashtag/Кириллица">#Кириллица</a>' );
 			} );
 
 

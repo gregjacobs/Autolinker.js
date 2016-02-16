@@ -52,12 +52,13 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	matcherRegex : (function() {
 		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
-		    domainNameRegex = Autolinker.matcher.domainNameRegex,
-		    tldRegex = Autolinker.matcher.tldRegex,  // match our known top level domains (TLDs)
+		    domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+		    tldRegex = Autolinker.RegexLib.tldRegex,  // match our known top level domains (TLDs)
+		    alphaNumericCharsStr = Autolinker.RegexLib.alphaNumericCharsStr,
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = /[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]?!:,.;]*[\-A-Za-z0-9\u00C0-\u017F+&@#\/%=~_()|'$*\[\]]/;
+		    urlSuffixRegex = new RegExp( '[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;]*[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]]' );
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain

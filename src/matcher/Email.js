@@ -18,9 +18,10 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @property {RegExp} matcherRegex
 	 */
 	matcherRegex : (function() {
-		var emailRegex = /[\w\-;:&=+$.,]+@/,  // something@ for email addresses (a.k.a. local-part)
-			domainNameRegex = Autolinker.matcher.domainNameRegex,
-			tldRegex = Autolinker.matcher.tldRegex;  // match our known top level domains (TLDs)
+		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
+		    emailRegex = new RegExp( '[' + alphaNumericChars + '\\-;:&=+$.,]+@' ),  // something@ for email addresses (a.k.a. local-part)
+			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+			tldRegex = Autolinker.RegexLib.tldRegex;  // match our known top level domains (TLDs)
 
 		return new RegExp( [
 			emailRegex.source,
@@ -39,10 +40,9 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		    match;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var matchedText = match[ 0 ],
-			    email = matchedText;
+			var matchedText = match[ 0 ];
 
-			matches.push( new Autolinker.match.Email( matchedText, match.index, email ) );
+			matches.push( new Autolinker.match.Email( matchedText, match.index, /* email */ matchedText ) );
 		}
 
 		return matches;
