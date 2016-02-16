@@ -218,6 +218,11 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="http://mañana.com">mañana.com</a> today.' );
 				} );
 
+				it( "should automatically link cyrillic URLs", function() {
+					var result = autolinker.link( "Joe went to https://ru.wikipedia.org/wiki/Кириллица" );
+					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица">ru.wikipedia.org/wiki/Кириллица</a>' );
+				} );
+
 				describe( "protocol linking", function() {
 
 					it( "should NOT include preceding ':' introductions without a space", function() {
