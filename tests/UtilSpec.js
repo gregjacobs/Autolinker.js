@@ -22,13 +22,6 @@ describe( "Autolinker.Util", function() {
 
 	describe( 'splitAndCapture()', function() {
 
-		it( "should throw an error if the supplied regular expression does not have the `global` flag set", function() {
-			expect( function() {
-				Util.splitAndCapture( 'test', /,/ );  // note: no 'g' flag
-			} ).toThrow( new Error( "`splitRegex` must have the 'g' flag set" ) );
-		} );
-
-
 		it( "should return an array with the 'split' characters included", function() {
 			var result = Util.splitAndCapture( 'a,b,c', /,/g );
 

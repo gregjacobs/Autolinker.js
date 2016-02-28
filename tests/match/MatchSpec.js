@@ -2,23 +2,6 @@
 describe( "Autolinker.match.Match", function() {
 	var Match = Autolinker.match.Match;
 
-	describe( 'constructor', function() {
-
-		it( "should require the `matchedText` arg", function() {
-			expect( function() {
-				new Match();  // note: no `matchedText` cfg
-			} ).toThrowError( '`matchedText` arg required' );
-		} );
-
-
-		it( "should require the `offset` arg", function() {
-			expect( function() {
-				new Match( 'abc' );  // note: no `offset` arg
-			} ).toThrowError( '`offset` arg required' );
-		} );
-
-	} );
-
 
 	describe( 'getMatchedText()', function() {
 

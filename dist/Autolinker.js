@@ -1,28 +1,21 @@
-(function (root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module unless amdModuleId is set
-    define([], function () {
-      return (root['Autolinker'] = factory());
-    });
-  } else if (typeof exports === 'object') {
-    // Node. Does not work with strict CommonJS, but
-    // only CommonJS-like environments that support module.exports,
-    // like Node.
-    module.exports = factory();
-  } else {
-    root['Autolinker'] = factory();
-  }
-}(this, function () {
-
 /*!
  * Autolinker.js
  * 0.24.0
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
- * MIT
+ * MIT License
  *
  * https://github.com/gregjacobs/Autolinker.js
  */
+;(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.Autolinker = factory();
+  }
+}(this, function() {
 /**
  * @class Autolinker
  * @extends Object
@@ -885,7 +878,9 @@ Autolinker.Util = {
 	 * @return {String[]} The split array of strings, with the splitting character(s) included.
 	 */
 	splitAndCapture : function( str, splitRegex ) {
+		// @if DEBUG
 		if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
+		// @endif
 
 		var result = [],
 		    lastIdx = 0,
@@ -1831,8 +1826,10 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
 
+		// @if DEBUG
 		if( this.offset == null ) throw new Error( '`offset` cfg required' );
 		if( this.text == null ) throw new Error( '`text` cfg required' );
+		// @endif
 	},
 
 
@@ -2069,8 +2066,11 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *   input string.
 	 */
 	constructor : function( matchedText, offset ) {
+		// @if DEBUG
 		if( matchedText == null ) throw new Error( '`matchedText` arg required' );
 		if( offset == null ) throw new Error( '`offset` arg required' );
+		// @endif
+
 		this.matchedText = matchedText;
 		this.offset = offset;
 	},
@@ -2170,7 +2170,10 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( matchedText, offset, email ) {
 		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
+		// @if DEBUG
 		if( !email ) throw new Error( '`email` arg required' );
+		// @endif
+
 		this.email = email;
 	},
 
@@ -2256,8 +2259,11 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( matchedText, offset, serviceName, hashtag ) {
 		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
+		// @if DEBUG
 		// TODO: if( !serviceName ) throw new Error( '`serviceName` arg required' );
 		if( !hashtag ) throw new Error( '`hashtag` arg required' );
+		// @endif
+
 		this.serviceName = serviceName;
 		this.hashtag = hashtag;
 	},
@@ -2374,8 +2380,11 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( matchedText, offset, number, plusSign ) {
 		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
+		// @if DEBUG
 		if( !number ) throw new Error( '`number` arg required' );
 		if( plusSign == null ) throw new Error( '`plusSign` arg required' );
+		// @endif
+
 		this.number = number;
 		this.plusSign = plusSign;
 	},
@@ -2455,7 +2464,10 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( matchedText, offset, twitterHandle ) {
 		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
+		// @if DEBUG
 		if( !twitterHandle ) throw new Error( '`twitterHandle` arg required' );
+		// @endif
+
 		this.twitterHandle = twitterHandle;
 	},
 
@@ -2569,11 +2581,14 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( matchedText, offset, url, urlMatchType, protocolUrlMatch, protocolRelativeMatch, stripPrefix ) {
 		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
 
+		// @if DEBUG
 		if( urlMatchType !== 'scheme' && urlMatchType !== 'www' && urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
 		if( !url ) throw new Error( '`url` arg required' );
 		if( protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` arg required' );
 		if( protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` arg required' );
 		if( stripPrefix == null ) throw new Error( '`stripPrefix` arg required' );
+		// @endif
+
 		this.urlMatchType = urlMatchType;
 		this.url = url;
 		this.protocolUrlMatch = protocolUrlMatch;
@@ -2857,6 +2872,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	nonWordCharRegex : new RegExp( '[^' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
 
 
+	// @if DEBUG
 	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
@@ -2867,6 +2883,9 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 
 		// TODO: if( !this.serviceName ) throw new Error( '`serviceName` cfg required' );
 	},
+	// @endif
+
+
 	/**
 	 * @inheritdoc
 	 */
@@ -3135,6 +3154,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	closeParensRe : /\)/g,
 
 
+	// @if DEBUG
 	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
@@ -3145,6 +3165,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
 	},
+	// @endif
+
+
 	/**
 	 * @inheritdoc
 	 */
@@ -3638,5 +3661,4 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 };
 
 return Autolinker;
-
 }));

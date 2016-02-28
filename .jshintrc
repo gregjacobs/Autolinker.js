@@ -2,6 +2,7 @@
 	"undef": true,
 	"smarttabs": true,
 	"eqnull": true,
+	"esnext": true,
 	"globals" : {
 		"describe" : true,
 		"beforeEach" : true,

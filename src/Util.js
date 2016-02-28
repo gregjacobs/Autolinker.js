@@ -159,7 +159,9 @@ Autolinker.Util = {
 	 * @return {String[]} The split array of strings, with the splitting character(s) included.
 	 */
 	splitAndCapture : function( str, splitRegex ) {
+		// @if DEBUG
 		if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
+		// @endif
 
 		var result = [],
 		    lastIdx = 0,
