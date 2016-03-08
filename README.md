@@ -316,7 +316,6 @@ The full API docs for Autolinker may be referenced at:
 Pull requests definitely welcome.
 
 - Make sure to add tests to cover your new functionality/bugfix.
-- Install development dependencies via `npm install gulp -g`.
 - Run the `gulp` command to build/test (or alternatively, open the `tests/index.html` file to run the tests).
 - When committing, please omit checking in the files in the `dist/` folder after building/testing. These are only committed to the repository for users downloading Autolinker via Bower. I will build these files and assign them a version number when merging your PR.
 - Please use tabs for indents! Tabs are better for everybody (individuals can set their editors to different tab sizes based on their visual preferences).
