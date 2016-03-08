@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.24.0
+ * 0.24.1
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -1588,7 +1588,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 							// Zero or more attributes following the tag name
 							'(?:',
-								'\\s+',                // one or more whitespace chars before an attribute
+								'\\s*',                // any number of whitespace chars before an attribute
 								nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
 							')*',
 
