@@ -1135,6 +1135,12 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should NOT automatically link an image tag with incorrect HTML attribute spacing", function() {
+				var result = autolinker.link( '<img src="https://ssl.gstatic.com/welcome_calendar.png" alt="Calendar" style="display:block;"width="129"height="129"/>' );
+				expect( result ).toBe( '<img src="https://ssl.gstatic.com/welcome_calendar.png" alt="Calendar" style="display:block;"width="129"height="129"/>' );
+			} );
+
+
 			it( "should NOT automatically link an image tag with a URL inside it, inside an anchor tag", function() {
 				var result = autolinker.link( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
 				expect( result ).toBe( '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>' );
