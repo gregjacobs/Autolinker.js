@@ -134,6 +134,28 @@ Autolinker.Util = {
 	},
 
 
+	/**
+	 * Removes array elements based on a filtering function. Mutates the input
+	 * array.
+	 *
+	 * Using this instead of the ES5 Array.prototype.filter() function, to allow
+	 * Autolinker compatibility with IE8, and also to prevent creating many new
+	 * arrays in memory for filtering.
+	 *
+	 * @param {Array} arr The array to remove elements from. This array is
+	 *   mutated.
+	 * @param {Function} fn A function which should return `true` to
+	 *   remove an element.
+	 * @return {Array} The mutated input `arr`.
+	 */
+	remove : function( arr, fn ) {
+		for( var i = arr.length - 1; i >= 0; i-- ) {
+			if( fn( arr[ i ] ) === true ) {
+				arr.splice( i, 1 );
+			}
+		}
+	},
+
 
 	/**
 	 * Performs the functionality of what modern browsers do when `String.prototype.split()` is called

@@ -415,19 +415,39 @@ Autolinker.prototype = {
 		// And finally, remove matches for match types that have been turned
 		// off. We needed to have all match types turned on initially so that
 		// things like hashtags could be filtered out if they were really just
-		// part of a URL match (as a named anchor).
-		if( !this.hashtag ) matches = matches.filter( function( match ) { return match.getType() !== 'hashtag'; } );
-		if( !this.email )   matches = matches.filter( function( match ) { return match.getType() !== 'email'; } );
-		if( !this.phone )   matches = matches.filter( function( match ) { return match.getType() !== 'phone'; } );
-		if( !this.twitter ) matches = matches.filter( function( match ) { return match.getType() !== 'twitter'; } );
+		// part of a URL match (for instance, as a named anchor).
+		matches = this.removeUnwantedMatches( matches );
+
+		return matches;
+	},
+
+
+	/**
+	 * Removes matches for matchers that were turned off in the options. For
+	 * example, if {@link #hashtag hashtags} were not to be matched, we'll
+	 * remove them from the `matches` array here.
+	 *
+	 * @private
+	 * @param {Autolinker.match.Match[]} matches The array of matches to remove
+	 *   the unwanted matches from. Note: this array is mutated for the
+	 *   removals.
+	 * @return {Autolinker.match.Match[]} The mutated input `matches` array.
+	 */
+	removeUnwantedMatches : function( matches ) {
+		var remove = Autolinker.Util.remove;
+
+		if( !this.hashtag ) remove( matches, function( match ) { return match.getType() === 'hashtag'; } );
+		if( !this.email )   remove( matches, function( match ) { return match.getType() === 'email'; } );
+		if( !this.phone )   remove( matches, function( match ) { return match.getType() === 'phone'; } );
+		if( !this.twitter ) remove( matches, function( match ) { return match.getType() === 'twitter'; } );
 		if( !this.urls.schemeMatches ) {
-			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'scheme'; } );
+			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'scheme'; } );
 		}
 		if( !this.urls.wwwMatches ) {
-			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'www'; } );
+			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'www'; } );
 		}
 		if( !this.urls.tldMatches ) {
-			matches = matches.filter( function( m ) { return m.getType() !== 'url' || m.getUrlMatchType() !== 'tld'; } );
+			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'tld'; } );
 		}
 
 		return matches;
