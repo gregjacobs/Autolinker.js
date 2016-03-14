@@ -5,7 +5,8 @@
  * @class Autolinker.AnchorTagBuilder
  * @extends Object
  *
- * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is found.
+ * Builds anchor (&lt;a&gt;) tags for the Autolinker utility when a match is
+ * found.
  *
  * Normally this class is instantiated, configured, and used internally by an
  * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}

@@ -10,15 +10,13 @@
 Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @protected
-	 * @property {String} url
+	 * @cfg {String} url (required)
 	 *
 	 * The url that was matched.
 	 */
 
 	/**
-	 * @protected
-	 * @property  {"scheme"/"www"/"tld"} urlMatchType
+	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
 	 *
 	 * The type of URL match that this class represents. This helps to determine
 	 * if the match was made in the original text with a prefixed scheme (ex:
@@ -27,16 +25,14 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @protected
-	 * @property  {Boolean} protocolUrlMatch
+	 * @cfg {Boolean} protocolUrlMatch (required)
 	 *
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
 	 */
 
 	/**
-	 * @protected
-	 * @property  {Boolean} protocolRelativeMatch
+	 * @cfg {Boolean} protocolRelativeMatch (required)
 	 *
 	 * `true` if the URL is a protocol-relative match. A protocol-relative match
 	 * is a URL that starts with '//', and will be either http:// or https://
@@ -44,42 +40,32 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @protected
-	 * @property {Boolean} stripPrefix
+	 * @cfg {Boolean} stripPrefix (required)
 	 * @inheritdoc Autolinker#cfg-stripPrefix
 	 */
 
 
 	/**
 	 * @constructor
-	 * @param {String} matchedText The original text that was matched.
-	 * @param {Number} offset The offset of where the match was made in the
-	 *   input string.
-	 * @param {String} url The url that was matched.
-	 * @param {"scheme"/"www"/"tld"} urlMatchType The type of URL match that
-	 *   this class represents. See {@link #urlMatchType} for details.
-	 * @param {Boolean} protocolUrlMatch `true` if the URL is a match which
-	 *   already has a protocol. See {@link #protocolUrlMatch} for details.
-	 * @param {Boolean} protocolRelativeMatch `true` if the URL is a protocol-
-	 *   relative match. See {@link #protocolRelativeMatch} for details.
-	 * @param {Boolean} stripPrefix
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( matchedText, offset, url, urlMatchType, protocolUrlMatch, protocolRelativeMatch, stripPrefix ) {
-		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
 		// @if DEBUG
-		if( urlMatchType !== 'scheme' && urlMatchType !== 'www' && urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` must be one of: "scheme", "www", or "tld"' );
-		if( !url ) throw new Error( '`url` arg required' );
-		if( protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` arg required' );
-		if( protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` arg required' );
-		if( stripPrefix == null ) throw new Error( '`stripPrefix` arg required' );
+		if( cfg.urlMatchType !== 'scheme' && cfg.urlMatchType !== 'www' && cfg.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` cfg must be one of: "scheme", "www", or "tld"' );
+		if( !cfg.url ) throw new Error( '`url` cfg required' );
+		if( cfg.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
+		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
+		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
 		// @endif
 
-		this.urlMatchType = urlMatchType;
-		this.url = url;
-		this.protocolUrlMatch = protocolUrlMatch;
-		this.protocolRelativeMatch = protocolRelativeMatch;
-		this.stripPrefix = stripPrefix;
+		this.urlMatchType = cfg.urlMatchType;
+		this.url = cfg.url;
+		this.protocolUrlMatch = cfg.protocolUrlMatch;
+		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
+		this.stripPrefix = cfg.stripPrefix;
 	},
 
 

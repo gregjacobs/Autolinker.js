@@ -36,13 +36,19 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
+		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var matchedText = match[ 0 ];
 
-			matches.push( new Autolinker.match.Email( matchedText, match.index, /* email */ matchedText ) );
+			matches.push( new Autolinker.match.Email( {
+				tagBuilder  : tagBuilder,
+				matchedText : matchedText,
+				offset      : match.index,
+				email       : matchedText
+			} ) );
 		}
 
 		return matches;

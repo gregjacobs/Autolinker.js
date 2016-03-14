@@ -33,24 +33,19 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {String} matchedText The original text that was matched.
-	 * @param {Number} offset The offset of where the match was made in the
-	 *   input string.
-	 * @param {String} number The phone number that was matched, without any
-	 *   delimiter characters. See {@link #number} for more details.
-	 * @param {Boolean} plusSign `true` if the matched phone number started with
-	 *   a '+' sign. See {@link #plusSign} for more details.
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( matchedText, offset, number, plusSign ) {
-		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
 		// @if DEBUG
-		if( !number ) throw new Error( '`number` arg required' );
-		if( plusSign == null ) throw new Error( '`plusSign` arg required' );
+		if( !cfg.number ) throw new Error( '`number` cfg required' );
+		if( cfg.plusSign == null ) throw new Error( '`plusSign` cfg required' );
 		// @endif
 
-		this.number = number;
-		this.plusSign = plusSign;
+		this.number = cfg.number;
+		this.plusSign = cfg.plusSign;
 	},
 
 

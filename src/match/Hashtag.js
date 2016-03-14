@@ -12,16 +12,14 @@
 Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @protected
-	 * @property {String} serviceName
+	 * @cfg {String} serviceName
 	 *
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
 
 	/**
-	 * @protected
-	 * @property {String} hashtag
+	 * @cfg {String} hashtag (required)
 	 *
 	 * The Hashtag that was matched, without the '#'.
 	 */
@@ -29,23 +27,19 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @constructor
-	 * @param {String} matchedText The original text that was matched.
-	 * @param {Number} offset The offset of where the match was made in the
-	 *   input string.
-	 * @param {String} serviceName The service to point hashtag matches to. See
-	 *   {@link Autolinker#hashtag} for available values.
-	 * @param {String} hashtag The Hashtag that was matched, without the '#'.
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( matchedText, offset, serviceName, hashtag ) {
-		Autolinker.match.Match.prototype.constructor.call( this, matchedText, offset );
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
 		// @if DEBUG
-		// TODO: if( !serviceName ) throw new Error( '`serviceName` arg required' );
-		if( !hashtag ) throw new Error( '`hashtag` arg required' );
+		// TODO: if( !serviceName ) throw new Error( '`serviceName` cfg required' );
+		if( !cfg.hashtag ) throw new Error( '`hashtag` cfg required' );
 		// @endif
 
-		this.serviceName = serviceName;
-		this.hashtag = hashtag;
+		this.serviceName = cfg.serviceName;
+		this.hashtag = cfg.hashtag;
 	},
 
 

@@ -14,6 +14,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * for available values.
 	 */
 
+
 	/**
 	 * The regular expression to match Hashtags. Example match:
 	 *
@@ -36,18 +37,16 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	nonWordCharRegex : new RegExp( '[^' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
 
 
-	// @if DEBUG
 	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */
-	constructor : function() {
-		Autolinker.matcher.Matcher.prototype.constructor.apply( this, arguments );
+	constructor : function( cfg ) {
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
 
-		// TODO: if( !this.serviceName ) throw new Error( '`serviceName` cfg required' );
+		this.serviceName = cfg.serviceName;
 	},
-	// @endif
 
 
 	/**
@@ -57,6 +56,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 		var matcherRegex = this.matcherRegex,
 		    nonWordCharRegex = this.nonWordCharRegex,
 		    serviceName = this.serviceName,
+		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
 
@@ -69,9 +69,15 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// in the middle of a word), then it is a hashtag match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
 				var matchedText = match[ 0 ],
-				    hashTag = match[ 0 ].slice( 1 );  // strip off the '#' character at the beginning
+				    hashtag = match[ 0 ].slice( 1 );  // strip off the '#' character at the beginning
 
-				matches.push( new Autolinker.match.Hashtag( matchedText, offset, serviceName, hashTag ) );
+				matches.push( new Autolinker.match.Hashtag( {
+					tagBuilder  : tagBuilder,
+					matchedText : matchedText,
+					offset      : offset,
+					serviceName : serviceName,
+					hashtag     : hashtag
+				} ) );
 			}
 		}
 

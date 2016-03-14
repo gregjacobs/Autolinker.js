@@ -4,7 +4,10 @@ describe( "Autolinker.matcher.Url", function() {
 	    matcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Url( { stripPrefix: false } );
+		matcher = new Autolinker.matcher.Url( {
+			tagBuilder  : new Autolinker.AnchorTagBuilder(),
+			stripPrefix : false
+		} );
 	} );
 
 

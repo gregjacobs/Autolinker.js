@@ -4,7 +4,9 @@ describe( "Autolinker.matcher.Twitter", function() {
 	    matcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Twitter();
+		matcher = new Autolinker.matcher.Twitter( {
+			tagBuilder : new Autolinker.AnchorTagBuilder()
+		} );
 	} );
 
 

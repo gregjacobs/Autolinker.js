@@ -131,18 +131,20 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	closeParensRe : /\)/g,
 
 
-	// @if DEBUG
 	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */
-	constructor : function() {
-		Autolinker.matcher.Matcher.prototype.constructor.apply( this, arguments );
+	constructor : function( cfg ) {
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
 
+		this.stripPrefix = cfg.stripPrefix;
+
+		// @if DEBUG
 		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		// @endif
 	},
-	// @endif
 
 
 	/**
@@ -151,6 +153,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
 		    stripPrefix = this.stripPrefix,
+		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
 
@@ -199,15 +202,16 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			var urlMatchType = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
 			    protocolUrlMatch = !!schemeUrlMatch;
 
-			matches.push( new Autolinker.match.Url(
-				matchStr,
-				offset,
-				matchStr,  // url
-				urlMatchType,
-				protocolUrlMatch,
-				!!protocolRelativeMatch,
-				stripPrefix
-			) );
+			matches.push( new Autolinker.match.Url( {
+				tagBuilder            : tagBuilder,
+				matchedText           : matchStr,
+				offset                : offset,
+				urlMatchType          : urlMatchType,
+				url                   : matchStr,
+				protocolUrlMatch      : protocolUrlMatch,
+				protocolRelativeMatch : !!protocolRelativeMatch,
+				stripPrefix           : stripPrefix
+			} ) );
 		}
 
 		return matches;

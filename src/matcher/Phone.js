@@ -29,6 +29,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
+		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
 
@@ -38,7 +39,13 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			    cleanNumber = matchedText.replace( /\D/g, '' ),  // strip out non-digit characters
 			    plusSign = !!match[ 1 ];  // match[ 1 ] is the prefixed plus sign, if there is one
 
-			matches.push( new Autolinker.match.Phone( matchedText, match.index, cleanNumber, plusSign ) );
+			matches.push( new Autolinker.match.Phone( {
+				tagBuilder  : tagBuilder,
+				matchedText : matchedText,
+				offset      : match.index,
+				number      : cleanNumber,
+				plusSign    : plusSign
+			} ) );
 		}
 
 		return matches;

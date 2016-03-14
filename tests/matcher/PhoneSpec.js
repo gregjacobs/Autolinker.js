@@ -4,7 +4,9 @@ describe( "Autolinker.matcher.Phone", function() {
 	    matcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Phone();
+		matcher = new Autolinker.matcher.Phone( {
+			tagBuilder : new Autolinker.AnchorTagBuilder()
+		} );
 	} );
 
 

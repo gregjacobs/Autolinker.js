@@ -12,12 +12,24 @@
 Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 
 	/**
+	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+	 *
+	 * Reference to the AnchorTagBuilder instance to use to generate HTML tags
+	 * for {@link Autolinker.match.Match Matches}.
+	 */
+
+
+	/**
 	 * @constructor
 	 * @param {Object} cfg The configuration properties for the Matcher
 	 *   instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
+		// @if DEBUG
+		if( !cfg.tagBuilder ) throw new Error( '`tagBuilder` cfg required' );
+		// @endif
+
+		this.tagBuilder = cfg.tagBuilder;
 	},
 
 

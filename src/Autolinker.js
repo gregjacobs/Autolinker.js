@@ -423,6 +423,33 @@ Autolinker.prototype = {
 
 
 	/**
+	 * After we have found all matches, we need to remove subsequent matches
+	 * that overlap with a previous match. This can happen for instance with
+	 * URLs, where the url 'google.com/#link' would match '#link' as a hashtag.
+	 *
+	 * @private
+	 * @param {Autolinker.match.Match[]} matches
+	 * @return {Autolinker.match.Match[]}
+	 */
+	compactMatches : function( matches ) {
+		// First, the matches need to be sorted in order of offset
+		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
+
+		for( var i = 0; i < matches.length - 1; i++ ) {
+			var match = matches[ i ],
+			    endIdx = match.getOffset() + match.getMatchedText().length;
+
+			// Remove subsequent matches that overlap with the current match
+			while( i + 1 < matches.length && matches[ i + 1 ].getOffset() <= endIdx ) {
+				matches.splice( i + 1, 1 );
+			}
+		}
+
+		return matches;
+	},
+
+
+	/**
 	 * Removes matches for matchers that were turned off in the options. For
 	 * example, if {@link #hashtag hashtags} were not to be matched, we'll
 	 * remove them from the `matches` array here.
@@ -448,33 +475,6 @@ Autolinker.prototype = {
 		}
 		if( !this.urls.tldMatches ) {
 			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'tld'; } );
-		}
-
-		return matches;
-	},
-
-
-	/**
-	 * After we have found all matches, we need to remove subsequent matches
-	 * that overlap with a previous match. This can happen for instance with
-	 * URLs, where the url 'google.com/#link' would match '#link' as a hashtag.
-	 *
-	 * @private
-	 * @param {Autolinker.match.Match[]} matches
-	 * @return {Autolinker.match.Match[]}
-	 */
-	compactMatches : function( matches ) {
-		// First, the matches need to be sorted in order of offset
-		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
-
-		for( var i = 0; i < matches.length - 1; i++ ) {
-			var match = matches[ i ],
-			    endIdx = match.getOffset() + match.getMatchedText().length;
-
-			// Remove subsequent matches that overlap with the current match
-			while( i + 1 < matches.length && matches[ i + 1 ].getOffset() <= endIdx ) {
-				matches.splice( i + 1, 1 );
-			}
 		}
 
 		return matches;
@@ -594,8 +594,7 @@ Autolinker.prototype = {
 
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
-			var tagBuilder = this.getTagBuilder(),
-			    anchorTag = tagBuilder.build( match );  // returns an Autolinker.HtmlTag instance
+			var anchorTag = match.buildTag();  // returns an Autolinker.HtmlTag instance
 
 			return anchorTag.toAnchorString();
 		}
@@ -629,13 +628,15 @@ Autolinker.prototype = {
 	 */
 	getMatchers : function() {
 		if( !this.matchers ) {
-			var matchersNs = Autolinker.matcher;
+			var matchersNs = Autolinker.matcher,
+			    tagBuilder = this.getTagBuilder();
+
 			var matchers = [
-				new matchersNs.Hashtag( { serviceName: this.hashtag } ),
-				new matchersNs.Email(),
-				new matchersNs.Phone(),
-				new matchersNs.Twitter(),
-				new matchersNs.Url( { stripPrefix: this.stripPrefix } )
+				new matchersNs.Hashtag( { tagBuilder: tagBuilder, serviceName: this.hashtag } ),
+				new matchersNs.Email( { tagBuilder: tagBuilder } ),
+				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
+				new matchersNs.Twitter( { tagBuilder: tagBuilder } ),
+				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix } )
 			];
 
 			return ( this.matchers = matchers );

@@ -35,6 +35,7 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
 		    nonWordCharRegex = this.nonWordCharRegex,
+		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
 
@@ -49,7 +50,12 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 				var matchedText = match[ 0 ],
 				    twitterHandle = match[ 0 ].slice( 1 );  // strip off the '@' character at the beginning
 
-				matches.push( new Autolinker.match.Twitter( matchedText, offset, twitterHandle ) );
+				matches.push( new Autolinker.match.Twitter( {
+					tagBuilder    : tagBuilder,
+					matchedText   : matchedText,
+					offset        : offset,
+					twitterHandle : twitterHandle
+				} ) );
 			}
 		}
 
