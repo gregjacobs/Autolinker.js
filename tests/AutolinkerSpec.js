@@ -18,7 +18,7 @@ describe( "Autolinker", function() {
 		describe( "no configs", function() {
 
 			it( "should default to the default options if no `cfg` object is provided", function() {
-				expect( Autolinker.link( "Welcome to google.com" ) ).toBe( 'Welcome to <a href="http://google.com" target="_blank">google.com</a>' );
+				expect( Autolinker.link( "Welcome to google.com" ) ).toBe( 'Welcome to <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>' );
 			} );
 
 		} );
@@ -1416,9 +1416,9 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should add target=\"_blank\" when the 'newWindow' option is set to true", function() {
+			it( "should add target=\"_blank\" and rel=\"noopener noreferrer\" when the 'newWindow' option is set to true", function() {
 				var result = Autolinker.link( "Test http://url.com", { newWindow: true } );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
+				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
 			} );
 
 		} );
@@ -1530,31 +1530,31 @@ describe( "Autolinker", function() {
 
 			it( "should not add className when the 'className' option is not a string with at least 1 character", function() {
 				var result = Autolinker.link( "Test http://url.com" );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
+				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
 
 				result = Autolinker.link( "Test http://url.com", { className: null } );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
+				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
 
 				result = Autolinker.link( "Test http://url.com", { className: "" } );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank">url.com</a>' );
+				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
 			} );
 
 
 			it( "should add className to links", function() {
 				var result = Autolinker.link( "Test http://url.com", { className: 'myLink' } );
-				expect( result ).toBe( 'Test <a href="http://url.com" class="myLink myLink-url" target="_blank">url.com</a>' );
+				expect( result ).toBe( 'Test <a href="http://url.com" class="myLink myLink-url" target="_blank" rel="noopener noreferrer">url.com</a>' );
 			} );
 
 
 			it( "should add className to email links", function() {
 				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { email: true, className: 'myLink' } );
-				expect( result ).toBe( 'Iggy\'s email is <a href="mailto:mr@iggypop.com" class="myLink myLink-email" target="_blank">mr@iggypop.com</a>' );
+				expect( result ).toBe( 'Iggy\'s email is <a href="mailto:mr@iggypop.com" class="myLink myLink-email" target="_blank" rel="noopener noreferrer">mr@iggypop.com</a>' );
 			} );
 
 
 			it( "should add className to twitter links", function() {
 				var result = Autolinker.link( "hi from @iggypopschest", { twitter: true, className: 'myLink' } );
-				expect( result ).toBe( 'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-twitter" target="_blank">@iggypopschest</a>' );
+				expect( result ).toBe( 'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-twitter" target="_blank" rel="noopener noreferrer">@iggypopschest</a>' );
 			} );
 
 		} );
