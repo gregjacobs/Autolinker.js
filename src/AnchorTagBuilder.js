@@ -91,6 +91,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		}
 		if( this.newWindow ) {
 			attrs[ 'target' ] = "_blank";
+			attrs[ 'rel' ] = "noopener noreferrer";
 		}
 
 		return attrs;
