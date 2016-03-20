@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.25.0
+ * 0.25.1
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -1487,6 +1487,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		}
 		if( this.newWindow ) {
 			attrs[ 'target' ] = "_blank";
+			attrs[ 'rel' ] = "noopener noreferrer";
 		}
 
 		return attrs;
