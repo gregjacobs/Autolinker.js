@@ -17,7 +17,7 @@ describe( "Autolinker", function() {
 
 		describe( "no configs", function() {
 
-			it( "should default to the default options if no `cfg` object is provided", function() {
+			it( "should default to the default options if no `cfg` object is provided (namely, `newWindow: true`)", function() {
 				expect( Autolinker.link( "Welcome to google.com" ) ).toBe( 'Welcome to <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>' );
 			} );
 
@@ -1416,7 +1416,7 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should add target=\"_blank\" and rel=\"noopener noreferrer\" when the 'newWindow' option is set to true", function() {
+			it( "should add target=\"_blank\" and rel=\"noopener noreferrer\" when the 'newWindow' option is set to true (see https://mathiasbynens.github.io/rel-noopener/ about the 'rel' attribute, which prevents a potential phishing attack)", function() {
 				var result = Autolinker.link( "Test http://url.com", { newWindow: true } );
 				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
 			} );
@@ -1529,32 +1529,32 @@ describe( "Autolinker", function() {
 		describe( "`className` option", function() {
 
 			it( "should not add className when the 'className' option is not a string with at least 1 character", function() {
-				var result = Autolinker.link( "Test http://url.com" );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
+				var result = Autolinker.link( "Test http://url.com", { newWindow: false } );
+				expect( result ).toBe( 'Test <a href="http://url.com">url.com</a>' );
 
-				result = Autolinker.link( "Test http://url.com", { className: null } );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
+				result = Autolinker.link( "Test http://url.com", { newWindow: false, className: null } );
+				expect( result ).toBe( 'Test <a href="http://url.com">url.com</a>' );
 
-				result = Autolinker.link( "Test http://url.com", { className: "" } );
-				expect( result ).toBe( 'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>' );
+				result = Autolinker.link( "Test http://url.com", { newWindow: false, className: "" } );
+				expect( result ).toBe( 'Test <a href="http://url.com">url.com</a>' );
 			} );
 
 
 			it( "should add className to links", function() {
-				var result = Autolinker.link( "Test http://url.com", { className: 'myLink' } );
-				expect( result ).toBe( 'Test <a href="http://url.com" class="myLink myLink-url" target="_blank" rel="noopener noreferrer">url.com</a>' );
+				var result = Autolinker.link( "Test http://url.com", { newWindow: false, className: 'myLink' } );
+				expect( result ).toBe( 'Test <a href="http://url.com" class="myLink myLink-url">url.com</a>' );
 			} );
 
 
 			it( "should add className to email links", function() {
-				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { email: true, className: 'myLink' } );
-				expect( result ).toBe( 'Iggy\'s email is <a href="mailto:mr@iggypop.com" class="myLink myLink-email" target="_blank" rel="noopener noreferrer">mr@iggypop.com</a>' );
+				var result = Autolinker.link( "Iggy's email is mr@iggypop.com", { newWindow: false, email: true, className: 'myLink' } );
+				expect( result ).toBe( 'Iggy\'s email is <a href="mailto:mr@iggypop.com" class="myLink myLink-email">mr@iggypop.com</a>' );
 			} );
 
 
 			it( "should add className to twitter links", function() {
-				var result = Autolinker.link( "hi from @iggypopschest", { twitter: true, className: 'myLink' } );
-				expect( result ).toBe( 'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-twitter" target="_blank" rel="noopener noreferrer">@iggypopschest</a>' );
+				var result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, twitter: true, className: 'myLink' } );
+				expect( result ).toBe( 'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-twitter">@iggypopschest</a>' );
 			} );
 
 		} );
