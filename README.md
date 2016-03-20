@@ -240,7 +240,7 @@ var linkedText = Autolinker.link( input, {
                 console.log( "url: ", match.getUrl() );
 
                 if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
-                    var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+                    var tag = match.buildTag();  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
                     tag.setAttr( 'rel', 'nofollow' );
                     tag.addClass( 'external-link' );
 
@@ -261,7 +261,7 @@ var linkedText = Autolinker.link( input, {
                 }
 
             case 'phone' :
-                var phoneNumber = match.getPhoneNumber();
+                var phoneNumber = match.getNumber();
                 console.log( phoneNumber );
 
                 return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
