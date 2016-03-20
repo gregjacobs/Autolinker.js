@@ -1854,7 +1854,7 @@ describe( "Autolinker", function() {
 					newWindow : false,
 
 					replaceFn : function( autolinker, match ) {
-						var tag = autolinker.getTagBuilder().build( match );
+						var tag = match.buildTag();
 						tag.setInnerHtml( 'asdf!' );  // just to check that we're replacing with the returned `tag` instance
 						return tag;
 					}
@@ -1869,7 +1869,7 @@ describe( "Autolinker", function() {
 					newWindow : false,
 
 					replaceFn : function( autolinker, match ) {
-						var tag = autolinker.getTagBuilder().build( match );
+						var tag = match.buildTag();
 						tag.addClass( 'test' );
 						tag.addClass( 'test2' );
 						tag.setAttr( 'rel', 'nofollow' );
