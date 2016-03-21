@@ -46,6 +46,7 @@ function buildTask() {
 		.pipe( umd() )
 		.pipe( header( banner, { pkg: require( './package.json' ) } ) )
 		.pipe( gulp.dest( distFolder ) )  // output unminified file
+		
 		.pipe( preprocess( { context: { DEBUG: false } } ) )  // removes DEBUG tagged code
 		.pipe( uglify( { preserveComments: 'license' } ) )
 		.pipe( rename( minDistFilename ) )
