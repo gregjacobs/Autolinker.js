@@ -1471,6 +1471,20 @@ describe( "Autolinker", function() {
 
 			describe( 'number form', function() {
 
+				it( "should not perform any truncation if the `truncate` option is not passed in", function() {
+					var result = Autolinker.link( "Test http://url.com/with/path", { newWindow: false } );
+
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/with/path</a>' );
+				} );
+
+
+				it( "should not perform any truncation if `truncate` is 0", function() {
+					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 0, newWindow: false } );
+
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/with/path</a>' );
+				} );
+
+
 				it( "should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified", function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12, newWindow: false } );
 
@@ -1495,6 +1509,20 @@ describe( "Autolinker", function() {
 
 
 			describe( 'object form (with `length` and `location` properties)', function() {
+
+				it( "should not perform any truncation if `truncate.length` is not passed in", function() {
+					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { location: 'end' }, newWindow: false } );
+
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/with/path</a>' );
+				} );
+
+
+				it( "should not perform any truncation if `truncate.length` is 0", function() {
+					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 0 }, newWindow: false } );
+
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/with/path</a>' );
+				} );
+
 
 				it( 'should default the `location` to "end" if it is not provided', function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 12 }, newWindow: false } );

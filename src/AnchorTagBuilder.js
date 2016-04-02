@@ -148,7 +148,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 	doTruncate : function( anchorText ) {
 		var truncate = this.truncate;
-		if( !truncate ) return anchorText;
+		if( !truncate || !truncate.length ) return anchorText;
 
 		var truncateLength = truncate.length,
 			truncateLocation = truncate.location;

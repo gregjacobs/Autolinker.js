@@ -226,7 +226,7 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Number/Object} truncate
+	 * @cfg {Number/Object} [truncate=0]
 	 *
 	 * ## Number Form
 	 *
@@ -244,6 +244,9 @@ Autolinker.prototype = {
 	 *     truncate: 25
 	 *
 	 *
+	 *  Defaults to `0` for "no truncation."
+	 *
+	 *
 	 * ## Object Form
 	 *
 	 * An Object may also be provided with two properties: `length` (Number) and
@@ -254,8 +257,8 @@ Autolinker.prototype = {
 	 *
 	 *     truncate: { length: 25, location: 'middle' }
 	 *
-	 * @cfg {Number} truncate.length How many characters to allow before
-	 *   truncation will occur.
+	 * @cfg {Number} [truncate.length=0] How many characters to allow before
+	 *   truncation will occur. Defaults to `0` for "no truncation."
 	 * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
 	 *
 	 * - 'end' (default): will truncate up to the number of characters, and then
@@ -1544,7 +1547,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 	doTruncate : function( anchorText ) {
 		var truncate = this.truncate;
-		if( !truncate ) return anchorText;
+		if( !truncate || !truncate.length ) return anchorText;
 
 		var truncateLength = truncate.length,
 			truncateLocation = truncate.location;
