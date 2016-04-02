@@ -1,0 +1,252 @@
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" href="live-example.css">
+
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+	<script src="../../dist/Autolinker.min.js"></script>  <!-- TODO: Make docs build process move this file into dir -->
+	<script src="live-example.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+	<h1>Autolinker <small>Live Example</small></h1>
+
+	Type text on the left and see the output on the right. For full reference,
+	see the <a href="http://gregjacobs.github.io/Autolinker.js/docs/" target="_top">API Docs</a>
+</div>
+
+<div class="container pt10">
+	<div class="row">
+		<div class="col-lg-4 col-sm-6">
+			<h4>Match Types:</h4>
+			<div id="option-urls-schemeMatches"></div>
+			<div id="option-urls-wwwMatches"></div>
+			<div id="option-urls-tldMatches"></div>
+			<div id="option-email"></div>
+			<div id="option-phone"></div>
+			<div id="option-twitter"></div>
+			<div id="option-hashtag"></div>
+		</div>
+
+		<div class="col-lg-4 col-sm-6">
+			<h4>Other Options:</h4>
+			<div id="option-stripPrefix"></div>
+			<div id="option-newWindow"></div>
+			<div id="option-truncate-length"></div>
+			<div id="option-truncate-location"></div>
+			<div id="option-className"></div>
+		</div>
+	</div>
+</div>
+
+<div class="container full-height pt10">
+	<div class="row full-height">
+		<div class="col-xs-6 full-height">
+			<textarea id="input" class="full-height code-box">
+# Examples of one of each
+http://google.com
+www.google.com
+google.com
+google@google.com
+123-456-7890
+@TwitterUser
+#HashTag
+
+%
+% Regular links
+%
+http://google.com
+www.google.com
+google.com
+
+My http://example.com site
+My http://example.com/ site
+http://example.com/foo_bar/
+http://user:pass@example.com:8080
+http://user@example.com
+http://user@example.com:8080
+http://user:pass@example.com
+http://example.com:8080
+http://example.com/?foo=bar
+http://example.com?foo=bar
+http://example.com/#foo=bar
+http://example.com#foo=bar
+http://a.in
+HTTP://GOOGLE.COM
+http://example.invalid % don't restrict root domain when schema exists
+>>example.com % markdown blockquote
+>>http://example.com % markdown blockquote
+http://lyricstranslate.com/en/someone-you-നിന്നെ-പോലൊരാള്‍.html % With control character
+
+%
+% localhost (only with protocol allowed)
+%
+//localhost
+http://localhost:8000?
+
+%
+% Other protocols
+%
+My ssl https://example.com site
+My ftp://example.com site
+
+%
+% Neutral proto
+%
+My ssl //example.com site
+
+%
+% IPs
+%
+4.4.4.4
+192.168.1.1/abc
+
+%
+% Fuzzy
+%
+test.example@http://vk.com
+text:http://example.com/
+google.com
+google.com: // no port
+s.l.o.w.io
+a-b.com
+GOOGLE.COM.
+google.xxx // known tld
+
+%
+% Correct termination for . , ! ? [] {} () "" ''
+%
+(Scoped http://example.com/foo_bar)
+http://example.com/foo_bar_(wiki)
+http://foo.com/blah_blah_[other]
+http://foo.com/blah_blah_{I'm_king}
+http://foo.com/blah_blah_I'm_king
+http://foo.com/blah_blah_"doublequoted"
+http://foo.com/blah_blah_'singlequoted'
+(Scoped like http://example.com/foo_bar)
+[Scoped like http://example.com/foo_bar]
+{Scoped like http://example.com/foo_bar}
+"Quoted like http://example.com/foo_bar"
+'Quoted like http://example.com/foo_bar'
+[example.com/foo_bar.jpg)]
+http://example.com/foo_bar.jpg.
+http://example.com/foo_bar/.
+http://example.com/foo_bar,
+https://github.com/markdown-it/linkify-it/compare/360b13a733f521a8d4903d3a5e1e46c357e9d3ce...f580766349525150a80a32987bb47c2d592efc33
+http://example.com/foo_bar...
+http://172.26.142.48/viewerjs/#../0529/slides.pdf
+http://example.com/foo_bar..
+http://example.com/foo_bar?p=10.
+https://www.google.ru/maps/@59.9393895,30.3165389,15z?hl=ru
+https://www.google.com/maps/place/New+York,+NY,+USA/@40.702271,-73.9968471,11z/data=!4m2!3m1!1s0x89c24fa5d33f083b:0xc80b8f06e177fe62?hl=en
+https://www.google.com/analytics/web/?hl=ru&pli=1#report/visitors-overview/a26895874w20458057p96934174/
+http://business.timesonline.co.uk/article/0,,9065-2473189,00.html
+http://example.com/123!
+http://example.com/foo--bar
+http://example.com/foo---bar  % Markdown dash
+http://example.com/foo----bar
+
+% some sites have links with trailing dashes
+http://www.bloomberg.com/news/articles/2015-06-26/from-deutsche-bank-to-siemens-what-s-troubling-germany-inc-
+http://example.com/foo-with-trailing-dash-dot-.
+
+%
+% Emails
+%
+test."foo".bar@gmail.co.uk!
+name@example.com
+>>name@example.com % markdown blockquote
+mailto:name@example.com
+MAILTO:NAME@EXAMPLE.COM
+mailto:foo_bar@example.com
+foo+bar@gmail.com
+192.168.1.1@gmail.com
+mailto:foo@bar      % explicit protocol make it valid
+
+%
+% International
+%
+http://✪df.ws/123
+http://xn--df-oiy.ws/123
+a.ws
+➡.ws/䨹
+example.com/䨹
+президент.рф
+
+% Links below provided by diaspora* guys, to make sure regressions will not happen.
+% Those left here for historic reasons.
+http://www.bürgerentscheid-krankenhäuser.de
+http://www.xn--brgerentscheid-krankenhuser-xkc78d.de
+http://bündnis-für-krankenhäuser.de/wp-content/uploads/2011/11/cropped-logohp.jpg
+http://xn--bndnis-fr-krankenhuser-i5b27cha.de/wp-content/uploads/2011/11/cropped-logohp.jpg
+http://ﻡﻮﻘﻋ.ﻭﺯﺍﺭﺓ-ﺍﻼﺘﺻﺍﻼﺗ.ﻢﺻﺭ/
+http://xn--4gbrim.xn----ymcbaaajlc6dj7bxne2c.xn--wgbh1c/
+
+
+%
+% Not links
+%
+example.invalid
+example.invalid/
+http://.example.com
+http://-example.com
+hppt://example.com
+example.coma
+-example.coma
+foo.123
+http://a.b--c.de/   % `--` disabled, because collision possible
+localhost           % only with protocol allowed
+localhost/
+
+_http://example.com
+_//example.com
+_example.com
+http://example.com_
+@example.com
+
+node.js and io.js
+
+http://
+http://.
+http://..
+http://#
+http://##
+http://?
+http://??
+google.com:500000 // invalid port
+show image.jpg
+path:to:file.pm
+/path/to/file.pl
+
+%
+% Not IPv4
+%
+1.2.3.4.5
+1.2.3
+1.2.3.400
+1000.2.3.4
+a1.2.3.4
+1.2.3.4a
+
+%
+% Not email
+%
+foo@bar     % Should be at second level domain & with correct tld
+mailto:bar
+			</textarea>
+		</div>
+
+		<div class="col-xs-6 full-height">
+			<div id="output" class="full-height code-box"></div>
+		</div>
+	</div>
+</div>
+
+</body>
+
+</html>

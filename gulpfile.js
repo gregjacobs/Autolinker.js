@@ -1,5 +1,6 @@
 /*jshint node:true */
 const gulp            = require( 'gulp' ),
+      babel           = require( 'gulp-babel' ),
       concat          = require( 'gulp-concat' ),
       connect         = require( 'gulp-connect' ),
       header          = require( 'gulp-header' ),
@@ -10,7 +11,8 @@ const gulp            = require( 'gulp' ),
       uglify          = require( 'gulp-uglify' ),
       umd             = require( 'gulp-umd' ),
       JsDuck          = require( 'gulp-jsduck' ),
-      KarmaServer     = require( 'karma' ).Server;
+      KarmaServer     = require( 'karma' ).Server,
+      through2        = require( 'through2' );
 
 
 // Project configuration
@@ -26,10 +28,11 @@ var banner = createBanner(),
 
 gulp.task( 'default', [ 'lint', 'build', 'test' ] );
 gulp.task( 'lint', lintTask );
+gulp.task( 'babel', babelTask );  // for examples
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
 gulp.task( 'doc', docTask );
-gulp.task( 'serve', serveTask );
+gulp.task( 'serve', [ 'babel' ], serveTask );
 
 
 function lintTask() {
@@ -37,6 +40,20 @@ function lintTask() {
 		.pipe( jshint() )
 		.pipe( jshint.reporter( 'jshint-stylish' ) )
 		.pipe( jshint.reporter( 'fail' ) );  // fail the task if errors
+}
+
+
+function babelTask() {
+	return gulp.src( [
+		'./examples/live-example/js/Option.js',
+		'./examples/live-example/js/CheckboxOption.js',
+		'./examples/live-example/js/RadioOption.js',
+		'./examples/live-example/js/TextOption.js',
+		'./examples/live-example/js/main.js'
+	] )
+		.pipe( babel() )
+		.pipe( concat( 'live-example.js' ) )
+		.pipe( gulp.dest( './examples/live-example/' ) );
 }
 
 
@@ -77,16 +94,31 @@ function testTask( done ) {
 
 function docTask() {
 	var jsduck = new JsDuck( [
-		'--out',   './gh-pages/docs',
-		'--title', 'Autolinker API Docs'
+		'--out',               './gh-pages/docs',
+		'--title',             'Autolinker API Docs',
+		'--examples',          './gh-pages/examples.json',
+		'--examples-base-url', './'
 	] );
 
 	return gulp.src( srcFilesGlob )
-		.pipe( jsduck.doc() );
+		.pipe( jsduck.doc() )
+		.pipe( through2.obj(  // for a little hacky synchronous behavior
+			function transform( file, enc, cb ) { cb( null, file ); },  // pass through
+			function flush( cb ) { copyExampleFiles( cb ); }
+		) );
+
+
+	function copyExampleFiles( cb ) {
+		gulp.src( './gh-pages/examples/**' )
+			.pipe( gulp.dest( './gh-pages/docs/examples' ) )
+			.on( 'end', function() { cb(); } );
+	}
 }
 
 
 function serveTask() {
+	gulp.watch( './examples/live-example/js/**', [ 'babel' ] );
+
 	connect.server();
 }
 

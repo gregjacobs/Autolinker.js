@@ -1,0 +1,19 @@
+html,
+body,
+.full-height {
+	height: 100%;
+}
+
+label { font-weight: normal; }
+
+body {
+	overflow-x: hidden;
+	padding-bottom: 180px;
+}
+
+
+.pt10 { padding-top: 10px; }
+.pl10 { padding-left: 10px; }
+.pl20 { padding-left: 20px; }
+
+.code-box { width: 100%; border: 1px solid #CCC; overflow: auto; }
