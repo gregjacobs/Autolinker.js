@@ -24,6 +24,8 @@ So, this utility attempts to handle everything. It:
 Hope that this utility helps you as well!
 
 Full API Docs: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)
+Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
+
 
 ## Installation
 
@@ -316,6 +318,11 @@ The following return values may be provided:
 
 The full API docs for Autolinker may be referenced at:
 [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)
+
+## Live Example
+
+[http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
+
 
 
 ## Contributing
