@@ -66,19 +66,19 @@ function buildTask() {
 		.pipe( umd() )
 		.pipe( header( banner, { pkg: pkg } ) );
 
-	var unminified = combinedSrcFile
+	var unminifiedFile = combinedSrcFile
 		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
 		.pipe( gulp.dest( distFolder ) );
 
-	var minified = combinedSrcFile
+	var minifiedFile = combinedSrcFile
 		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
 		.pipe( uglify( { preserveComments: 'license' } ) )
 		.pipe( rename( minDistFilename ) )
 		.pipe( gulp.dest( distFolder ) );
 
-	return merge( unminified, minified );
+	return merge( unminifiedFile, minifiedFile );
 }
 
 
