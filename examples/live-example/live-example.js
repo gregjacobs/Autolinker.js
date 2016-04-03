@@ -71,13 +71,38 @@ var Option = function () {
 	}
 
 	/**
-  * Retrieves the value for the option.
-  *
-  * @abstract
+  * @protected
+  * @return {String}
   */
 
 
 	_createClass(Option, [{
+		key: 'getApiDocAnchor',
+		value: function getApiDocAnchor() {
+			return '<a href="' + this.getApiDocLink() + '" target="autolinkerDocs">' + this.optionName + '</a>';
+		}
+
+		/**
+   * @protected
+   * @return {String}
+   */
+
+	}, {
+		key: 'getApiDocLink',
+		value: function getApiDocLink() {
+			var configName = this.optionName.match(/[^.]+/)[0]; // ex: 'urls.schemeMatches' -> 'urls'
+
+			return 'http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-' + configName;
+		}
+
+		/**
+   * Retrieves the value for the option.
+   *
+   * @abstract
+   * @return {*}
+   */
+
+	}, {
 		key: 'getValue',
 		value: function getValue() {
 			throw new Error('Must implement abstract method `getValue()`');
@@ -175,7 +200,7 @@ var CheckboxOption = function (_Option) {
 			    defaultValue = this.defaultValue,
 			    checkboxId = containerId + '-checkbox';
 
-			return '\n\t\t\t<input type="checkbox" id="' + checkboxId + '" ' + (defaultValue ? 'checked' : '') + '>\n\t\t\t<label for="' + checkboxId + '">\n\t\t\t\t' + optionDescription + ' (<code>' + optionName + ': <span id="' + containerId + '-value">' + defaultValue + '</span></code>)\n\t\t\t</label>\n\t\t';
+			return '\n\t\t\t<input type="checkbox" id="' + checkboxId + '" ' + (defaultValue ? 'checked' : '') + '>\n\t\t\t<label for="' + checkboxId + '">' + optionDescription + '</label>\n\t\t\t(<code>' + this.getApiDocAnchor() + ': <span id="' + containerId + '-value">' + defaultValue + '</span></code>)\n\t\t';
 		}
 
 		/**
@@ -275,7 +300,7 @@ var RadioOption = function (_Option) {
 			    defaultValue = this.defaultValue,
 			    radiosHtml = this.createRadiosHtml(this.options, defaultValue);
 
-			return '\n\t\t\t<label>\n\t\t\t\t' + optionDescription + ': (<code>' + optionName + ': <span id="' + containerId + '-value">' + this.formatValueForDisplay(defaultValue) + '</span></code>)\n\t\t\t</label>\n\t\t\t<div class="pl10">' + radiosHtml.join('&nbsp;&nbsp;') + '</div>\n\t\t';
+			return '\n\t\t\t<label>' + optionDescription + ': </label>\n\t\t\t(<code>' + this.getApiDocAnchor() + ': <span id="' + containerId + '-value">' + this.formatValueForDisplay(defaultValue) + '</span></code>)\n\t\t\t<div class="pl10">' + radiosHtml.join('<br>') + '</div>\n\t\t';
 		}
 
 		/**
@@ -407,9 +432,9 @@ var TextOption = function (_Option) {
 			    optionDescription = this.optionDescription,
 			    size = this.size,
 			    defaultValue = this.defaultValue,
-			    checkboxId = containerId + '-checkbox';
+			    textFieldId = containerId + '-textField';
 
-			return '\n\t\t\t<input type="text" id="' + checkboxId + '" value="' + defaultValue + '" size="' + size + '">\n\t\t\t<label for="' + checkboxId + '">\n\t\t\t\t' + optionDescription + ' (<code>' + optionName + '</code>)\n\t\t\t</label>\n\t\t';
+			return '\n\t\t\t<label for="' + textFieldId + '">' + optionDescription + '</label>\n\t\t\t<input type="text" id="' + textFieldId + '" value="' + defaultValue + '" size="' + size + '" class="textfield">\n\t\t\t(<code>' + this.getApiDocAnchor() + '</code>)\n\t\t';
 		}
 
 		/**
@@ -433,6 +458,7 @@ var TextOption = function (_Option) {
 $(document).ready(function () {
 	var $inputEl = $('#input'),
 	    $outputEl = $('#output'),
+	    $optionsOutputEl = $('#options-output'),
 	    urlsSchemeOption,
 	    urlsWwwOption,
 	    urlsTldOption,
@@ -455,16 +481,18 @@ $(document).ready(function () {
 		emailOption = new CheckboxOption({ name: 'email', description: 'Email Addresses', defaultValue: true }).onChange(autolink);
 		phoneOption = new CheckboxOption({ name: 'phone', description: 'Phone Numbers', defaultValue: true }).onChange(autolink);
 		twitterOption = new CheckboxOption({ name: 'twitter', description: 'Twitter Handles', defaultValue: true }).onChange(autolink);
-		hashtagOption = new RadioOption({ name: 'hashtag', description: 'Hashtags', options: [false, 'twitter', 'facebook', 'instagram'], defaultValue: 'twitter' }).onChange(autolink);
+		hashtagOption = new RadioOption({ name: 'hashtag', description: 'Hashtags', options: [false, 'twitter', 'facebook', 'instagram'], defaultValue: false }).onChange(autolink);
 
 		newWindowOption = new CheckboxOption({ name: 'newWindow', description: 'Open in new window', defaultValue: true }).onChange(autolink);
 		stripPrefixOption = new CheckboxOption({ name: 'stripPrefix', description: 'Strip prefix', defaultValue: true }).onChange(autolink);
 		truncateLengthOption = new TextOption({ name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' }).onChange(autolink);
 		truncationLocationOption = new RadioOption({ name: 'truncate.location', description: 'Truncate Location', options: ['end', 'middle', 'smart'], defaultValue: 'end' }).onChange(autolink);
-
 		classNameOption = new TextOption({ name: 'className', description: 'CSS class(es)', size: 10 }).onChange(autolink);
 
 		$inputEl.on('keyup change', autolink);
+
+		$inputEl.on('scroll', syncOutputScroll);
+		$outputEl.on('scroll', syncInputScroll);
 
 		// Perform initial autolinking
 		autolink();
@@ -472,9 +500,10 @@ $(document).ready(function () {
 
 	function autolink() {
 		var inputText = $inputEl.val().replace(/\n/g, '<br>'),
-		    linkedHtml = Autolinker.link(inputText, createAutolinkerOptionsObj());
+		    optionsObj = createAutolinkerOptionsObj(),
+		    linkedHtml = Autolinker.link(inputText, optionsObj);
 
-		console.log(createAutolinkerOptionsObj());
+		$optionsOutputEl.html(createCodeSample(optionsObj));
 		$outputEl.html(linkedHtml);
 	}
 
@@ -498,5 +527,39 @@ $(document).ready(function () {
 				location: truncationLocationOption.getValue()
 			}
 		};
+	}
+
+	function createCodeSample(optionsObj) {
+		return ['var autolinker = new Autolinker( {', '    urls : {', '        schemeMatches : ' + optionsObj.urls.schemeMatches + ',', '        wwwMatches    : ' + optionsObj.urls.wwwMatches + ',', '        tldMatches    : ' + optionsObj.urls.tldMatches, '    },', '    email       : ' + optionsObj.email + ',', '    phone       : ' + optionsObj.phone + ',', '    twitter     : ' + optionsObj.twitter + ',', '    hashtag     : ' + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ',', '', '    stripPrefix : ' + optionsObj.stripPrefix + ',', '    newWindow   : ' + optionsObj.newWindow + ',', '', '    truncate : {', '        length   : ' + optionsObj.truncate.length + ',', '        location : \'' + optionsObj.truncate.location + '\'', '    },', '', '    className : \'' + optionsObj.className + '\'', '} );', '', 'var myLinkedHtml = autolinker.link( myText );'].join('\n');
+	}
+
+	function beautifyCode(optionsObj) {
+		return {
+			urls: {
+				schemeMatches: urlsSchemeOption.getValue(),
+				wwwMatches: urlsWwwOption.getValue(),
+				tldMatches: urlsTldOption.getValue()
+			},
+			email: emailOption.getValue(),
+			phone: phoneOption.getValue(),
+			twitter: twitterOption.getValue(),
+			hashtag: hashtagOption.getValue(),
+
+			newWindow: newWindowOption.getValue(),
+			stripPrefix: stripPrefixOption.getValue(),
+			className: classNameOption.getValue(),
+			truncate: {
+				length: +truncateLengthOption.getValue(),
+				location: truncationLocationOption.getValue()
+			}
+		};
+	}
+
+	function syncInputScroll() {
+		$inputEl.scrollTop($outputEl.scrollTop());
+	}
+
+	function syncOutputScroll() {
+		$outputEl.scrollTop($inputEl.scrollTop());
 	}
 });

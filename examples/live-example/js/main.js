@@ -4,6 +4,7 @@
 $( document ).ready( function() {
 	var $inputEl = $( '#input' ),
 	    $outputEl = $( '#output' ),
+	    $optionsOutputEl = $( '#options-output' ),
 
 	    urlsSchemeOption,
 	    urlsWwwOption,
@@ -19,6 +20,7 @@ $( document ).ready( function() {
 	    truncationLocationOption,
 	    classNameOption;
 
+
 	init();
 
 
@@ -29,16 +31,18 @@ $( document ).ready( function() {
 		emailOption = new CheckboxOption( { name: 'email', description: 'Email Addresses', defaultValue: true } ).onChange( autolink );
 		phoneOption = new CheckboxOption( { name: 'phone', description: 'Phone Numbers', defaultValue: true } ).onChange( autolink );
 		twitterOption = new CheckboxOption( { name: 'twitter', description: 'Twitter Handles', defaultValue: true } ).onChange( autolink );
-		hashtagOption = new RadioOption( { name: 'hashtag', description: 'Hashtags', options: [ false, 'twitter', 'facebook', 'instagram' ], defaultValue: 'twitter' } ).onChange( autolink );
+		hashtagOption = new RadioOption( { name: 'hashtag', description: 'Hashtags', options: [ false, 'twitter', 'facebook', 'instagram' ], defaultValue: false } ).onChange( autolink );
 
 		newWindowOption = new CheckboxOption( { name: 'newWindow', description: 'Open in new window', defaultValue: true } ).onChange( autolink );
 		stripPrefixOption = new CheckboxOption( { name: 'stripPrefix', description: 'Strip prefix', defaultValue: true } ).onChange( autolink );
 		truncateLengthOption = new TextOption( { name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' } ).onChange( autolink );
 		truncationLocationOption = new RadioOption( { name: 'truncate.location', description: 'Truncate Location', options: [ 'end', 'middle', 'smart' ], defaultValue: 'end' } ).onChange( autolink );
-
 		classNameOption = new TextOption( { name: 'className', description: 'CSS class(es)', size: 10 } ).onChange( autolink );
 
 		$inputEl.on( 'keyup change', autolink );
+
+		$inputEl.on( 'scroll', syncOutputScroll );
+		$outputEl.on( 'scroll', syncInputScroll );
 
 		// Perform initial autolinking
 		autolink();
@@ -47,9 +51,10 @@ $( document ).ready( function() {
 
 	function autolink() {
 		var inputText = $inputEl.val().replace( /\n/g, '<br>' ),
-		    linkedHtml = Autolinker.link( inputText, createAutolinkerOptionsObj() );
+		    optionsObj = createAutolinkerOptionsObj(),
+		    linkedHtml = Autolinker.link( inputText, optionsObj );
 
-		console.log( createAutolinkerOptionsObj() );
+		$optionsOutputEl.html( createCodeSample( optionsObj ) );
 		$outputEl.html( linkedHtml );
 	}
 
@@ -74,6 +79,66 @@ $( document ).ready( function() {
 				location : truncationLocationOption.getValue()
 			}
 		};
+	}
+
+
+	function createCodeSample( optionsObj ) {
+		return [
+			`var autolinker = new Autolinker( {`,
+			`    urls : {`,
+			`        schemeMatches : ${ optionsObj.urls.schemeMatches },`,
+			`        wwwMatches    : ${ optionsObj.urls.wwwMatches },`,
+			`        tldMatches    : ${ optionsObj.urls.tldMatches }`,
+			`    },`,
+			`    email       : ${ optionsObj.email },`,
+			`    phone       : ${ optionsObj.phone },`,
+			`    twitter     : ${ optionsObj.twitter },`,
+			`    hashtag     : ${ typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag },`,
+			``,
+			`    stripPrefix : ${ optionsObj.stripPrefix },`,
+			`    newWindow   : ${ optionsObj.newWindow },`,
+			``,
+			`    truncate : {`,
+			`        length   : ${ optionsObj.truncate.length },`,
+			`        location : '${ optionsObj.truncate.location }'`,
+			`    },`,
+			``,
+			`    className : '${ optionsObj.className }'`,
+			`} );`,
+			``,
+			`var myLinkedHtml = autolinker.link( myText );`
+		].join( '\n' );
+	}
+
+	function beautifyCode( optionsObj ) {
+		return {
+			urls : {
+				schemeMatches : urlsSchemeOption.getValue(),
+				wwwMatches    : urlsWwwOption.getValue(),
+				tldMatches    : urlsTldOption.getValue()
+			},
+			email       : emailOption.getValue(),
+			phone       : phoneOption.getValue(),
+			twitter     : twitterOption.getValue(),
+			hashtag     : hashtagOption.getValue(),
+
+			newWindow   : newWindowOption.getValue(),
+			stripPrefix : stripPrefixOption.getValue(),
+			className   : classNameOption.getValue(),
+			truncate    : {
+				length   : +truncateLengthOption.getValue(),
+				location : truncationLocationOption.getValue()
+			}
+		};
+	}
+
+
+	function syncInputScroll() {
+		$inputEl.scrollTop( $outputEl.scrollTop() );
+	}
+
+	function syncOutputScroll() {
+		$outputEl.scrollTop( $inputEl.scrollTop() );
 	}
 
 } );

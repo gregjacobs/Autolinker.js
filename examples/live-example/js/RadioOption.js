@@ -55,10 +55,9 @@ class RadioOption extends Option {
 			radiosHtml = this.createRadiosHtml( this.options, defaultValue );
 
 		return `
-			<label>
-				${optionDescription}: (<code>${optionName}: <span id="${containerId}-value">${ this.formatValueForDisplay( defaultValue ) }</span></code>)
-			</label>
-			<div class="pl10">${ radiosHtml.join( '&nbsp;&nbsp;' ) }</div>
+			<label>${optionDescription}: </label>
+			(<code>${ this.getApiDocAnchor() }: <span id="${containerId}-value">${ this.formatValueForDisplay( defaultValue ) }</span></code>)
+			<div class="pl10">${ radiosHtml.join( '<br>' ) }</div>
 		`;
 	}
 

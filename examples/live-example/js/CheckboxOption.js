@@ -43,9 +43,8 @@ class CheckboxOption extends Option {
 
 		return `
 			<input type="checkbox" id="${checkboxId}" ${ defaultValue ? 'checked' : '' }>
-			<label for="${checkboxId}">
-				${optionDescription} (<code>${optionName}: <span id="${containerId}-value">${defaultValue}</span></code>)
-			</label>
+			<label for="${checkboxId}">${optionDescription}</label>
+			(<code>${ this.getApiDocAnchor() }: <span id="${containerId}-value">${defaultValue}</span></code>)
 		`;
 	}
 

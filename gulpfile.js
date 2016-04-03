@@ -23,7 +23,7 @@ const pkg = require( './package.json' ),
       srcFiles = createSrcFilesList(),
       srcFilesGlob = './src/**/*.js',
       testFilesGlob = './tests/**/*.js',
-      distFolder = 'dist/',
+      distFolder = './dist/',
       distFilename = 'Autolinker.js',
       minDistFilename = 'Autolinker.min.js',
       minDistFilePath = distFolder + minDistFilename;
@@ -34,7 +34,7 @@ gulp.task( 'lint', lintTask );
 gulp.task( 'babel', babelTask );  // for examples
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
-gulp.task( 'doc', docTask );
+gulp.task( 'doc', [ 'build', 'babel' ], docTask );
 gulp.task( 'serve', [ 'babel' ], serveTask );
 
 
@@ -66,11 +66,13 @@ function buildTask() {
 		.pipe( umd() )
 		.pipe( header( banner, { pkg: pkg } ) );
 
-	var unminified = combinedSrcFile.pipe( clone() )
+	var unminified = combinedSrcFile
+		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
 		.pipe( gulp.dest( distFolder ) );
 
-	var minified = combinedSrcFile.pipe( clone() )
+	var minified = combinedSrcFile
+		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
 		.pipe( uglify( { preserveComments: 'license' } ) )
 		.pipe( rename( minDistFilename ) )
@@ -103,19 +105,16 @@ function docTask() {
 		'--examples-base-url', './'
 	] );
 
-	return gulp.src( srcFilesGlob )
-		.pipe( jsduck.doc() )
-		.pipe( through2.obj(  // for a little hacky synchronous behavior
-			function transform( file, enc, cb ) { cb( null, file ); },  // pass through
-			function flush( cb ) { copyExampleFiles( cb ); }
-		) );
+	return merge(
+		gulp.src( srcFilesGlob )
+			.pipe( jsduck.doc() ),
 
+		gulp.src( `${distFolder}/**/*` )
+			.pipe( gulp.dest( './gh-pages/dist' ) ),
 
-	function copyExampleFiles( cb ) {
-		gulp.src( './gh-pages/examples/**' )
-			.pipe( gulp.dest( './gh-pages/docs/examples' ) )
-			.on( 'end', function() { cb(); } );
-	}
+		gulp.src( './examples/**' )
+			.pipe( gulp.dest( './gh-pages/examples' ) )
+	);
 }
 
 

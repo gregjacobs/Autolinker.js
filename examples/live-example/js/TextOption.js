@@ -47,13 +47,12 @@ class TextOption extends Option {
 		    optionDescription = this.optionDescription,
 		    size = this.size,
 		    defaultValue = this.defaultValue,
-		    checkboxId = containerId + '-checkbox';
+		    textFieldId = containerId + '-textField';
 
 		return `
-			<input type="text" id="${checkboxId}" value="${defaultValue}" size="${size}">
-			<label for="${checkboxId}">
-				${optionDescription} (<code>${optionName}</code>)
-			</label>
+			<label for="${textFieldId}">${optionDescription}</label>
+			<input type="text" id="${textFieldId}" value="${defaultValue}" size="${size}" class="textfield">
+			(<code>${ this.getApiDocAnchor() }</code>)
 		`;
 	}
 

@@ -64,9 +64,30 @@ class Option {
 
 
 	/**
+	 * @protected
+	 * @return {String}
+	 */
+	getApiDocAnchor() {
+		return `<a href="${ this.getApiDocLink() }" target="autolinkerDocs">${ this.optionName }</a>`;
+	}
+
+
+	/**
+	 * @protected
+	 * @return {String}
+	 */
+	getApiDocLink() {
+		var configName = this.optionName.match( /[^.]+/ )[ 0 ];  // ex: 'urls.schemeMatches' -> 'urls'
+
+		return `http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-${configName}`;
+	}
+
+
+	/**
 	 * Retrieves the value for the option.
 	 *
 	 * @abstract
+	 * @return {*}
 	 */
 	getValue() {
 		throw new Error( 'Must implement abstract method `getValue()`' );
