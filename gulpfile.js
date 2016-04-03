@@ -1,29 +1,32 @@
 /*jshint node:true */
-const gulp            = require( 'gulp' ),
-      babel           = require( 'gulp-babel' ),
+const babel           = require( 'gulp-babel' ),
+      clone           = require( 'gulp-clone' ),
       concat          = require( 'gulp-concat' ),
       connect         = require( 'gulp-connect' ),
+      gulp            = require( 'gulp' ),
       header          = require( 'gulp-header' ),
       jasmine         = require( 'gulp-jasmine' ),
       jshint          = require( 'gulp-jshint' ),
+      merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
       rename          = require( 'gulp-rename' ),
+      through2        = require( 'through2' ),
       uglify          = require( 'gulp-uglify' ),
       umd             = require( 'gulp-umd' ),
       JsDuck          = require( 'gulp-jsduck' ),
-      KarmaServer     = require( 'karma' ).Server,
-      through2        = require( 'through2' );
+      KarmaServer     = require( 'karma' ).Server;
 
 
 // Project configuration
-var banner = createBanner(),
-    srcFiles = createSrcFilesList(),
-    srcFilesGlob = './src/**/*.js',
-    testFilesGlob = './tests/**/*.js',
-    distFolder = 'dist/',
-    distFilename = 'Autolinker.js',
-    minDistFilename = 'Autolinker.min.js',
-    minDistFilePath = distFolder + minDistFilename;
+const pkg = require( './package.json' ),
+      banner = createBanner(),
+      srcFiles = createSrcFilesList(),
+      srcFilesGlob = './src/**/*.js',
+      testFilesGlob = './tests/**/*.js',
+      distFolder = 'dist/',
+      distFilename = 'Autolinker.js',
+      minDistFilename = 'Autolinker.min.js',
+      minDistFilePath = distFolder + minDistFilename;
 
 
 gulp.task( 'default', [ 'lint', 'build', 'test' ] );
@@ -58,22 +61,22 @@ function babelTask() {
 
 
 function buildTask() {
-	return gulp.src( srcFiles )
+	var combinedSrcFile = gulp.src( srcFiles )
 		.pipe( concat( distFilename ) )
 		.pipe( umd() )
-		.pipe( header( banner, { pkg: require( './package.json' ) } ) )
-		.pipe( gulp.dest( distFolder ) )
-		.pipe( preprocess( { context: { DEBUG: false } } ) )  // removes DEBUG tagged code
-		/*.pipe( closureCompiler({  // in case we want to use closure compiler. Need to define exports and get to work with umd header
-			compilation_level : 'ADVANCED',
-			warning_level     : 'VERBOSE',
-			language_in       : 'ECMASCRIPT3',
-			language_out      : 'ECMASCRIPT3',  // need to output to ES3 so the unicode regular expressions constructed with `new RegExp()` aren't changed into RegExp literals with all of the symbols expanded into \uXXXX. Adds 5kb to the output size in this case.
-			js_output_file    : minDistFilename
-		}))*/
+		.pipe( header( banner, { pkg: pkg } ) );
+
+	var unminified = combinedSrcFile.pipe( clone() )
+		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
+		.pipe( gulp.dest( distFolder ) );
+
+	var minified = combinedSrcFile.pipe( clone() )
+		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
 		.pipe( uglify( { preserveComments: 'license' } ) )
 		.pipe( rename( minDistFilename ) )
 		.pipe( gulp.dest( distFolder ) );
+
+	return merge( unminified, minified );
 }
 
 

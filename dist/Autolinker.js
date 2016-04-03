@@ -129,6 +129,8 @@
 var Autolinker = function( cfg ) {
 	cfg = cfg || {};
 
+	this.version = Autolinker.version;
+
 	this.urls = this.normalizeUrlsCfg( cfg.urls );
 	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
 	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
@@ -151,6 +153,47 @@ var Autolinker = function( cfg ) {
 	this.matchers = null;
 	this.tagBuilder = null;
 };
+
+
+
+/**
+ * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
+ * and Hashtags found in the given chunk of HTML. Does not link URLs found
+ * within HTML tags.
+ *
+ * For instance, if given the text: `You should go to http://www.yahoo.com`,
+ * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+ *
+ * Example:
+ *
+ *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
+ *     // Produces: "Go to <a href="http://google.com">google.com</a>"
+ *
+ * @static
+ * @param {String} textOrHtml The HTML or text to find matches within (depending
+ *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
+ *   and {@link #hashtag} options are enabled).
+ * @param {Object} [options] Any of the configuration options for the Autolinker
+ *   class, specified in an Object (map). See the class description for an
+ *   example call.
+ * @return {String} The HTML text, with matches automatically linked.
+ */
+Autolinker.link = function( textOrHtml, options ) {
+	var autolinker = new Autolinker( options );
+	return autolinker.link( textOrHtml );
+};
+
+
+/**
+ * @static
+ * @property {String} version (readonly)
+ *
+ * The Autolinker version number in the form major.minor.patch
+ *
+ * Ex: 0.25.1
+ */
+Autolinker.version = '0.25.1';
+
 
 Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
@@ -307,6 +350,14 @@ Autolinker.prototype = {
 	 *   for details.
 	 */
 
+
+	/**
+	 * @property {String} version (readonly)
+	 *
+	 * The Autolinker version number in the form major.minor.patch
+	 *
+	 * Ex: 0.25.1
+	 */
 
 	/**
 	 * @private
@@ -706,34 +757,6 @@ Autolinker.prototype = {
 };
 
 
-/**
- * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
- * and Hashtags found in the given chunk of HTML. Does not link URLs found
- * within HTML tags.
- *
- * For instance, if given the text: `You should go to http://www.yahoo.com`,
- * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
- *
- * Example:
- *
- *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
- *     // Produces: "Go to <a href="http://google.com">google.com</a>"
- *
- * @static
- * @param {String} textOrHtml The HTML or text to find matches within (depending
- *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
- *   and {@link #hashtag} options are enabled).
- * @param {Object} [options] Any of the configuration options for the Autolinker
- *   class, specified in an Object (map). See the class description for an
- *   example call.
- * @return {String} The HTML text, with matches automatically linked.
- */
-Autolinker.link = function( textOrHtml, options ) {
-	var autolinker = new Autolinker( options );
-	return autolinker.link( textOrHtml );
-};
-
-
 // Autolinker Namespaces
 
 Autolinker.match = {};
@@ -924,9 +947,7 @@ Autolinker.Util = {
 	 * @return {String[]} The split array of strings, with the splitting character(s) included.
 	 */
 	splitAndCapture : function( str, splitRegex ) {
-		// @if DEBUG
 		if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
-		// @endif
 
 		var result = [],
 		    lastIdx = 0,
@@ -1874,10 +1895,8 @@ Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
 	constructor : function( cfg ) {
 		Autolinker.Util.assign( this, cfg );
 
-		// @if DEBUG
 		if( this.offset == null ) throw new Error( '`offset` cfg required' );
 		if( this.text == null ) throw new Error( '`text` cfg required' );
-		// @endif
 	},
 
 
@@ -2122,11 +2141,9 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *   instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		// @if DEBUG
 		if( cfg.tagBuilder == null ) throw new Error( '`tagBuilder` cfg required' );
 		if( cfg.matchedText == null ) throw new Error( '`matchedText` cfg required' );
 		if( cfg.offset == null ) throw new Error( '`offset` cfg required' );
-		// @endif
 
 		this.tagBuilder = cfg.tagBuilder;
 		this.matchedText = cfg.matchedText;
@@ -2245,9 +2262,7 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( cfg ) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
 		if( !cfg.email ) throw new Error( '`email` cfg required' );
-		// @endif
 
 		this.email = cfg.email;
 	},
@@ -2328,10 +2343,8 @@ Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( cfg ) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
 		// TODO: if( !serviceName ) throw new Error( '`serviceName` cfg required' );
 		if( !cfg.hashtag ) throw new Error( '`hashtag` cfg required' );
-		// @endif
 
 		this.serviceName = cfg.serviceName;
 		this.hashtag = cfg.hashtag;
@@ -2444,10 +2457,8 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( cfg ) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
 		if( !cfg.number ) throw new Error( '`number` cfg required' );
 		if( cfg.plusSign == null ) throw new Error( '`plusSign` cfg required' );
-		// @endif
 
 		this.number = cfg.number;
 		this.plusSign = cfg.plusSign;
@@ -2524,9 +2535,7 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( cfg) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
 		if( !cfg.twitterHandle ) throw new Error( '`twitterHandle` cfg required' );
-		// @endif
 
 		this.twitterHandle = cfg.twitterHandle;
 	},
@@ -2627,13 +2636,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	constructor : function( cfg ) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
 		if( cfg.urlMatchType !== 'scheme' && cfg.urlMatchType !== 'www' && cfg.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` cfg must be one of: "scheme", "www", or "tld"' );
 		if( !cfg.url ) throw new Error( '`url` cfg required' );
 		if( cfg.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
 		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
 		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
-		// @endif
 
 		this.urlMatchType = cfg.urlMatchType;
 		this.url = cfg.url;
@@ -2822,9 +2829,7 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 	 *   instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		// @if DEBUG
 		if( !cfg.tagBuilder ) throw new Error( '`tagBuilder` cfg required' );
-		// @endif
 
 		this.tagBuilder = cfg.tagBuilder;
 	},
@@ -3247,9 +3252,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		this.stripPrefix = cfg.stripPrefix;
 
-		// @if DEBUG
 		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
-		// @endif
 	},
 
 
