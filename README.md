@@ -23,7 +23,7 @@ So, this utility attempts to handle everything. It:
 
 Hope that this utility helps you as well!
 
-Full API Docs: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)
+Full API Docs: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker)<br>
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
