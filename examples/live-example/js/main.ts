@@ -1,5 +1,13 @@
-/*global $, Autolinker, CheckboxOption, RadioOption, TextOption */
+/// <reference path="../../../typings/tsd.d.ts" />
+
+/*global $, Autolinker */
 /*jshint browser:true */
+
+import CheckboxOption = LiveExample.CheckboxOption;
+import RadioOption = LiveExample.RadioOption;
+import TextOption = LiveExample.TextOption;
+
+declare var Autolinker:any;
 
 $( document ).ready( function() {
 	var $inputEl = $( '#input' ),
@@ -7,18 +15,18 @@ $( document ).ready( function() {
 	    $optionsOutputEl = $( '#options-output' ),
 
 	    urlsSchemeOption,
-	    urlsWwwOption,
-	    urlsTldOption,
-	    emailOption,
-	    phoneOption,
-	    twitterOption,
-	    hashtagOption,
+	    urlsWwwOption: LiveExample.Option,
+	    urlsTldOption: LiveExample.Option,
+	    emailOption: LiveExample.Option,
+	    phoneOption: LiveExample.Option,
+	    twitterOption: LiveExample.Option,
+	    hashtagOption: LiveExample.Option,
 
-	    newWindowOption,
-	    stripPrefixOption,
-	    truncateLengthOption,
-	    truncationLocationOption,
-	    classNameOption;
+	    newWindowOption: LiveExample.Option,
+	    stripPrefixOption: LiveExample.Option,
+	    truncateLengthOption: LiveExample.Option,
+	    truncationLocationOption: LiveExample.Option,
+	    classNameOption: LiveExample.Option;
 
 
 	init();
@@ -82,7 +90,7 @@ $( document ).ready( function() {
 	}
 
 
-	function createCodeSample( optionsObj ) {
+	function createCodeSample( optionsObj:any ) {
 		return [
 			`var autolinker = new Autolinker( {`,
 			`    urls : {`,
@@ -108,28 +116,6 @@ $( document ).ready( function() {
 			``,
 			`var myLinkedHtml = autolinker.link( myText );`
 		].join( '\n' );
-	}
-
-	function beautifyCode( optionsObj ) {
-		return {
-			urls : {
-				schemeMatches : urlsSchemeOption.getValue(),
-				wwwMatches    : urlsWwwOption.getValue(),
-				tldMatches    : urlsTldOption.getValue()
-			},
-			email       : emailOption.getValue(),
-			phone       : phoneOption.getValue(),
-			twitter     : twitterOption.getValue(),
-			hashtag     : hashtagOption.getValue(),
-
-			newWindow   : newWindowOption.getValue(),
-			stripPrefix : stripPrefixOption.getValue(),
-			className   : classNameOption.getValue(),
-			truncate    : {
-				length   : +truncateLengthOption.getValue(),
-				location : truncationLocationOption.getValue()
-			}
-		};
 	}
 
 

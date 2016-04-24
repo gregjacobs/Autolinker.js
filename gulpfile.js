@@ -1,6 +1,5 @@
 /*jshint node:true */
-const babel           = require( 'gulp-babel' ),
-      clone           = require( 'gulp-clone' ),
+const clone           = require( 'gulp-clone' ),
       concat          = require( 'gulp-concat' ),
       connect         = require( 'gulp-connect' ),
       gulp            = require( 'gulp' ),
@@ -11,6 +10,7 @@ const babel           = require( 'gulp-babel' ),
       preprocess      = require( 'gulp-preprocess' ),
       rename          = require( 'gulp-rename' ),
       through2        = require( 'through2' ),
+      typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
       umd             = require( 'gulp-umd' ),
       JsDuck          = require( 'gulp-jsduck' ),
@@ -31,33 +31,11 @@ const pkg = require( './package.json' ),
 
 gulp.task( 'default', [ 'lint', 'build', 'test' ] );
 gulp.task( 'lint', lintTask );
-gulp.task( 'babel', babelTask );  // for examples
+gulp.task( 'typescript', typescriptTask );  // for examples
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
-gulp.task( 'doc', [ 'build', 'babel' ], docTask );
-gulp.task( 'serve', [ 'babel' ], serveTask );
-
-
-function lintTask() {
-	return gulp.src( [ srcFilesGlob, testFilesGlob ] )
-		.pipe( jshint() )
-		.pipe( jshint.reporter( 'jshint-stylish' ) )
-		.pipe( jshint.reporter( 'fail' ) );  // fail the task if errors
-}
-
-
-function babelTask() {
-	return gulp.src( [
-		'./examples/live-example/js/Option.js',
-		'./examples/live-example/js/CheckboxOption.js',
-		'./examples/live-example/js/RadioOption.js',
-		'./examples/live-example/js/TextOption.js',
-		'./examples/live-example/js/main.js'
-	] )
-		.pipe( babel() )
-		.pipe( concat( 'live-example.js' ) )
-		.pipe( gulp.dest( './examples/live-example/' ) );
-}
+gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
+gulp.task( 'serve', [ 'typescript' ], serveTask );
 
 
 function buildTask() {
@@ -82,21 +60,6 @@ function buildTask() {
 }
 
 
-function testTask( done ) {
-	return new KarmaServer( {
-		frameworks : [ 'jasmine' ],
-		reporters  : [ 'spec' ],
-		browsers   : [ 'PhantomJS' ],
-		files : [
-			'node_modules/lodash/lodash.js',  // spec helper
-			minDistFilePath,
-			testFilesGlob
-		],
-		singleRun : true
-	}, done ).start();
-}
-
-
 function docTask() {
 	var jsduck = new JsDuck( [
 		'--out',               './gh-pages/docs',
@@ -118,10 +81,40 @@ function docTask() {
 }
 
 
+function lintTask() {
+	return gulp.src( [ srcFilesGlob, testFilesGlob ] )
+		.pipe( jshint() )
+		.pipe( jshint.reporter( 'jshint-stylish' ) )
+		.pipe( jshint.reporter( 'fail' ) );  // fail the task if errors
+}
+
+
 function serveTask() {
-	gulp.watch( './examples/live-example/js/**', [ 'babel' ] );
+	gulp.watch( './examples/live-example/js/**', [ 'typescript' ] );
 
 	connect.server();
+}
+
+
+function testTask( done ) {
+	return new KarmaServer( {
+		frameworks : [ 'jasmine' ],
+		reporters  : [ 'spec' ],
+		browsers   : [ 'PhantomJS' ],
+		files : [
+			'node_modules/lodash/lodash.js',  // spec helper
+			minDistFilePath,
+			testFilesGlob
+		],
+		singleRun : true
+	}, done ).start();
+}
+
+
+function typescriptTask() {
+	return gulp.src( [ './examples/js/**/*.ts' ] )
+		.pipe( typescript( { noImplicitAny: true, out: 'live-example.js' }, null, typescript.reporter.fullReporter() ) )
+		.pipe( gulp.dest( './examples/live-example/' ) );
 }
 
 
