@@ -60,6 +60,14 @@ describe( "Autolinker.matcher.Email", function() {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 7 );
 		} );
 
+
+		it( 'a match with an \' should be parsed correctly', function() {
+			var matches = matcher.parseMatches( 'o\'donnel@asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'o\'donnel@asdf.com', 0 );
+		} );
+
 	} );
 
 
