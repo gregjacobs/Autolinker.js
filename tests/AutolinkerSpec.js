@@ -835,9 +835,15 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should properly link an email address with underscopres", function() {
+			it( "should properly link an email address with underscores", function() {
 				var result = autolinker.link( "Joe's email is (joe_roe@joe.com)" );
 				expect( result ).toBe( 'Joe\'s email is (<a href="mailto:joe_roe@joe.com">joe_roe@joe.com</a>)' );
+			} );
+
+
+			it( "should properly link an email address with an apostrophe", function() {
+				var result = autolinker.link( "Joe's email is (joe'roe@joe.com)" );
+				expect( result ).toBe( 'Joe\'s email is (<a href="mailto:joe\'roe@joe.com">joe\'roe@joe.com</a>)' );
 			} );
 
 
