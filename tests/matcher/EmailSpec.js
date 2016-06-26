@@ -60,6 +60,14 @@ describe( "Autolinker.matcher.Email", function() {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 7 );
 		} );
 
+
+		it( 'a match with underscores should be parsed correctly', function() {
+			var matches = matcher.parseMatches( 'Hello asdf_fdsa_asdf@asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf_fdsa_asdf@asdf.com', 6 );
+		} );
+
 	} );
 
 

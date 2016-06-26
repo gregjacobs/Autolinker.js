@@ -835,6 +835,12 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should properly link an email address with underscopres", function() {
+				var result = autolinker.link( "Joe's email is (joe_roe@joe.com)" );
+				expect( result ).toBe( 'Joe\'s email is (<a href="mailto:joe_roe@joe.com">joe_roe@joe.com</a>)' );
+			} );
+
+
 			it( "should automatically link an email address with accented characters", function() {
 				var result = autolinker.link( "Joe's email is mañana@mañana.com" );
 				expect( result ).toBe( 'Joe\'s email is <a href="mailto:mañana@mañana.com">mañana@mañana.com</a>' );
