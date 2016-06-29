@@ -1286,13 +1286,24 @@ describe( "Autolinker", function() {
 			it( "should not fail with an infinite loop for an input string with " +
 				"marginally valid HTML (issue #157)",
 			function() {
-				var str = "Our first step should be to get a CBC with differential, accompanied by a blood smear. The blood smear will be read (by a Hematologist) as sparse platelets among RBCs and some WBCs, that will most likely be normal. The platelets that do show up on the blood smear may or may not be damaged. In the case of TTP, platelets should not be damaged, but rather just low in number. A CBC with platelet count <50K starts to raise eyebrows for a possible case requiring platelet transfusion. Now would be the time to get a Type & Screen, and most would also tend towards ordering PT, PTT, and INR, or the \"coagulative\" measurement laboratory tests. Confirmation of TTP would be made by a serum ADAMST13 activity level."
+				var str = "Our first step should be to get a CBC with differential, accompanied by a blood smear. The blood smear will be read (by a Hematologist) as sparse platelets among RBCs and some WBCs, that will most likely be normal. The platelets that do show up on the blood smear may or may not be damaged. In the case of TTP, platelets should not be damaged, but rather just low in number. A CBC with platelet count <50K starts to raise eyebrows for a possible case requiring platelet transfusion. Now would be the time to get a Type & Screen, and most would also tend towards ordering PT, PTT, and INR, or the \"coagulative\" measurement laboratory tests. Confirmation of TTP would be made by a serum ADAMST13 activity level.";
 
 				var result = autolinker.link( str );
 
 				expect( result ).toBe( str );
 			} );
 
+
+			it( "should not fail with an infinite loop for an input string with " +
+				"an emoji (although really the <3 might be the original problem - " +
+				"issue #165)",
+			function() {
+				var str = '-Que estupendos nos vemos <3#lapeorfoto #despedida2016 #dehoyoenhoyo #rabbit';
+
+				var result = autolinker.link( str );
+
+				expect( result ).toBe( str );
+			} );
 
 
 			it( "should NOT modify the email address with other tags when inside another anchor", function() {
