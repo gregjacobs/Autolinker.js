@@ -29,7 +29,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	htmlRegex : (function() {
 		var commentTagRegex = /!--([\s\S]+?)--/,
 		    tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
-		    attrNameRegex = /[^\s\0"'>\/=\x01-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
+		    attrNameRegex = /[^\s"'>\/=\x00-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
 		    attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 		    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
 
@@ -69,7 +69,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 							// Zero or more attributes following the tag name
 							'(?:',
-								'\\s*',                // any number of whitespace chars before an attribute
+								'(?:\\s+|\\b)',        // any number of whitespace chars before an attribute. NOTE: Using \s* here throws Chrome into an infinite loop for some reason, so using \s+|\b instead
 								nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
 							')*',
 

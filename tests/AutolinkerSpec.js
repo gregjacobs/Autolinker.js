@@ -1249,6 +1249,41 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should not fail with an infinite loop for these given input strings (Issue #160)", function() {
+				var inputStrings = [
+					'asdf ouefof<33we oeweofjojfew oeijwffejifjew ojiwjoiwefj iowjefojwe iofjw:)<33',
+					'<33<33<33<33<33<33<33<33<33<33',
+					'<33<33<33<33<33<33<33<33<33<33<33'
+				];
+
+				inputStrings.forEach( function( str ) {
+					expect( autolinker.link( str ) ).toBe( str );  // no links in these, just making sure they don't fail with 100% cpu and an infinite loop
+				} );
+			} );
+
+
+			it( "should not fail with an infinite loop for an input string with " +
+				"completely invalid HTML (issue #160)",
+			function() {
+				var result = autolinker.link(
+					'<US_Con_SL_RTNS@dell.com\n' +
+					'He gave me a 1-800 customer care number that I\'ve called twice.  The last time I called, about 3 weeks ago, the customer rep said he would request an expedited response. He gave me a reference number which is  925767619. Thankyou very much for looking into this.\n' +
+					'\n' +
+					'Ronald D Brigham\n' +
+					'brigham@mtnhome.com'
+				);
+
+				expect( result ).toBe( [
+					'<<a href="mailto:US_Con_SL_RTNS@dell.com">US_Con_SL_RTNS@dell.com</a>',
+					'He gave me a 1-800 customer care number that I\'ve called twice.  The last time I called, about 3 weeks ago, the customer rep said he would request an expedited response. He gave me a reference number which is  925767619. Thankyou very much for looking into this.',
+					'',
+					'Ronald D Brigham',
+					'<a href="mailto:brigham@mtnhome.com">brigham@mtnhome.com</a>'
+				].join( '\n' ) );
+			} );
+
+
+
 			it( "should NOT modify the email address with other tags when inside another anchor", function() {
 				var input = [
 					'<div>First name: Subin</div>',
