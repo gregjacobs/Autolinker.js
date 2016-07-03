@@ -64,7 +64,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	build : function( match ) {
 		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
-			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
+			attrs     : this.createAttrs( match.getType(), match.getAnchorHref(), match["getServiceName"] ? match["getServiceName"]() : null ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
 	},
@@ -75,17 +75,17 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   tag being generated.
 	 *
 	 * @protected
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
+	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
 	 *   match that an anchor tag is being generated for.
 	 * @param {String} anchorHref The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs : function( matchType, anchorHref ) {
+	createAttrs : function( matchType, anchorHref, serviceName ) {
 		var attrs = {
 			'href' : anchorHref  // we'll always have the `href` attribute
 		};
 
-		var cssClass = this.createCssClass( matchType );
+		var cssClass = this.createCssClass( matchType, serviceName );
 		if( cssClass ) {
 			attrs[ 'class' ] = cssClass;
 		}
@@ -103,19 +103,21 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * the `matchType` and the {@link #className} config.
 	 *
 	 * @private
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
+	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
 	 *   match that an anchor tag is being generated for.
 	 * @return {String} The CSS class string for the link. Example return:
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass : function( matchType ) {
+	createCssClass : function( matchType, serviceName ) {
 		var className = this.className;
 
 		if( !className )
 			return "";
 		else
-			return className + " " + className + "-" + matchType;  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag"
+			return className + " " +
+				className + "-" + matchType +
+				(matchType === 'mention' && serviceName ? " " + className + "-" + serviceName : "");  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag", or "myLink myLink-mention myLink-twitter"
 	},
 
 

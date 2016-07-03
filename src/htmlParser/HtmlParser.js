@@ -6,7 +6,7 @@
  * An HTML parser implementation which simply walks an HTML string and returns an array of
  * {@link Autolinker.htmlParser.HtmlNode HtmlNodes} that represent the basic HTML structure of the input string.
  *
- * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, effectively ignoring / "walking
+ * Autolinker uses this to only link URLs/emails/mentions within text nodes, effectively ignoring / "walking
  * around" HTML tags.
  */
 Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {

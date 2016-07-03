@@ -1,7 +1,7 @@
 {
   "name": "autolinker",
   "version": "0.27.0",
-  "description": "Utility to automatically link the URLs, email addresses, and Twitter handles in a given block of text/HTML",
+  "description": "Utility to automatically link the URLs, email addresses, and mentions (Twitter, Instagram) in a given block of text/HTML",
   "main": "dist/Autolinker.js",
   "files": [
     "dist"

@@ -1,11 +1,12 @@
 /*global Autolinker, _, describe, beforeEach, afterEach, it, expect, jasmine */
-describe( "Autolinker.matcher.Twitter", function() {
+describe( "Autolinker.matcher.Mention", function() {
 	var MatchChecker = Autolinker.match.MatchChecker,
 	    matcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Twitter( {
-			tagBuilder : new Autolinker.AnchorTagBuilder()
+		matcher = new Autolinker.matcher.Mention( {
+			tagBuilder : new Autolinker.AnchorTagBuilder(),
+			serviceName: 'twitter'
 		} );
 	} );
 
@@ -24,7 +25,7 @@ describe( "Autolinker.matcher.Twitter", function() {
 			var matches = matcher.parseMatches( '@asdf' );
 
 			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectTwitterMatch( matches[ 0 ], 'asdf', 0 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 0 );
 		} );
 
 
@@ -32,7 +33,7 @@ describe( "Autolinker.matcher.Twitter", function() {
 			var matches = matcher.parseMatches( 'Hello @asdf my good friend' );
 
 			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectTwitterMatch( matches[ 0 ], 'asdf', 6 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 6 );
 		} );
 
 
@@ -40,7 +41,7 @@ describe( "Autolinker.matcher.Twitter", function() {
 			var matches = matcher.parseMatches( 'Hello @asdf' );
 
 			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectTwitterMatch( matches[ 0 ], 'asdf', 6 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 6 );
 		} );
 
 
@@ -48,8 +49,8 @@ describe( "Autolinker.matcher.Twitter", function() {
 			var matches = matcher.parseMatches( 'Talk to @asdf or @fdsa' );
 
 			expect( matches.length ).toBe( 2 );
-			MatchChecker.expectTwitterMatch( matches[ 0 ], 'asdf', 8 );
-			MatchChecker.expectTwitterMatch( matches[ 1 ], 'fdsa', 17 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 8 );
+			MatchChecker.expectMentionMatch( matches[ 1 ], 'twitter', 'fdsa', 17 );
 		} );
 
 
@@ -57,7 +58,31 @@ describe( "Autolinker.matcher.Twitter", function() {
 			var matches = matcher.parseMatches( 'Hello (@asdf)' );
 
 			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectTwitterMatch( matches[ 0 ], 'asdf', 7 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 7 );
+		} );
+
+
+		it( 'an Instagram username with period not at boundaries should be parsed correctly', function() {
+			var instagramMatcher = new Autolinker.matcher.Mention( {
+				tagBuilder : new Autolinker.AnchorTagBuilder(),
+				serviceName: 'instagram'
+			} );
+			var matches = instagramMatcher.parseMatches( 'Hello (@as.df)' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'instagram', 'as.df', 7 );
+		} );
+
+
+		it( 'an Instagram username with period at end of string should ignore period', function() {
+			var instagramMatcher = new Autolinker.matcher.Mention( {
+				tagBuilder : new Autolinker.AnchorTagBuilder(),
+				serviceName: 'instagram'
+			} );
+			var matches = instagramMatcher.parseMatches( 'Hello (@asdf.)' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'instagram', 'asdf', 7 );
 		} );
 
 	} );

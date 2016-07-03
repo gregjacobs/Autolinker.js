@@ -8,7 +8,7 @@
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+ *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
@@ -22,8 +22,8 @@
  *                 case 'email' :
  *                     console.log( "email: ", match.getEmail() );
  *
- *                 case 'twitter' :
- *                     console.log( "twitter: ", match.getTwitterHandle() );
+ *                 case 'mention' :
+ *                     console.log( "mention: ", match.getMention() );
  *             }
  *         }
  *     } );

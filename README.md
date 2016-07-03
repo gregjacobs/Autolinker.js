@@ -14,7 +14,7 @@ So, this utility attempts to handle everything. It:
 - Will properly handle URLs with query parameters or a named anchor (i.e. hash)
 - Will autolink email addresses.
 - Will autolink phone numbers.
-- Will autolink Twitter handles.
+- Will autolink mentions (Twitter, Instagram).
 - Will autolink hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that
@@ -109,66 +109,71 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   hashtags should be truncated to inside the text of a link. If the match is
   over the number of characters, it will be truncated to this length by
   replacing the end of the string with a two period ellipsis ('..').<br /><br />
-  
+
   Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
   to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
-  
-  In the object form, both `length` and `location` may be specified to perform 
-  truncation. Available options for `location` are: 'end' (default), 'middle', 
-  or 'smart'. Example usage: 
-  
+
+  In the object form, both `length` and `location` may be specified to perform
+  truncation. Available options for `location` are: 'end' (default), 'middle',
+  or 'smart'. Example usage:
+
     ```javascript
     truncate: { length: 32, location: 'middle' }
     ```
-  
-  The 'smart' truncation option is for URLs where the algorithm attempts to 
-  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme, 
-  hash, etc.) before trying to find a good point to insert the ellipsis if it is 
-  still too long. For details, see source code of: 
+
+  The 'smart' truncation option is for URLs where the algorithm attempts to
+  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme,
+  hash, etc.) before trying to find a good point to insert the ellipsis if it is
+  still too long. For details, see source code of:
   [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.truncate.TruncateSmart)
 - [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
   A CSS class name to add to the generated anchor tags. This class will be added
-  to all links, as well as this class plus "url"/"email"/"phone"/"twitter"/"hashtag"
-  suffixes for styling url/email/phone/twitter/hashtag links differently.
+  to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
+  suffixes for styling url/email/phone/hashtag/mention links differently.
 
   For example, if this config is provided as "myLink", then:
 
   1) URL links will have the CSS classes: "myLink myLink-url"<br />
   2) Email links will have the CSS classes: "myLink myLink-email"<br />
   3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
-  4) Twitter links will have the CSS classes: "myLink myLink-twitter"<br />
+  4) Twitter links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
+  5) Instagram links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 
 - [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
-  
+
   This option also accepts an Object form with 3 properties, to allow for more
   customization of what exactly gets linked. All default to `true`:
-   
+
     - schemeMatches (Boolean): `true` to match URLs found prefixed with a scheme,
       i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
       prevent these types of matches.
     - wwwMatches (Boolean): `true` to match urls found prefixed with `'www.'`,
-      i.e. `www.google.com`. `false` to prevent these types of matches. Note 
-      that if the URL had a prefixed scheme, and `schemeMatches` is true, it 
+      i.e. `www.google.com`. `false` to prevent these types of matches. Note
+      that if the URL had a prefixed scheme, and `schemeMatches` is true, it
       will still be linked.
     - tldMatches: `true` to match URLs with known top level domains (.com, .net,
-      etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`, 
+      etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`,
       `asdf.org/?page=1`, etc. `false` to prevent these types of matches.
       <br />
-      
+
   Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
-    
+
 - [email](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-email) : Boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
   email addresses. Defaults to `true`.<br /><br />
 - [phone](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-phone) : Boolean<br />
   `true` to have phone numbers auto-linked, `false` to skip auto-linking of
   phone numbers. Defaults to `true`.<br /><br />
-- [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) : Boolean<br />
+- [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) (deprecated) : Boolean<br />
   `true` to have Twitter handles auto-linked, `false` to skip auto-linking of
   Twitter handles. Defaults to `true`.<br /><br />
+- [mention](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-mention) : String<br />
+  A string for the service name to have mentions (@username) auto-linked to. Supported
+  values at this time are 'twitter', and 'instagram'. Pass `false` to skip
+  auto-linking of mentions. Overrides `twitter` parameter. Defaults to `twitter`.<br /><br />
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
   A string for the service name to have hashtags auto-linked to. Supported
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
@@ -231,7 +236,7 @@ individual basis, based on the return from this function.
 #### Full example, for purposes of documenting the API:
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and Hashtags
+var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
 var linkedText = Autolinker.link( input, {
     replaceFn : function( autolinker, match ) {
@@ -241,7 +246,7 @@ var linkedText = Autolinker.link( input, {
         switch( match.getType() ) {
             case 'url' :
                 console.log( "url: ", match.getUrl() );
-                
+
                 return true;  // let Autolinker perform its normal anchor tag replacement
 
             case 'email' :
@@ -259,10 +264,11 @@ var linkedText = Autolinker.link( input, {
 
                 return '<a href="http://newplace.to.link.phone.numbers.to/">' + match.getNumber() + '</a>';
 
-            case 'twitter' :
-                console.log( "Twitter Handle: ", match.getTwitterHandle() );
+            case 'mention' :
+                console.log( "Mention: ", match.getMention() );
+                console.log( "Mention Service Name: ", match.getServiceName() );
 
-                return '<a href="http://newplace.to.link.twitter.handles.to/">' + match.getTwitterHandle() + '</a>';
+                return '<a href="http://newplace.to.link.mention.handles.to/">' + match.getMention() + '</a>';
 
             case 'hashtag' :
                 console.log( "Hashtag: ", match.getHashtag() );
@@ -276,13 +282,13 @@ var linkedText = Autolinker.link( input, {
 #### Modifying the default generated anchor tag
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Twitter Handles, and Hashtags
+var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
 var linkedText = Autolinker.link( input, {
     replaceFn : function( autolinker, match ) {
         console.log( "href = ", match.getAnchorHref() );
         console.log( "text = ", match.getAnchorText() );
-        
+
         var tag = match.buildTag();         // returns an `Autolinker.HtmlTag` instance for an <a> tag
         tag.setAttr( 'rel', 'nofollow' );   // adds a 'rel' attribute
         tag.addClass( 'external-link' );    // adds a CSS class
