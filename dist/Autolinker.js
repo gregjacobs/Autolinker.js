@@ -53,12 +53,12 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Twitter Handle/Hashtag match that is
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram) match that is
  * encountered.
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Twitter Handles, and Hashtags
+ *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
@@ -96,17 +96,17 @@
  *
  *                     return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
  *
- *                 case 'twitter' :
- *                     var twitterHandle = match.getTwitterHandle();
- *                     console.log( twitterHandle );
- *
- *                     return '<a href="http://newplace.to.link.twitter.handles.to/">' + twitterHandle + '</a>';
- *
  *                 case 'hashtag' :
  *                     var hashtag = match.getHashtag();
  *                     console.log( hashtag );
  *
  *                     return '<a href="http://newplace.to.link.hashtag.handles.to/">' + hashtag + '</a>';
+ *
+ *                 case 'mention' :
+ *                     var mention = match.getMention();
+ *                     console.log( mention );
+ *
+ *                     return '<a href="http://newplace.to.link.mention.to/">' + mention + '</a>';
  *             }
  *         }
  *     } );
@@ -136,8 +136,14 @@ var Autolinker = function( cfg ) {
 	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
 	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
 	this.hashtag = cfg.hashtag || false;
+	this.mention = cfg.mention;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
+
+	// if mention is undefined, fallback to twitter parameter for backwards compatibility
+	if (typeof this.mention === 'undefined' && this.twitter === true) {
+		this.mention = 'twitter';
+	}
 
 	// Validate the value of the `hashtag` cfg.
 	var hashtag = this.hashtag;
@@ -158,7 +164,7 @@ var Autolinker = function( cfg ) {
 
 /**
  * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
- * and Hashtags found in the given chunk of HTML. Does not link URLs found
+ * Hashtags, and Mentions found in the given chunk of HTML. Does not link URLs found
  * within HTML tags.
  *
  * For instance, if given the text: `You should go to http://www.yahoo.com`,
@@ -172,7 +178,7 @@ var Autolinker = function( cfg ) {
  * @static
  * @param {String} textOrHtml The HTML or text to find matches within (depending
  *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
- *   and {@link #hashtag} options are enabled).
+ *   {@link #hashtag}, and {@link #mention} options are enabled).
  * @param {Object} [options] Any of the configuration options for the Autolinker
  *   class, specified in an Object (map). See the class description for an
  *   example call.
@@ -256,6 +262,17 @@ Autolinker.prototype = {
 	 */
 
 	/**
+	 * @cfg {String} mention
+	 *
+	 * A string for the service name to have mentions (ex: "@myuser")
+	 * auto-linked to. The currently supported values are:
+	 *
+	 * - 'twitter'
+	 * - 'instagram'
+	 *
+	 */
+
+	/**
 	 * @cfg {Boolean} [newWindow=true]
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
@@ -321,15 +338,15 @@ Autolinker.prototype = {
 	 *
 	 * A CSS class name to add to the generated links. This class will be added
 	 * to all links, as well as this class plus match suffixes for styling
-	 * url/email/phone/twitter/hashtag links differently.
+	 * url/email/phone/hashtag/mention links differently.
 	 *
 	 * For example, if this config is provided as "myLink", then:
 	 *
 	 * - URL links will have the CSS classes: "myLink myLink-url"
 	 * - Email links will have the CSS classes: "myLink myLink-email", and
-	 * - Twitter links will have the CSS classes: "myLink myLink-twitter"
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
+	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-<type>" where type is "instagram"/"twitter"
 	 */
 
 	/**
@@ -448,7 +465,7 @@ Autolinker.prototype = {
 	 *
 	 * @param {String} textOrHtml The HTML or text to find matches within
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
-	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
+	 *   {@link #hashtag}, and {@link #mention} options are enabled).
 	 * @return {Autolinker.match.Match[]} The array of Matches found in the
 	 *   given input `textOrHtml`.
 	 */
@@ -538,7 +555,7 @@ Autolinker.prototype = {
 		if( !this.hashtag ) remove( matches, function( match ) { return match.getType() === 'hashtag'; } );
 		if( !this.email )   remove( matches, function( match ) { return match.getType() === 'email'; } );
 		if( !this.phone )   remove( matches, function( match ) { return match.getType() === 'phone'; } );
-		if( !this.twitter ) remove( matches, function( match ) { return match.getType() === 'twitter'; } );
+		if( !this.mention ) remove( matches, function( match ) { return match.getType() === 'mention'; } );
 		if( !this.urls.schemeMatches ) {
 			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'scheme'; } );
 		}
@@ -565,8 +582,8 @@ Autolinker.prototype = {
 	 *
 	 * @private
 	 * @param {String} text The text to find matches within (depending on if the
-	 *   {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter}, and
-	 *   {@link #hashtag} options are enabled). This must be a non-HTML string.
+	 *   {@link #urls}, {@link #email}, {@link #phone},
+	 *   {@link #hashtag}, and {@link #mention} options are enabled). This must be a non-HTML string.
 	 * @param {Number} [offset=0] The offset of the text node within the
 	 *   original string. This is used when parsing with the {@link #parse}
 	 *   method to generate correct offsets within the {@link Autolinker.match.Match}
@@ -597,8 +614,8 @@ Autolinker.prototype = {
 
 
 	/**
-	 * Automatically links URLs, Email addresses, Phone numbers, Twitter
-	 * handles, and Hashtags found in the given chunk of HTML. Does not link
+	 * Automatically links URLs, Email addresses, Phone numbers, Hashtags,
+	 * and Mentions (Twitter, Instagram) found in the given chunk of HTML. Does not link
 	 * URLs found within HTML tags.
 	 *
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`,
@@ -611,8 +628,7 @@ Autolinker.prototype = {
 	 * in anchor (&lt;a&gt;) tags.
 	 *
 	 * @param {String} textOrHtml The HTML or text to autolink matches within
-	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
-	 *   {@link #twitter}, and {@link #hashtag} options are enabled).
+	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #hashtag}, and {@link #mention} options are enabled).
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link : function( textOrHtml ) {
@@ -707,7 +723,7 @@ Autolinker.prototype = {
 				new matchersNs.Hashtag( { tagBuilder: tagBuilder, serviceName: this.hashtag } ),
 				new matchersNs.Email( { tagBuilder: tagBuilder } ),
 				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
-				new matchersNs.Twitter( { tagBuilder: tagBuilder } ),
+				new matchersNs.Mention( { tagBuilder: tagBuilder, serviceName: this.mention } ),
 				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix } )
 			];
 
@@ -1484,7 +1500,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	build : function( match ) {
 		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
-			attrs     : this.createAttrs( match.getType(), match.getAnchorHref() ),
+			attrs     : this.createAttrs( match.getType(), match.getAnchorHref(), match["getServiceName"] ? match["getServiceName"]() : null ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
 	},
@@ -1495,17 +1511,17 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   tag being generated.
 	 *
 	 * @protected
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
+	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
 	 *   match that an anchor tag is being generated for.
 	 * @param {String} anchorHref The href for the anchor tag.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs : function( matchType, anchorHref ) {
+	createAttrs : function( matchType, anchorHref, serviceName ) {
 		var attrs = {
 			'href' : anchorHref  // we'll always have the `href` attribute
 		};
 
-		var cssClass = this.createCssClass( matchType );
+		var cssClass = this.createCssClass( matchType, serviceName );
 		if( cssClass ) {
 			attrs[ 'class' ] = cssClass;
 		}
@@ -1523,19 +1539,21 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * the `matchType` and the {@link #className} config.
 	 *
 	 * @private
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"} matchType The type of
+	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
 	 *   match that an anchor tag is being generated for.
 	 * @return {String} The CSS class string for the link. Example return:
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass : function( matchType ) {
+	createCssClass : function( matchType, serviceName ) {
 		var className = this.className;
 
 		if( !className )
 			return "";
 		else
-			return className + " " + className + "-" + matchType;  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag"
+			return className + " " +
+				className + "-" + matchType +
+				(matchType === 'mention' && serviceName ? " " + className + "-" + serviceName : "");  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag", or "myLink myLink-mention myLink-twitter"
 	},
 
 
@@ -1594,7 +1612,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
  * An HTML parser implementation which simply walks an HTML string and returns an array of
  * {@link Autolinker.htmlParser.HtmlNode HtmlNodes} that represent the basic HTML structure of the input string.
  *
- * Autolinker uses this to only link URLs/emails/Twitter handles within text nodes, effectively ignoring / "walking
+ * Autolinker uses this to only link URLs/emails/mentions within text nodes, effectively ignoring / "walking
  * around" HTML tags.
  */
 Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
@@ -1843,6 +1861,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @abstract
@@ -2091,7 +2110,7 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+ *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( autolinker, match ) {
@@ -2105,8 +2124,8 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
  *                 case 'email' :
  *                     console.log( "email: ", match.getEmail() );
  *
- *                 case 'twitter' :
- *                     console.log( "twitter: ", match.getTwitterHandle() );
+ *                 case 'mention' :
+ *                     console.log( "mention: ", match.getMention() );
  *             }
  *         }
  *     } );
@@ -2236,6 +2255,7 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.match.Email
@@ -2511,19 +2531,26 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 
 /*global Autolinker */
 /**
- * @class Autolinker.match.Twitter
+ * @class Autolinker.match.Mention
  * @extends Autolinker.match.Match
  *
- * Represents a Twitter match found in an input string which should be Autolinked.
+ * Represents a Mention match found in an input string which should be Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
+Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
-	 * @cfg {String} twitterHandle (required)
+	 * @cfg {String} serviceName
 	 *
-	 * The Twitter handle that was matched, without the '@' character.
+	 * The service to point mention matches to. See {@link Autolinker#mention}
+	 * for available values.
+	 */
+
+	/**
+	 * @cfg {String} mention (required)
+	 *
+	 * The Mention that was matched, without the '@' character.
 	 */
 
 
@@ -2532,12 +2559,14 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg) {
+	constructor : function( cfg ) {
 		Autolinker.match.Match.prototype.constructor.call( this, cfg );
 
-		if( !cfg.twitterHandle ) throw new Error( '`twitterHandle` cfg required' );
+		if( !cfg.serviceName ) throw new Error( '`serviceName` cfg required' );
+		if( !cfg.mention ) throw new Error( '`mention` cfg required' );
 
-		this.twitterHandle = cfg.twitterHandle;
+		this.mention = cfg.mention;
+		this.serviceName = cfg.serviceName;
 	},
 
 
@@ -2547,17 +2576,38 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getType : function() {
-		return 'twitter';
+		return 'mention';
 	},
 
 
 	/**
-	 * Returns the twitter handle, without the '@' character.
+	 * Returns the mention, without the '@' character.
+	 *
+	 * @return {String}
+	 */
+	getMention : function() {
+		return this.mention;
+	},
+
+
+	/**
+	 * For backwards compatibility, returns twitter handle
 	 *
 	 * @return {String}
 	 */
 	getTwitterHandle : function() {
-		return this.twitterHandle;
+		return this.getServiceName() === 'twitter' ? this.mention : null;
+	},
+
+
+	/**
+	 * Returns the configured {@link #serviceName} to point the mention to.
+	 * Ex: 'instagram', 'twitter'.
+	 *
+	 * @return {String}
+	 */
+	getServiceName : function() {
+		return this.serviceName;
 	},
 
 
@@ -2567,7 +2617,15 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorHref : function() {
-		return 'https://twitter.com/' + this.twitterHandle;
+		switch( this.serviceName ) {
+			case 'twitter' :
+				return 'https://twitter.com/' + this.mention;
+			case 'instagram' :
+				return 'https://instagram.com/' + this.mention;
+
+			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+				throw new Error( 'Unknown service name to point mention to: ', this.serviceName );
+		}
 	},
 
 
@@ -2577,10 +2635,11 @@ Autolinker.match.Twitter = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @return {String}
 	 */
 	getAnchorText : function() {
-		return '@' + this.twitterHandle;
+		return '@' + this.mention;
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.match.Url
@@ -3046,22 +3105,25 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 } );
 /*global Autolinker */
 /**
- * @class Autolinker.matcher.Twitter
+ * @class Autolinker.matcher.Mention
  * @extends Autolinker.matcher.Matcher
  *
  * Matcher to find/replace username matches in an input string.
  */
-Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+Autolinker.matcher.Mention = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * The regular expression to match username handles. Example match:
+	 * Hash of regular expression to match username handles. Example match:
 	 *
 	 *     @asdf
 	 *
 	 * @private
-	 * @property {RegExp} matcherRegex
+	 * @property {Object} matcherRegexes
 	 */
-	matcherRegex : new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
+	matcherRegexes : {
+		"twitter": new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
+		"instagram": new RegExp( '@[_.' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,50}', 'g' )
+	},
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -3076,14 +3138,31 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 
 
 	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
+
+		this.serviceName = cfg.serviceName;
+	},
+
+
+	/**
 	 * @inheritdoc
 	 */
 	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
+		var matcherRegex = this.matcherRegexes[this.serviceName],
 		    nonWordCharRegex = this.nonWordCharRegex,
+		    serviceName = this.serviceName,
 		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
+
+		if (!matcherRegex) {
+			return matches;
+		}
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var offset = match.index,
@@ -3093,14 +3172,15 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not an email
 			// address), then it is a username match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				var matchedText = match[ 0 ],
-				    twitterHandle = match[ 0 ].slice( 1 );  // strip off the '@' character at the beginning
+				var matchedText = match[ 0 ].replace(/\.+$/g, ''), // strip off trailing .
+				    mention = matchedText.slice( 1 );  // strip off the '@' character at the beginning
 
-				matches.push( new Autolinker.match.Twitter( {
+				matches.push( new Autolinker.match.Mention( {
 					tagBuilder    : tagBuilder,
 					matchedText   : matchedText,
 					offset        : offset,
-					twitterHandle : twitterHandle
+					serviceName   : serviceName,
+					mention       : mention
 				} ) );
 			}
 		}
@@ -3109,6 +3189,7 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.matcher.Url

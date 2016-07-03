@@ -8,7 +8,7 @@ var packageJson = JSON.parse(Npm.require("fs").readFileSync('package.json'));
 
 Package.describe({
 	name: packageName,
-	summary: "Autolinker.js (official) - Automatically Link URLs, Email Addresses, Phone Numbers, Twitter handles, and Hashtags in a given block of text/HTML",
+	summary: "Autolinker.js (official) - Automatically Link URLs, Email Addresses, Phone Numbers, Mentions (Twitter, Instagram), and Hashtags in a given block of text/HTML",
 	version: packageJson.version,
 	git: "https://github.com/gregjacobs/Autolinker.js.git"
 });

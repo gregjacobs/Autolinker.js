@@ -59,21 +59,24 @@ Autolinker.match.MatchChecker = {
 		expect( match.getNumber() ).toBe( number );
 		expect( match.getOffset() ).toBe( offset );
 	},
-
+	
 
 	/**
-	 * Expects a {@link Autolinker.match.Twitter Twitter} match.
+	 * Expects a {@link Autolinker.match.Mention Mention} match.
 	 *
-	 * @param {Autolinker.match.Twitter} match The Match object to check.
-	 * @param {String} twitterHandle The Twitter handle to expect, without the
+	 * @param {Autolinker.match.Mention} match The Match object to check.
+	 * @param {String} serviceName The service name to expect of where to direct
+	 *   clicks to the mention to. Ex: 'twitter', 'instagram'.
+	 * @param {String} mention The mention to expect, without the
 	 *   prefixed '@' character.
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectTwitterMatch : function( match, twitterHandle, offset ) {
-		this.expectMatchType( match, 'Twitter' );
+	expectMentionMatch : function( match, serviceName, mention, offset ) {
+		this.expectMatchType( match, 'Mention' );
 
-		expect( match.getTwitterHandle() ).toBe( twitterHandle );
+		expect( match.getServiceName() ).toBe( serviceName );
+		expect( match.getMention() ).toBe( mention );
 		expect( match.getOffset() ).toBe( offset );
 	},
 
