@@ -136,6 +136,32 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 
 
 	/**
+	 * Returns the CSS class suffix(es) for this match.
+	 *
+	 * A CSS class suffix is appended to the {@link Autolinker#className} in
+	 * the {@link AnchorTagBuilder} when a match is translated into an anchor
+	 * tag.
+	 *
+	 * For example, if {@link Autolinker#className} was configured as 'myLink',
+	 * and this method returns `[ 'url' ]`, the final class name of the element
+	 * will become: 'myLink myLink-url'.
+	 *
+	 * The match may provide multiple CSS class suffixes to be appended to the
+	 * {@link Autolinker#className} in order to facilitate better styling
+	 * options for different match criteria. See {@link Autolinker.match.Mention}
+	 * for an example.
+	 *
+	 * By default, this method returns a single array with the match's
+	 * {@link #getType type} name, but may be overridden by subclasses.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		return [ this.getType() ];
+	},
+
+
+	/**
 	 * Builds and returns an {@link Autolinker.HtmlTag} instance based on the
 	 * Match.
 	 *

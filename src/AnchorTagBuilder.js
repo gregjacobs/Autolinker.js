@@ -49,7 +49,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
+		cfg = cfg || {};
+		
+		this.newWindow = cfg.newWindow;
+		this.truncate = cfg.truncate;
+		this.className = cfg.className;
 	},
 
 
@@ -64,7 +68,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	build : function( match ) {
 		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
-			attrs     : this.createAttrs( match.getType(), match.getAnchorHref(), match["getServiceName"] ? match["getServiceName"]() : null ),
+			attrs     : this.createAttrs( match ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
 	},
@@ -75,17 +79,16 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   tag being generated.
 	 *
 	 * @protected
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
-	 *   match that an anchor tag is being generated for.
-	 * @param {String} anchorHref The href for the anchor tag.
+	 * @param {Autolinker.match.Match} match The Match instance to generate an
+	 *   anchor tag from.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs : function( matchType, anchorHref, serviceName ) {
+	createAttrs : function( match ) {
 		var attrs = {
-			'href' : anchorHref  // we'll always have the `href` attribute
+			'href' : match.getAnchorHref()  // we'll always have the `href` attribute
 		};
 
-		var cssClass = this.createCssClass( matchType, serviceName );
+		var cssClass = this.createCssClass( match );
 		if( cssClass ) {
 			attrs[ 'class' ] = cssClass;
 		}
@@ -102,22 +105,37 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * Creates the CSS class that will be used for a given anchor tag, based on
 	 * the `matchType` and the {@link #className} config.
 	 *
+	 * Example returns:
+	 *
+	 * - ""                                      // no {@link #className}
+	 * - "myLink myLink-url"                     // url match
+	 * - "myLink myLink-email"                   // email match
+	 * - "myLink myLink-phone"                   // phone match
+	 * - "myLink myLink-hashtag"                 // hashtag match
+	 * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
+	 *
 	 * @private
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
-	 *   match that an anchor tag is being generated for.
+	 * @param {Autolinker.match.Match} match The Match instance to generate an
+	 *   anchor tag from.
 	 * @return {String} The CSS class string for the link. Example return:
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass : function( matchType, serviceName ) {
+	createCssClass : function( match ) {
 		var className = this.className;
 
-		if( !className )
+		if( !className ) {
 			return "";
-		else
-			return className + " " +
-				className + "-" + matchType +
-				(matchType === 'mention' && serviceName ? " " + className + "-" + serviceName : "");  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag", or "myLink myLink-mention myLink-twitter"
+
+		} else {
+			var returnClasses = [ className ],
+				cssClassSuffixes = match.getCssClassSuffixes();
+
+			for( var i = 0, len = cssClassSuffixes.length; i < len; i++ ) {
+				returnClasses.push( className + '-' + cssClassSuffixes[ i ] );
+			}
+			return returnClasses.join( ' ' );
+		}
 	},
 
 

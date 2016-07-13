@@ -107,6 +107,24 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 	getAnchorText : function() {
 		return '@' + this.mention;
+	},
+
+
+	/**
+	 * Returns the CSS class suffixes that should be used on a tag built with
+	 * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+	 * details.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		var cssClassSuffixes = Autolinker.match.Match.prototype.getCssClassSuffixes.call( this ),
+		    serviceName = this.getServiceName();
+
+		if( serviceName ) {
+			cssClassSuffixes.push( serviceName );
+		}
+		return cssClassSuffixes;
 	}
 
 } );
