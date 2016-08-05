@@ -3450,6 +3450,13 @@ Autolinker.matcher.UrlMatchValidator = {
 	 */
 	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z\u00C0-\u017F]/,
 
+	/**
+	 * Regex to determine if the string is a valid IP address
+	 *
+	 * @private
+	 * @property {RegExp} ipRegex
+	 */
+	ipRegex: /[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?/,
 
 	/**
 	 * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
@@ -3480,7 +3487,9 @@ Autolinker.matcher.UrlMatchValidator = {
 		if(
 			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||    // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-			this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch )  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+			(this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+			 !this.isValidIpAddress( urlMatch ) // Except if it's an IP address
+			)
 		) {
 			return false;
 		}
@@ -3488,6 +3497,13 @@ Autolinker.matcher.UrlMatchValidator = {
 		return true;
 	},
 
+
+	isValidIpAddress : function ( uriSchemeMatch ) {
+		var newRegex = new RegExp(this.hasFullProtocolRegex.source + this.ipRegex.source);
+		var uriScheme = uriSchemeMatch.match( newRegex );
+
+		return uriScheme !== null;
+	},
 
 	/**
 	 * Determines if the URI scheme is a valid scheme to be autolinked. Returns
