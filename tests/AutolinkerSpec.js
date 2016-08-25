@@ -142,6 +142,18 @@ describe( "Autolinker", function() {
 				} );
 
 
+				it( 'should automatically link URLs with IP addresses', function() {
+					var result = autolinker.link( 'http://66.102.7.147' );
+					expect( result ).toBe( '<a href="http://66.102.7.147">66.102.7.147</a>' );
+				} );
+
+
+				it( 'should automatically link URLs with IP addresses and a port number', function() {
+					var result = autolinker.link( 'http://10.0.0.108:9000/' );
+					expect( result ).toBe( '<a href="http://10.0.0.108:9000/">10.0.0.108:9000</a>' );
+				} );
+
+
 				it( "should automatically link capitalized URLs", function() {
 					var result = autolinker.link( "Joe went to HTTP://WWW.YAHOO.COM" );
 					expect( result ).toBe( 'Joe went to <a href="HTTP://WWW.YAHOO.COM">YAHOO.COM</a>' );
