@@ -61,6 +61,25 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 7 );
 		} );
 
+		it( 'should match an IP address', function() {
+			var matches = matcher.parseMatches( 'http://127.0.0.1');
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
+		});
+
+		it( 'should not match an invalid IP address', function() {
+			var matches = matcher.parseMatches( 'http://127.0.0.');
+
+			expect( matches.length ).toBe( 0 );
+		});
+
+		it( 'should not match an URL which does not respect the IP protocol', function() {
+			var matches = matcher.parseMatches( 'git:1.0');
+
+			expect( matches.length ).toBe( 0 );
+		});
+
 
 		describe( 'protocol-relative URLs', function() {
 
