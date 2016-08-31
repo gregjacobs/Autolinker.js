@@ -80,6 +80,12 @@ describe( "Autolinker.matcher.Url", function() {
 			expect( matches.length ).toBe( 0 );
 		});
 
+		it( 'should not match an IP address with too much numbers', function() {
+			var matches = matcher.parseMatches( 'http://1.2.3.4.5' );
+
+			expect( matches.length ).toBe( 0 );
+		});
+
 
 		describe( 'protocol-relative URLs', function() {
 
