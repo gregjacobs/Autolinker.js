@@ -48,7 +48,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} ipRegex
 	 */
-	ipRegex: /[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?/,
+	ipRegex: /[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?(:[0-9]*)?\/?$/,
 
 	/**
 	 * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
