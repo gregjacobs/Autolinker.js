@@ -9,14 +9,14 @@
  * found.
  *
  * Normally this class is instantiated, configured, and used internally by an
- * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}
- * to create {@link Autolinker.HtmlTag HtmlTag} instances which may be modified
- * before returning from the {@link Autolinker#replaceFn replaceFn}. For
- * example:
+ * {@link Autolinker} instance, but may actually be used indirectly in a
+ * {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag}
+ * instances which may be modified before returning from the
+ * {@link Autolinker#replaceFn replaceFn}. For example:
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
- *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+ *         replaceFn : function( match ) {
+ *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
  *             tag.setAttr( 'rel', 'nofollow' );
  *
  *             return tag;
@@ -50,7 +50,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 */
 	constructor : function( cfg ) {
 		cfg = cfg || {};
-		
+
 		this.newWindow = cfg.newWindow;
 		this.truncate = cfg.truncate;
 		this.className = cfg.className;

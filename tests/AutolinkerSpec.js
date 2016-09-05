@@ -1987,13 +1987,46 @@ describe( "Autolinker", function() {
 
 		describe( "`replaceFn` option", function() {
 			var returnTrueFn = function() { return true; },
-			    returnFalseFn = function() { return false; };
+			    returnFalseFn = function() { return false; },
+			    replaceFnSpy;
+
+			beforeEach( function() {
+				replaceFnSpy = jasmine.createSpy( 'replaceFnSpy' );
+			} );
+
+
+			it( "by default, should be called with with the `Autolinker` instance " +
+				"as the context object (`this` reference)",
+			function() {
+				var replaceFnAutolinker = new Autolinker( {
+					replaceFn: replaceFnSpy
+				} );
+				replaceFnAutolinker.link( "asdf.com" );  // will call the `replaceFn`
+
+				expect( replaceFnSpy ).toHaveBeenCalled();
+				expect( replaceFnSpy.calls.first().object ).toBe( replaceFnAutolinker );
+			} );
+
+
+			it( "when provided a `context` option, should be called with with " +
+				"that object as the context object (`this` reference)",
+			function() {
+				var contextObj = { prop: 'value' };
+				var replaceFnAutolinker = new Autolinker( {
+					replaceFn : replaceFnSpy,
+					context   : contextObj
+				} );
+				replaceFnAutolinker.link( "asdf.com" );  // will call the `replaceFn`
+
+				expect( replaceFnSpy ).toHaveBeenCalled();
+				expect( replaceFnSpy.calls.first().object ).toBe( contextObj );
+			} );
 
 
 			it( "should populate a UrlMatch object with the appropriate properties", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Website: asdf.com ", {  // purposeful trailing space
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( 'asdf.com' );
@@ -2008,7 +2041,7 @@ describe( "Autolinker", function() {
 			it( "should populate an EmailMatch object with the appropriate properties", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Email: asdf@asdf.com ", {  // purposeful trailing space
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( 'asdf@asdf.com' );
@@ -2024,7 +2057,7 @@ describe( "Autolinker", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Hashtag: #myHashtag ", {  // purposeful trailing space
 					hashtag: 'twitter',
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						replaceFnCallCount++;
 
 						expect( match.getType() ).toBe( 'hashtag' );
@@ -2040,11 +2073,12 @@ describe( "Autolinker", function() {
 			it( "should populate a TwitterMatch object with the appropriate properties", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
-					replaceFn : function( autolinker, match ) {
+					mention: 'twitter',
+					replaceFn : function( match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( '@myTwitter' );
-						expect( match.getTwitterHandle() ).toBe( 'myTwitter' );
+						expect( match.getMention() ).toBe( 'myTwitter' );
 					}
 				} );
 
@@ -2056,7 +2090,7 @@ describe( "Autolinker", function() {
 				var replaceFnCallCount = 0;
 				var result = Autolinker.link( "Mention: @myTwitter ", {  // purposeful trailing space
 					mention: 'twitter',
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( '@myTwitter' );
@@ -2122,7 +2156,7 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "Website: asdf.com", {
 					newWindow : false,
 
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						var tag = match.buildTag();
 						tag.setInnerHtml( 'asdf!' );  // just to check that we're replacing with the returned `tag` instance
 						return tag;
@@ -2137,7 +2171,7 @@ describe( "Autolinker", function() {
 				var result = Autolinker.link( "Website: asdf.com", {
 					newWindow : false,
 
-					replaceFn : function( autolinker, match ) {
+					replaceFn : function( match ) {
 						var tag = match.buildTag();
 						tag.addClass( 'test' );
 						tag.addClass( 'test2' );

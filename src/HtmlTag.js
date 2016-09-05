@@ -45,7 +45,7 @@
  * ## Example use within a {@link Autolinker#replaceFn replaceFn}
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance, configured with the Match's href and anchor text
  *             tag.setAttr( 'rel', 'nofollow' );
  *
@@ -60,7 +60,7 @@
  * ## Example use with a new tag for the replacement
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             var tag = new Autolinker.HtmlTag( {
  *                 tagName : 'button',
  *                 attrs   : { 'title': 'Load URL: ' + match.getAnchorHref() },

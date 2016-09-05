@@ -27,6 +27,11 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjaco
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
+## Breaking Changes from 0.x -> 1.x
+
+3. `replaceFn` option now called with just one argument: the `Match` 
+   object (previously was called with two arguments: `autolinker` and 
+   `match`)
 ## Installation
 
 #### Download
@@ -239,7 +244,7 @@ individual basis, based on the return from this function.
 var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
 var linkedText = Autolinker.link( input, {
-    replaceFn : function( autolinker, match ) {
+    replaceFn : function( match ) {
         console.log( "href = ", match.getAnchorHref() );
         console.log( "text = ", match.getAnchorText() );
 
@@ -285,7 +290,7 @@ var linkedText = Autolinker.link( input, {
 var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
 var linkedText = Autolinker.link( input, {
-    replaceFn : function( autolinker, match ) {
+    replaceFn : function( match ) {
         console.log( "href = ", match.getAnchorHref() );
         console.log( "text = ", match.getAnchorText() );
 
@@ -300,10 +305,9 @@ var linkedText = Autolinker.link( input, {
 ```
 
 
-The `replaceFn` is provided two arguments:
+The `replaceFn` is provided one argument:
 
-1. The [Autolinker](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker) instance that is performing replacements.
-2. An [Autolinker.match.Match](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.match.Match)
+1. An [Autolinker.match.Match](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.match.Match)
    object which details the match that is to be replaced.
 
 

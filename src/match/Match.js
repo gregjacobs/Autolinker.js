@@ -11,7 +11,7 @@
  *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
  *

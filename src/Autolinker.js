@@ -35,15 +35,15 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram) match that is
- * encountered.
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram)
+ * match that is encountered.
  *
  * For example:
  *
  *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
  *
@@ -52,7 +52,7 @@
  *                     console.log( "url: ", match.getUrl() );
  *
  *                     if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
- *                         var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+ *                         var tag = match.buildTag();  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
  *                         tag.setAttr( 'rel', 'nofollow' );
  *                         tag.addClass( 'external-link' );
  *
@@ -136,6 +136,7 @@ var Autolinker = function( cfg ) {
 	this.truncate = this.normalizeTruncateCfg( cfg.truncate );
 	this.className = cfg.className || '';
 	this.replaceFn = cfg.replaceFn || null;
+	this.context = cfg.context || this;
 
 	this.htmlParser = null;
 	this.matchers = null;
@@ -338,15 +339,23 @@ Autolinker.prototype = {
 	 *
 	 * See the class's description for usage.
 	 *
-	 * This function is called with the following parameters:
+	 * The `replaceFn` can be called with a different context object (`this`
+	 * reference) using the {@link #context} cfg.
 	 *
-	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may
-	 *   be used to retrieve child objects from (such as the instance's
-	 *   {@link #getTagBuilder tag builder}).
+	 * This function is called with the following parameter:
+	 *
 	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
 	 *   can be used to retrieve information about the match that the `replaceFn`
 	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
 	 *   for details.
+	 */
+
+	/**
+	 * @cfg {Object} context
+	 *
+	 * The context object (`this` reference) to call the `replaceFn` with.
+	 *
+	 * Defaults to this Autolinker instance.
 	 */
 
 
@@ -650,7 +659,7 @@ Autolinker.prototype = {
 		// Handle a custom `replaceFn` being provided
 		var replaceFnResult;
 		if( this.replaceFn ) {
-			replaceFnResult = this.replaceFn.call( this, this, match );  // Autolinker instance is the context, and the first arg
+			replaceFnResult = this.replaceFn.call( this.context, match );  // Autolinker instance is the context
 		}
 
 		if( typeof replaceFnResult === 'string' ) {
@@ -725,8 +734,8 @@ Autolinker.prototype = {
 	 * Autolinker would normally generate, and then allow for modifications before returning it. For example:
 	 *
 	 *     var html = Autolinker.link( "Test google.com", {
-	 *         replaceFn : function( autolinker, match ) {
-	 *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+	 *         replaceFn : function( match ) {
+	 *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
 	 *             tag.setAttr( 'rel', 'nofollow' );
 	 *
 	 *             return tag;
