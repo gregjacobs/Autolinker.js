@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.28.0
+ * 0.28.1
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -192,7 +192,7 @@ Autolinker.link = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '0.28.0';
+Autolinker.version = '0.28.1';
 
 
 Autolinker.prototype = {
