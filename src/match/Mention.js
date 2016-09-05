@@ -62,16 +62,6 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
-	 * For backwards compatibility, returns twitter handle
-	 *
-	 * @return {String}
-	 */
-	getTwitterHandle : function() {
-		return this.getServiceName() === 'twitter' ? this.mention : null;
-	},
-
-
-	/**
 	 * Returns the configured {@link #serviceName} to point the mention to.
 	 * Ex: 'instagram', 'twitter'.
 	 *

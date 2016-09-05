@@ -19,7 +19,7 @@ $( document ).ready( function() {
 	    urlsTldOption: LiveExample.Option,
 	    emailOption: LiveExample.Option,
 	    phoneOption: LiveExample.Option,
-	    twitterOption: LiveExample.Option,
+	    mentionOption: LiveExample.Option,
 	    hashtagOption: LiveExample.Option,
 
 	    newWindowOption: LiveExample.Option,
@@ -38,7 +38,7 @@ $( document ).ready( function() {
 		urlsTldOption = new CheckboxOption( { name: 'urls.tldMatches', description: 'TLD URLs', defaultValue: true } ).onChange( autolink );
 		emailOption = new CheckboxOption( { name: 'email', description: 'Email Addresses', defaultValue: true } ).onChange( autolink );
 		phoneOption = new CheckboxOption( { name: 'phone', description: 'Phone Numbers', defaultValue: true } ).onChange( autolink );
-		twitterOption = new CheckboxOption( { name: 'twitter', description: 'Twitter Handles', defaultValue: true } ).onChange( autolink );
+		mentionOption = new RadioOption( { name: 'twitter', description: 'Twitter Handles', options: [ false, 'twitter', 'instagram' ], defaultValue: false } ).onChange( autolink );
 		hashtagOption = new RadioOption( { name: 'hashtag', description: 'Hashtags', options: [ false, 'twitter', 'facebook', 'instagram' ], defaultValue: false } ).onChange( autolink );
 
 		newWindowOption = new CheckboxOption( { name: 'newWindow', description: 'Open in new window', defaultValue: true } ).onChange( autolink );
@@ -76,7 +76,7 @@ $( document ).ready( function() {
 			},
 			email       : emailOption.getValue(),
 			phone       : phoneOption.getValue(),
-			twitter     : twitterOption.getValue(),
+			mention     : mentionOption.getValue(),
 			hashtag     : hashtagOption.getValue(),
 
 			newWindow   : newWindowOption.getValue(),
@@ -100,7 +100,7 @@ $( document ).ready( function() {
 			`    },`,
 			`    email       : ${ optionsObj.email },`,
 			`    phone       : ${ optionsObj.phone },`,
-			`    twitter     : ${ optionsObj.twitter },`,
+			`    mention     : ${ optionsObj.mention },`,
 			`    hashtag     : ${ typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag },`,
 			``,
 			`    stripPrefix : ${ optionsObj.stripPrefix },`,

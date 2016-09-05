@@ -29,9 +29,21 @@ Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/]
 
 ## Breaking Changes from 0.x -> 1.x
 
+1. `twitter` option removed, replaced with `mention` (which accepts 'twitter' 
+   and 'instagram' values)
+2. Matching mentions (previously the `twitter` option) now defaults to
+   being turned off. Previously, Twitter handle matching was on by 
+   default.
 3. `replaceFn` option now called with just one argument: the `Match` 
    object (previously was called with two arguments: `autolinker` and 
    `match`)
+4. (Used inside the `replaceFn`) `TwitterMatch` replaced with 
+   `MentionMatch`, and `MentionMatch.getType()` now returns `'mention'` 
+   instead of `'twitter'`
+5. (Used inside the `replaceFn`) `TwitterMatch.getTwitterHandle()` -> 
+   `MentionMatch.getMention()`
+
+
 ## Installation
 
 #### Download
@@ -141,8 +153,8 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   1) URL links will have the CSS classes: "myLink myLink-url"<br />
   2) Email links will have the CSS classes: "myLink myLink-email"<br />
   3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
-  4) Twitter links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
-  5) Instagram links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
+  4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
+  5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 
 - [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
@@ -172,13 +184,10 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [phone](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-phone) : Boolean<br />
   `true` to have phone numbers auto-linked, `false` to skip auto-linking of
   phone numbers. Defaults to `true`.<br /><br />
-- [twitter](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-twitter) (deprecated) : Boolean<br />
-  `true` to have Twitter handles auto-linked, `false` to skip auto-linking of
-  Twitter handles. Defaults to `true`.<br /><br />
 - [mention](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-mention) : String<br />
   A string for the service name to have mentions (@username) auto-linked to. Supported
   values at this time are 'twitter', and 'instagram'. Pass `false` to skip
-  auto-linking of mentions. Overrides `twitter` parameter. Defaults to `twitter`.<br /><br />
+  auto-linking of mentions. Defaults to `false`.<br /><br />
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
   A string for the service name to have hashtags auto-linked to. Supported
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
@@ -235,7 +244,7 @@ autolinker.link( "Go to www.google.com" );
 ## Custom Replacement Function
 
 A custom replacement function ([replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn))
-may be provided to replace url/email/phone/Twitter handle/hashtag matches on an
+may be provided to replace url/email/phone/mention/hashtag matches on an
 individual basis, based on the return from this function.
 
 #### Full example, for purposes of documenting the API:

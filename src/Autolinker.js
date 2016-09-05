@@ -115,19 +115,19 @@ var Autolinker = function( cfg ) {
 
 	this.urls = this.normalizeUrlsCfg( cfg.urls );
 	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
-	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
 	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
 	this.hashtag = cfg.hashtag || false;
-	this.mention = cfg.mention;
+	this.mention = cfg.mention || false;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
 
-	// if mention is undefined, fallback to twitter parameter for backwards compatibility
-	if (typeof this.mention === 'undefined' && this.twitter === true) {
-		this.mention = 'twitter';
+	// Validate the value of the `mention` cfg
+	var mention = this.mention;
+	if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+		throw new Error( "invalid `mention` cfg - see docs" );
 	}
 
-	// Validate the value of the `hashtag` cfg.
+	// Validate the value of the `hashtag` cfg
 	var hashtag = this.hashtag;
 	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
@@ -218,13 +218,6 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Boolean} [twitter=true]
-	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked,
-	 * `false` if they should not be.
-	 */
-
-	/**
 	 * @cfg {Boolean} [phone=true]
 	 *
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
@@ -245,7 +238,7 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {String} mention
+	 * @cfg {String/Boolean} [mention=false]
 	 *
 	 * A string for the service name to have mentions (ex: "@myuser")
 	 * auto-linked to. The currently supported values are:
@@ -253,6 +246,7 @@ Autolinker.prototype = {
 	 * - 'twitter'
 	 * - 'instagram'
 	 *
+	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
 
 	/**

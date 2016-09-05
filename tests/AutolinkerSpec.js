@@ -36,9 +36,52 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should not throw for a valid service name", function() {
+			it( "should not throw for the valid service name 'twitter'", function() {
 				expect( function() {
 					new Autolinker( { hashtag: 'twitter' } );
+				} ).not.toThrow();
+			} );
+
+
+			it( "should not throw for the valid service name 'facebook'", function() {
+				expect( function() {
+					new Autolinker( { hashtag: 'facebook' } );
+				} ).not.toThrow();
+			} );
+
+
+			it( "should not throw for the valid service name 'instagram'", function() {
+				expect( function() {
+					new Autolinker( { hashtag: 'instagram' } );
+				} ).not.toThrow();
+			} );
+
+		} );
+
+
+		describe( '`mention` cfg', function() {
+
+			it( "should throw if `mention` is a value other than `false` or one of the valid service names", function() {
+				expect( function() {
+					new Autolinker( { mention: true } );  // `true` is an invalid value - must be a service name
+				} ).toThrowError( "invalid `mention` cfg - see docs" );
+
+				expect( function() {
+					new Autolinker( { mention: 'non-existent-service' } );
+				} ).toThrowError( "invalid `mention` cfg - see docs" );
+			} );
+
+
+			it( "should not throw for the valid service name 'twitter'", function() {
+				expect( function() {
+					new Autolinker( { mention: 'twitter' } );
+				} ).not.toThrow();
+			} );
+
+
+			it( "should not throw for the valid service name 'instagram'", function() {
+				expect( function() {
+					new Autolinker( { mention: 'instagram' } );
 				} ).not.toThrow();
 			} );
 
@@ -48,10 +91,12 @@ describe( "Autolinker", function() {
 
 
 	describe( "link() method", function() {
-		var autolinker;
+		var autolinker,
+		    twitterAutolinker;
 
 		beforeEach( function() {
 			autolinker = new Autolinker( { newWindow: false } );  // so that target="_blank" is not added to resulting autolinked URLs
+			twitterAutolinker = new Autolinker( { mention: 'twitter', newWindow: false } );
 		} );
 
 
@@ -867,64 +912,64 @@ describe( "Autolinker", function() {
 		} );
 
 
-		describe( "twitter handle linking", function() {
+		describe( "mention linking", function() {
 
 			it( "should automatically link a twitter handle which is the only thing in the string", function() {
-				var result = autolinker.link( "@joe" );
+				var result = twitterAutolinker.link( "@joe" );
 				expect( result ).toBe( '<a href="https://twitter.com/joe">@joe</a>' );
 			} );
 
 
 			it( "should automatically link a twitter handle with underscores in it", function() {
-				var result = autolinker.link( "@joe_the_man12" );
+				var result = twitterAutolinker.link( "@joe_the_man12" );
 				expect( result ).toBe( '<a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>' );
 			} );
 
 
 			it( "should automatically link twitter handles at the beginning of a string", function() {
-				var result = autolinker.link( "@greg is my twitter handle" );
+				var result = twitterAutolinker.link( "@greg is my twitter handle" );
 				expect( result ).toBe( '<a href="https://twitter.com/greg">@greg</a> is my twitter handle' );
 			} );
 
 
 			it( "should automatically link twitter handles in the middle of a string", function() {
-				var result = autolinker.link( "Joe's twitter is @joe_the_man12 today, but what will it be tomorrow?" );
+				var result = twitterAutolinker.link( "Joe's twitter is @joe_the_man12 today, but what will it be tomorrow?" );
 				expect( result ).toBe( 'Joe\'s twitter is <a href="https://twitter.com/joe_the_man12">@joe_the_man12</a> today, but what will it be tomorrow?' );
 			} );
 
 
 			it( "should automatically link twitter handles at the end of a string", function() {
-				var result = autolinker.link( "Joe's twitter is @joe_the_man12" );
+				var result = twitterAutolinker.link( "Joe's twitter is @joe_the_man12" );
 				expect( result ).toBe( 'Joe\'s twitter is <a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>' );
 			} );
 
 
 			it( "should automatically link twitter handles surrounded by parentheses", function() {
-				var result = autolinker.link( "Joe's twitter is (@joe_the_man12)" );
+				var result = twitterAutolinker.link( "Joe's twitter is (@joe_the_man12)" );
 				expect( result ).toBe( 'Joe\'s twitter is (<a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>)' );
 			} );
 
 
 			it( "should automatically link twitter handles surrounded by braces", function() {
-				var result = autolinker.link( "Joe's twitter is {@joe_the_man12}" );
+				var result = twitterAutolinker.link( "Joe's twitter is {@joe_the_man12}" );
 				expect( result ).toBe( 'Joe\'s twitter is {<a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>}' );
 			} );
 
 
 			it( "should automatically link twitter handles surrounded by brackets", function() {
-				var result = autolinker.link( "Joe's twitter is [@joe_the_man12]" );
+				var result = twitterAutolinker.link( "Joe's twitter is [@joe_the_man12]" );
 				expect( result ).toBe( 'Joe\'s twitter is [<a href="https://twitter.com/joe_the_man12">@joe_the_man12</a>]' );
 			} );
 
 
 			it( "should automatically link multiple twitter handles in a string", function() {
-				var result = autolinker.link( "@greg is tweeting @joe with @josh" );
+				var result = twitterAutolinker.link( "@greg is tweeting @joe with @josh" );
 				expect( result ).toBe( '<a href="https://twitter.com/greg">@greg</a> is tweeting <a href="https://twitter.com/joe">@joe</a> with <a href="https://twitter.com/josh">@josh</a>' );
 			} );
 
 
 			it( "should automatically link fully capitalized twitter handles", function() {
-				var result = autolinker.link( "@GREG is tweeting @JOE with @JOSH" );
+				var result = twitterAutolinker.link( "@GREG is tweeting @JOE with @JOSH" );
 				expect( result ).toBe( '<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>' );
 			} );
 
@@ -932,7 +977,7 @@ describe( "Autolinker", function() {
 			// NOTE: Twitter itself does not accept cyrillic characters, but
 			// other services might so linking them anyway
 			it( "should automatically link username handles with accented characters", function() {
-				var result = autolinker.link( "Hello @mañana how are you?" );
+				var result = twitterAutolinker.link( "Hello @mañana how are you?" );
 				expect( result ).toBe( 'Hello <a href="https://twitter.com/mañana">@mañana</a> how are you?' );
 			} );
 
@@ -940,14 +985,18 @@ describe( "Autolinker", function() {
 			// NOTE: Twitter itself does not accept cyrillic characters, but
 			// other services might so linking them anyway
 			it( "should automatically link username handles with cyrillic characters", function() {
-				var result = autolinker.link( "Hello @Кириллица how are you?" );
+				var result = twitterAutolinker.link( "Hello @Кириллица how are you?" );
 				expect( result ).toBe( 'Hello <a href="https://twitter.com/Кириллица">@Кириллица</a> how are you?' );
 			} );
 
 
 			it( "should NOT automatically link a username that is actually part of an email address **when email address linking is turned off**", function() {
-				var noUsernameAutolinker = new Autolinker( { email: false, twitter: true, newWindow: false } ),
-				    result = noUsernameAutolinker.link( "asdf@asdf.com" );
+				var noEmailAutolinker = new Autolinker( {
+					email: false,
+				    mention: 'twitter',
+				    newWindow: false
+				} );
+				var result = noEmailAutolinker.link( "asdf@asdf.com" );
 
 				expect( result ).toBe( 'asdf@asdf.com' );
 			} );
@@ -1116,9 +1165,9 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should autolink mentions as Twitter handles by default for backward compatibility", function() {
+			it( "should not autolink mentions by default", function() {
 				var autolinker = new Autolinker( { newWindow: false } );
-				expect( autolinker.link( "@test" ) ).toBe( '<a href="https://twitter.com/test">@test</a>' );
+				expect( autolinker.link( "@test" ) ).toBe( '@test' );
 			} );
 
 
@@ -1190,7 +1239,7 @@ describe( "Autolinker", function() {
 			// NOTE: Twitter itself does not accept cyrillic characters, but
 			// other services might so linking them anyway
 			it( "should automatically link username handles with cyrillic characters", function() {
-				var result = autolinker.link( "Hello @Кириллица how are you?" );
+				var result = twitterMentionAutolinker.link( "Hello @Кириллица how are you?" );
 				expect( result ).toBe( 'Hello <a href="https://twitter.com/Кириллица">@Кириллица</a> how are you?' );
 			} );
 
@@ -1473,7 +1522,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute values that could be interpreted as urls/emails/twitter/mention accts, while still autolinking urls in their inner text", function() {
 				var html = '<div url="google.com" email="asdf@asdf.com" mention="@asdf">google.com asdf@asdf.com @asdf</div>';
 
-				var result = autolinker.link( html );
+				var result = twitterAutolinker.link( html );
 				expect( result ).toBe( [
 					'<div url="google.com" email="asdf@asdf.com" mention="@asdf">',
 						'<a href="http://google.com">google.com</a> ',
@@ -1487,7 +1536,7 @@ describe( "Autolinker", function() {
 			it( "should properly skip over attribute names and values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text", function() {
 				var html = '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">google.com asdf@asdf.com @asdf</div>';
 
-				var result = autolinker.link( html );
+				var result = twitterAutolinker.link( html );
 				expect( result ).toBe( [
 					'<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">',
 						'<a href="http://google.com">google.com</a> ',
@@ -1756,7 +1805,7 @@ describe( "Autolinker", function() {
 
 
 			it( "should add className to twitter links", function() {
-				var result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, twitter: true, className: 'myLink' } );
+				var result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'twitter', className: 'myLink' } );
 				expect( result ).toBe( 'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-mention myLink-twitter">@iggypopschest</a>' );
 			} );
 
@@ -1869,8 +1918,12 @@ describe( "Autolinker", function() {
 			].join( ", " );
 
 
-			it( "should link all 5 types if all 5 urls/email/phone/twitter/hashtag options are enabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter' } );
+			it( "should link all 5 types if all 5 urls/email/phone/mention/hashtag options are enabled", function() {
+				var result = Autolinker.link( inputStr, {
+					hashtag: 'twitter',
+					mention: 'twitter',
+					newWindow: false
+				} );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1902,29 +1955,14 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should ignore twitter option if mention option is set", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: false, mention: 'twitter' } );
-				expect( result ).toBe( [
-					'Website: <a href="http://asdf.com">asdf.com</a>',
-					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Mention: <a href="https://twitter.com/asdf">@asdf</a>',
-					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
-				].join( ", " ) );
-
-				result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: true, mention: 'instagram' } );
-				expect( result ).toBe( [
-					'Website: <a href="http://asdf.com">asdf.com</a>',
-					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
-					'Mention: <a href="https://instagram.com/asdf">@asdf</a>',
-					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
-				].join( ", " ) );
-			} );
-
-
 			it( "should not link urls when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', urls: false } );
+				var result = Autolinker.link( inputStr, {
+					mention: 'twitter',
+					hashtag: 'twitter',
+					urls: false,
+					newWindow: false
+				} );
+
 				expect( result ).toBe( [
 					'Website: asdf.com',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1936,7 +1974,13 @@ describe( "Autolinker", function() {
 
 
 			it( "should not link email addresses when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', email: false } );
+				var result = Autolinker.link( inputStr, {
+					mention: 'twitter',
+					hashtag: 'twitter',
+					email: false,
+					newWindow: false
+				} );
+
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: asdf@asdf.com',
@@ -1948,7 +1992,13 @@ describe( "Autolinker", function() {
 
 
 			it( "should not link phone numbers when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', phone: false } );
+				var result = Autolinker.link( inputStr, {
+					hashtag   : 'twitter',
+					mention   : 'twitter',
+					phone     : false,
+					newWindow : false
+				} );
+
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1959,8 +2009,13 @@ describe( "Autolinker", function() {
 			} );
 
 
-			it( "should not link Twitter handles when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: false } );
+			it( "should not link mention handles when they are disabled", function() {
+				var result = Autolinker.link( inputStr, {
+					newWindow: false,
+					hashtag: 'twitter',
+					mention: false
+				} );
+
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1972,7 +2027,12 @@ describe( "Autolinker", function() {
 
 
 			it( "should not link Hashtags when they are disabled", function() {
-				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: false } );
+				var result = Autolinker.link( inputStr, {
+					mention   : 'twitter',
+					hashtag   : false,
+					newWindow : false
+				} );
+
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -2104,6 +2164,7 @@ describe( "Autolinker", function() {
 
 			it( "should replace the match as Autolinker would normally do when `true` is returned from the `replaceFn`", function() {
 				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					mention   : 'twitter',
 					newWindow : false,  // just to suppress the target="_blank" from the output for this test
 					replaceFn : returnTrueFn
 				} );
@@ -2118,6 +2179,7 @@ describe( "Autolinker", function() {
 
 			it( "should replace the match as Autolinker would normally do when there is no return value (i.e. `undefined` is returned) from the `replaceFn`", function() {
 				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					mention   : 'twitter',
 					newWindow : false,  // just to suppress the target="_blank" from the output for this test
 					replaceFn : function() {}  // no return value (`undefined` is returned)
 				} );
@@ -2132,6 +2194,7 @@ describe( "Autolinker", function() {
 
 			it( "should leave the match as-is when `false` is returned from the `replaceFn`", function() {
 				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					mention   : 'twitter',
 					replaceFn : returnFalseFn
 				} );
 
@@ -2145,6 +2208,7 @@ describe( "Autolinker", function() {
 
 			it( "should use a string returned from the `replaceFn` as the HTML that is replaced in the input", function() {
 				var result = Autolinker.link( "Website: asdf.com, Email: asdf@asdf.com, Twitter: @asdf", {
+					mention   : 'twitter',
 					replaceFn : function() { return "test"; }
 				} );
 
@@ -2200,7 +2264,7 @@ describe( "Autolinker", function() {
 					var result = Autolinker.link( "@asdf", { replaceFn: returnFalseFn } );
 					expect( result ).toBe( "@asdf" );
 
-					var result2 = Autolinker.link( "Twitter: @asdf", { replaceFn: returnFalseFn } );
+					var result2 = Autolinker.link( "Twitter: @asdf", { mention: 'twitter', replaceFn: returnFalseFn } );
 					expect( result2 ).toBe( "Twitter: @asdf" );
 				} );
 
@@ -2247,7 +2311,7 @@ describe( "Autolinker", function() {
 				unlinked : 'asdf@asdf.com',
 				linked   : '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>'
 			},
-			twitter : {
+			mention : {
 				unlinked : '@asdf',
 				linked   : '<a href="https://twitter.com/asdf">@asdf</a>'
 			},
@@ -2268,7 +2332,7 @@ describe( "Autolinker", function() {
 			'Check link 2: <%= wwwUrl %>.',
 			'Check link 3: <%= tldUrl %>.',
 			'My email is: <%= email %>.',
-			'My twitter username is <%= twitter %>.',
+			'My mention (twitter) username is <%= mention %>.',
 			'My phone number is <%= phone %>.',
 			'Hashtag <%= hashtag %>.'
 		].join( '\n' ) );
@@ -2278,7 +2342,7 @@ describe( "Autolinker", function() {
 			wwwUrl    : testCases.wwwUrl.unlinked,
 			tldUrl    : testCases.tldUrl.unlinked,
 			email     : testCases.email.unlinked,
-			twitter   : testCases.twitter.unlinked,
+			mention   : testCases.mention.unlinked,
 			phone     : testCases.phone.unlinked,
 			hashtag   : testCases.hashtag.unlinked
 		} );
@@ -2296,7 +2360,7 @@ describe( "Autolinker", function() {
 				    wwwMatches    : !!( i & parseInt( '00000010', 2 ) ),
 				    tldMatches    : !!( i & parseInt( '00000100', 2 ) ),
 				    email         : !!( i & parseInt( '00001000', 2 ) ),
-				    twitter       : !!( i & parseInt( '00010000', 2 ) ),
+					mention       : !!( i & parseInt( '00010000', 2 ) ) ? 'twitter' : false,
 				    phone         : !!( i & parseInt( '00100000', 2 ) ),
 				    hashtag       : !!( i & parseInt( '01000000', 2 ) ) ? 'twitter' : false
 				};
@@ -2308,7 +2372,7 @@ describe( "Autolinker", function() {
 						tldMatches    : cfg.tldMatches
 					},
 					email       : cfg.email,
-					twitter     : cfg.twitter,
+					mention     : cfg.mention,
 					phone       : cfg.phone,
 					hashtag     : cfg.hashtag,
 
@@ -2337,7 +2401,7 @@ describe( "Autolinker", function() {
 					wwwUrl    : cfg.wwwMatches    ? testCases.wwwUrl.linked    : testCases.wwwUrl.unlinked,
 					tldUrl    : cfg.tldMatches    ? testCases.tldUrl.linked    : testCases.tldUrl.unlinked,
 					email     : cfg.email         ? testCases.email.linked     : testCases.email.unlinked,
-					twitter   : cfg.twitter       ? testCases.twitter.linked   : testCases.twitter.unlinked,
+					mention   : cfg.mention       ? testCases.mention.linked   : testCases.mention.unlinked,
 					phone     : cfg.phone         ? testCases.phone.linked     : testCases.phone.unlinked,
 					hashtag   : cfg.hashtag       ? testCases.hashtag.linked   : testCases.hashtag.unlinked
 				} );
