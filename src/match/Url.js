@@ -40,8 +40,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 
 	/**
-	 * @cfg {Boolean} stripPrefix (required)
-	 * @inheritdoc Autolinker#cfg-stripPrefix
+	 * @cfg {Object} stripPrefix (required)
+	 *
+	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
 
 	/**
@@ -78,12 +79,20 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * @private
-	 * @property {RegExp} urlPrefixRegex
+	 * @property {RegExp} schemePrefixRegex
 	 *
-	 * A regular expression used to remove the 'http://' or 'https://' and/or
-	 * the 'www.' from URLs.
+	 * A regular expression used to remove the 'http://' or 'https://' from
+	 * URLs.
 	 */
-	urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
+	schemePrefixRegex: /^(https?:\/\/)?/i,
+
+	/**
+	 * @private
+	 * @property {RegExp} wwwPrefixRegex
+	 *
+	 * A regular expression used to remove the 'www.' from URLs.
+	 */
+	wwwPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 
 	/**
 	 * @private
@@ -174,8 +183,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			// Strip off any protocol-relative '//' from the anchor text
 			anchorText = this.stripProtocolRelativePrefix( anchorText );
 		}
-		if( this.stripPrefix ) {
-			anchorText = this.stripUrlPrefix( anchorText );
+		if( this.stripPrefix.scheme ) {
+			anchorText = this.stripSchemePrefix( anchorText );
+		}
+		if( this.stripPrefix.www ) {
+			anchorText = this.stripWwwPrefix( anchorText );
 		}
 		if( this.stripTrailingSlash ) {
 			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
@@ -190,15 +202,29 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	// Utility Functionality
 
 	/**
-	 * Strips the URL prefix (such as "http://" or "https://") from the given text.
+	 * Strips the scheme prefix (such as "http://" or "https://") from the given
+	 * `url`.
 	 *
 	 * @private
-	 * @param {String} text The text of the anchor that is being generated, for which to strip off the
-	 *   url prefix (such as stripping off "http://")
-	 * @return {String} The `anchorText`, with the prefix stripped.
+	 * @param {String} url The text of the anchor that is being generated, for
+	 *   which to strip off the url scheme.
+	 * @return {String} The `url`, with the scheme stripped.
 	 */
-	stripUrlPrefix : function( text ) {
-		return text.replace( this.urlPrefixRegex, '' );
+	stripSchemePrefix : function( url ) {
+		return url.replace( this.schemePrefixRegex, '' );
+	},
+
+
+	/**
+	 * Strips the 'www' prefix from the given `url`.
+	 *
+	 * @private
+	 * @param {String} url The text of the anchor that is being generated, for
+	 *   which to strip off the 'www' if it exists.
+	 * @return {String} The `url`, with the 'www' stripped.
+	 */
+	stripWwwPrefix : function( url ) {
+		return url.replace( this.wwwPrefixRegex, '$1' );  // leave any scheme ($1), it one exists
 	},
 
 

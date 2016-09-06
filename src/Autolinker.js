@@ -119,7 +119,7 @@ var Autolinker = function( cfg ) {
 	this.hashtag = cfg.hashtag || false;
 	this.mention = cfg.mention || false;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
-	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
+	this.stripPrefix = this.normalizeStripPrefixCfg( cfg.stripPrefix );
 	this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
 
 	// Validate the value of the `mention` cfg
@@ -189,23 +189,36 @@ Autolinker.prototype = {
 	constructor : Autolinker,  // fix constructor property
 
 	/**
-	 * @cfg {Boolean/Object} [urls=true]
+	 * @cfg {Boolean/Object} [urls]
 	 *
 	 * `true` if URLs should be automatically linked, `false` if they should not
-	 * be.
+	 * be. Defaults to `true`.
 	 *
-	 * This option also accepts an Object form with 3 properties, to allow for
-	 * more customization of what exactly gets linked. All default to `true`:
+	 * Examples:
 	 *
-	 * @param {Boolean} schemeMatches `true` to match URLs found prefixed with a
-	 *   scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+	 *     urls: true
+	 *
+	 *     // or
+	 *
+	 *     urls: {
+	 *         schemeMatches : true,
+	 *         wwwMatches    : true,
+	 *         tldMatches    : true
+	 *     }
+	 *
+	 * As shown above, this option also accepts an Object form with 3 properties
+	 * to allow for more customization of what exactly gets linked. All default
+	 * to `true`:
+	 *
+	 * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
+	 *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
 	 *   `false` to prevent these types of matches.
-	 * @param {Boolean} wwwMatches `true` to match urls found prefixed with
+	 * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
 	 *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
 	 *   matches. Note that if the URL had a prefixed scheme, and
 	 *   `schemeMatches` is true, it will still be linked.
-	 * @param {Boolean} tldMatches `true` to match URLs with known top level
-	 *   domains (.com, .net, etc.) that are not prefixed with a scheme or
+	 * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
+	 *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
 	 *   `'www.'`. This option attempts to match anything that looks like a URL
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
@@ -257,10 +270,37 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Boolean} [stripPrefix=true]
+	 * @cfg {Boolean/Object} [stripPrefix]
 	 *
-	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
-	 * from the beginning of URL links' text, `false` otherwise.
+	 * `true` if 'http://' (or 'https://') and/or the 'www.' should be stripped
+	 * from the beginning of URL links' text, `false` otherwise. Defaults to
+	 * `true`.
+	 *
+	 * Examples:
+	 *
+	 *     stripPrefix: true
+	 *
+	 *     // or
+	 *
+	 *     stripPrefix: {
+	 *         scheme : true,
+	 *         www    : true
+	 *     }
+	 *
+	 * As shown above, this option also accepts an Object form with 2 properties
+	 * to allow for more customization of what exactly is prevented from being
+	 * displayed. Both default to `true`:
+	 *
+	 * @cfg {Boolean} [stripPrefix.scheme] `true` to prevent the scheme part of
+	 *   a URL match from being displayed to the user. Example:
+	 *   `'http://google.com'` will be displayed as `'google.com'`. `false` to
+	 *   not strip the scheme. NOTE: Only an `'http://'` or `'https://'` scheme
+	 *   will be removed, so as not to remove a potentially dangerous scheme
+	 *   (such as `'file://'` or `'javascript:'`)
+	 * @cfg {Boolean} [stripPrefix.www] www (Boolean): `true` to prevent the
+	 *   `'www.'` part of a URL match from being displayed to the user. Ex:
+	 *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
+	 *   strip the `'www'`.
 	 */
 
 	/**
@@ -422,6 +462,31 @@ Autolinker.prototype = {
 				schemeMatches : typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
 				wwwMatches    : typeof urls.wwwMatches === 'boolean'    ? urls.wwwMatches    : true,
 				tldMatches    : typeof urls.tldMatches === 'boolean'    ? urls.tldMatches    : true
+			};
+		}
+	},
+
+
+	/**
+	 * Normalizes the {@link #stripPrefix} config into an Object with 2
+	 * properties: `scheme`, and `www` - both Booleans.
+	 *
+	 * See {@link #stripPrefix} config for details.
+	 *
+	 * @private
+	 * @param {Boolean/Object} stripPrefix
+	 * @return {Object}
+	 */
+	normalizeStripPrefixCfg : function( stripPrefix ) {
+		if( stripPrefix == null ) stripPrefix = true;  // default to `true`
+
+		if( typeof stripPrefix === 'boolean' ) {
+			return { scheme: stripPrefix, www: stripPrefix };
+
+		} else {  // object form
+			return {
+				scheme : typeof stripPrefix.scheme === 'boolean' ? stripPrefix.scheme : true,
+				www    : typeof stripPrefix.www === 'boolean'    ? stripPrefix.www    : true
 			};
 		}
 	},

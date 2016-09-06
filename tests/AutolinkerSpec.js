@@ -1700,6 +1700,78 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( 'Test <a href="http://www.url.com">url.com</a>' );
 			} );
 
+
+			it( "when stripPrefix `scheme` is true, but `www` is false, it should " +
+				"only strip the scheme",
+			function() {
+				var result = Autolinker.link( "Test http://www.url.com", {
+					stripPrefix: { scheme: true, www: false },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://www.url.com">www.url.com</a>' );
+			} );
+
+
+			it( "when stripPrefix `scheme` is false, but `www` is true, it should " +
+				"only strip the 'www'",
+			function() {
+				var result = Autolinker.link( "Test http://www.url.com", {
+					stripPrefix: { scheme: false, www: true },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://www.url.com">http://url.com</a>' );
+			} );
+
+
+			it( "when stripPrefix `scheme` is false, but `www` is true for a " +
+				"scheme-only URL, it should not strip anything",
+			function() {
+				var result = Autolinker.link( "Test http://url.com", {
+					stripPrefix: { scheme: false, www: true },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://url.com">http://url.com</a>' );
+			} );
+
+
+			it( "when stripPrefix `scheme` is false, but `www` is true for a " +
+				"'www'-only URL, it should strip the 'www'",
+			function() {
+				var result = Autolinker.link( "Test www.url.com", {
+					stripPrefix: { scheme: false, www: true },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://www.url.com">url.com</a>' );
+			} );
+
+
+			it( "when stripPrefix `scheme` is true and `www` is true, it should " +
+				"strip the entire prefix (scheme and 'www')",
+			function() {
+				var result = Autolinker.link( "Test http://www.url.com", {
+					stripPrefix: { scheme: true, www: true },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://www.url.com">url.com</a>' );
+			} );
+
+
+			it( "when stripPrefix `scheme` is false and `www` is false, it should " +
+				"not strip any prefix",
+			function() {
+				var result = Autolinker.link( "Test http://www.url.com", {
+					stripPrefix: { scheme: false, www: false },
+					newWindow: false
+				} );
+
+				expect( result ).toBe( 'Test <a href="http://www.url.com">http://www.url.com</a>' );
+			} );
+
 		} );
 
 

@@ -122,8 +122,8 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
 
-  This option also accepts an Object form with 3 properties, to allow for more
-  customization of what exactly gets linked. All default to `true`:
+  This option also accepts an Object form with 3 properties to allow for 
+  more customization of what exactly gets linked. All default to `true`:
 
     - schemeMatches (Boolean): `true` to match URLs found prefixed with a scheme,
       i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
@@ -154,8 +154,25 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.<br /><br />
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
-  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
-  beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
+  `true` to have the `'http://'` (or `'https://'`) and/or the `'www.'` 
+  stripped from the beginning of displayed links, `false` otherwise. 
+  Defaults to `true`.<br />
+  
+  This option also accepts an Object form with 2 properties to allow for 
+  more customization of what exactly is prevented from being displayed. 
+  Both default to `true`:
+
+    - scheme (Boolean): `true` to prevent the scheme part of a URL match
+      from being displayed to the user. Example: `'http://google.com'` 
+      will be displayed as `'google.com'`. `false` to not strip the 
+      scheme. NOTE: Only an `'http://'` or `'https://'` scheme will be
+      removed, so as not to remove a potentially dangerous scheme (such
+      as `'file://'` or `'javascript:'`).
+    - www (Boolean): `true` to prevent the `'www.'` part of a URL match
+      from being displayed to the user. Ex: `'www.google.com'` will be
+      displayed as `'google.com'`. `false` to not strip the `'www'`.
+  
+  <br /><br />
 - [stripTrailingSlash](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripTrailingSlash) : Boolean<br />
   `true` to remove the trailing slash from URL matches, `false` to keep
   the trailing slash. Example when `true`: `http://google.com/` will be 
