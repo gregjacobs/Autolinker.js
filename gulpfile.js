@@ -34,7 +34,7 @@ gulp.task( 'lint', lintTask );
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
 gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
-gulp.task( 'serve', [ 'typescript' ], serveTask );
+gulp.task( 'serve', [ 'typescript', 'doc' ], serveTask );
 gulp.task( 'typescript', typescriptTask );  // for examples
 
 
@@ -91,6 +91,7 @@ function lintTask() {
 
 function serveTask() {
 	gulp.watch( './examples/live-example/src/**', [ 'typescript' ] );
+	gulp.watch( './src/**', [ 'doc' ] );
 
 	connect.server();
 }
