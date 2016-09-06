@@ -314,7 +314,7 @@ $(document).ready(function () {
             "    },",
             ("    email       : " + optionsObj.email + ","),
             ("    phone       : " + optionsObj.phone + ","),
-            ("    mention     : " + optionsObj.mention + ","),
+            ("    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ","),
             ("    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ","),
             "",
             ("    stripPrefix : " + optionsObj.stripPrefix + ","),
