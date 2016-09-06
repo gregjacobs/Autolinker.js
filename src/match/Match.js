@@ -139,8 +139,8 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * Returns the CSS class suffix(es) for this match.
 	 *
 	 * A CSS class suffix is appended to the {@link Autolinker#className} in
-	 * the {@link AnchorTagBuilder} when a match is translated into an anchor
-	 * tag.
+	 * the {@link Autolinker.AnchorTagBuilder} when a match is translated into
+	 * an anchor tag.
 	 *
 	 * For example, if {@link Autolinker#className} was configured as 'myLink',
 	 * and this method returns `[ 'url' ]`, the final class name of the element

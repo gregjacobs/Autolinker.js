@@ -178,7 +178,7 @@ var Autolinker = function( cfg ) {
  *
  * @static
  * @param {String} textOrHtml The HTML or text to find matches within (depending
- *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #twitter},
+ *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #mention},
  *   {@link #hashtag}, and {@link #mention} options are enabled).
  * @param {Object} [options] Any of the configuration options for the Autolinker
  *   class, specified in an Object (map). See the class description for an
@@ -341,7 +341,8 @@ Autolinker.prototype = {
 	 * - Email links will have the CSS classes: "myLink myLink-email", and
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
-	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-<type>" where type is "instagram"/"twitter"
+	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
+	 *   where [type] is either "instagram" or "twitter"
 	 */
 
 	/**
@@ -2260,8 +2261,8 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * Returns the CSS class suffix(es) for this match.
 	 *
 	 * A CSS class suffix is appended to the {@link Autolinker#className} in
-	 * the {@link AnchorTagBuilder} when a match is translated into an anchor
-	 * tag.
+	 * the {@link Autolinker.AnchorTagBuilder} when a match is translated into
+	 * an anchor tag.
 	 *
 	 * For example, if {@link Autolinker#className} was configured as 'myLink',
 	 * and this method returns `[ 'url' ]`, the final class name of the element
