@@ -17,8 +17,8 @@ So, this utility attempts to handle everything. It:
 - Will autolink mentions (Twitter, Instagram).
 - Will autolink hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
-  attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute for that
-  matter), and will not accidentally wrap the inner text of an anchor tag with a
+  attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
+  and will not accidentally wrap the inner text of an anchor tag with a
   new one (which would cause doubly-nested anchor tags).
 
 Hope that this utility helps you as well!
@@ -27,7 +27,7 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/docs/](http://gregjaco
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
-## Breaking Changes from 0.x -> 1.x
+## v1.0 released. Breaking Changes from 0.x -> 1.x
 
 1. `twitter` option removed, replaced with `mention` (which accepts 'twitter' 
    and 'instagram' values)
