@@ -44,6 +44,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @inheritdoc Autolinker#cfg-stripPrefix
 	 */
 
+	/**
+	 * @cfg {Boolean} stripTrailingSlash (required)
+	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
+	 */
+
 
 	/**
 	 * @constructor
@@ -59,6 +64,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( cfg.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
 		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
 		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
 		// @endif
 
 		this.urlMatchType = cfg.urlMatchType;
@@ -66,6 +72,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		this.protocolUrlMatch = cfg.protocolUrlMatch;
 		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
 		this.stripPrefix = cfg.stripPrefix;
+		this.stripTrailingSlash = cfg.stripTrailingSlash;
 	},
 
 
@@ -73,7 +80,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @private
 	 * @property {RegExp} urlPrefixRegex
 	 *
-	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+	 * A regular expression used to remove the 'http://' or 'https://' and/or
+	 * the 'www.' from URLs.
 	 */
 	urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 
@@ -169,7 +177,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( this.stripPrefix ) {
 			anchorText = this.stripUrlPrefix( anchorText );
 		}
-		anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
+		if( this.stripTrailingSlash ) {
+			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
+		}
 
 		return anchorText;
 	},

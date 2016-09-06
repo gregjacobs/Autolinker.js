@@ -120,6 +120,7 @@ var Autolinker = function( cfg ) {
 	this.mention = cfg.mention || false;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
+	this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
@@ -260,6 +261,16 @@ Autolinker.prototype = {
 	 *
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise.
+	 */
+
+	/**
+	 * @cfg {Boolean} [stripTrailingSlash=true]
+	 *
+	 * `true` to remove the trailing slash from URL matches, `false` to keep
+	 *  the trailing slash.
+	 *
+	 *  Example when `true`: `http://google.com/` will be displayed as
+	 *  `http://google.com`.
 	 */
 
 	/**
@@ -710,7 +721,7 @@ Autolinker.prototype = {
 				new matchersNs.Email( { tagBuilder: tagBuilder } ),
 				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
 				new matchersNs.Mention( { tagBuilder: tagBuilder, serviceName: this.mention } ),
-				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix } )
+				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash } )
 			];
 
 			return ( this.matchers = matchers );

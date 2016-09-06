@@ -118,45 +118,6 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 - [newWindow](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow) : Boolean<br />
   `true` to have the links should open in a new window when clicked, `false`
   otherwise. Defaults to `true`.<br /><br />
-- [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
-  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
-  beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
-- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number/Object<br />
-  A number for how many characters long URLs/emails/Twitter handles/Twitter
-  hashtags should be truncated to inside the text of a link. If the match is
-  over the number of characters, it will be truncated to this length by
-  replacing the end of the string with a two period ellipsis ('..').<br /><br />
-
-  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
-  to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
-
-  In the object form, both `length` and `location` may be specified to perform
-  truncation. Available options for `location` are: 'end' (default), 'middle',
-  or 'smart'. Example usage:
-
-    ```javascript
-    truncate: { length: 32, location: 'middle' }
-    ```
-
-  The 'smart' truncation option is for URLs where the algorithm attempts to
-  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme,
-  hash, etc.) before trying to find a good point to insert the ellipsis if it is
-  still too long. For details, see source code of:
-  [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.truncate.TruncateSmart)
-- [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
-  A CSS class name to add to the generated anchor tags. This class will be added
-  to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
-  suffixes for styling url/email/phone/hashtag/mention links differently.
-
-  For example, if this config is provided as "myLink", then:
-
-  1) URL links will have the CSS classes: "myLink myLink-url"<br />
-  2) Email links will have the CSS classes: "myLink myLink-email"<br />
-  3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
-  4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
-  5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
-  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
-
 - [urls](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
@@ -192,12 +153,53 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   A string for the service name to have hashtags auto-linked to. Supported
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.<br /><br />
+- [stripPrefix](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
+  `true` to have the 'http://' or 'https://' and/or the 'www.' stripped from the
+  beginning of links, `false` otherwise. Defaults to `true`.<br /><br />
+- [stripTrailingSlash](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-stripTrailingSlash) : Boolean<br />
+  `true` to remove the trailing slash from URL matches, `false` to keep
+  the trailing slash. Example when `true`: `http://google.com/` will be 
+  displayed as `http://google.com`. Defaults to `true`.
+- [truncate](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-truncate) : Number/Object<br />
+  A number for how many characters long URLs/emails/Twitter handles/Twitter
+  hashtags should be truncated to inside the text of a link. If the match is
+  over the number of characters, it will be truncated to this length by
+  replacing the end of the string with a two period ellipsis ('..').<br /><br />
+
+  Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
+  to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+
+  In the object form, both `length` and `location` may be specified to perform
+  truncation. Available options for `location` are: 'end' (default), 'middle',
+  or 'smart'. Example usage:
+
+    ```javascript
+    truncate: { length: 32, location: 'middle' }
+    ```
+
+  The 'smart' truncation option is for URLs where the algorithm attempts to
+  strip out unnecessary parts of the URL (such as the 'www.', then URL scheme,
+  hash, etc.) before trying to find a good point to insert the ellipsis if it is
+  still too long. For details, see source code of:
+  [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker.truncate.TruncateSmart)
+- [className](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-className) : String<br />
+  A CSS class name to add to the generated anchor tags. This class will be added
+  to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
+  suffixes for styling url/email/phone/hashtag/mention links differently.
+
+  For example, if this config is provided as "myLink", then:
+
+  1) URL links will have the CSS classes: "myLink myLink-url"<br />
+  2) Email links will have the CSS classes: "myLink myLink-email"<br />
+  3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
+  4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
+  5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
+  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
   input string, one at a time. See the section
   <a href="#custom-replacement-function">Custom Replacement Function</a> for
   more details.
-
 
 For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-newWindow), you could do:
 

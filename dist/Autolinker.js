@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.0.0
+ * 1.1.0
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -138,6 +138,7 @@ var Autolinker = function( cfg ) {
 	this.mention = cfg.mention || false;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
+	this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
@@ -199,7 +200,7 @@ Autolinker.link = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.0.0';
+Autolinker.version = '1.1.0';
 
 
 Autolinker.prototype = {
@@ -278,6 +279,16 @@ Autolinker.prototype = {
 	 *
 	 * `true` if 'http://' or 'https://' and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise.
+	 */
+
+	/**
+	 * @cfg {Boolean} [stripTrailingSlash=true]
+	 *
+	 * `true` to remove the trailing slash from URL matches, `false` to keep
+	 *  the trailing slash.
+	 *
+	 *  Example when `true`: `http://google.com/` will be displayed as
+	 *  `http://google.com`.
 	 */
 
 	/**
@@ -728,7 +739,7 @@ Autolinker.prototype = {
 				new matchersNs.Email( { tagBuilder: tagBuilder } ),
 				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
 				new matchersNs.Mention( { tagBuilder: tagBuilder, serviceName: this.mention } ),
-				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix } )
+				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash } )
 			];
 
 			return ( this.matchers = matchers );
@@ -2742,6 +2753,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @inheritdoc Autolinker#cfg-stripPrefix
 	 */
 
+	/**
+	 * @cfg {Boolean} stripTrailingSlash (required)
+	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
+	 */
+
 
 	/**
 	 * @constructor
@@ -2756,12 +2772,14 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( cfg.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
 		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
 		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
 
 		this.urlMatchType = cfg.urlMatchType;
 		this.url = cfg.url;
 		this.protocolUrlMatch = cfg.protocolUrlMatch;
 		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
 		this.stripPrefix = cfg.stripPrefix;
+		this.stripTrailingSlash = cfg.stripTrailingSlash;
 	},
 
 
@@ -2769,7 +2787,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @private
 	 * @property {RegExp} urlPrefixRegex
 	 *
-	 * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+	 * A regular expression used to remove the 'http://' or 'https://' and/or
+	 * the 'www.' from URLs.
 	 */
 	urlPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
 
@@ -2865,7 +2884,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( this.stripPrefix ) {
 			anchorText = this.stripUrlPrefix( anchorText );
 		}
-		anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
+		if( this.stripTrailingSlash ) {
+			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
+		}
 
 		return anchorText;
 	},
@@ -3262,6 +3283,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @inheritdoc Autolinker#stripPrefix
 	 */
 
+	/**
+	 * @cfg {Boolean} stripTrailingSlash (required)
+	 * @inheritdoc Autolinker#stripTrailingSlash
+	 */
+
 
 	/**
 	 * @private
@@ -3387,9 +3413,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	constructor : function( cfg ) {
 		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
 
-		this.stripPrefix = cfg.stripPrefix;
+		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
 
-		if( this.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
+		this.stripPrefix = cfg.stripPrefix;
+		this.stripTrailingSlash = cfg.stripTrailingSlash;
 	},
 
 
@@ -3399,6 +3427,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	parseMatches : function( text ) {
 		var matcherRegex = this.matcherRegex,
 		    stripPrefix = this.stripPrefix,
+		    stripTrailingSlash = this.stripTrailingSlash,
 		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
@@ -3456,7 +3485,8 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				url                   : matchStr,
 				protocolUrlMatch      : protocolUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
-				stripPrefix           : stripPrefix
+				stripPrefix           : stripPrefix,
+				stripTrailingSlash    : stripTrailingSlash
 			} ) );
 		}
 

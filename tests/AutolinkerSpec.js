@@ -1703,6 +1703,45 @@ describe( "Autolinker", function() {
 		} );
 
 
+		describe( "`stripTrailingSlash` option", function() {
+
+			it( "by default, should remove the trailing slash", function() {
+				var result = Autolinker.link( "http://google.com/", {
+					stripPrefix : false,
+					//stripTrailingSlash : true,  -- not providing this cfg
+					newWindow   : false
+				} );
+
+				expect( result ).toBe( '<a href="http://google.com/">http://google.com</a>' );
+			} );
+
+
+			it( "when provided as `true`, should remove the trailing slash", function() {
+				var result = Autolinker.link( "http://google.com/", {
+					stripPrefix        : false,
+					stripTrailingSlash : true,
+					newWindow          : false
+				} );
+
+				expect( result ).toBe( '<a href="http://google.com/">http://google.com</a>' );
+			} );
+
+
+			it( "when provided as `false`, should not remove (i.e. retain) the " +
+				"trailing slash",
+			function() {
+				var result = Autolinker.link( "http://google.com/", {
+					stripPrefix        : false,
+					stripTrailingSlash : false,
+					newWindow          : false
+				} );
+
+				expect( result ).toBe( '<a href="http://google.com/">http://google.com/</a>' );
+			} );
+
+		} );
+
+
 		describe( "`truncate` option", function() {
 
 			describe( 'number form', function() {
