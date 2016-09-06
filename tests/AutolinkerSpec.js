@@ -187,6 +187,18 @@ describe( "Autolinker", function() {
 				} );
 
 
+				it( 'should automatically link URLs with IP addresses', function() {
+					var result = autolinker.link( 'http://66.102.7.147' );
+					expect( result ).toBe( '<a href="http://66.102.7.147">66.102.7.147</a>' );
+				} );
+
+
+				it( 'should automatically link URLs with IP addresses and a port number', function() {
+					var result = autolinker.link( 'http://10.0.0.108:9000/' );
+					expect( result ).toBe( '<a href="http://10.0.0.108:9000/">10.0.0.108:9000</a>' );
+				} );
+
+
 				it( "should automatically link capitalized URLs", function() {
 					var result = autolinker.link( "Joe went to HTTP://WWW.YAHOO.COM" );
 					expect( result ).toBe( 'Joe went to <a href="HTTP://WWW.YAHOO.COM">YAHOO.COM</a>' );
@@ -1945,6 +1957,27 @@ describe( "Autolinker", function() {
 				].join( ", " ) );
 
 				result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', mention: 'instagram' } );
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Mention: <a href="https://instagram.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
+				].join( ", " ) );
+			} );
+
+
+			it( "should ignore twitter option if mention option is set", function() {
+				var result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: false, mention: 'twitter' } );
+				expect( result ).toBe( [
+					'Website: <a href="http://asdf.com">asdf.com</a>',
+					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+					'Phone: <a href="tel:1234567890">(123) 456-7890</a>',
+					'Mention: <a href="https://twitter.com/asdf">@asdf</a>',
+					'Hashtag: <a href="https://twitter.com/hashtag/asdf">#asdf</a>'
+				].join( ", " ) );
+
+				result = Autolinker.link( inputStr, { newWindow: false, hashtag: 'twitter', twitter: true, mention: 'instagram' } );
 				expect( result ).toBe( [
 					'Website: <a href="http://asdf.com">asdf.com</a>',
 					'Email: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
