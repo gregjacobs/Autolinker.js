@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 0.27.0
+ * 1.0.0
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -53,15 +53,15 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram) match that is
- * encountered.
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram)
+ * match that is encountered.
  *
  * For example:
  *
  *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
  *
@@ -70,7 +70,7 @@
  *                     console.log( "url: ", match.getUrl() );
  *
  *                     if( match.getUrl().indexOf( 'mysite.com' ) === -1 ) {
- *                         var tag = autolinker.getTagBuilder().build( match );  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
+ *                         var tag = match.buildTag();  // returns an `Autolinker.HtmlTag` instance, which provides mutator methods for easy changes
  *                         tag.setAttr( 'rel', 'nofollow' );
  *                         tag.addClass( 'external-link' );
  *
@@ -133,19 +133,19 @@ var Autolinker = function( cfg ) {
 
 	this.urls = this.normalizeUrlsCfg( cfg.urls );
 	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
-	this.twitter = typeof cfg.twitter === 'boolean' ? cfg.twitter : true;
 	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
 	this.hashtag = cfg.hashtag || false;
-	this.mention = cfg.mention;
+	this.mention = cfg.mention || false;
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = typeof cfg.stripPrefix === 'boolean' ? cfg.stripPrefix : true;
 
-	// if mention is undefined, fallback to twitter parameter for backwards compatibility
-	if (typeof this.mention === 'undefined' && this.twitter === true) {
-		this.mention = 'twitter';
+	// Validate the value of the `mention` cfg
+	var mention = this.mention;
+	if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+		throw new Error( "invalid `mention` cfg - see docs" );
 	}
 
-	// Validate the value of the `hashtag` cfg.
+	// Validate the value of the `hashtag` cfg
 	var hashtag = this.hashtag;
 	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
 		throw new Error( "invalid `hashtag` cfg - see docs" );
@@ -154,6 +154,7 @@ var Autolinker = function( cfg ) {
 	this.truncate = this.normalizeTruncateCfg( cfg.truncate );
 	this.className = cfg.className || '';
 	this.replaceFn = cfg.replaceFn || null;
+	this.context = cfg.context || this;
 
 	this.htmlParser = null;
 	this.matchers = null;
@@ -198,7 +199,7 @@ Autolinker.link = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '0.27.0';
+Autolinker.version = '1.0.0';
 
 
 Autolinker.prototype = {
@@ -235,13 +236,6 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {Boolean} [twitter=true]
-	 *
-	 * `true` if Twitter handles ("@example") should be automatically linked,
-	 * `false` if they should not be.
-	 */
-
-	/**
 	 * @cfg {Boolean} [phone=true]
 	 *
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
@@ -262,7 +256,7 @@ Autolinker.prototype = {
 	 */
 
 	/**
-	 * @cfg {String} mention
+	 * @cfg {String/Boolean} [mention=false]
 	 *
 	 * A string for the service name to have mentions (ex: "@myuser")
 	 * auto-linked to. The currently supported values are:
@@ -270,6 +264,7 @@ Autolinker.prototype = {
 	 * - 'twitter'
 	 * - 'instagram'
 	 *
+	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
 
 	/**
@@ -356,15 +351,23 @@ Autolinker.prototype = {
 	 *
 	 * See the class's description for usage.
 	 *
-	 * This function is called with the following parameters:
+	 * The `replaceFn` can be called with a different context object (`this`
+	 * reference) using the {@link #context} cfg.
 	 *
-	 * @cfg {Autolinker} replaceFn.autolinker The Autolinker instance, which may
-	 *   be used to retrieve child objects from (such as the instance's
-	 *   {@link #getTagBuilder tag builder}).
+	 * This function is called with the following parameter:
+	 *
 	 * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
 	 *   can be used to retrieve information about the match that the `replaceFn`
 	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
 	 *   for details.
+	 */
+
+	/**
+	 * @cfg {Object} context
+	 *
+	 * The context object (`this` reference) to call the `replaceFn` with.
+	 *
+	 * Defaults to this Autolinker instance.
 	 */
 
 
@@ -668,7 +671,7 @@ Autolinker.prototype = {
 		// Handle a custom `replaceFn` being provided
 		var replaceFnResult;
 		if( this.replaceFn ) {
-			replaceFnResult = this.replaceFn.call( this, this, match );  // Autolinker instance is the context, and the first arg
+			replaceFnResult = this.replaceFn.call( this.context, match );  // Autolinker instance is the context
 		}
 
 		if( typeof replaceFnResult === 'string' ) {
@@ -743,8 +746,8 @@ Autolinker.prototype = {
 	 * Autolinker would normally generate, and then allow for modifications before returning it. For example:
 	 *
 	 *     var html = Autolinker.link( "Test google.com", {
-	 *         replaceFn : function( autolinker, match ) {
-	 *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+	 *         replaceFn : function( match ) {
+	 *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
 	 *             tag.setAttr( 'rel', 'nofollow' );
 	 *
 	 *             return tag;
@@ -1039,7 +1042,7 @@ Autolinker.Util = {
  * ## Example use within a {@link Autolinker#replaceFn replaceFn}
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance, configured with the Match's href and anchor text
  *             tag.setAttr( 'rel', 'nofollow' );
  *
@@ -1054,7 +1057,7 @@ Autolinker.Util = {
  * ## Example use with a new tag for the replacement
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             var tag = new Autolinker.HtmlTag( {
  *                 tagName : 'button',
  *                 attrs   : { 'title': 'Load URL: ' + match.getAnchorHref() },
@@ -1445,14 +1448,14 @@ Autolinker.RegexLib = (function() {
  * found.
  *
  * Normally this class is instantiated, configured, and used internally by an
- * {@link Autolinker} instance, but may actually be retrieved in a {@link Autolinker#replaceFn replaceFn}
- * to create {@link Autolinker.HtmlTag HtmlTag} instances which may be modified
- * before returning from the {@link Autolinker#replaceFn replaceFn}. For
- * example:
+ * {@link Autolinker} instance, but may actually be used indirectly in a
+ * {@link Autolinker#replaceFn replaceFn} to create {@link Autolinker.HtmlTag HtmlTag}
+ * instances which may be modified before returning from the
+ * {@link Autolinker#replaceFn replaceFn}. For example:
  *
  *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( autolinker, match ) {
- *             var tag = autolinker.getTagBuilder().build( match );  // returns an {@link Autolinker.HtmlTag} instance
+ *         replaceFn : function( match ) {
+ *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
  *             tag.setAttr( 'rel', 'nofollow' );
  *
  *             return tag;
@@ -1485,7 +1488,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
+		cfg = cfg || {};
+
+		this.newWindow = cfg.newWindow;
+		this.truncate = cfg.truncate;
+		this.className = cfg.className;
 	},
 
 
@@ -1500,7 +1507,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	build : function( match ) {
 		return new Autolinker.HtmlTag( {
 			tagName   : 'a',
-			attrs     : this.createAttrs( match.getType(), match.getAnchorHref(), match["getServiceName"] ? match["getServiceName"]() : null ),
+			attrs     : this.createAttrs( match ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
 	},
@@ -1511,17 +1518,16 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   tag being generated.
 	 *
 	 * @protected
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
-	 *   match that an anchor tag is being generated for.
-	 * @param {String} anchorHref The href for the anchor tag.
+	 * @param {Autolinker.match.Match} match The Match instance to generate an
+	 *   anchor tag from.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs : function( matchType, anchorHref, serviceName ) {
+	createAttrs : function( match ) {
 		var attrs = {
-			'href' : anchorHref  // we'll always have the `href` attribute
+			'href' : match.getAnchorHref()  // we'll always have the `href` attribute
 		};
 
-		var cssClass = this.createCssClass( matchType, serviceName );
+		var cssClass = this.createCssClass( match );
 		if( cssClass ) {
 			attrs[ 'class' ] = cssClass;
 		}
@@ -1538,22 +1544,37 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 * Creates the CSS class that will be used for a given anchor tag, based on
 	 * the `matchType` and the {@link #className} config.
 	 *
+	 * Example returns:
+	 *
+	 * - ""                                      // no {@link #className}
+	 * - "myLink myLink-url"                     // url match
+	 * - "myLink myLink-email"                   // email match
+	 * - "myLink myLink-phone"                   // phone match
+	 * - "myLink myLink-hashtag"                 // hashtag match
+	 * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
+	 *
 	 * @private
-	 * @param {"url"/"email"/"phone"/"twitter"/"hashtag"/"mention"} matchType The type of
-	 *   match that an anchor tag is being generated for.
+	 * @param {Autolinker.match.Match} match The Match instance to generate an
+	 *   anchor tag from.
 	 * @return {String} The CSS class string for the link. Example return:
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass : function( matchType, serviceName ) {
+	createCssClass : function( match ) {
 		var className = this.className;
 
-		if( !className )
+		if( !className ) {
 			return "";
-		else
-			return className + " " +
-				className + "-" + matchType +
-				(matchType === 'mention' && serviceName ? " " + className + "-" + serviceName : "");  // ex: "myLink myLink-url", "myLink myLink-email", "myLink myLink-phone", "myLink myLink-twitter", or "myLink myLink-hashtag", or "myLink myLink-mention myLink-twitter"
+
+		} else {
+			var returnClasses = [ className ],
+				cssClassSuffixes = match.getCssClassSuffixes();
+
+			for( var i = 0, len = cssClassSuffixes.length; i < len; i++ ) {
+				returnClasses.push( className + '-' + cssClassSuffixes[ i ] );
+			}
+			return returnClasses.join( ' ' );
+		}
 	},
 
 
@@ -2113,7 +2134,7 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
  *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
  *
@@ -2233,6 +2254,32 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @return {String}
 	 */
 	getAnchorText : Autolinker.Util.abstractMethod,
+
+
+	/**
+	 * Returns the CSS class suffix(es) for this match.
+	 *
+	 * A CSS class suffix is appended to the {@link Autolinker#className} in
+	 * the {@link AnchorTagBuilder} when a match is translated into an anchor
+	 * tag.
+	 *
+	 * For example, if {@link Autolinker#className} was configured as 'myLink',
+	 * and this method returns `[ 'url' ]`, the final class name of the element
+	 * will become: 'myLink myLink-url'.
+	 *
+	 * The match may provide multiple CSS class suffixes to be appended to the
+	 * {@link Autolinker#className} in order to facilitate better styling
+	 * options for different match criteria. See {@link Autolinker.match.Mention}
+	 * for an example.
+	 *
+	 * By default, this method returns a single array with the match's
+	 * {@link #getType type} name, but may be overridden by subclasses.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		return [ this.getType() ];
+	},
 
 
 	/**
@@ -2591,16 +2638,6 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 
 
 	/**
-	 * For backwards compatibility, returns twitter handle
-	 *
-	 * @return {String}
-	 */
-	getTwitterHandle : function() {
-		return this.getServiceName() === 'twitter' ? this.mention : null;
-	},
-
-
-	/**
 	 * Returns the configured {@link #serviceName} to point the mention to.
 	 * Ex: 'instagram', 'twitter'.
 	 *
@@ -2636,6 +2673,24 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 */
 	getAnchorText : function() {
 		return '@' + this.mention;
+	},
+
+
+	/**
+	 * Returns the CSS class suffixes that should be used on a tag built with
+	 * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+	 * details.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		var cssClassSuffixes = Autolinker.match.Match.prototype.getCssClassSuffixes.call( this ),
+		    serviceName = this.getServiceName();
+
+		if( serviceName ) {
+			cssClassSuffixes.push( serviceName );
+		}
+		return cssClassSuffixes;
 	}
 
 } );
@@ -3531,6 +3586,13 @@ Autolinker.matcher.UrlMatchValidator = {
 	 */
 	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z\u00C0-\u017F]/,
 
+	/**
+	 * Regex to determine if the string is a valid IP address
+	 *
+	 * @private
+	 * @property {RegExp} ipRegex
+	 */
+	ipRegex: /[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?(:[0-9]*)?\/?$/,
 
 	/**
 	 * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
@@ -3561,7 +3623,9 @@ Autolinker.matcher.UrlMatchValidator = {
 		if(
 			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||    // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-			this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch )  // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+			(this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+			 !this.isValidIpAddress( urlMatch ) // Except if it's an IP address
+			)
 		) {
 			return false;
 		}
@@ -3569,6 +3633,13 @@ Autolinker.matcher.UrlMatchValidator = {
 		return true;
 	},
 
+
+	isValidIpAddress : function ( uriSchemeMatch ) {
+		var newRegex = new RegExp(this.hasFullProtocolRegex.source + this.ipRegex.source);
+		var uriScheme = uriSchemeMatch.match( newRegex );
+
+		return uriScheme !== null;
+	},
 
 	/**
 	 * Determines if the URI scheme is a valid scheme to be autolinked. Returns
