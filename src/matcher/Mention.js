@@ -1,21 +1,24 @@
 /*global Autolinker */
 /**
- * @class Autolinker.matcher.Twitter
+ * @class Autolinker.matcher.Mention
  * @extends Autolinker.matcher.Matcher
  *
  * Matcher to find/replace username matches in an input string.
  */
-Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+Autolinker.matcher.Mention = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 	/**
-	 * The regular expression to match username handles. Example match:
+	 * Hash of regular expression to match username handles. Example match:
 	 *
 	 *     @asdf
 	 *
 	 * @private
-	 * @property {RegExp} matcherRegex
+	 * @property {Object} matcherRegexes
 	 */
-	matcherRegex : new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
+	matcherRegexes : {
+		"twitter": new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
+		"instagram": new RegExp( '@[_.' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,50}', 'g' )
+	},
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -30,14 +33,31 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 
 
 	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
+
+		this.serviceName = cfg.serviceName;
+	},
+
+
+	/**
 	 * @inheritdoc
 	 */
 	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
+		var matcherRegex = this.matcherRegexes[this.serviceName],
 		    nonWordCharRegex = this.nonWordCharRegex,
+		    serviceName = this.serviceName,
 		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
+
+		if (!matcherRegex) {
+			return matches;
+		}
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var offset = match.index,
@@ -47,14 +67,15 @@ Autolinker.matcher.Twitter = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 			// and there is a whitespace char in front of it (meaning it is not an email
 			// address), then it is a username match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				var matchedText = match[ 0 ],
-				    twitterHandle = match[ 0 ].slice( 1 );  // strip off the '@' character at the beginning
+				var matchedText = match[ 0 ].replace(/\.+$/g, ''), // strip off trailing .
+				    mention = matchedText.slice( 1 );  // strip off the '@' character at the beginning
 
-				matches.push( new Autolinker.match.Twitter( {
+				matches.push( new Autolinker.match.Mention( {
 					tagBuilder    : tagBuilder,
 					matchedText   : matchedText,
 					offset        : offset,
-					twitterHandle : twitterHandle
+					serviceName   : serviceName,
+					mention       : mention
 				} ) );
 			}
 		}

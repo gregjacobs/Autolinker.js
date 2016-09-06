@@ -8,10 +8,10 @@
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, and Twitter Handles
+ *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
  *
  *     var linkedText = Autolinker.link( input, {
- *         replaceFn : function( autolinker, match ) {
+ *         replaceFn : function( match ) {
  *             console.log( "href = ", match.getAnchorHref() );
  *             console.log( "text = ", match.getAnchorText() );
  *
@@ -22,8 +22,8 @@
  *                 case 'email' :
  *                     console.log( "email: ", match.getEmail() );
  *
- *                 case 'twitter' :
- *                     console.log( "twitter: ", match.getTwitterHandle() );
+ *                 case 'mention' :
+ *                     console.log( "mention: ", match.getMention() );
  *             }
  *         }
  *     } );
@@ -133,6 +133,32 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @return {String}
 	 */
 	getAnchorText : Autolinker.Util.abstractMethod,
+
+
+	/**
+	 * Returns the CSS class suffix(es) for this match.
+	 *
+	 * A CSS class suffix is appended to the {@link Autolinker#className} in
+	 * the {@link AnchorTagBuilder} when a match is translated into an anchor
+	 * tag.
+	 *
+	 * For example, if {@link Autolinker#className} was configured as 'myLink',
+	 * and this method returns `[ 'url' ]`, the final class name of the element
+	 * will become: 'myLink myLink-url'.
+	 *
+	 * The match may provide multiple CSS class suffixes to be appended to the
+	 * {@link Autolinker#className} in order to facilitate better styling
+	 * options for different match criteria. See {@link Autolinker.match.Mention}
+	 * for an example.
+	 *
+	 * By default, this method returns a single array with the match's
+	 * {@link #getType type} name, but may be overridden by subclasses.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		return [ this.getType() ];
+	},
 
 
 	/**
