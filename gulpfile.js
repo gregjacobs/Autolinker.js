@@ -31,11 +31,11 @@ const pkg = require( './package.json' ),
 
 gulp.task( 'default', [ 'lint', 'build', 'test' ] );
 gulp.task( 'lint', lintTask );
-gulp.task( 'typescript', typescriptTask );  // for examples
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
 gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
 gulp.task( 'serve', [ 'typescript' ], serveTask );
+gulp.task( 'typescript', typescriptTask );  // for examples
 
 
 function buildTask() {
@@ -90,7 +90,7 @@ function lintTask() {
 
 
 function serveTask() {
-	gulp.watch( './examples/live-example/js/**', [ 'typescript' ] );
+	gulp.watch( './examples/live-example/src/**', [ 'typescript' ] );
 
 	connect.server();
 }
@@ -112,7 +112,7 @@ function testTask( done ) {
 
 
 function typescriptTask() {
-	return gulp.src( [ './examples/js/**/*.ts' ] )
+	return gulp.src( [ './examples/src/**/*.ts' ] )
 		.pipe( typescript( { noImplicitAny: true, out: 'live-example.js' }, null, typescript.reporter.fullReporter() ) )
 		.pipe( gulp.dest( './examples/live-example/' ) );
 }
