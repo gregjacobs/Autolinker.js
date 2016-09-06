@@ -252,7 +252,7 @@ var LiveExample;
     LiveExample.TextOption = TextOption;
 })(LiveExample || (LiveExample = {}));
 /// <reference path="../../../typings/tsd.d.ts" />
-/*global $, Autolinker, CheckboxOption, RadioOption, TextOption */
+/*global $, Autolinker */
 /*jshint browser:true */
 var CheckboxOption = LiveExample.CheckboxOption;
 var RadioOption = LiveExample.RadioOption;
@@ -293,7 +293,7 @@ $(document).ready(function () {
             },
             email: emailOption.getValue(),
             phone: phoneOption.getValue(),
-            twitter: mentionOption.getValue(),
+            mention: mentionOption.getValue(),
             hashtag: hashtagOption.getValue(),
             newWindow: newWindowOption.getValue(),
             stripPrefix: stripPrefixOption.getValue(),
@@ -314,7 +314,7 @@ $(document).ready(function () {
             "    },",
             ("    email       : " + optionsObj.email + ","),
             ("    phone       : " + optionsObj.phone + ","),
-            ("    twitter     : " + optionsObj.twitter + ","),
+            ("    mention     : " + optionsObj.mention + ","),
             ("    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ","),
             "",
             ("    stripPrefix : " + optionsObj.stripPrefix + ","),

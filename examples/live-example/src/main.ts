@@ -14,7 +14,7 @@ $( document ).ready( function() {
 	    $outputEl = $( '#output' ),
 	    $optionsOutputEl = $( '#options-output' ),
 
-	    urlsSchemeOption,
+	    urlsSchemeOption: LiveExample.Option,
 	    urlsWwwOption: LiveExample.Option,
 	    urlsTldOption: LiveExample.Option,
 	    emailOption: LiveExample.Option,
@@ -38,7 +38,7 @@ $( document ).ready( function() {
 		urlsTldOption = new CheckboxOption( { name: 'urls.tldMatches', description: 'TLD URLs', defaultValue: true } ).onChange( autolink );
 		emailOption = new CheckboxOption( { name: 'email', description: 'Email Addresses', defaultValue: true } ).onChange( autolink );
 		phoneOption = new CheckboxOption( { name: 'phone', description: 'Phone Numbers', defaultValue: true } ).onChange( autolink );
-		mentionOption = new RadioOption( { name: 'twitter', description: 'Twitter Handles', options: [ false, 'twitter', 'instagram' ], defaultValue: false } ).onChange( autolink );
+		mentionOption = new RadioOption( { name: 'mention', description: 'Mentions', options: [ false, 'twitter', 'instagram' ], defaultValue: false } ).onChange( autolink );
 		hashtagOption = new RadioOption( { name: 'hashtag', description: 'Hashtags', options: [ false, 'twitter', 'facebook', 'instagram' ], defaultValue: false } ).onChange( autolink );
 
 		newWindowOption = new CheckboxOption( { name: 'newWindow', description: 'Open in new window', defaultValue: true } ).onChange( autolink );

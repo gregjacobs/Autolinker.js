@@ -112,8 +112,14 @@ function testTask( done ) {
 
 
 function typescriptTask() {
-	return gulp.src( [ './examples/src/**/*.ts' ] )
-		.pipe( typescript( { noImplicitAny: true, out: 'live-example.js' }, null, typescript.reporter.fullReporter() ) )
+	return gulp.src( [
+		'./examples/live-example/src/Option.ts',
+		'./examples/live-example/src/CheckboxOption.ts',
+		'./examples/live-example/src/RadioOption.ts',
+		'./examples/live-example/src/TextOption.ts',
+		'./examples/live-example/src/main.ts'
+	] )
+		.pipe( typescript( { noImplicitAny: true, out: 'live-example.js' } ) )
 		.pipe( gulp.dest( './examples/live-example/' ) );
 }
 
