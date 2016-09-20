@@ -86,6 +86,13 @@ describe( "Autolinker.matcher.Url", function() {
 			expect( matches.length ).toBe( 0 );
 		});
 
+		it( 'should match the entire URL with a check character', function() {
+			var matches = matcher.parseMatches( 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
+		});
+
 
 		describe( 'protocol-relative URLs', function() {
 
