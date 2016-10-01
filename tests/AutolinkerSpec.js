@@ -2571,4 +2571,80 @@ describe( "Autolinker", function() {
 
 	} );
 
+
+	describe( 'static parse()', function() {
+
+		it( 'should return an array of Match objects for the input', function() {
+			var text = [
+				'Website: asdf.com',
+				'Email: asdf@asdf.com',
+				'Phone: (123) 456-7890',
+				'Mention: @asdf1',
+				'Hashtag: #asdf2'
+			].join( ' ' );
+
+			var matches = Autolinker.parse( text, {
+				hashtag : 'twitter',
+				mention : 'twitter'
+			} );
+
+			expect( matches.length ).toBe( 5 );
+
+			expect( matches[ 0 ].getType() ).toBe( 'url' );
+			expect( matches[ 0 ].getUrl() ).toBe( 'http://asdf.com' );
+
+			expect( matches[ 1 ].getType() ).toBe( 'email' );
+			expect( matches[ 1 ].getEmail() ).toBe( 'asdf@asdf.com' );
+
+			expect( matches[ 2 ].getType() ).toBe( 'phone' );
+			expect( matches[ 2 ].getNumber() ).toBe( '1234567890' );
+
+			expect( matches[ 3 ].getType() ).toBe( 'mention' );
+			expect( matches[ 3 ].getMention() ).toBe( 'asdf1' );
+
+			expect( matches[ 4 ].getType() ).toBe( 'hashtag' );
+			expect( matches[ 4 ].getHashtag() ).toBe( 'asdf2' );
+		} );
+
+	} );
+
+
+
+	describe( 'parse()', function() {
+
+		it( 'should return an array of Match objects for the input', function() {
+			var autolinker = new Autolinker( {
+				hashtag : 'twitter',
+				mention : 'twitter'
+			} );
+
+			var text = [
+				'Website: asdf.com',
+				'Email: asdf@asdf.com',
+				'Phone: (123) 456-7890',
+				'Mention: @asdf1',
+				'Hashtag: #asdf2'
+			].join( ' ' );
+			var matches = autolinker.parse( text );
+
+			expect( matches.length ).toBe( 5 );
+
+			expect( matches[ 0 ].getType() ).toBe( 'url' );
+			expect( matches[ 0 ].getUrl() ).toBe( 'http://asdf.com' );
+
+			expect( matches[ 1 ].getType() ).toBe( 'email' );
+			expect( matches[ 1 ].getEmail() ).toBe( 'asdf@asdf.com' );
+
+			expect( matches[ 2 ].getType() ).toBe( 'phone' );
+			expect( matches[ 2 ].getNumber() ).toBe( '1234567890' );
+
+			expect( matches[ 3 ].getType() ).toBe( 'mention' );
+			expect( matches[ 3 ].getMention() ).toBe( 'asdf1' );
+
+			expect( matches[ 4 ].getType() ).toBe( 'hashtag' );
+			expect( matches[ 4 ].getHashtag() ).toBe( 'asdf2' );
+		} );
+
+	} );
+
 } );
