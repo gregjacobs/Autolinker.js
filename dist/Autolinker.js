@@ -216,6 +216,7 @@ Autolinker.link = function( textOrHtml, options ) {
  *     console.log( matches[ 1 ].getType() );   // 'email'
  *     console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
  *
+ * @static
  * @param {String} textOrHtml The HTML or text to find matches within
  *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
  *   {@link #hashtag}, and {@link #mention} options are enabled).
