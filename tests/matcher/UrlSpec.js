@@ -93,6 +93,21 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
 		});
 
+		it( 'should match any local URL with http before', function() {
+			var matches = matcher.parseMatches( 'http://localhost.local001/test' );
+			var othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
+
+			expect( matches.length ).toBe( 1 );
+			expect( othermatches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://localhost.local001/test', 0 );
+			MatchChecker.expectUrlMatch( othermatches[ 0 ], 'http://suus111.w10:8090/display/test/AI', 0 );
+		});
+
+		it( 'should not match a local URL that does not have the http before', function() {
+			var matches = matcher.parseMatches( 'localhost.local001/test' );
+
+			expect( matches.length ).toBe( 0 );
+		});
 
 		describe( 'protocol-relative URLs', function() {
 

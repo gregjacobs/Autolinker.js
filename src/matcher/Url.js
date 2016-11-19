@@ -299,7 +299,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		offset += res[1].length;
 		urlMatch = urlMatch.slice(res[1].length);
-		if (/^[^.A-Za-z:\/?#]/.test(urlMatch)) {
+		if (/^[^.A-Za-z0-9:\/?#]/.test(urlMatch)) {
 			return offset;
 		}
 
