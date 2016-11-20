@@ -93,6 +93,14 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
 		});
 
+		it( 'should not match an address with multiple dots', function() {
+			var matches = matcher.parseMatches( 'hello:...world' );
+			var othermatches = matcher.parseMatches( 'hello:wo.....rld' );
+
+			expect( matches.length ).toBe( 0 );
+			expect( othermatches.length ).toBe( 0 );
+		});
+
 
 		describe( 'protocol-relative URLs', function() {
 
