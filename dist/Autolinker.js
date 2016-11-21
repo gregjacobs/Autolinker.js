@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.3.0
+ * 1.3.1
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -240,7 +240,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.3.0';
+Autolinker.version = '1.3.1';
 
 
 Autolinker.prototype = {
@@ -1915,7 +1915,14 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( text ) {
 				textAndEntityNodes = this.parseTextAndEntityNodes( lastIndex, text );
-				nodes.push.apply( nodes, textAndEntityNodes );
+
+				// Note: the following 3 lines were previously:
+				//   nodes.push.apply( nodes, textAndEntityNodes );
+				// but this was causing a "Maximum Call Stack Size Exceeded"
+				// error on inputs with a large number of html entities.
+				textAndEntityNodes.forEach( function( node ) {
+					nodes.push( node );
+				} );
 			}
 		}
 
