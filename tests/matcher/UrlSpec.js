@@ -6,7 +6,8 @@ describe( "Autolinker.matcher.Url", function() {
 	beforeEach( function() {
 		matcher = new Autolinker.matcher.Url( {
 			tagBuilder  : new Autolinker.AnchorTagBuilder(),
-			stripPrefix : false
+			stripPrefix : false,
+			stripTrailingSlash : false
 		} );
 	} );
 
