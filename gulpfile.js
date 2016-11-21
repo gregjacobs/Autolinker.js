@@ -29,7 +29,7 @@ const pkg = require( './package.json' ),
       minDistFilePath = distFolder + minDistFilename;
 
 
-gulp.task( 'default', [ 'lint', 'build', 'test' ] );
+gulp.task( 'default', [ 'lint', 'doc', 'test' ] );
 gulp.task( 'lint', lintTask );
 gulp.task( 'build', buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
