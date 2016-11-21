@@ -95,7 +95,7 @@ describe( "Autolinker.matcher.Url", function() {
 		});
 
 
-		it( 'should match any local URL with http before', function() {
+		it( 'should match any local URL with numbers with http:// before', function() {
 			var matches = matcher.parseMatches( 'http://localhost.local001/test' );
 			var othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
 
@@ -105,7 +105,8 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( othermatches[ 0 ], 'http://suus111.w10:8090/display/test/AI', 0 );
 		});
 
-		it( 'should not match a local URL that does not have the http before', function() {
+
+		it( 'should not match a local URL with numbers that does not have the http:// before', function() {
 			var matches = matcher.parseMatches( 'localhost.local001/test' );
 
 			expect( matches.length ).toBe( 0 );

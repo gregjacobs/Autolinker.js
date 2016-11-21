@@ -295,6 +295,25 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 				} );
 
+
+				it( 'should match local urls with numbers when prefixed with http://', function() {
+					var result1 = autolinker.link( 'http://localhost.local001/test' );
+					expect( result1 ).toBe( '<a href="http://localhost.local001/test">localhost.local001/test</a>' );
+
+					var result2 = autolinker.link( 'http://suus111.w10:8090/display/test/AI' );
+					expect( result2 ).toBe( '<a href="http://suus111.w10:8090/display/test/AI">suus111.w10:8090/display/test/AI</a>' );
+				} );
+
+
+				it( 'should not match local urls with numbers when NOT prefixed with http://', function() {
+					var result1 = autolinker.link( 'localhost.local001/test' );
+					expect( result1 ).toBe( 'localhost.local001/test' );
+
+					var result2 = autolinker.link( 'suus111.w10:8090/display/test/AI' );
+					expect( result2 ).toBe( 'suus111.w10:8090/display/test/AI' );
+				} );
+
+
 				it( 'should not match an address with multiple dots', function() {
 					expect( autolinker.link( 'hello:...world' ) ).toBe( 'hello:...world' );
 					expect( autolinker.link( 'hello:wo.....rld' ) ).toBe( 'hello:wo.....rld' );
