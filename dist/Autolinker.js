@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.2.1
+ * 1.2.2
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -240,7 +240,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.2.1';
+Autolinker.version = '1.2.2';
 
 
 Autolinker.prototype = {
@@ -3802,8 +3802,8 @@ Autolinker.matcher.UrlMatchValidator = {
 			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||    // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
 			(this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-			 !this.isValidIpAddress( urlMatch ) // Except if it's an IP address
-			)
+			   !this.isValidIpAddress( urlMatch )) || // Except if it's an IP address
+			this.containsMultipleDots( urlMatch )
 		) {
 			return false;
 		}
@@ -3817,6 +3817,10 @@ Autolinker.matcher.UrlMatchValidator = {
 		var uriScheme = uriSchemeMatch.match( newRegex );
 
 		return uriScheme !== null;
+	},
+
+	containsMultipleDots : function ( urlMatch ) {
+		return urlMatch.indexOf("..") > -1;
 	},
 
 	/**
@@ -3887,6 +3891,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	}
 
 };
+
 /*global Autolinker */
 /**
  * A truncation feature where the ellipsis will be placed at the end of the URL.
