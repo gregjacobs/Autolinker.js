@@ -6,7 +6,8 @@ describe( "Autolinker.matcher.Url", function() {
 	beforeEach( function() {
 		matcher = new Autolinker.matcher.Url( {
 			tagBuilder  : new Autolinker.AnchorTagBuilder(),
-			stripPrefix : false
+			stripPrefix : false,
+			stripTrailingSlash : false
 		} );
 	} );
 
@@ -93,6 +94,7 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
 		});
 
+
 		it( 'should match any local URL with http before', function() {
 			var matches = matcher.parseMatches( 'http://localhost.local001/test' );
 			var othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
@@ -108,6 +110,16 @@ describe( "Autolinker.matcher.Url", function() {
 
 			expect( matches.length ).toBe( 0 );
 		});
+
+
+		it( 'should not match an address with multiple dots', function() {
+			var matches = matcher.parseMatches( 'hello:...world' );
+			var othermatches = matcher.parseMatches( 'hello:wo.....rld' );
+
+			expect( matches.length ).toBe( 0 );
+			expect( othermatches.length ).toBe( 0 );
+		});
+
 
 		describe( 'protocol-relative URLs', function() {
 

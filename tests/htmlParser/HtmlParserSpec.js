@@ -132,6 +132,32 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 			expect( result.join( "" ) ).toBe( inputStr );
 		} );
 
+
+		it( "should properly handle tags without attributes", function() {
+			var nodes = htmlParser.parse( 'Test1 <div><span>Test2</span> Test3</div>' );
+
+			expect( nodes.length ).toBe( 7 );
+			expectTextNode   ( nodes[ 0 ], 0, 'Test1 ' );
+			expectElementNode( nodes[ 1 ], 6, '<div>', 'div', false );
+			expectElementNode( nodes[ 2 ], 11, '<span>', 'span', false );
+			expectTextNode   ( nodes[ 3 ], 17, 'Test2' );
+			expectElementNode( nodes[ 4 ], 22, '</span>', 'span', true );
+			expectTextNode   ( nodes[ 5 ], 29, ' Test3' );
+			expectElementNode( nodes[ 6 ], 35, '</div>', 'div', true );
+		} );
+
+
+		it( "should properly handle a tag where the attributes start on the " +
+			"next line",
+		function() {
+			var nodes = htmlParser.parse( 'Test <div\nclass="myClass"\nstyle="color:red"> Test' );
+
+			expect( nodes.length ).toBe( 3 );
+			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
+			expectElementNode( nodes[ 1 ], 5, '<div\nclass="myClass"\nstyle="color:red">', 'div', false );
+			expectTextNode   ( nodes[ 2 ], 44, ' Test' );
+		} );
+
 	} );
 
 
@@ -268,6 +294,15 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 	it( "should not freeze up the regular expression engine when presented with the input string in issue #54", function() {
 		var inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! 'Gefallt mir' klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
+		    nodes = htmlParser.parse( inputStr );
+
+		expect( nodes.length ).toBe( 1 );
+		expectTextNode( nodes[ 0 ], 0, inputStr );
+	} );
+
+
+	it( "should not freeze up the regular expression engine when presented with the input string in issue #172", function() {
+		var inputStr = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017',//:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
 		    nodes = htmlParser.parse( inputStr );
 
 		expect( nodes.length ).toBe( 1 );

@@ -295,6 +295,11 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 				} );
 
+				it( 'should not match an address with multiple dots', function() {
+					expect( autolinker.link( 'hello:...world' ) ).toBe( 'hello:...world' );
+					expect( autolinker.link( 'hello:wo.....rld' ) ).toBe( 'hello:wo.....rld' );
+				});
+
 				describe( "protocol linking", function() {
 
 					it( "should NOT include preceding ':' introductions without a space", function() {
@@ -1419,6 +1424,7 @@ describe( "Autolinker", function() {
 			it( "should not fail with an infinite loop for these given input strings (Issue #160)", function() {
 				var inputStrings = [
 					'asdf ouefof<33we oeweofjojfew oeijwffejifjew ojiwjoiwefj iowjefojwe iofjw:)<33',
+					'<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3',
 					'<33<33<33<33<33<33<33<33<33<33',
 					'<33<33<33<33<33<33<33<33<33<33<33'
 				];
@@ -1470,6 +1476,32 @@ describe( "Autolinker", function() {
 				var result = autolinker.link( str );
 
 				expect( result ).toBe( str );
+			} );
+
+
+			it( "should not fail with an infinite loop for an input string with " +
+				"a string that looks like HTML (Issue #172)",
+			function() {
+				var str = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
+				    result = autolinker.link( str );
+
+				expect( result ).toBe( str );
+			} );
+
+
+			it( "should not fail with a Maximum Call Stack Size Exceeded for an " +
+				"input with a large number of html entities (Issue #171)",
+			function() {
+				var testStr = (function() {
+					var t = [];
+					for (var i = 0; i < 50000; i++) {
+						t.push( ' /&gt;&lt;br' );
+					}
+					return t.join( '' );
+				})();
+
+				var result = autolinker.link( testStr );
+				expect( result ).toBe( testStr );
 			} );
 
 

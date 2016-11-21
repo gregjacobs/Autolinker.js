@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.2.1
+ * 1.3.1
  *
  * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -240,7 +240,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.2.1';
+Autolinker.version = '1.3.1';
 
 
 Autolinker.prototype = {
@@ -1783,7 +1783,8 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * 2. If it is an end tag, this group will have the '/'.
 	 * 3. If it is a comment tag, this group will hold the comment text (i.e.
 	 *    the text inside the `&lt;!--` and `--&gt;`.
-	 * 4. The tag name for all tags (other than the &lt;!DOCTYPE&gt; tag)
+	 * 4. The tag name for a tag without attributes (other than the &lt;!DOCTYPE&gt; tag)
+	 * 5. The tag name for a tag with attributes (other than the &lt;!DOCTYPE&gt; tag)
 	 */
 	htmlRegex : (function() {
 		var commentTagRegex = /!--([\s\S]+?)--/,
@@ -1821,10 +1822,28 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 						'|',
 
+						// Handle tag without attributes.
+						// Doing this separately from a tag that has attributes
+						// to fix a regex time complexity issue seen with the
+						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
 						'(?:',
-
-							// *** Capturing Group 4 - The tag name
+							// *** Capturing Group 4 - The tag name for a tag without attributes
 							'(' + tagNameRegex.source + ')',
+
+							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
+						')',
+
+						'|',
+
+						// Handle tag with attributes
+						// Doing this separately from a tag with no attributes
+						// to fix a regex time complexity issue seen with the
+						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
+						'(?:',
+							// *** Capturing Group 5 - The tag name for a tag with attributes
+							'(' + tagNameRegex.source + ')',
+
+							'\\s+',  // must have at least one space after the tag name to prevent ReDoS issue (issue #172)
 
 							// Zero or more attributes following the tag name
 							'(?:',
@@ -1833,7 +1852,6 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 							')*',
 
 							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
-
 						')',
 					')',
 				'>',
@@ -1869,7 +1887,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
 			    commentText = currentResult[ 3 ], // if we've matched a comment
-			    tagName = currentResult[ 1 ] || currentResult[ 4 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
+			    tagName = currentResult[ 1 ] || currentResult[ 4 ] || currentResult[ 5 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
 			    isClosingTag = !!currentResult[ 2 ],
 			    offset = currentResult.index,
 			    inBetweenTagsText = html.substring( lastIndex, offset );
@@ -1897,7 +1915,14 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			// Push TextNodes and EntityNodes for any text found between tags
 			if( text ) {
 				textAndEntityNodes = this.parseTextAndEntityNodes( lastIndex, text );
-				nodes.push.apply( nodes, textAndEntityNodes );
+
+				// Note: the following 3 lines were previously:
+				//   nodes.push.apply( nodes, textAndEntityNodes );
+				// but this was causing a "Maximum Call Stack Size Exceeded"
+				// error on inputs with a large number of html entities.
+				textAndEntityNodes.forEach( function( node ) {
+					nodes.push( node );
+				} );
 			}
 		}
 
@@ -3803,8 +3828,8 @@ Autolinker.matcher.UrlMatchValidator = {
 			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||    // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
 			(this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-			 !this.isValidIpAddress( urlMatch ) // Except if it's an IP address
-			)
+			   !this.isValidIpAddress( urlMatch )) || // Except if it's an IP address
+			this.containsMultipleDots( urlMatch )
 		) {
 			return false;
 		}
@@ -3818,6 +3843,10 @@ Autolinker.matcher.UrlMatchValidator = {
 		var uriScheme = uriSchemeMatch.match( newRegex );
 
 		return uriScheme !== null;
+	},
+
+	containsMultipleDots : function ( urlMatch ) {
+		return urlMatch.indexOf("..") > -1;
 	},
 
 	/**
@@ -3888,6 +3917,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	}
 
 };
+
 /*global Autolinker */
 /**
  * A truncation feature where the ellipsis will be placed at the end of the URL.
