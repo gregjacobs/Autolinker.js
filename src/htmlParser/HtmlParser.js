@@ -24,7 +24,8 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 	 * 2. If it is an end tag, this group will have the '/'.
 	 * 3. If it is a comment tag, this group will hold the comment text (i.e.
 	 *    the text inside the `&lt;!--` and `--&gt;`.
-	 * 4. The tag name for all tags (other than the &lt;!DOCTYPE&gt; tag)
+	 * 4. The tag name for a tag without attributes (other than the &lt;!DOCTYPE&gt; tag)
+	 * 5. The tag name for a tag with attributes (other than the &lt;!DOCTYPE&gt; tag)
 	 */
 	htmlRegex : (function() {
 		var commentTagRegex = /!--([\s\S]+?)--/,
@@ -62,10 +63,28 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 						'|',
 
+						// Handle tag without attributes.
+						// Doing this separately from a tag that has attributes
+						// to fix a regex time complexity issue seen with the
+						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
 						'(?:',
-
-							// *** Capturing Group 4 - The tag name
+							// *** Capturing Group 4 - The tag name for a tag without attributes
 							'(' + tagNameRegex.source + ')',
+
+							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
+						')',
+
+						'|',
+
+						// Handle tag with attributes
+						// Doing this separately from a tag with no attributes
+						// to fix a regex time complexity issue seen with the
+						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
+						'(?:',
+							// *** Capturing Group 5 - The tag name for a tag with attributes
+							'(' + tagNameRegex.source + ')',
+
+							'\\s+',  // must have at least one space after the tag name to prevent ReDoS issue (issue #172)
 
 							// Zero or more attributes following the tag name
 							'(?:',
@@ -74,7 +93,6 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 							')*',
 
 							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
-
 						')',
 					')',
 				'>',
@@ -110,7 +128,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
 			    commentText = currentResult[ 3 ], // if we've matched a comment
-			    tagName = currentResult[ 1 ] || currentResult[ 4 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
+			    tagName = currentResult[ 1 ] || currentResult[ 4 ] || currentResult[ 5 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
 			    isClosingTag = !!currentResult[ 2 ],
 			    offset = currentResult.index,
 			    inBetweenTagsText = html.substring( lastIndex, offset );

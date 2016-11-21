@@ -1424,6 +1424,7 @@ describe( "Autolinker", function() {
 			it( "should not fail with an infinite loop for these given input strings (Issue #160)", function() {
 				var inputStrings = [
 					'asdf ouefof<33we oeweofjojfew oeijwffejifjew ojiwjoiwefj iowjefojwe iofjw:)<33',
+					'<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3',
 					'<33<33<33<33<33<33<33<33<33<33',
 					'<33<33<33<33<33<33<33<33<33<33<33'
 				];
@@ -1473,6 +1474,16 @@ describe( "Autolinker", function() {
 				var str = '-Que estupendos nos vemos <3#lapeorfoto #despedida2016 #dehoyoenhoyo #rabbit';
 
 				var result = autolinker.link( str );
+
+				expect( result ).toBe( str );
+			} );
+
+
+			it( "should not fail with an infinite loop for an input string with " +
+				"a string that looks like HTML (Issue #172)",
+			function() {
+				var str = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
+				    result = autolinker.link( str );
 
 				expect( result ).toBe( str );
 			} );
