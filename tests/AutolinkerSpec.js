@@ -295,6 +295,11 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 				} );
 
+				it( 'should not match an address with multiple dots', function() {
+					expect( autolinker.link( 'hello:...world' ) ).toBe( 'hello:...world' );
+					expect( autolinker.link( 'hello:wo.....rld' ) ).toBe( 'hello:wo.....rld' );
+				});
+
 				describe( "protocol linking", function() {
 
 					it( "should NOT include preceding ':' introductions without a space", function() {
