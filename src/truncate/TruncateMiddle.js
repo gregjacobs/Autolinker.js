@@ -14,10 +14,22 @@ Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
   if (url.length <= truncateLen) {
     return url;
   }
-  var availableLength = truncateLen - ellipsisChars.length;
+
+  var ellipsisLengthBeforeParsing;
+
+  if(ellipsisChars == null) {
+    ellipsisChars = '&hellip;';
+    ellipsisLengthBeforeParsing = 8;
+    ellipsisLength = 3;
+  } else {
+    ellipsisLengthBeforeParsing = ellipsisChars.length;
+    ellipsisLength = ellipsisChars.length;
+  }
+
+  var availableLength = truncateLen - ellipsisLength;
   var end = "";
   if (availableLength > 0) {
     end = url.substr((-1)*Math.floor(availableLength/2));
   }
-  return (url.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, truncateLen);
+  return (url.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
 };

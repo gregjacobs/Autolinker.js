@@ -174,13 +174,13 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 			truncateLocation = truncate.location;
 
 		if( truncateLocation === 'smart' ) {
-			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength );
 
 		} else if( truncateLocation === 'middle' ) {
-			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength );
 
 		} else {
-			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength );
 		}
 	}
 
