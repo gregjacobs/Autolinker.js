@@ -97,6 +97,12 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 			attrs[ 'rel' ] = "noopener noreferrer";
 		}
 
+		if( this.truncate ) {
+			if( this.truncate.length && this.truncate.length < match.getAnchorText().length ) {
+				attrs[ 'title' ] = match.getAnchorHref();
+			}
+		}
+
 		return attrs;
 	},
 

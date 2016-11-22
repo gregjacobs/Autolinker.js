@@ -14,6 +14,7 @@
 Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 
 	var ellipsisLengthBeforeParsing;
+	var ellipsisLength;
 
 	if(ellipsisChars == null) {
 		ellipsisChars = '&hellip;';
