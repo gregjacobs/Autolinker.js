@@ -7,7 +7,7 @@ describe( "Autolinker", function() {
 			var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
 
 			var result = autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
-			expect( result ).toBe( 'Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>' );
+			expect( result ).toBe( 'Check out <a href="http://www.yahoo.com/some/long/path/to/a/file" title="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pa&hellip;</a>' );
 		} );
 
 	} );
@@ -1886,7 +1886,7 @@ describe( "Autolinker", function() {
 				it( "should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified", function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: 12, newWindow: false } );
 
-					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/wi..</a>' );
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>' );
 				} );
 
 
@@ -1925,26 +1925,26 @@ describe( "Autolinker", function() {
 				it( 'should default the `location` to "end" if it is not provided', function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 12 }, newWindow: false } );
 
-					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/wi..</a>' );
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>' );
 				} );
 
 
 				it( 'should truncate at the end when `location: "end"` is specified', function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 12, location: 'end' }, newWindow: false } );
 
-					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/wi..</a>' );
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>' );
 				} );
 
 
 				it( 'should truncate in the middle when `location: "middle"` is specified', function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 12, location: 'middle' }, newWindow: false } );
-					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.c../path</a>' );
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.c&hellip;path</a>' );
 				} );
 
 
 				it( 'should truncate according to the "smart" truncation rules when `location: "smart"` is specified', function() {
 					var result = Autolinker.link( "Test http://url.com/with/path", { truncate: { length: 12, location: 'smart' }, newWindow: false } );
-					expect( result ).toBe( 'Test <a href="http://url.com/with/path">url.com/w..h</a>' );
+					expect( result ).toBe( 'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/&hellip;h</a>' );
 				} );
 
 			} );

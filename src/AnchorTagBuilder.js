@@ -97,6 +97,12 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 			attrs[ 'rel' ] = "noopener noreferrer";
 		}
 
+		if( this.truncate ) {
+			if( this.truncate.length && this.truncate.length < match.getAnchorText().length ) {
+				attrs[ 'title' ] = match.getAnchorHref();
+			}
+		}
+
 		return attrs;
 	},
 
@@ -174,13 +180,13 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 			truncateLocation = truncate.location;
 
 		if( truncateLocation === 'smart' ) {
-			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength );
 
 		} else if( truncateLocation === 'middle' ) {
-			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength );
 
 		} else {
-			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength, '..' );
+			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength );
 		}
 	}
 

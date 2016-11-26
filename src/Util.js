@@ -102,13 +102,21 @@ Autolinker.Util = {
 	 *
 	 * @param {String} str The string to truncate and add an ellipsis to.
 	 * @param {Number} truncateLen The length to truncate the string at.
-	 * @param {String} [ellipsisChars=..] The ellipsis character(s) to add to the end of `str`
-	 *   when truncated. Defaults to '..'
+	 * @param {String} [ellipsisChars=...] The ellipsis character(s) to add to the end of `str`
+	 *   when truncated. Defaults to '...'
 	 */
 	ellipsis : function( str, truncateLen, ellipsisChars ) {
+		var ellipsisLength;
+
 		if( str.length > truncateLen ) {
-			ellipsisChars = ( ellipsisChars == null ) ? '..' : ellipsisChars;
-			str = str.substring( 0, truncateLen - ellipsisChars.length ) + ellipsisChars;
+			if(ellipsisChars == null) {
+			  ellipsisChars = '&hellip;';
+			  ellipsisLength = 3;
+			} else {
+			  ellipsisLength = ellipsisChars.length;
+			}
+
+			str = str.substring( 0, truncateLen - ellipsisLength ) + ellipsisChars;
 		}
 		return str;
 	},
