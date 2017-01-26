@@ -2,7 +2,7 @@
  * Autolinker.js
  * 1.4.0
  *
- * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
+ * Copyright(c) 2017 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
  *
  * https://github.com/gregjacobs/Autolinker.js
@@ -3336,30 +3336,35 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+	matcherRegex : /(?:(\+))?(\d{1,3}[-\s.])?\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}?([,\s0-9]*#)*(\d)*/g,  
+    // ex: (123) 456-7890, 123 456 7890, 123-456-7890, +18004441234,10226420346#, 
+    // +1 (800) 444 1234, 10226420346#, 1-800-444-1234,10226420346#
 
 	/**
 	 * @inheritdoc
 	 */
-	parseMatches : function( text ) {
+	parseMatches: function(text) {
 		var matcherRegex = this.matcherRegex,
-		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+			tagBuilder = this.tagBuilder,
+			matches = [],
+			match;
 
-		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+		while ((match = matcherRegex.exec(text)) !== null) {
 			// Remove non-numeric values from phone number string
-			var matchedText = match[ 0 ],
-			    cleanNumber = matchedText.replace( /\D/g, '' ),  // strip out non-digit characters
-			    plusSign = !!match[ 1 ];  // match[ 1 ] is the prefixed plus sign, if there is one
+			var matchedText = match[0],
+				cleanNumber = matchedText.replace(/[^0-9,#]/g, ''), // strip out non-digit characters exclude comma and #
+				plusSign = !!match[1]; // match[ 1 ] is the prefixed plus sign, if there is one
 
-			matches.push( new Autolinker.match.Phone( {
-				tagBuilder  : tagBuilder,
-				matchedText : matchedText,
-				offset      : match.index,
-				number      : cleanNumber,
-				plusSign    : plusSign
-			} ) );
+			// Exclude if the match is followed by numbers (e.g. for 11+ digit numbers that are just numbers)
+			if (!match[4]) {
+				matches.push(new Autolinker.match.Phone({
+					tagBuilder: tagBuilder,
+					matchedText: matchedText,
+					offset: match.index,
+					number: cleanNumber,
+					plusSign: plusSign
+				}));
+			}
 		}
 
 		return matches;
