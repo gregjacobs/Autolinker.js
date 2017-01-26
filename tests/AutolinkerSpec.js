@@ -1087,7 +1087,18 @@ describe( "Autolinker", function() {
 				expect( autolinker.link( "555	666 7777" ) ).toBe( '555	666 7777' );
 				expect( autolinker.link( "555\n666 7777" ) ).toBe( '555\n666 7777' );
 			} );
-
+            it( "should automatically link numbers when there are extensions with ,<numbers>#", function() {
+                expect( autolinker.link( "555 666 7777,234523#,23453#" ) ).toBe( '<a href="tel:5556667777,234523#,23453#">555 666 7777,234523#,23453#</a>' );
+                expect( autolinker.link( "1-555-666-7777,234523#" ) ).toBe( '<a href="tel:15556667777,234523#">1-555-666-7777,234523#</a>' );
+                expect( autolinker.link( "+1-555-666-7777,234523#" ) ).toBe( '<a href="tel:+15556667777,234523#">+1-555-666-7777,234523#</a>' );
+                expect( autolinker.link( "+1-555-666-7777,234523,233" ) ).toBe( '<a href="tel:+15556667777,234523,233">+1-555-666-7777,234523,233</a>' );
+                expect( autolinker.link( "+22016350659,;,55#;;234   ,  3334443323" ) ).toBe( '<a href="tel:+22016350659,;,55#;;234">+22016350659,;,55#;;234</a>   ,  3334443323' );                
+            } );
+            it( "should NOT automatically link numbers when there are extensions with ,<numbers># followed by a number", function() {
+                expect( autolinker.link( "+1-555-666-7777,234523#233" ) ).toBe( '+1-555-666-7777,234523#233' );
+                expect( autolinker.link( "+1-555-666-7777,234523#abc" ) ).toBe( '<a href="tel:+15556667777,234523#">+1-555-666-7777,234523#</a>abc' );
+                expect( autolinker.link( "+1-555-666-7777,234523#,234523#abc" ) ).toBe( '<a href="tel:+15556667777,234523#,234523#">+1-555-666-7777,234523#,234523#</a>abc' );                
+            } );
 		} );
 
 
