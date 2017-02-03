@@ -157,13 +157,6 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			if( text ) {
 				textAndEntityNodes = this.parseTextAndEntityNodes( lastIndex, text );
 
-				// Note: the following 3 lines were previously:
-				//   nodes.push.apply( nodes, textAndEntityNodes );
-				// but this was causing a "Maximum Call Stack Size Exceeded"
-				// error on inputs with a large number of html entities.
-				/*textAndEntityNodes.forEach( function( node ) {
-					nodes.push( node );
-				} );*/
 				for(var i = 0; i < textAndEntityNodes.length; i++)
 				{
 					nodes.push(textAndEntityNodes[i]);
