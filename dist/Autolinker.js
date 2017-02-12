@@ -1,8 +1,8 @@
 /*!
  * Autolinker.js
- * 1.4.0
+ * 1.4.1
  *
- * Copyright(c) 2016 Gregory Jacobs <greg@greg-jacobs.com>
+ * Copyright(c) 2017 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
  *
  * https://github.com/gregjacobs/Autolinker.js
@@ -240,7 +240,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.4.0';
+Autolinker.version = '1.4.1';
 
 
 Autolinker.prototype = {
@@ -3336,30 +3336,34 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : /(?:(\+)?\d{1,3}[-\040.])?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]\d{4}/g,  // ex: (123) 456-7890, 123 456 7890, 123-456-7890, etc.
+    matcherRegex : /(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4}([,;]*[0-9]+#?)*/g,    
+    
+    // ex: (123) 456-7890, 123 456 7890, 123-456-7890, +18004441234,,;,10226420346#, 
+    // +1 (800) 444 1234, 10226420346#, 1-800-444-1234,1022,64,20346#
 
 	/**
 	 * @inheritdoc
 	 */
-	parseMatches : function( text ) {
+	parseMatches: function(text) {
 		var matcherRegex = this.matcherRegex,
-		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+			tagBuilder = this.tagBuilder,
+			matches = [],
+			match;
 
-		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+		while ((match = matcherRegex.exec(text)) !== null) {
 			// Remove non-numeric values from phone number string
-			var matchedText = match[ 0 ],
-			    cleanNumber = matchedText.replace( /\D/g, '' ),  // strip out non-digit characters
-			    plusSign = !!match[ 1 ];  // match[ 1 ] is the prefixed plus sign, if there is one
-
-			matches.push( new Autolinker.match.Phone( {
-				tagBuilder  : tagBuilder,
-				matchedText : matchedText,
-				offset      : match.index,
-				number      : cleanNumber,
-				plusSign    : plusSign
-			} ) );
+			var matchedText = match[0],
+				cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''), // strip out non-digit characters exclude comma semicolon and #
+				plusSign = !!match[1]; // match[ 1 ] is the prefixed plus sign, if there is one
+			if (/\D/.test(match[2]) && /\D/.test(matchedText)) {
+    			matches.push(new Autolinker.match.Phone({
+    				tagBuilder: tagBuilder,
+    				matchedText: matchedText,
+    				offset: match.index,
+    				number: cleanNumber,
+    				plusSign: plusSign
+    			}));
+            }
 		}
 
 		return matches;
