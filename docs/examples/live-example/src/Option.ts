@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/tsd.d.ts" />
+/// <reference path="../../../../typings/tsd.d.ts" />
 
 /*global $ */
 
@@ -95,7 +95,7 @@ namespace LiveExample {
 		protected getApiDocLink(): string {
 			let configName: string = this.optionName.match( /[^.]+/ )[ 0 ];  // ex: 'urls.schemeMatches' -> 'urls'
 
-			return `http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-${configName}`;
+			return `http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-${configName}`;
 		}
 
 

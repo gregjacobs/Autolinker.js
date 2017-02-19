@@ -1,9 +1,12 @@
+// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+// CHANGES WILL BE OVERWRITTEN!!!
+
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/// <reference path="../../../typings/tsd.d.ts" />
+/// <reference path="../../../../typings/tsd.d.ts" />
 /*global $ */
 var LiveExample;
 (function (LiveExample) {
@@ -39,7 +42,7 @@ var LiveExample;
          */
         Option.prototype.getApiDocLink = function () {
             var configName = this.optionName.match(/[^.]+/)[0]; // ex: 'urls.schemeMatches' -> 'urls'
-            return "http://gregjacobs.github.io/Autolinker.js/docs/#!/api/Autolinker-cfg-" + configName;
+            return "http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-" + configName;
         };
         /**
          * Registers a callback to call when the option is changed.
@@ -251,7 +254,7 @@ var LiveExample;
     }(LiveExample.Option));
     LiveExample.TextOption = TextOption;
 })(LiveExample || (LiveExample = {}));
-/// <reference path="../../../typings/tsd.d.ts" />
+/// <reference path="../../../../typings/tsd.d.ts" />
 /*global $, Autolinker */
 /*jshint browser:true */
 var CheckboxOption = LiveExample.CheckboxOption;

@@ -1,0 +1,15 @@
+[
+	{
+		"title": "Examples",
+		"items": [
+			{
+				"name": "live-example",
+				"title": "Live Example",
+				"description": "Live example with input to test Autolinker functionality",
+				"url": "../../examples/live-example/index.html",
+				"icon": "live-example/live-example.gif",
+				"status": "new"
+			}
+		]
+	}
+]
