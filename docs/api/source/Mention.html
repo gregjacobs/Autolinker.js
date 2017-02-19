@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-match-Mention'>/**
+</span> * @class Autolinker.match.Mention
+ * @extends Autolinker.match.Match
+ *
+ * Represents a Mention match found in an input string which should be Autolinked.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more details.
+ */
+Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
+
+<span id='Autolinker-match-Mention-cfg-serviceName'>	/**
+</span>	 * @cfg {String} serviceName
+	 *
+	 * The service to point mention matches to. See {@link Autolinker#mention}
+	 * for available values.
+	 */
+
+<span id='Autolinker-match-Mention-cfg-mention'>	/**
+</span>	 * @cfg {String} mention (required)
+	 *
+	 * The Mention that was matched, without the &#39;@&#39; character.
+	 */
+
+
+<span id='Autolinker-match-Mention-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
+
+		// @if DEBUG
+		if( !cfg.serviceName ) throw new Error( &#39;`serviceName` cfg required&#39; );
+		if( !cfg.mention ) throw new Error( &#39;`mention` cfg required&#39; );
+		// @endif
+
+		this.mention = cfg.mention;
+		this.serviceName = cfg.serviceName;
+	},
+
+
+<span id='Autolinker-match-Mention-method-getType'>	/**
+</span>	 * Returns the type of match that this class represents.
+	 *
+	 * @return {String}
+	 */
+	getType : function() {
+		return &#39;mention&#39;;
+	},
+
+
+<span id='Autolinker-match-Mention-method-getMention'>	/**
+</span>	 * Returns the mention, without the &#39;@&#39; character.
+	 *
+	 * @return {String}
+	 */
+	getMention : function() {
+		return this.mention;
+	},
+
+
+<span id='Autolinker-match-Mention-method-getServiceName'>	/**
+</span>	 * Returns the configured {@link #serviceName} to point the mention to.
+	 * Ex: &#39;instagram&#39;, &#39;twitter&#39;.
+	 *
+	 * @return {String}
+	 */
+	getServiceName : function() {
+		return this.serviceName;
+	},
+
+
+<span id='Autolinker-match-Mention-method-getAnchorHref'>	/**
+</span>	 * Returns the anchor href that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorHref : function() {
+		switch( this.serviceName ) {
+			case &#39;twitter&#39; :
+				return &#39;https://twitter.com/&#39; + this.mention;
+			case &#39;instagram&#39; :
+				return &#39;https://instagram.com/&#39; + this.mention;
+
+			default :  // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
+				throw new Error( &#39;Unknown service name to point mention to: &#39;, this.serviceName );
+		}
+	},
+
+
+<span id='Autolinker-match-Mention-method-getAnchorText'>	/**
+</span>	 * Returns the anchor text that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorText : function() {
+		return &#39;@&#39; + this.mention;
+	},
+
+
+<span id='Autolinker-match-Mention-method-getCssClassSuffixes'>	/**
+</span>	 * Returns the CSS class suffixes that should be used on a tag built with
+	 * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+	 * details.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		var cssClassSuffixes = Autolinker.match.Match.prototype.getCssClassSuffixes.call( this ),
+		    serviceName = this.getServiceName();
+
+		if( serviceName ) {
+			cssClassSuffixes.push( serviceName );
+		}
+		return cssClassSuffixes;
+	}
+
+} );
+</pre>
+</body>
+</html>

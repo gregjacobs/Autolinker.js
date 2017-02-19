@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-match-Hashtag'>/**
+</span> * @class Autolinker.match.Hashtag
+ * @extends Autolinker.match.Match
+ *
+ * Represents a Hashtag match found in an input string which should be
+ * Autolinked.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more
+ * details.
+ */
+Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
+
+<span id='Autolinker-match-Hashtag-cfg-serviceName'>	/**
+</span>	 * @cfg {String} serviceName
+	 *
+	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
+	 * for available values.
+	 */
+
+<span id='Autolinker-match-Hashtag-cfg-hashtag'>	/**
+</span>	 * @cfg {String} hashtag (required)
+	 *
+	 * The Hashtag that was matched, without the &#39;#&#39;.
+	 */
+
+
+<span id='Autolinker-match-Hashtag-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
+
+		// @if DEBUG
+		// TODO: if( !serviceName ) throw new Error( &#39;`serviceName` cfg required&#39; );
+		if( !cfg.hashtag ) throw new Error( &#39;`hashtag` cfg required&#39; );
+		// @endif
+
+		this.serviceName = cfg.serviceName;
+		this.hashtag = cfg.hashtag;
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getType'>	/**
+</span>	 * Returns the type of match that this class represents.
+	 *
+	 * @return {String}
+	 */
+	getType : function() {
+		return &#39;hashtag&#39;;
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getServiceName'>	/**
+</span>	 * Returns the configured {@link #serviceName} to point the Hashtag to.
+	 * Ex: &#39;facebook&#39;, &#39;twitter&#39;.
+	 *
+	 * @return {String}
+	 */
+	getServiceName : function() {
+		return this.serviceName;
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getHashtag'>	/**
+</span>	 * Returns the matched hashtag, without the &#39;#&#39; character.
+	 *
+	 * @return {String}
+	 */
+	getHashtag : function() {
+		return this.hashtag;
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getAnchorHref'>	/**
+</span>	 * Returns the anchor href that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorHref : function() {
+		var serviceName = this.serviceName,
+		    hashtag = this.hashtag;
+
+		switch( serviceName ) {
+			case &#39;twitter&#39; :
+				return &#39;https://twitter.com/hashtag/&#39; + hashtag;
+			case &#39;facebook&#39; :
+				return &#39;https://www.facebook.com/hashtag/&#39; + hashtag;
+			case &#39;instagram&#39; :
+				return &#39;https://instagram.com/explore/tags/&#39; + hashtag;
+
+			default :  // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
+				throw new Error( &#39;Unknown service name to point hashtag to: &#39;, serviceName );
+		}
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getAnchorText'>	/**
+</span>	 * Returns the anchor text that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorText : function() {
+		return &#39;#&#39; + this.hashtag;
+	}
+
+} );
+</pre>
+</body>
+</html>

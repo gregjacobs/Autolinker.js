@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-matcher-Matcher'>/**
+</span> * @abstract
+ * @class Autolinker.matcher.Matcher
+ *
+ * An abstract class and interface for individual matchers to find matches in
+ * an input string with linkified versions of them.
+ *
+ * Note that Matchers do not take HTML into account - they must be fed the text
+ * nodes of any HTML string, which is handled by {@link Autolinker#parse}.
+ */
+Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
+
+<span id='Autolinker-matcher-Matcher-cfg-tagBuilder'>	/**
+</span>	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+	 *
+	 * Reference to the AnchorTagBuilder instance to use to generate HTML tags
+	 * for {@link Autolinker.match.Match Matches}.
+	 */
+
+
+<span id='Autolinker-matcher-Matcher-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Matcher
+	 *   instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		// @if DEBUG
+		if( !cfg.tagBuilder ) throw new Error( &#39;`tagBuilder` cfg required&#39; );
+		// @endif
+
+		this.tagBuilder = cfg.tagBuilder;
+	},
+
+
+<span id='Autolinker-matcher-Matcher-method-parseMatches'>	/**
+</span>	 * Parses the input `text` and returns the array of {@link Autolinker.match.Match Matches}
+	 * for the matcher.
+	 *
+	 * @abstract
+	 * @param {String} text The text to scan and replace matches in.
+	 * @return {Autolinker.match.Match[]}
+	 */
+	parseMatches : Autolinker.Util.abstractMethod
+
+} );</pre>
+</body>
+</html>
