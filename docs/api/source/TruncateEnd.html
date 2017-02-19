@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-truncate-TruncateEnd'>/**
+</span> * A truncation feature where the ellipsis will be placed at the end of the URL.
+ *
+ * @param {String} anchorText
+ * @param {Number} truncateLen The maximum length of the truncated output URL string.
+ * @param {String} ellipsisChars The characters to place within the url, e.g. &quot;..&quot;.
+ * @return {String} The truncated URL.
+ */
+Autolinker.truncate.TruncateEnd = function(anchorText, truncateLen, ellipsisChars){
+	return Autolinker.Util.ellipsis( anchorText, truncateLen, ellipsisChars );
+};
+</pre>
+</body>
+</html>

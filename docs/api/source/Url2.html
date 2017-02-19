@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-matcher-Url'>/**
+</span> * @class Autolinker.matcher.Url
+ * @extends Autolinker.matcher.Matcher
+ *
+ * Matcher to find URL matches in an input string.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.matcher.Matcher}) for more details.
+ */
+Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+
+<span id='Autolinker-matcher-Url-cfg-stripPrefix'>	/**
+</span>	 * @cfg {Object} stripPrefix (required)
+	 *
+	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
+	 */
+
+<span id='Autolinker-matcher-Url-cfg-stripTrailingSlash'>	/**
+</span>	 * @cfg {Boolean} stripTrailingSlash (required)
+	 * @inheritdoc Autolinker#stripTrailingSlash
+	 */
+
+
+<span id='Autolinker-matcher-Url-property-matcherRegex'>	/**
+</span>	 * @private
+	 * @property {RegExp} matcherRegex
+	 *
+	 * The regular expression to match URLs with an optional scheme, port
+	 * number, path, query string, and hash anchor.
+	 *
+	 * Example matches:
+	 *
+	 *     http://google.com
+	 *     www.google.com
+	 *     google.com/path/to/file?q1=1&amp;q2=2#myAnchor
+	 *
+	 *
+	 * This regular expression will have the following capturing groups:
+	 *
+	 * 1.  Group that matches a scheme-prefixed URL (i.e. &#39;http://google.com&#39;).
+	 *     This is used to match scheme URLs with just a single word, such as
+	 *     &#39;http://localhost&#39;, where we won&#39;t double check that the domain name
+	 *     has at least one dot (&#39;.&#39;) in it.
+	 * 2.  Group that matches a &#39;www.&#39; prefixed URL. This is only matched if the
+	 *     &#39;www.&#39; text was not prefixed by a scheme (i.e.: not prefixed by
+	 *     &#39;http://&#39;, &#39;ftp:&#39;, etc.)
+	 * 3.  A protocol-relative (&#39;//&#39;) match for the case of a &#39;www.&#39; prefixed
+	 *     URL. Will be an empty string if it is not a protocol-relative match.
+	 *     We need to know the character before the &#39;//&#39; in order to determine
+	 *     if it is a valid match or the // was in a string we don&#39;t want to
+	 *     auto-link.
+	 * 4.  Group that matches a known TLD (top level domain), when a scheme
+	 *     or &#39;www.&#39;-prefixed domain is not matched.
+	 * 5.  A protocol-relative (&#39;//&#39;) match for the case of a known TLD prefixed
+	 *     URL. Will be an empty string if it is not a protocol-relative match.
+	 *     See #3 for more info.
+	 */
+	matcherRegex : (function() {
+		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format &quot;http://&quot; or &quot;mailto:&quot;. However, do not match the first part of something like &#39;link:http://www.google.com&#39; (i.e. don&#39;t match &quot;link:&quot;). Also, make sure we don&#39;t interpret &#39;google.com:8000&#39; as if &#39;google.com&#39; was a protocol here (i.e. ignore a trailing port number in this regex)
+		    wwwRegex = /(?:www\.)/,                  // starting with &#39;www.&#39;
+		    domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+		    tldRegex = Autolinker.RegexLib.tldRegex,  // match our known top level domains (TLDs)
+		    alphaNumericCharsStr = Autolinker.RegexLib.alphaNumericCharsStr,
+
+		    // Allow optional path, query string, and hash anchor, not ending in the following characters: &quot;?!:,.;&quot;
+		    // http://blog.codinghorror.com/the-problem-with-urls/
+		    urlSuffixRegex = new RegExp( &#39;[&#39; + alphaNumericCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]?!:,.;\u2713]*[&#39; + alphaNumericCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]\u2713]&#39; );
+
+		return new RegExp( [
+			&#39;(?:&#39;, // parens to cover match for scheme (optional), and domain
+				&#39;(&#39;,  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
+					schemeRegex.source,
+					domainNameRegex.source,
+				&#39;)&#39;,
+
+				&#39;|&#39;,
+
+				&#39;(&#39;,  // *** Capturing group $2, for a &#39;www.&#39; prefixed url (ex: www.google.com)
+					&#39;(//)?&#39;,  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
+					wwwRegex.source,
+					domainNameRegex.source,
+				&#39;)&#39;,
+
+				&#39;|&#39;,
+
+				&#39;(&#39;,  // *** Capturing group $4, for known a TLD url (ex: google.com)
+					&#39;(//)?&#39;,  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
+					domainNameRegex.source + &#39;\\.&#39;,
+					tldRegex.source,
+				&#39;)&#39;,
+			&#39;)&#39;,
+
+			&#39;(?:&#39; + urlSuffixRegex.source + &#39;)?&#39;  // match for path, query string, and/or hash anchor - optional
+		].join( &quot;&quot; ), &#39;gi&#39; );
+	} )(),
+
+
+<span id='Autolinker-matcher-Url-property-wordCharRegExp'>	/**
+</span>	 * A regular expression to use to check the character before a protocol-relative
+	 * URL match. We don&#39;t want to match a protocol-relative URL if it is part
+	 * of another word.
+	 *
+	 * For example, we want to match something like &quot;Go to: //google.com&quot;,
+	 * but we don&#39;t want to match something like &quot;abc//google.com&quot;
+	 *
+	 * This regular expression is used to test the character before the &#39;//&#39;.
+	 *
+	 * @private
+	 * @type {RegExp} wordCharRegExp
+	 */
+	wordCharRegExp : /\w/,
+
+
+<span id='Autolinker-matcher-Url-property-openParensRe'>	/**
+</span>	 * The regular expression to match opening parenthesis in a URL match.
+	 *
+	 * This is to determine if we have unbalanced parenthesis in the URL, and to
+	 * drop the final parenthesis that was matched if so.
+	 *
+	 * Ex: The text &quot;(check out: wikipedia.com/something_(disambiguation))&quot;
+	 * should only autolink the inner &quot;wikipedia.com/something_(disambiguation)&quot;
+	 * part, so if we find that we have unbalanced parenthesis, we will drop the
+	 * last one for the match.
+	 *
+	 * @private
+	 * @property {RegExp}
+	 */
+	openParensRe : /\(/g,
+
+<span id='Autolinker-matcher-Url-property-closeParensRe'>	/**
+</span>	 * The regular expression to match closing parenthesis in a URL match. See
+	 * {@link #openParensRe} for more information.
+	 *
+	 * @private
+	 * @property {RegExp}
+	 */
+	closeParensRe : /\)/g,
+
+
+<span id='Autolinker-matcher-Url-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
+
+		// @if DEBUG
+		if( cfg.stripPrefix == null ) throw new Error( &#39;`stripPrefix` cfg required&#39; );
+		if( cfg.stripTrailingSlash == null ) throw new Error( &#39;`stripTrailingSlash` cfg required&#39; );
+		// @endif
+
+		this.stripPrefix = cfg.stripPrefix;
+		this.stripTrailingSlash = cfg.stripTrailingSlash;
+	},
+
+
+<span id='Autolinker-matcher-Url-method-parseMatches'>	/**
+</span>	 * @inheritdoc
+	 */
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegex,
+		    stripPrefix = this.stripPrefix,
+		    stripTrailingSlash = this.stripTrailingSlash,
+		    tagBuilder = this.tagBuilder,
+		    matches = [],
+		    match;
+
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			var matchStr = match[ 0 ],
+			    schemeUrlMatch = match[ 1 ],
+			    wwwUrlMatch = match[ 2 ],
+			    wwwProtocolRelativeMatch = match[ 3 ],
+			    //tldUrlMatch = match[ 4 ],  -- not needed at the moment
+			    tldProtocolRelativeMatch = match[ 5 ],
+			    offset = match.index,
+			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
+				prevChar = text.charAt( offset - 1 );
+
+			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, schemeUrlMatch ) ) {
+				continue;
+			}
+
+			// If the match is preceded by an &#39;@&#39; character, then it is either
+			// an email address or a username. Skip these types of matches.
+			if( offset &gt; 0 &amp;&amp; prevChar === &#39;@&#39; ) {
+				continue;
+			}
+
+			// If it&#39;s a protocol-relative &#39;//&#39; match, but the character before the &#39;//&#39;
+			// was a word character (i.e. a letter/number), then we found the &#39;//&#39; in the
+			// middle of another word (such as &quot;asdf//asdf.com&quot;). In this case, skip the
+			// match.
+			if( offset &gt; 0 &amp;&amp; protocolRelativeMatch &amp;&amp; this.wordCharRegExp.test( prevChar ) ) {
+				continue;
+			}
+
+			// Handle a closing parenthesis at the end of the match, and exclude
+			// it if there is not a matching open parenthesis in the match
+			// itself.
+			if( this.matchHasUnbalancedClosingParen( matchStr ) ) {
+				matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing &quot;)&quot;
+			} else {
+				// Handle an invalid character after the TLD
+				var pos = this.matchHasInvalidCharAfterTld( matchStr, schemeUrlMatch );
+				if( pos &gt; -1 ) {
+					matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
+				}
+			}
+
+			var urlMatchType = schemeUrlMatch ? &#39;scheme&#39; : ( wwwUrlMatch ? &#39;www&#39; : &#39;tld&#39; ),
+			    protocolUrlMatch = !!schemeUrlMatch;
+
+			matches.push( new Autolinker.match.Url( {
+				tagBuilder            : tagBuilder,
+				matchedText           : matchStr,
+				offset                : offset,
+				urlMatchType          : urlMatchType,
+				url                   : matchStr,
+				protocolUrlMatch      : protocolUrlMatch,
+				protocolRelativeMatch : !!protocolRelativeMatch,
+				stripPrefix           : stripPrefix,
+				stripTrailingSlash    : stripTrailingSlash
+			} ) );
+		}
+
+		return matches;
+	},
+
+
+<span id='Autolinker-matcher-Url-method-matchHasUnbalancedClosingParen'>	/**
+</span>	 * Determines if a match found has an unmatched closing parenthesis. If so,
+	 * this parenthesis will be removed from the match itself, and appended
+	 * after the generated anchor tag.
+	 *
+	 * A match may have an extra closing parenthesis at the end of the match
+	 * because the regular expression must include parenthesis for URLs such as
+	 * &quot;wikipedia.com/something_(disambiguation)&quot;, which should be auto-linked.
+	 *
+	 * However, an extra parenthesis *will* be included when the URL itself is
+	 * wrapped in parenthesis, such as in the case of &quot;(wikipedia.com/something_(disambiguation))&quot;.
+	 * In this case, the last closing parenthesis should *not* be part of the
+	 * URL itself, and this method will return `true`.
+	 *
+	 * @private
+	 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
+	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
+	 *   the end of the `matchStr`, `false` otherwise.
+	 */
+	matchHasUnbalancedClosingParen : function( matchStr ) {
+		var lastChar = matchStr.charAt( matchStr.length - 1 );
+
+		if( lastChar === &#39;)&#39; ) {
+			var openParensMatch = matchStr.match( this.openParensRe ),
+			    closeParensMatch = matchStr.match( this.closeParensRe ),
+			    numOpenParens = ( openParensMatch &amp;&amp; openParensMatch.length ) || 0,
+			    numCloseParens = ( closeParensMatch &amp;&amp; closeParensMatch.length ) || 0;
+
+			if( numOpenParens &lt; numCloseParens ) {
+				return true;
+			}
+		}
+
+		return false;
+	},
+
+
+<span id='Autolinker-matcher-Url-method-matchHasInvalidCharAfterTld'>	/**
+</span>	 * Determine if there&#39;s an invalid character after the TLD in a URL. Valid
+	 * characters after TLD are &#39;:/?#&#39;. Exclude scheme matched URLs from this
+	 * check.
+	 *
+	 * @private
+	 * @param {String} urlMatch The matched URL, if there was one. Will be an
+	 *   empty string if the match is not a URL match.
+	 * @param {String} schemeUrlMatch The match URL string for a scheme
+	 *   match. Ex: &#39;http://yahoo.com&#39;. This is used to match something like
+	 *   &#39;http://localhost&#39;, where we won&#39;t double check that the domain name
+	 *   has at least one &#39;.&#39; in it.
+	 * @return {Number} the position where the invalid character was found. If
+	 *   no such character was found, returns -1
+	 */
+	matchHasInvalidCharAfterTld : function( urlMatch, schemeUrlMatch ) {
+		if( !urlMatch ) {
+			return -1;
+		}
+
+		var offset = 0;
+		if ( schemeUrlMatch ) {
+			offset = urlMatch.indexOf(&#39;:&#39;);
+			urlMatch = urlMatch.slice(offset);
+		}
+
+		var re = /^((.?\/\/)?[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u00C0-\u017F\-]\.[A-Za-z]+)/;
+		var res = re.exec( urlMatch );
+		if ( res === null ) {
+			return -1;
+		}
+
+		offset += res[1].length;
+		urlMatch = urlMatch.slice(res[1].length);
+		if (/^[^.A-Za-z0-9:\/?#]/.test(urlMatch)) {
+			return offset;
+		}
+
+		return -1;
+	}
+
+} );
+</pre>
+</body>
+</html>

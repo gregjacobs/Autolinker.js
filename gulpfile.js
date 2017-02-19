@@ -62,21 +62,20 @@ function buildTask() {
 
 function docTask() {
 	var jsduck = new JsDuck( [
-		'--out',               './gh-pages/docs',
-		'--title',             'Autolinker API Docs',
-		'--examples',          './gh-pages/examples.json',
-		'--examples-base-url', './'
+		'--out',               './docs/api',
+		'--title',             'Autolinker v' + pkg.version + ' API Docs',
+		'--examples',          './docs/examples.json',
+		'--examples-base-url', './docs/'
 	] );
 
 	return merge(
-		gulp.src( srcFilesGlob )
-			.pipe( jsduck.doc() ),
-
+		// Move dist files into the docs/ folder so they can be served
+		// by GitHub pages
 		gulp.src( `${distFolder}/**/*` )
-			.pipe( gulp.dest( './gh-pages/dist' ) ),
+			.pipe( gulp.dest( './docs/dist' ) ),
 
-		gulp.src( './examples/**' )
-			.pipe( gulp.dest( './gh-pages/examples' ) )
+		gulp.src( srcFilesGlob )
+			.pipe( jsduck.doc() )
 	);
 }
 
@@ -90,7 +89,7 @@ function lintTask() {
 
 
 function serveTask() {
-	gulp.watch( './examples/live-example/src/**', [ 'typescript' ] );
+	gulp.watch( './docs/examples/live-example/src/**', [ 'typescript' ] );
 	gulp.watch( './src/**', [ 'doc' ] );
 
 	connect.server();
@@ -114,14 +113,15 @@ function testTask( done ) {
 
 function typescriptTask() {
 	return gulp.src( [
-		'./examples/live-example/src/Option.ts',
-		'./examples/live-example/src/CheckboxOption.ts',
-		'./examples/live-example/src/RadioOption.ts',
-		'./examples/live-example/src/TextOption.ts',
-		'./examples/live-example/src/main.ts'
+		'./docs/examples/live-example/src/Option.ts',
+		'./docs/examples/live-example/src/CheckboxOption.ts',
+		'./docs/examples/live-example/src/RadioOption.ts',
+		'./docs/examples/live-example/src/TextOption.ts',
+		'./docs/examples/live-example/src/main.ts'
 	] )
-		.pipe( typescript( { noImplicitAny: true, out: 'live-example.js' } ) )
-		.pipe( gulp.dest( './examples/live-example/' ) );
+		.pipe( typescript( { noImplicitAny: true, out: 'live-example-all.js' } ) )
+		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
+		.pipe( gulp.dest( './docs/examples/live-example/' ) );
 }
 
 

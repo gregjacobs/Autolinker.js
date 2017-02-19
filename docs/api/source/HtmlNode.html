@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-htmlParser-HtmlNode'>/**
+</span> * @abstract
+ * @class Autolinker.htmlParser.HtmlNode
+ *
+ * Represents an HTML node found in an input string. An HTML node is one of the
+ * following:
+ *
+ * 1. An {@link Autolinker.htmlParser.ElementNode ElementNode}, which represents
+ *    HTML tags.
+ * 2. A {@link Autolinker.htmlParser.CommentNode CommentNode}, which represents
+ *    HTML comments.
+ * 3. A {@link Autolinker.htmlParser.TextNode TextNode}, which represents text
+ *    outside or within HTML tags.
+ * 4. A {@link Autolinker.htmlParser.EntityNode EntityNode}, which represents
+ *    one of the known HTML entities that Autolinker looks for. This includes
+ *    common ones such as &amp;amp;quot; and &amp;amp;nbsp;
+ */
+Autolinker.htmlParser.HtmlNode = Autolinker.Util.extend( Object, {
+
+<span id='Autolinker-htmlParser-HtmlNode-cfg-offset'>	/**
+</span>	 * @cfg {Number} offset (required)
+	 *
+	 * The offset of the HTML node in the original text that was parsed.
+	 */
+	offset : undefined,
+
+<span id='Autolinker-htmlParser-HtmlNode-cfg-text'>	/**
+</span>	 * @cfg {String} text (required)
+	 *
+	 * The text that was matched for the HtmlNode.
+	 *
+	 * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
+	 *   this will be the tag&#39;s text.
+	 * - In the case of an {@link Autolinker.htmlParser.CommentNode CommentNode},
+	 *   this will be the comment&#39;s text.
+	 * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this
+	 *   will be the text itself.
+	 * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
+	 *   this will be the text of the HTML entity.
+	 */
+	text : undefined,
+
+
+<span id='Autolinker-htmlParser-HtmlNode-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 * specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.Util.assign( this, cfg );
+
+		// @if DEBUG
+		if( this.offset == null ) throw new Error( &#39;`offset` cfg required&#39; );
+		if( this.text == null ) throw new Error( &#39;`text` cfg required&#39; );
+		// @endif
+	},
+
+
+<span id='Autolinker-htmlParser-HtmlNode-method-getType'>	/**
+</span>	 * Returns a string name for the type of node that this class represents.
+	 *
+	 * @abstract
+	 * @return {String}
+	 */
+	getType : Autolinker.Util.abstractMethod,
+
+
+<span id='Autolinker-htmlParser-HtmlNode-method-getOffset'>	/**
+</span>	 * Retrieves the {@link #offset} of the HtmlNode. This is the offset of the
+	 * HTML node in the original string that was parsed.
+	 *
+	 * @return {Number}
+	 */
+	getOffset : function() {
+		return this.offset;
+	},
+
+
+<span id='Autolinker-htmlParser-HtmlNode-method-getText'>	/**
+</span>	 * Retrieves the {@link #text} for the HtmlNode.
+	 *
+	 * @return {String}
+	 */
+	getText : function() {
+		return this.text;
+	}
+
+} );</pre>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*global Autolinker */
+<span id='Autolinker-match-Match'>/**
+</span> * @abstract
+ * @class Autolinker.match.Match
+ *
+ * Represents a match found in an input string which should be Autolinked. A Match object is what is provided in a
+ * {@link Autolinker#replaceFn replaceFn}, and may be used to query for details about the match.
+ *
+ * For example:
+ *
+ *     var input = &quot;...&quot;;  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
+ *
+ *     var linkedText = Autolinker.link( input, {
+ *         replaceFn : function( match ) {
+ *             console.log( &quot;href = &quot;, match.getAnchorHref() );
+ *             console.log( &quot;text = &quot;, match.getAnchorText() );
+ *
+ *             switch( match.getType() ) {
+ *                 case &#39;url&#39; :
+ *                     console.log( &quot;url: &quot;, match.getUrl() );
+ *
+ *                 case &#39;email&#39; :
+ *                     console.log( &quot;email: &quot;, match.getEmail() );
+ *
+ *                 case &#39;mention&#39; :
+ *                     console.log( &quot;mention: &quot;, match.getMention() );
+ *             }
+ *         }
+ *     } );
+ *
+ * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
+ */
+Autolinker.match.Match = Autolinker.Util.extend( Object, {
+
+<span id='Autolinker-match-Match-cfg-tagBuilder'>	/**
+</span>	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+	 *
+	 * Reference to the AnchorTagBuilder instance to use to generate an anchor
+	 * tag for the Match.
+	 */
+
+<span id='Autolinker-match-Match-cfg-matchedText'>	/**
+</span>	 * @cfg {String} matchedText (required)
+	 *
+	 * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
+	 */
+
+<span id='Autolinker-match-Match-cfg-offset'>	/**
+</span>	 * @cfg {Number} offset (required)
+	 *
+	 * The offset of where the match was made in the input string.
+	 */
+
+
+<span id='Autolinker-match-Match-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		// @if DEBUG
+		if( cfg.tagBuilder == null ) throw new Error( &#39;`tagBuilder` cfg required&#39; );
+		if( cfg.matchedText == null ) throw new Error( &#39;`matchedText` cfg required&#39; );
+		if( cfg.offset == null ) throw new Error( &#39;`offset` cfg required&#39; );
+		// @endif
+
+		this.tagBuilder = cfg.tagBuilder;
+		this.matchedText = cfg.matchedText;
+		this.offset = cfg.offset;
+	},
+
+
+<span id='Autolinker-match-Match-method-getType'>	/**
+</span>	 * Returns a string name for the type of match that this class represents.
+	 *
+	 * @abstract
+	 * @return {String}
+	 */
+	getType : Autolinker.Util.abstractMethod,
+
+
+<span id='Autolinker-match-Match-method-getMatchedText'>	/**
+</span>	 * Returns the original text that was matched.
+	 *
+	 * @return {String}
+	 */
+	getMatchedText : function() {
+		return this.matchedText;
+	},
+
+
+<span id='Autolinker-match-Match-method-setOffset'>	/**
+</span>	 * Sets the {@link #offset} of where the match was made in the input string.
+	 *
+	 * A {@link Autolinker.matcher.Matcher} will be fed only HTML text nodes,
+	 * and will therefore set an original offset that is relative to the HTML
+	 * text node itself. However, we want this offset to be relative to the full
+	 * HTML input string, and thus if using {@link Autolinker#parse} (rather
+	 * than calling a {@link Autolinker.matcher.Matcher} directly), then this
+	 * offset is corrected after the Matcher itself has done its job.
+	 *
+	 * @param {Number} offset
+	 */
+	setOffset : function( offset ) {
+		this.offset = offset;
+	},
+
+
+<span id='Autolinker-match-Match-method-getOffset'>	/**
+</span>	 * Returns the offset of where the match was made in the input string. This
+	 * is the 0-based index of the match.
+	 *
+	 * @return {Number}
+	 */
+	getOffset : function() {
+		return this.offset;
+	},
+
+
+<span id='Autolinker-match-Match-method-getAnchorHref'>	/**
+</span>	 * Returns the anchor href that should be generated for the match.
+	 *
+	 * @abstract
+	 * @return {String}
+	 */
+	getAnchorHref : Autolinker.Util.abstractMethod,
+
+
+<span id='Autolinker-match-Match-method-getAnchorText'>	/**
+</span>	 * Returns the anchor text that should be generated for the match.
+	 *
+	 * @abstract
+	 * @return {String}
+	 */
+	getAnchorText : Autolinker.Util.abstractMethod,
+
+
+<span id='Autolinker-match-Match-method-getCssClassSuffixes'>	/**
+</span>	 * Returns the CSS class suffix(es) for this match.
+	 *
+	 * A CSS class suffix is appended to the {@link Autolinker#className} in
+	 * the {@link Autolinker.AnchorTagBuilder} when a match is translated into
+	 * an anchor tag.
+	 *
+	 * For example, if {@link Autolinker#className} was configured as &#39;myLink&#39;,
+	 * and this method returns `[ &#39;url&#39; ]`, the final class name of the element
+	 * will become: &#39;myLink myLink-url&#39;.
+	 *
+	 * The match may provide multiple CSS class suffixes to be appended to the
+	 * {@link Autolinker#className} in order to facilitate better styling
+	 * options for different match criteria. See {@link Autolinker.match.Mention}
+	 * for an example.
+	 *
+	 * By default, this method returns a single array with the match&#39;s
+	 * {@link #getType type} name, but may be overridden by subclasses.
+	 *
+	 * @return {String[]}
+	 */
+	getCssClassSuffixes : function() {
+		return [ this.getType() ];
+	},
+
+
+<span id='Autolinker-match-Match-method-buildTag'>	/**
+</span>	 * Builds and returns an {@link Autolinker.HtmlTag} instance based on the
+	 * Match.
+	 *
+	 * This can be used to easily generate anchor tags from matches, and either
+	 * return their HTML string, or modify them before doing so.
+	 *
+	 * Example Usage:
+	 *
+	 *     var tag = match.buildTag();
+	 *     tag.addClass( &#39;cordova-link&#39; );
+	 *     tag.setAttr( &#39;target&#39;, &#39;_system&#39; );
+	 *
+	 *     tag.toAnchorString();  // &lt;a href=&quot;http://google.com&quot; class=&quot;cordova-link&quot; target=&quot;_system&quot;&gt;Google&lt;/a&gt;
+	 */
+	buildTag : function() {
+		return this.tagBuilder.build( this );
+	}
+
+} );
+</pre>
+</body>
+</html>
