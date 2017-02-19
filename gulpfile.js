@@ -68,8 +68,15 @@ function docTask() {
 		'--examples-base-url', './docs/'
 	] );
 
-	return gulp.src( srcFilesGlob )
-		.pipe( jsduck.doc() );
+	return merge(
+		// Move dist files into the docs/ folder so they can be served
+		// by GitHub pages
+		gulp.src( `${distFolder}/**/*` )
+			.pipe( gulp.dest( './docs/dist' ) ),
+
+		gulp.src( srcFilesGlob )
+			.pipe( jsduck.doc() )
+	);
 }
 
 
