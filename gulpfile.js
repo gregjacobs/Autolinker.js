@@ -2,19 +2,23 @@
 const clone           = require( 'gulp-clone' ),
       concat          = require( 'gulp-concat' ),
       connect         = require( 'gulp-connect' ),
+      download        = require( 'gulp-download' ),
       gulp            = require( 'gulp' ),
       header          = require( 'gulp-header' ),
       jasmine         = require( 'gulp-jasmine' ),
       jshint          = require( 'gulp-jshint' ),
       merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
+      punycode        = require( 'punycode' ),
       rename          = require( 'gulp-rename' ),
       through2        = require( 'through2' ),
+      transform       = require( 'gulp-transform' ),
       typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
       umd             = require( 'gulp-umd' ),
       JsDuck          = require( 'gulp-jsduck' ),
       KarmaServer     = require( 'karma' ).Server;
+
 
 
 // Project configuration
@@ -36,6 +40,7 @@ gulp.task( 'test', [ 'build' ], testTask );
 gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
 gulp.task( 'serve', [ 'typescript', 'doc' ], serveTask );
 gulp.task( 'typescript', typescriptTask );  // for examples
+gulp.task( 'update-tld-list', updateTldRegex );
 
 
 function buildTask() {
@@ -172,6 +177,7 @@ function createSrcFilesList() {
 		'src/match/Phone.js',
 		'src/match/Mention.js',
 		'src/match/Url.js',
+		'src/matcher/TldRegex.js',
 		'src/matcher/Matcher.js',
 		'src/matcher/Email.js',
 		'src/matcher/Hashtag.js',
@@ -184,3 +190,49 @@ function createSrcFilesList() {
 		'src/truncate/TruncateSmart.js'
 	];
 }
+
+function dePunycodeDomain(d){
+	d = d.toLowerCase();
+	if (/xn--/.test(d)){
+		return [d, punycode.toUnicode(d)];
+	}
+	return [d];
+}
+
+function notCommentLine(line){
+	return !/^#/.test(line);
+}
+
+function compareLengthLongestFirst(a, b){
+	var result = b.length - a.length
+	if (result == 0) {
+		result = a.localeCompare(b)
+	}
+	return result;
+}
+
+function domainsToRegex(contents){
+	contents = contents
+		.split('\n')
+		.filter(notCommentLine)
+		.map(dePunycodeDomain);
+	contents = [].concat.apply([], contents);
+	contents = contents.filter(function(s){ return !!s });
+	contents.sort(compareLengthLongestFirst);
+	contents = contents.join('|');
+	contents = '/*global Autolinker */\nAutolinker.tldRegex = /(?:' + contents + ')/;\n';
+
+	return contents;
+}
+
+function updateTldRegex(){
+	return download('http://data.iana.org/TLD/tlds-alpha-by-domain.txt')
+		.pipe(transform(domainsToRegex, { encoding: 'utf8' }))
+		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `gulp update-tld-list`\n\n' ) )
+		.pipe(rename(function(path){
+			path.basename = "TldRegex";
+			path.extname = '.js';
+		}))
+		.pipe(gulp.dest('./src/matcher/'));
+}
+

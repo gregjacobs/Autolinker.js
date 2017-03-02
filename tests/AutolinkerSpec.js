@@ -295,6 +295,24 @@ describe( "Autolinker", function() {
 					expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 				} );
 
+				it( "should automatically link international domain names", function() {
+					var result1 = autolinker.link( "Русским гораздо проще набрать россия.рф на клавиатуре." );
+					expect( result1 ).toBe( 'Русским гораздо проще набрать <a href="http://россия.рф">россия.рф</a> на клавиатуре.' );
+
+					var result2 = autolinker.link( "Русским гораздо проще набрать http://россия.рф на клавиатуре." );
+					expect( result2 ).toBe( 'Русским гораздо проще набрать <a href="http://россия.рф">россия.рф</a> на клавиатуре.' );
+
+					var result3 = autolinker.link( "Русским гораздо проще набрать //россия.рф на клавиатуре." );
+					expect( result3 ).toBe( 'Русским гораздо проще набрать <a href="//россия.рф">россия.рф</a> на клавиатуре.' );
+				} );
+
+				it( "should automatically link domain names represented in punicode", function() {
+					var result1 = autolinker.link( "For compatibility reasons, xn--d1acufc.xn--p1ai is an acceptable form of an international domain." );
+					expect( result1 ).toBe( 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.' );
+
+					var result2 = autolinker.link( "For compatibility reasons, http://xn--d1acufc.xn--p1ai is an acceptable form of an international domain." );
+					expect( result2 ).toBe( 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.' );
+				} );
 
 				it( 'should match local urls with numbers when prefixed with http://', function() {
 					var result1 = autolinker.link( 'http://localhost.local001/test' );
@@ -658,8 +676,11 @@ describe( "Autolinker", function() {
 
 
 				it( "should NOT automatically link supposed protocol-relative URLs in the form of abc//yahoo.com, which is most likely not supposed to be interpreted as a URL", function() {
-					var result = autolinker.link( "Joe went to abc//yahoo.com" );
-					expect( result ).toBe( 'Joe went to abc//yahoo.com' );
+					var result1 = autolinker.link( "Joe went to abc//yahoo.com" );
+					expect( result1 ).toBe( 'Joe went to abc//yahoo.com' );
+
+					var result2 = autolinker.link( "Относительный протокол//россия.рф" );
+					expect( result2 ).toBe( 'Относительный протокол//россия.рф' );
 				} );
 
 
