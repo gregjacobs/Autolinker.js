@@ -113,12 +113,11 @@ describe( "Autolinker.matcher.Url", function() {
 		});
 
 
-		it( 'should not match an address with multiple dots', function() {
-			var matches = matcher.parseMatches( 'hello:...world' );
-			var othermatches = matcher.parseMatches( 'hello:wo.....rld' );
+		it( 'should match an address with multiple dots', function() {
+			var matches = matcher.parseMatches( 'https://github.com/moodle/moodle/compare/master...roperto:MDL-57809-33-progressbar' );
 
-			expect( matches.length ).toBe( 0 );
-			expect( othermatches.length ).toBe( 0 );
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://github.com/moodle/moodle/compare/master...roperto:MDL-57809-33-progressbar', 0 );
 		});
 
 

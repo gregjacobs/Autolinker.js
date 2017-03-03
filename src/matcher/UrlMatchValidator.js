@@ -80,8 +80,7 @@ Autolinker.matcher.UrlMatchValidator = {
 			( protocolUrlMatch && !this.isValidUriScheme( protocolUrlMatch ) ) ||
 			this.urlMatchDoesNotHaveProtocolOrDot( urlMatch, protocolUrlMatch ) ||    // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
 			(this.urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch, protocolUrlMatch ) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-			   !this.isValidIpAddress( urlMatch )) || // Except if it's an IP address
-			this.containsMultipleDots( urlMatch )
+			   !this.isValidIpAddress( urlMatch )) // Except if it's an IP address
 		) {
 			return false;
 		}
@@ -95,10 +94,6 @@ Autolinker.matcher.UrlMatchValidator = {
 		var uriScheme = uriSchemeMatch.match( newRegex );
 
 		return uriScheme !== null;
-	},
-
-	containsMultipleDots : function ( urlMatch ) {
-		return urlMatch.indexOf("..") > -1;
 	},
 
 	/**
