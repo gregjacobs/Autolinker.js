@@ -59,12 +59,12 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
 		    domainNameRegex = Autolinker.RegexLib.domainNameRegex,
-		    tldRegex = Autolinker.RegexLib.tldRegex,  // match our known top level domains (TLDs)
+		    tldRegex = Autolinker.tldRegex,  // match our known top level domains (TLDs)
 		    alphaNumericCharsStr = Autolinker.RegexLib.alphaNumericCharsStr,
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = new RegExp( '[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713]' );
+		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?' );
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -87,8 +87,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 					'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
 					domainNameRegex.source + '\\.',
 					tldRegex.source,
+					'(?![-' + alphaNumericCharsStr + '])', // TLD not followed by a letter, behaves like unicode-aware \b
 				')',
 			')',
+
+			'(?::[0-9]+)?', // port
 
 			'(?:' + urlSuffixRegex.source + ')?'  // match for path, query string, and/or hash anchor - optional
 		].join( "" ), 'gi' );
@@ -108,7 +111,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @type {RegExp} wordCharRegExp
 	 */
-	wordCharRegExp : /\w/,
+	wordCharRegExp : new RegExp( '[' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
 
 
 	/**
@@ -193,6 +196,10 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			// match.
 			if( offset > 0 && protocolRelativeMatch && this.wordCharRegExp.test( prevChar ) ) {
 				continue;
+			}
+
+			if( /\?$/.test(matchStr) ) {
+				matchStr = matchStr.substr(0, matchStr.length-1);
 			}
 
 			// Handle a closing parenthesis at the end of the match, and exclude
@@ -291,7 +298,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			urlMatch = urlMatch.slice(offset);
 		}
 
-		var re = /^((.?\/\/)?[A-Za-z0-9\u00C0-\u017F\.\-]*[A-Za-z0-9\u00C0-\u017F\-]\.[A-Za-z]+)/;
+		var alphaNumeric = Autolinker.RegexLib.alphaNumericCharsStr;
+
+		var re = new RegExp("^((.?\/\/)?[-." + alphaNumeric + "]*[-" + alphaNumeric + "]\\.[-" + alphaNumeric + "]+)");
 		var res = re.exec( urlMatch );
 		if ( res === null ) {
 			return -1;
@@ -299,7 +308,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		offset += res[1].length;
 		urlMatch = urlMatch.slice(res[1].length);
-		if (/^[^.A-Za-z0-9:\/?#]/.test(urlMatch)) {
+		if (/^[^-.A-Za-z0-9:\/?#]/.test(urlMatch)) {
 			return offset;
 		}
 

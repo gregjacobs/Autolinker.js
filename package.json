@@ -1,6 +1,6 @@
 {
   "name": "autolinker",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Utility to automatically link the URLs, email addresses, phone numbers, hashtags, and mentions (Twitter, Instagram) in a given block of text/HTML",
   "main": "dist/Autolinker.js",
   "files": [
@@ -35,12 +35,14 @@
     "gulp-clone": "^1.0.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^3.0.0",
+    "gulp-download": "^0.0.1",
     "gulp-header": "^1.7.1",
     "gulp-jasmine": "^2.3.0",
     "gulp-jsduck": "^0.3.0",
     "gulp-jshint": "^2.0.0",
     "gulp-preprocess": "^2.0.0",
     "gulp-rename": "^1.2.2",
+    "gulp-transform": "^1.1.0",
     "gulp-typescript": "^2.13.0",
     "gulp-uglify": "^1.5.3",
     "gulp-umd": "^0.2.0",
@@ -54,6 +56,7 @@
     "lodash": "^4.3.0",
     "merge-stream": "^1.0.0",
     "phantomjs-prebuilt": "^2.1.4",
+    "punycode": "^2.1.0",
     "requirejs": "^2.1.11",
     "through2": "^2.0.1"
   }

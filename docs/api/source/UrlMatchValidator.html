@@ -57,7 +57,7 @@ Autolinker.matcher.UrlMatchValidator = {
 	 * @private
 	 * @property {RegExp} hasWordCharAfterProtocolRegex
 	 */
-	hasWordCharAfterProtocolRegex : /:[^\s]*?[A-Za-z\u00C0-\u017F]/,
+	hasWordCharAfterProtocolRegex : new RegExp(&quot;:[^\\s]*?[&quot; + Autolinker.RegexLib.alphaCharsStr + &quot;]&quot;),
 
 <span id='Autolinker-matcher-UrlMatchValidator-property-ipRegex'>	/**
 </span>	 * Regex to determine if the string is a valid IP address

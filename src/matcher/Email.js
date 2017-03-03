@@ -21,7 +21,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
 		    emailRegex = new RegExp( '[' + alphaNumericChars + '\\-_\';:&=+$.,]+@' ),  // something@ for email addresses (a.k.a. local-part)
 			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
-			tldRegex = Autolinker.RegexLib.tldRegex;  // match our known top level domains (TLDs)
+			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
 		return new RegExp( [
 			emailRegex.source,
