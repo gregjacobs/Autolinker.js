@@ -261,7 +261,7 @@ var CheckboxOption = LiveExample.CheckboxOption;
 var RadioOption = LiveExample.RadioOption;
 var TextOption = LiveExample.TextOption;
 $(document).ready(function () {
-    var $inputEl = $('#input'), $outputEl = $('#output'), $optionsOutputEl = $('#options-output'), urlsSchemeOption, urlsWwwOption, urlsTldOption, emailOption, phoneOption, mentionOption, hashtagOption, newWindowOption, stripPrefixOption, truncateLengthOption, truncationLocationOption, classNameOption;
+    var $inputEl = $('#input'), $outputEl = $('#output'), $optionsOutputEl = $('#options-output'), urlsSchemeOption, urlsWwwOption, urlsTldOption, emailOption, phoneOption, mentionOption, hashtagOption, newWindowOption, stripPrefixOption, stripTrailingSlashOption, truncateLengthOption, truncationLocationOption, classNameOption;
     init();
     function init() {
         urlsSchemeOption = new CheckboxOption({ name: 'urls.schemeMatches', description: 'Scheme:// URLs', defaultValue: true }).onChange(autolink);
@@ -273,6 +273,7 @@ $(document).ready(function () {
         hashtagOption = new RadioOption({ name: 'hashtag', description: 'Hashtags', options: [false, 'twitter', 'facebook', 'instagram'], defaultValue: false }).onChange(autolink);
         newWindowOption = new CheckboxOption({ name: 'newWindow', description: 'Open in new window', defaultValue: true }).onChange(autolink);
         stripPrefixOption = new CheckboxOption({ name: 'stripPrefix', description: 'Strip prefix', defaultValue: true }).onChange(autolink);
+        stripTrailingSlashOption = new CheckboxOption({ name: 'stripTrailingSlash', description: 'Strip trailing slash', defaultValue: true }).onChange(autolink);
         truncateLengthOption = new TextOption({ name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' }).onChange(autolink);
         truncationLocationOption = new RadioOption({ name: 'truncate.location', description: 'Truncate Location', options: ['end', 'middle', 'smart'], defaultValue: 'end' }).onChange(autolink);
         classNameOption = new TextOption({ name: 'className', description: 'CSS class(es)', size: 10 }).onChange(autolink);
@@ -300,6 +301,7 @@ $(document).ready(function () {
             hashtag: hashtagOption.getValue(),
             newWindow: newWindowOption.getValue(),
             stripPrefix: stripPrefixOption.getValue(),
+            stripTrailingSlash: stripTrailingSlashOption.getValue(),
             className: classNameOption.getValue(),
             truncate: {
                 length: +truncateLengthOption.getValue(),
@@ -321,6 +323,7 @@ $(document).ready(function () {
             ("    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ","),
             "",
             ("    stripPrefix : " + optionsObj.stripPrefix + ","),
+            ("    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ","),
             ("    newWindow   : " + optionsObj.newWindow + ","),
             "",
             "    truncate : {",

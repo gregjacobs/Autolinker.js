@@ -24,6 +24,7 @@ $( document ).ready( function() {
 
 	    newWindowOption: LiveExample.Option,
 	    stripPrefixOption: LiveExample.Option,
+			stripTrailingSlashOption: LiveExample.Option,
 	    truncateLengthOption: LiveExample.Option,
 	    truncationLocationOption: LiveExample.Option,
 	    classNameOption: LiveExample.Option;
@@ -43,6 +44,7 @@ $( document ).ready( function() {
 
 		newWindowOption = new CheckboxOption( { name: 'newWindow', description: 'Open in new window', defaultValue: true } ).onChange( autolink );
 		stripPrefixOption = new CheckboxOption( { name: 'stripPrefix', description: 'Strip prefix', defaultValue: true } ).onChange( autolink );
+		stripTrailingSlashOption = new CheckboxOption( { name: 'stripTrailingSlash', description: 'Strip trailing slash', defaultValue: true } ).onChange( autolink );
 		truncateLengthOption = new TextOption( { name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' } ).onChange( autolink );
 		truncationLocationOption = new RadioOption( { name: 'truncate.location', description: 'Truncate Location', options: [ 'end', 'middle', 'smart' ], defaultValue: 'end' } ).onChange( autolink );
 		classNameOption = new TextOption( { name: 'className', description: 'CSS class(es)', size: 10 } ).onChange( autolink );
@@ -81,6 +83,7 @@ $( document ).ready( function() {
 
 			newWindow   : newWindowOption.getValue(),
 			stripPrefix : stripPrefixOption.getValue(),
+			stripTrailingSlash : stripTrailingSlashOption.getValue(),
 			className   : classNameOption.getValue(),
 			truncate    : {
 				length   : +truncateLengthOption.getValue(),
@@ -104,6 +107,7 @@ $( document ).ready( function() {
 			`    hashtag     : ${ typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag },`,
 			``,
 			`    stripPrefix : ${ optionsObj.stripPrefix },`,
+			`    stripTrailingSlash : ${ optionsObj.stripTrailingSlash },`,
 			`    newWindow   : ${ optionsObj.newWindow },`,
 			``,
 			`    truncate : {`,
