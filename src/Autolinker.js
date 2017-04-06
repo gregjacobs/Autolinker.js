@@ -643,11 +643,22 @@ Autolinker.prototype = {
 
 		for( var i = 0; i < matches.length - 1; i++ ) {
 			var match = matches[ i ],
-			    endIdx = match.getOffset() + match.getMatchedText().length;
+					offset = match.getOffset(),
+					matchedTextLength = match.getMatchedText().length,
+			    endIdx = offset + matchedTextLength;
 
-			// Remove subsequent matches that overlap with the current match
-			while( i + 1 < matches.length && matches[ i + 1 ].getOffset() <= endIdx ) {
-				matches.splice( i + 1, 1 );
+			if( i + 1 < matches.length ) {
+				// Remove subsequent matches that equal offset with current match
+				if( matches[ i + 1 ].getOffset() === offset ) {
+					var removeIdx = matches[ i + 1 ].getMatchedText().length > matchedTextLength ? i : i + 1;
+					matches.splice( removeIdx, 1 );
+					continue;
+				}
+
+				// Remove subsequent matches that overlap with the current match
+				if( matches[ i + 1 ].getOffset() <= endIdx ) {
+					matches.splice( i + 1, 1 );
+				}
 			}
 		}
 
