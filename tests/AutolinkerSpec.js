@@ -966,6 +966,11 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( 'Hi there@stuff' );
 			} );
 
+			it( "should automatically link an email address with tld matched localpart", function () {
+				var result = autolinker.link( "My email is busueng.kim@aaa.com" );
+				expect( result ).toBe( 'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>');
+			} );
+
 		} );
 
 

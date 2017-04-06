@@ -630,16 +630,17 @@ Autolinker.prototype = {
 			}
 		}
 
-		// After we have found all matches, remove matches for match types that have been turned
+
+		// After we have found all matches, remove subsequent matches that
+		// overlap with a previous match. This can happen for instance with URLs,
+		// where the url 'google.com/#link' would match '#link' as a hashtag.
+		matches = this.compactMatches( matches );
+
+		// And finally, remove matches for match types that have been turned
 		// off. We needed to have all match types turned on initially so that
 		// things like hashtags could be filtered out if they were really just
 		// part of a URL match (for instance, as a named anchor).
 		matches = this.removeUnwantedMatches( matches );
-
-		// And finally, remove subsequent matches that
-		// overlap with a previous match. This can happen for instance with URLs,
-		// where the url 'google.com/#link' would match '#link' as a hashtag.
-		matches = this.compactMatches( matches );
 
 		return matches;
 	},
@@ -660,11 +661,22 @@ Autolinker.prototype = {
 
 		for( var i = 0; i < matches.length - 1; i++ ) {
 			var match = matches[ i ],
-			    endIdx = match.getOffset() + match.getMatchedText().length;
+					offset = match.getOffset(),
+					matchedTextLength = match.getMatchedText().length,
+			    endIdx = offset + matchedTextLength;
 
-			// Remove subsequent matches that overlap with the current match
-			while( i + 1 < matches.length && matches[ i + 1 ].getOffset() <= endIdx ) {
-				matches.splice( i + 1, 1 );
+			if( i + 1 < matches.length ) {
+				// Remove subsequent matches that equal offset with current match
+				if( matches[ i + 1 ].getOffset() === offset ) {
+					var removeIdx = matches[ i + 1 ].getMatchedText().length > matchedTextLength ? i : i + 1;
+					matches.splice( removeIdx, 1 );
+					continue;
+				}
+
+				// Remove subsequent matches that overlap with the current match
+				if( matches[ i + 1 ].getOffset() <= endIdx ) {
+					matches.splice( i + 1, 1 );
+				}
 			}
 		}
 
