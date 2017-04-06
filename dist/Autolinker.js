@@ -630,17 +630,16 @@ Autolinker.prototype = {
 			}
 		}
 
-
-		// After we have found all matches, remove subsequent matches that
-		// overlap with a previous match. This can happen for instance with URLs,
-		// where the url 'google.com/#link' would match '#link' as a hashtag.
-		matches = this.compactMatches( matches );
-
-		// And finally, remove matches for match types that have been turned
+		// After we have found all matches, remove matches for match types that have been turned
 		// off. We needed to have all match types turned on initially so that
 		// things like hashtags could be filtered out if they were really just
 		// part of a URL match (for instance, as a named anchor).
 		matches = this.removeUnwantedMatches( matches );
+
+		// And finally, remove subsequent matches that
+		// overlap with a previous match. This can happen for instance with URLs,
+		// where the url 'google.com/#link' would match '#link' as a hashtag.
+		matches = this.compactMatches( matches );
 
 		return matches;
 	},
