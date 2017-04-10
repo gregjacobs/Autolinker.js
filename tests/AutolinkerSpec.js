@@ -2694,6 +2694,52 @@ describe( "Autolinker", function() {
 			expect( matches[ 4 ].getHashtag() ).toBe( 'asdf2' );
 		} );
 
+		describe( 'custom Phone.prototype.matcherRegex', function() {
+			const matcherRegexOriginal = Autolinker.matcher.Phone.prototype.matcherRegex;
+
+			beforeEach( function() {
+				const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
+				Autolinker.matcher.Phone.prototype.matcherRegex = phoneInTextRegex;
+				Autolinker.matcher.Phone.prototype.testMatch = function() { return true; };
+			} );
+
+			afterEach( function() {
+				Autolinker.matcher.Phone.prototype.matcherRegex = matcherRegexOriginal;
+			} );
+
+			it( 'should match custom matcherRegex', function() {
+				var text = [
+					'91234567',
+					'9123-4567',
+					'61234567',
+					'51234567',
+					'+85291234567',
+					'+852-91234567',
+					'+852-9123-4567',
+					'852-91234567',
+					// invalid
+					'999',
+					'+852-912345678',
+					'123456789',
+					'+852-1234-56789',
+				].join( ' / ' );
+
+				var matches = Autolinker.parse( text, {
+					hashtag : 'twitter',
+					mention : 'twitter'
+				} );
+
+				expect( matches.length ).toBe( 9 );
+
+				expect( matches[ 0 ].getType() ).toBe( 'phone' );
+				expect( matches[ 0 ].getNumber() ).toBe( '91234567' );
+
+				expect( matches[ 2 ].getType() ).toBe( 'phone' );
+				expect( matches[ 2 ].getNumber() ).toBe( '61234567' );
+			} );
+
+		} );
+
 	} );
 
 
