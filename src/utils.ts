@@ -9,14 +9,6 @@
 Autolinker.Util = {
 
 	/**
-	 * @property {Function} abstractMethod
-	 *
-	 * A function object which represents an abstract method.
-	 */
-	abstractMethod : function() { throw "abstract"; },
-
-
-	/**
 	 * @private
 	 * @property {RegExp} trimRegex
 	 *
