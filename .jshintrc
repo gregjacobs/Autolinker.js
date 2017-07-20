@@ -3,6 +3,7 @@
 	"smarttabs": true,
 	"eqnull": true,
 	"esnext": true,
+	"node": true,
 	"globals" : {
 		"describe" : true,
 		"beforeEach" : true,

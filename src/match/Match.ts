@@ -1,4 +1,3 @@
-/*global Autolinker */
 /**
  * @abstract
  * @class Autolinker.match.Match
@@ -30,7 +29,9 @@
  *
  * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
  */
-Autolinker.match.Match = Autolinker.Util.extend( Object, {
+import { AnchorTagBuilder } from "../AnchorTagBuilder";
+
+export abstract class Match {
 
 	/**
 	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
@@ -38,18 +39,21 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * Reference to the AnchorTagBuilder instance to use to generate an anchor
 	 * tag for the Match.
 	 */
+	private readonly tagBuilder: AnchorTagBuilder;
 
 	/**
 	 * @cfg {String} matchedText (required)
 	 *
 	 * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
 	 */
+	protected readonly matchedText: string;
 
 	/**
 	 * @cfg {Number} offset (required)
 	 *
 	 * The offset of where the match was made in the input string.
 	 */
+	private offset: number;
 
 
 	/**
@@ -57,17 +61,11 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		// @if DEBUG
-		if( cfg.tagBuilder == null ) throw new Error( '`tagBuilder` cfg required' );
-		if( cfg.matchedText == null ) throw new Error( '`matchedText` cfg required' );
-		if( cfg.offset == null ) throw new Error( '`offset` cfg required' );
-		// @endif
-
+	constructor( cfg: MatchConfig ) {
 		this.tagBuilder = cfg.tagBuilder;
 		this.matchedText = cfg.matchedText;
 		this.offset = cfg.offset;
-	},
+	}
 
 
 	/**
@@ -76,7 +74,7 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @abstract
 	 * @return {String}
 	 */
-	getType : Autolinker.Util.abstractMethod,
+	abstract getType(): string;
 
 
 	/**
@@ -84,9 +82,9 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String}
 	 */
-	getMatchedText : function() {
+	getMatchedText() {
 		return this.matchedText;
-	},
+	}
 
 
 	/**
@@ -101,9 +99,9 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *
 	 * @param {Number} offset
 	 */
-	setOffset : function( offset ) {
+	setOffset( offset: number ) {
 		this.offset = offset;
-	},
+	}
 
 
 	/**
@@ -112,9 +110,9 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {Number}
 	 */
-	getOffset : function() {
+	getOffset() {
 		return this.offset;
-	},
+	}
 
 
 	/**
@@ -123,7 +121,7 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @abstract
 	 * @return {String}
 	 */
-	getAnchorHref : Autolinker.Util.abstractMethod,
+	abstract getAnchorHref(): string;
 
 
 	/**
@@ -132,7 +130,7 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 * @abstract
 	 * @return {String}
 	 */
-	getAnchorText : Autolinker.Util.abstractMethod,
+	abstract getAnchorText(): string;
 
 
 	/**
@@ -156,9 +154,9 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String[]}
 	 */
-	getCssClassSuffixes : function() {
+	getCssClassSuffixes() {
 		return [ this.getType() ];
-	},
+	}
 
 
 	/**
@@ -176,8 +174,14 @@ Autolinker.match.Match = Autolinker.Util.extend( Object, {
 	 *
 	 *     tag.toAnchorString();  // <a href="http://google.com" class="cordova-link" target="_system">Google</a>
 	 */
-	buildTag : function() {
+	buildTag() {
 		return this.tagBuilder.build( this );
 	}
 
-} );
+}
+
+export interface MatchConfig {
+	tagBuilder: AnchorTagBuilder;
+	matchedText: string;
+	offset: number;
+}

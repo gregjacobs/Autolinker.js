@@ -1,4 +1,6 @@
-/*global Autolinker */
+import { AnchorTagBuilder } from "../AnchorTagBuilder";
+import { Match } from "../match/Match";
+
 /**
  * @abstract
  * @class Autolinker.matcher.Matcher
@@ -9,7 +11,7 @@
  * Note that Matchers do not take HTML into account - they must be fed the text
  * nodes of any HTML string, which is handled by {@link Autolinker#parse}.
  */
-Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
+export abstract class Matcher {
 
 	/**
 	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
@@ -17,6 +19,7 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 	 * Reference to the AnchorTagBuilder instance to use to generate HTML tags
 	 * for {@link Autolinker.match.Match Matches}.
 	 */
+	protected tagBuilder: AnchorTagBuilder;
 
 
 	/**
@@ -24,13 +27,9 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 	 * @param {Object} cfg The configuration properties for the Matcher
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		// @if DEBUG
-		if( !cfg.tagBuilder ) throw new Error( '`tagBuilder` cfg required' );
-		// @endif
-
+	constructor( cfg: MatcherConfig ) {
 		this.tagBuilder = cfg.tagBuilder;
-	},
+	}
 
 
 	/**
@@ -41,6 +40,10 @@ Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
 	 * @param {String} text The text to scan and replace matches in.
 	 * @return {Autolinker.match.Match[]}
 	 */
-	parseMatches : Autolinker.Util.abstractMethod
+	abstract parseMatches( text: string ): Match[];
 
-} );
+}
+
+export interface MatcherConfig {
+	tagBuilder: AnchorTagBuilder;
+}

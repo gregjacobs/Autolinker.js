@@ -1,11 +1,16 @@
-/*global Autolinker */
+import { Matcher, MatcherConfig } from "./Matcher";
+import { HashtagServices } from "../Autolinker";
+import { alphaNumericCharsStr } from "../RegexLib";
+import { HashtagMatch } from "../match/Hashtag";
+import { Match } from "../match/Match";
+
 /**
  * @class Autolinker.matcher.Hashtag
  * @extends Autolinker.matcher.Matcher
  *
- * Matcher to find Hashtag matches in an input string.
+ * Matcher to find HashtagMatch matches in an input string.
  */
-Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+export class HashtagMatcher extends Matcher {
 
 	/**
 	 * @cfg {String} serviceName
@@ -13,6 +18,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
+	private readonly serviceName: HashtagServices;
 
 
 	/**
@@ -23,7 +29,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : new RegExp( '#[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,139}', 'g' ),
+	matcherRegex = new RegExp( '#[_' + alphaNumericCharsStr + ']{1,139}', 'g' );
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -34,7 +40,7 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @private
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	nonWordCharRegex : new RegExp( '[^' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
+	nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
 
 
 	/**
@@ -42,36 +48,36 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
+	constructor( cfg: HashtagMatcherConfig ) {
+		super( cfg );
 
 		this.serviceName = cfg.serviceName;
-	},
+	}
 
 
 	/**
 	 * @inheritdoc
 	 */
-	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
+	parseMatches( text: string ) {
+		let matcherRegex = this.matcherRegex,
 		    nonWordCharRegex = this.nonWordCharRegex,
 		    serviceName = this.serviceName,
 		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+		    matches: Match[] = [],
+		    match: RegExpExecArray | null;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var offset = match.index,
+			let offset = match.index,
 			    prevChar = text.charAt( offset - 1 );
 
 			// If we found the match at the beginning of the string, or we found the match
 			// and there is a whitespace char in front of it (meaning it is not a '#' char
 			// in the middle of a word), then it is a hashtag match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				var matchedText = match[ 0 ],
+				let matchedText = match[ 0 ],
 				    hashtag = match[ 0 ].slice( 1 );  // strip off the '#' character at the beginning
 
-				matches.push( new Autolinker.match.Hashtag( {
+				matches.push( new HashtagMatch( {
 					tagBuilder  : tagBuilder,
 					matchedText : matchedText,
 					offset      : offset,
@@ -84,4 +90,8 @@ Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 		return matches;
 	}
 
-} );
+}
+
+export interface HashtagMatcherConfig extends MatcherConfig {
+	serviceName: HashtagServices
+}

@@ -1,4 +1,5 @@
-/*global Autolinker */
+import { HtmlNode } from "./HtmlNode";
+
 /**
  * @class Autolinker.htmlParser.TextNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -8,15 +9,15 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
+export class TextNode extends HtmlNode {
 
 	/**
 	 * Returns a string name for the type of node that this class represents.
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'text';
 	}
 
-} );
+}

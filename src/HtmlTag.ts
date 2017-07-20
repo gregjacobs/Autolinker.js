@@ -1,5 +1,3 @@
-/*global Autolinker */
-/*jshint boss:true */
 /**
  * @class Autolinker.HtmlTag
  * @extends Object
@@ -74,7 +72,9 @@
  *     // generated html:
  *     //   Test <button title="Load URL: http://google.com">Load URL: google.com</button>
  */
-Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
+import { indexOf } from "./utils";
+
+export class HtmlTag {
 
 	/**
 	 * @cfg {String} tagName
@@ -84,6 +84,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
 	 * is executed.
 	 */
+	private tagName: string;
 
 	/**
 	 * @cfg {Object.<String, String>} attrs
@@ -91,24 +92,14 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
 	 * values are the attribute values.
 	 */
-
-	/**
-	 * @cfg {String} innerHtml
-	 *
-	 * The inner HTML for the tag.
-	 *
-	 * Note the camel case name on `innerHtml`. Acronyms are camelCased in this utility (such as not to run into the acronym
-	 * naming inconsistency that the DOM developers created with `XMLHttpRequest`). You may alternatively use {@link #innerHTML}
-	 * if you prefer, but this one is recommended.
-	 */
+	private attrs: { [key: string]: string };
 
 	/**
 	 * @cfg {String} innerHTML
 	 *
-	 * Alias of {@link #innerHtml}, accepted for consistency with the browser DOM api, but prefer the camelCased version
-	 * for acronym names.
+	 * The inner HTML for the tag.
 	 */
-
+	private innerHTML: string;
 
 	/**
 	 * @protected
@@ -116,18 +107,23 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * Regular expression used to match whitespace in a string of CSS classes.
 	 */
-	whitespaceRegex : /\s+/,
+	protected whitespaceRegex = /\s+/;
 
 
 	/**
 	 * @constructor
 	 * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
 	 */
-	constructor : function( cfg ) {
-		Autolinker.Util.assign( this, cfg );
-
-		this.innerHtml = this.innerHtml || this.innerHTML;  // accept either the camelCased form or the fully capitalized acronym
-	},
+	constructor( cfg: {
+		tagName?: string;
+		attrs?: { [key: string]: string };
+		innerHtml?: string;
+		innerHTML?: string;
+	} = {} ) {
+		this.tagName = cfg.tagName || '';
+		this.attrs = cfg.attrs || {};
+		this.innerHTML = cfg.innerHtml || cfg.innerHTML || '';  // accept either the camelCased form or the fully capitalized acronym as in the DOM
+	}
 
 
 	/**
@@ -136,10 +132,10 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} tagName
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	setTagName : function( tagName ) {
+	setTagName( tagName: string ) {
 		this.tagName = tagName;
 		return this;
-	},
+	}
 
 
 	/**
@@ -147,9 +143,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String}
 	 */
-	getTagName : function() {
-		return this.tagName || "";
-	},
+	getTagName() {
+		return this.tagName || '';
+	}
 
 
 	/**
@@ -159,12 +155,12 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} attrValue The attribute value to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	setAttr : function( attrName, attrValue ) {
-		var tagAttrs = this.getAttrs();
+	setAttr( attrName: string, attrValue: string ) {
+		let tagAttrs = this.getAttrs();
 		tagAttrs[ attrName ] = attrValue;
 
 		return this;
-	},
+	}
 
 
 	/**
@@ -173,9 +169,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} attrName The attribute name to retrieve.
 	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
 	 */
-	getAttr : function( attrName ) {
+	getAttr( attrName: string ) {
 		return this.getAttrs()[ attrName ];
-	},
+	}
 
 
 	/**
@@ -184,12 +180,11 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	setAttrs : function( attrs ) {
-		var tagAttrs = this.getAttrs();
-		Autolinker.Util.assign( tagAttrs, attrs );
+	setAttrs( attrs: {[attr: string]: string} ) {
+		Object.assign( this.getAttrs(), attrs );
 
 		return this;
-	},
+	}
 
 
 	/**
@@ -197,9 +192,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
 	 */
-	getAttrs : function() {
+	getAttrs() {
 		return this.attrs || ( this.attrs = {} );
-	},
+	}
 
 
 	/**
@@ -208,9 +203,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	setClass : function( cssClass ) {
+	setClass( cssClass: string ) {
 		return this.setAttr( 'class', cssClass );
-	},
+	}
 
 
 	/**
@@ -219,13 +214,12 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} cssClass One or more space-separated CSS classes to add.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	addClass : function( cssClass ) {
-		var classAttr = this.getClass(),
+	addClass( cssClass: string ) {
+		let classAttr = this.getClass(),
 		    whitespaceRegex = this.whitespaceRegex,
-		    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    newClasses = cssClass.split( whitespaceRegex ),
-		    newClass;
+		    newClass: string | undefined;
 
 		while( newClass = newClasses.shift() ) {
 			if( indexOf( classes, newClass ) === -1 ) {
@@ -235,7 +229,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 
 		this.getAttrs()[ 'class' ] = classes.join( " " );
 		return this;
-	},
+	}
 
 
 	/**
@@ -244,16 +238,15 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} cssClass One or more space-separated CSS classes to remove.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	removeClass : function( cssClass ) {
-		var classAttr = this.getClass(),
+	removeClass( cssClass: string ) {
+		let classAttr = this.getClass(),
 		    whitespaceRegex = this.whitespaceRegex,
-		    indexOf = Autolinker.Util.indexOf,  // to support IE8 and below
 		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
 		    removeClasses = cssClass.split( whitespaceRegex ),
-		    removeClass;
+		    removeClass: string | undefined;
 
 		while( classes.length && ( removeClass = removeClasses.shift() ) ) {
-			var idx = indexOf( classes, removeClass );
+			let idx = indexOf( classes, removeClass );
 			if( idx !== -1 ) {
 				classes.splice( idx, 1 );
 			}
@@ -261,7 +254,7 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 
 		this.getAttrs()[ 'class' ] = classes.join( " " );
 		return this;
-	},
+	}
 
 
 	/**
@@ -270,9 +263,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String}
 	 */
-	getClass : function() {
+	getClass() {
 		return this.getAttrs()[ 'class' ] || "";
-	},
+	}
 
 
 	/**
@@ -281,9 +274,9 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} cssClass The CSS class to check for.
 	 * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
 	 */
-	hasClass : function( cssClass ) {
+	hasClass( cssClass: string ) {
 		return ( ' ' + this.getClass() + ' ' ).indexOf( ' ' + cssClass + ' ' ) !== -1;
-	},
+	}
 
 
 	/**
@@ -292,11 +285,22 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @param {String} html The inner HTML to set.
 	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
 	 */
-	setInnerHtml : function( html ) {
-		this.innerHtml = html;
+	setInnerHTML( html: string ) {
+		this.innerHTML = html;
 
 		return this;
-	},
+	}
+
+
+	/**
+	 * Backwards compatibility method name.
+	 *
+	 * @param {String} html The inner HTML to set.
+	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+	 */
+	setInnerHtml( html: string ) {
+		return this.setInnerHTML( html );
+	}
 
 
 	/**
@@ -304,9 +308,19 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String}
 	 */
-	getInnerHtml : function() {
-		return this.innerHtml || "";
-	},
+	getInnerHTML() {
+		return this.innerHTML || "";
+	}
+
+
+	/**
+	 * Backward compatibility method name.
+	 *
+	 * @return {String}
+	 */
+	getInnerHtml() {
+		return this.getInnerHTML();
+	}
 
 
 	/**
@@ -314,14 +328,14 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 *
 	 * @return {String}
 	 */
-	toAnchorString : function() {
-		var tagName = this.getTagName(),
+	toAnchorString() {
+		let tagName = this.getTagName(),
 		    attrsStr = this.buildAttrsStr();
 
 		attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
 
 		return [ '<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>' ].join( "" );
-	},
+	}
 
 
 	/**
@@ -331,13 +345,13 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 	 * @protected
 	 * @return {String} Example return: `attr1="value1" attr2="value2"`
 	 */
-	buildAttrsStr : function() {
+	buildAttrsStr() {
 		if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
 
-		var attrs = this.getAttrs(),
-		    attrsArr = [];
+		let attrs = this.getAttrs(),
+		    attrsArr: string[] = [];
 
-		for( var prop in attrs ) {
+		for( let prop in attrs ) {
 			if( attrs.hasOwnProperty( prop ) ) {
 				attrsArr.push( prop + '="' + attrs[ prop ] + '"' );
 			}
@@ -345,4 +359,4 @@ Autolinker.HtmlTag = Autolinker.Util.extend( Object, {
 		return attrsArr.join( " " );
 	}
 
-} );
+}

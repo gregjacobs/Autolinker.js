@@ -1,4 +1,6 @@
-/*global Autolinker */
+import { Match, MatchConfig } from "./Match";
+import { StripPrefixConfig, UrlMatchTypeOptions } from "../Autolinker";
+
 /**
  * @class Autolinker.match.Url
  * @extends Autolinker.match.Match
@@ -7,13 +9,14 @@
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
+export class UrlMatch extends Match {
 
 	/**
 	 * @cfg {String} url (required)
 	 *
 	 * The url that was matched.
 	 */
+	private url: string;
 
 	/**
 	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
@@ -23,6 +26,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
 	 * was matched by a known top-level domain (ex: 'google.com').
 	 */
+	private readonly urlMatchType: UrlMatchTypeOptions;
 
 	/**
 	 * @cfg {Boolean} protocolUrlMatch (required)
@@ -30,6 +34,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
 	 */
+	private readonly protocolUrlMatch: boolean;
 
 	/**
 	 * @cfg {Boolean} protocolRelativeMatch (required)
@@ -38,44 +43,20 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * is a URL that starts with '//', and will be either http:// or https://
 	 * based on the protocol that the site is loaded under.
 	 */
+	private readonly protocolRelativeMatch: boolean;
 
 	/**
 	 * @cfg {Object} stripPrefix (required)
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
+	private readonly stripPrefix: StripPrefixConfig;
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
 	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
 	 */
-
-
-	/**
-	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match
-	 *   instance, specified in an Object (map).
-	 */
-	constructor : function( cfg ) {
-		Autolinker.match.Match.prototype.constructor.call( this, cfg );
-
-		// @if DEBUG
-		if( cfg.urlMatchType !== 'scheme' && cfg.urlMatchType !== 'www' && cfg.urlMatchType !== 'tld' ) throw new Error( '`urlMatchType` cfg must be one of: "scheme", "www", or "tld"' );
-		if( !cfg.url ) throw new Error( '`url` cfg required' );
-		if( cfg.protocolUrlMatch == null ) throw new Error( '`protocolUrlMatch` cfg required' );
-		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
-		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
-		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
-		// @endif
-
-		this.urlMatchType = cfg.urlMatchType;
-		this.url = cfg.url;
-		this.protocolUrlMatch = cfg.protocolUrlMatch;
-		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
-		this.stripPrefix = cfg.stripPrefix;
-		this.stripTrailingSlash = cfg.stripTrailingSlash;
-	},
-
+	private readonly stripTrailingSlash: boolean;
 
 	/**
 	 * @private
@@ -84,7 +65,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * A regular expression used to remove the 'http://' or 'https://' from
 	 * URLs.
 	 */
-	schemePrefixRegex: /^(https?:\/\/)?/i,
+	schemePrefixRegex = /^(https?:\/\/)?/i;
 
 	/**
 	 * @private
@@ -92,7 +73,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * A regular expression used to remove the 'www.' from URLs.
 	 */
-	wwwPrefixRegex: /^(https?:\/\/)?(www\.)?/i,
+	wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
 
 	/**
 	 * @private
@@ -101,7 +82,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * The regular expression used to remove the protocol-relative '//' from the {@link #url} string, for purposes
 	 * of {@link #getAnchorText}. A protocol-relative URL is, for example, "//yahoo.com"
 	 */
-	protocolRelativeRegex : /^\/\//,
+	protocolRelativeRegex = /^\/\//;
 
 	/**
 	 * @private
@@ -110,7 +91,24 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
 	 * {@link #url} did not have a protocol)
 	 */
-	protocolPrepended : false,
+	protocolPrepended = false;
+
+
+	/**
+	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
+	 */
+	constructor( cfg: UrlMatchConfig ) {
+		super( cfg );
+
+		this.urlMatchType = cfg.urlMatchType;
+		this.url = cfg.url;
+		this.protocolUrlMatch = cfg.protocolUrlMatch;
+		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
+		this.stripPrefix = cfg.stripPrefix;
+		this.stripTrailingSlash = cfg.stripTrailingSlash;
+	}
 
 
 	/**
@@ -118,9 +116,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'url';
-	},
+	}
 
 
 	/**
@@ -134,9 +132,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {"scheme"/"www"/"tld"}
 	 */
-	getUrlMatchType : function() {
+	getUrlMatchType() {
 		return this.urlMatchType;
-	},
+	}
 
 
 	/**
@@ -145,8 +143,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getUrl : function() {
-		var url = this.url;
+	getUrl() {
+		let url = this.url;
 
 		// if the url string doesn't begin with a protocol, assume 'http://'
 		if( !this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended ) {
@@ -156,7 +154,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		}
 
 		return url;
-	},
+	}
 
 
 	/**
@@ -164,11 +162,11 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorHref : function() {
-		var url = this.getUrl();
+	getAnchorHref() {
+		let url = this.getUrl();
 
 		return url.replace( /&amp;/g, '&' );  // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
-	},
+	}
 
 
 	/**
@@ -176,8 +174,8 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorText : function() {
-		var anchorText = this.getMatchedText();
+	getAnchorText() {
+		let anchorText = this.getMatchedText();
 
 		if( this.protocolRelativeMatch ) {
 			// Strip off any protocol-relative '//' from the anchor text
@@ -194,7 +192,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		}
 
 		return anchorText;
-	},
+	}
 
 
 	// ---------------------------------------
@@ -210,9 +208,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *   which to strip off the url scheme.
 	 * @return {String} The `url`, with the scheme stripped.
 	 */
-	stripSchemePrefix : function( url ) {
+	stripSchemePrefix( url: string ) {
 		return url.replace( this.schemePrefixRegex, '' );
-	},
+	}
 
 
 	/**
@@ -223,9 +221,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *   which to strip off the 'www' if it exists.
 	 * @return {String} The `url`, with the 'www' stripped.
 	 */
-	stripWwwPrefix : function( url ) {
+	stripWwwPrefix( url: string ) {
 		return url.replace( this.wwwPrefixRegex, '$1' );  // leave any scheme ($1), it one exists
-	},
+	}
 
 
 	/**
@@ -236,9 +234,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *   protocol-relative prefix (such as stripping off "//")
 	 * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
 	 */
-	stripProtocolRelativePrefix : function( text ) {
+	stripProtocolRelativePrefix( text: string ) {
 		return text.replace( this.protocolRelativeRegex, '' );
-	},
+	}
 
 
 	/**
@@ -249,11 +247,21 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *   slash ('/') that may exist.
 	 * @return {String} The `anchorText`, with the trailing slash removed.
 	 */
-	removeTrailingSlash : function( anchorText ) {
+	removeTrailingSlash( anchorText: string ) {
 		if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
 	}
 
-} );
+}
+
+
+export interface UrlMatchConfig extends MatchConfig {
+	url: string;
+	urlMatchType: UrlMatchTypeOptions;
+	protocolUrlMatch: boolean;
+	protocolRelativeMatch: boolean;
+	stripPrefix: StripPrefixConfig;
+	stripTrailingSlash: boolean;
+}

@@ -1,4 +1,5 @@
-/*global Autolinker */
+import { Match, MatchConfig } from "./Match";
+
 /**
  * @class Autolinker.match.Email
  * @extends Autolinker.match.Match
@@ -7,13 +8,14 @@
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
+export class EmailMatch extends Match {
 
 	/**
 	 * @cfg {String} email (required)
 	 *
 	 * The email address that was matched.
 	 */
+	private readonly email: string;
 
 
 	/**
@@ -21,15 +23,11 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		Autolinker.match.Match.prototype.constructor.call( this, cfg );
-
-		// @if DEBUG
-		if( !cfg.email ) throw new Error( '`email` cfg required' );
-		// @endif
+	constructor( cfg: EmailMatchConfig ) {
+		super( cfg );
 
 		this.email = cfg.email;
-	},
+	}
 
 
 	/**
@@ -37,9 +35,9 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'email';
-	},
+	}
 
 
 	/**
@@ -47,9 +45,9 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getEmail : function() {
+	getEmail() {
 		return this.email;
-	},
+	}
 
 
 	/**
@@ -57,9 +55,9 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorHref : function() {
+	getAnchorHref() {
 		return 'mailto:' + this.email;
-	},
+	}
 
 
 	/**
@@ -67,8 +65,13 @@ Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorText : function() {
+	getAnchorText() {
 		return this.email;
 	}
 
-} );
+}
+
+
+export interface EmailMatchConfig extends MatchConfig {
+	email: string;
+}

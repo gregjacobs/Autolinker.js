@@ -1,4 +1,3 @@
-/*global Autolinker */
 /**
  * Date: 2015-10-05
  * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
@@ -10,13 +9,13 @@
  * @param {String} ellipsisChars   The characters to place within the url, e.g. "..".
  * @return {String} The truncated URL.
  */
-Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
+export function truncateMiddle( url: string, truncateLen: number, ellipsisChars?: string ){
   if (url.length <= truncateLen) {
     return url;
   }
 
-  var ellipsisLengthBeforeParsing;
-  var ellipsisLength;
+  let ellipsisLengthBeforeParsing: number;
+  let ellipsisLength: number;
 
   if(ellipsisChars == null) {
     ellipsisChars = '&hellip;';
@@ -27,10 +26,10 @@ Autolinker.truncate.TruncateMiddle = function(url, truncateLen, ellipsisChars){
     ellipsisLength = ellipsisChars.length;
   }
 
-  var availableLength = truncateLen - ellipsisLength;
-  var end = "";
+  let availableLength = truncateLen - ellipsisLength;
+  let end = "";
   if (availableLength > 0) {
     end = url.substr((-1)*Math.floor(availableLength/2));
   }
   return (url.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
-};
+}

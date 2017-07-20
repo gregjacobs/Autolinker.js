@@ -35,7 +35,7 @@ const pkg = require( './package.json' ),
 
 gulp.task( 'default', [ 'doc', 'test' ] );
 gulp.task( 'lint', lintTask );
-gulp.task( 'build', [ 'lint' ], buildTask );
+gulp.task( 'build', [ 'typescript' ], buildTask );
 gulp.task( 'test', [ 'build' ], testTask );
 gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
 gulp.task( 'serve', [ 'typescript', 'doc' ], serveTask );
@@ -44,17 +44,17 @@ gulp.task( 'update-tld-list', updateTldRegex );
 
 
 function buildTask() {
-	var combinedSrcFile = gulp.src( srcFiles )
+	let combinedSrcFile = gulp.src( srcFiles )
 		.pipe( concat( distFilename ) )
 		.pipe( umd() )
 		.pipe( header( banner, { pkg: pkg } ) );
 
-	var unminifiedFile = combinedSrcFile
+	let unminifiedFile = combinedSrcFile
 		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
 		.pipe( gulp.dest( distFolder ) );
 
-	var minifiedFile = combinedSrcFile
+	let minifiedFile = combinedSrcFile
 		.pipe( clone() )
 		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
 		.pipe( uglify( { preserveComments: 'license' } ) )
@@ -66,7 +66,7 @@ function buildTask() {
 
 
 function docTask() {
-	var jsduck = new JsDuck( [
+	let jsduck = new JsDuck( [
 		'--out',               './docs/api',
 		'--title',             'Autolinker v' + pkg.version + ' API Docs',
 		'--examples',          './docs/examples.json',
@@ -173,21 +173,21 @@ function createSrcFilesList() {
 		'src/htmlParser/TextNode.js',
 		'src/match/Match.js',
 		'src/match/Email.js',
-		'src/match/Hashtag.js',
+		'src/match/HashtagMatch.js',
 		'src/match/Phone.js',
 		'src/match/Mention.js',
 		'src/match/Url.js',
 		'src/matcher/TldRegex.js',
 		'src/matcher/Matcher.js',
 		'src/matcher/Email.js',
-		'src/matcher/Hashtag.js',
+		'src/matcher/HashtagMatch.js',
 		'src/matcher/Phone.js',
 		'src/matcher/Mention.js',
 		'src/matcher/Url.js',
 		'src/matcher/UrlMatchValidator.js',
-		'src/truncate/TruncateEnd.js',
-		'src/truncate/TruncateMiddle.js',
-		'src/truncate/TruncateSmart.js'
+		'src/truncate/truncateEnd.js',
+		'src/truncate/truncateMiddle.js',
+		'src/truncate/truncateSmart.js'
 	];
 }
 
@@ -204,7 +204,7 @@ function notCommentLine(line){
 }
 
 function compareLengthLongestFirst(a, b){
-	var result = b.length - a.length
+	let result = b.length - a.length
 	if (result == 0) {
 		result = a.localeCompare(b)
 	}
@@ -220,7 +220,7 @@ function domainsToRegex(contents){
 	contents = contents.filter(function(s){ return !!s });
 	contents.sort(compareLengthLongestFirst);
 	contents = contents.join('|');
-	contents = '/*global Autolinker */\nAutolinker.tldRegex = /(?:' + contents + ')/;\n';
+	contents = 'export const tldRegex = /(?:' + contents + ')/;\n';
 
 	return contents;
 }

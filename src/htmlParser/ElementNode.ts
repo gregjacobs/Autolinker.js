@@ -1,4 +1,3 @@
-/*global Autolinker */
 /**
  * @class Autolinker.htmlParser.ElementNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -8,14 +7,16 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
+import { HtmlNode, HtmlNodeConfig } from "./HtmlNode";
+
+export class ElementNode extends HtmlNode {
 
 	/**
 	 * @cfg {String} tagName (required)
 	 *
 	 * The name of the tag that was matched.
 	 */
-	tagName : '',
+	tagName: string;
 
 	/**
 	 * @cfg {Boolean} closing (required)
@@ -23,7 +24,15 @@ Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 * `true` if the element (tag) is a closing tag, `false` if its an opening
 	 * tag.
 	 */
-	closing : false,
+	closing: boolean;
+
+
+	constructor( cfg: ElementNodeConfig ) {
+		super( cfg );
+
+		this.tagName = cfg.tagName;
+		this.closing = cfg.closing;
+	}
 
 
 	/**
@@ -31,9 +40,9 @@ Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'element';
-	},
+	}
 
 
 	/**
@@ -42,9 +51,9 @@ Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 *
 	 * @return {String}
 	 */
-	getTagName : function() {
+	getTagName() {
 		return this.tagName;
-	},
+	}
 
 
 	/**
@@ -53,8 +62,13 @@ Autolinker.htmlParser.ElementNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 *
 	 * @return {Boolean}
 	 */
-	isClosing : function() {
+	isClosing() {
 		return this.closing;
 	}
 
-} );
+}
+
+export interface ElementNodeConfig extends HtmlNodeConfig {
+	tagName: string;
+	closing: boolean;
+}

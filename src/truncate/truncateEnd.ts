@@ -1,4 +1,5 @@
-/*global Autolinker */
+import { ellipsis } from "../utils";
+
 /**
  * A truncation feature where the ellipsis will be placed at the end of the URL.
  *
@@ -7,6 +8,6 @@
  * @param {String} ellipsisChars The characters to place within the url, e.g. "..".
  * @return {String} The truncated URL.
  */
-Autolinker.truncate.TruncateEnd = function(anchorText, truncateLen, ellipsisChars){
-	return Autolinker.Util.ellipsis( anchorText, truncateLen, ellipsisChars );
-};
+export function truncateEnd( anchorText: string, truncateLen: number, ellipsisChars?: string){
+	return ellipsis( anchorText, truncateLen, ellipsisChars );
+}

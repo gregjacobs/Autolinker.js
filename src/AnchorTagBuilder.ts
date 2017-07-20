@@ -1,5 +1,10 @@
-/*global Autolinker */
-/*jshint sub:true */
+import { Match } from "./match/Match";
+import { HtmlTag } from "./HtmlTag";
+import { TruncateConfig } from "./Autolinker";
+import { truncateSmart } from "./truncate/truncateSmart";
+import { truncateMiddle } from "./truncate/truncateMiddle";
+import { truncateEnd } from "./truncate/truncateEnd";
+
 /**
  * @protected
  * @class Autolinker.AnchorTagBuilder
@@ -26,35 +31,40 @@
  *     // generated html:
  *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
  */
-Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
+export class AnchorTagBuilder {
 
 	/**
 	 * @cfg {Boolean} newWindow
 	 * @inheritdoc Autolinker#newWindow
 	 */
+	private readonly newWindow: boolean;
 
 	/**
 	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
+	private readonly truncate: TruncateConfig;
 
 	/**
 	 * @cfg {String} className
 	 * @inheritdoc Autolinker#className
 	 */
+	private readonly className: string;
 
 
 	/**
 	 * @constructor
 	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		cfg = cfg || {};
-
-		this.newWindow = cfg.newWindow;
-		this.truncate = cfg.truncate;
-		this.className = cfg.className;
-	},
+	constructor( cfg: {
+		newWindow?: boolean;
+		truncate?: TruncateConfig;
+		className?: string
+	} = {} ) {
+		this.newWindow = cfg.newWindow || false;
+		this.truncate = cfg.truncate || {};
+		this.className = cfg.className || '';
+	}
 
 
 	/**
@@ -65,13 +75,13 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   anchor tag from.
 	 * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
 	 */
-	build : function( match ) {
-		return new Autolinker.HtmlTag( {
+	build( match: Match ) {
+		return new HtmlTag( {
 			tagName   : 'a',
 			attrs     : this.createAttrs( match ),
 			innerHtml : this.processAnchorText( match.getAnchorText() )
 		} );
-	},
+	}
 
 
 	/**
@@ -83,12 +93,12 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   anchor tag from.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs : function( match ) {
-		var attrs = {
+	createAttrs( match: Match ) {
+		let attrs: {[attrName: string]: string} = {
 			'href' : match.getAnchorHref()  // we'll always have the `href` attribute
 		};
 
-		var cssClass = this.createCssClass( match );
+		let cssClass = this.createCssClass( match );
 		if( cssClass ) {
 			attrs[ 'class' ] = cssClass;
 		}
@@ -104,7 +114,7 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 		}
 
 		return attrs;
-	},
+	}
 
 
 	/**
@@ -127,22 +137,22 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass : function( match ) {
-		var className = this.className;
+	createCssClass( match: Match ) {
+		let className = this.className;
 
 		if( !className ) {
 			return "";
 
 		} else {
-			var returnClasses = [ className ],
+			let returnClasses = [ className ],
 				cssClassSuffixes = match.getCssClassSuffixes();
 
-			for( var i = 0, len = cssClassSuffixes.length; i < len; i++ ) {
+			for( let i = 0, len = cssClassSuffixes.length; i < len; i++ ) {
 				returnClasses.push( className + '-' + cssClassSuffixes[ i ] );
 			}
 			return returnClasses.join( ' ' );
 		}
-	},
+	}
 
 
 	/**
@@ -154,11 +164,11 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   displayed).
 	 * @return {String} The processed `anchorText`.
 	 */
-	processAnchorText : function( anchorText ) {
+	processAnchorText( anchorText: string ) {
 		anchorText = this.doTruncate( anchorText );
 
 		return anchorText;
-	},
+	}
 
 
 	/**
@@ -172,22 +182,22 @@ Autolinker.AnchorTagBuilder = Autolinker.Util.extend( Object, {
 	 *   displayed).
 	 * @return {String} The truncated anchor text.
 	 */
-	doTruncate : function( anchorText ) {
-		var truncate = this.truncate;
+	doTruncate( anchorText: string ) {
+		let truncate = this.truncate;
 		if( !truncate || !truncate.length ) return anchorText;
 
-		var truncateLength = truncate.length,
+		let truncateLength = truncate.length,
 			truncateLocation = truncate.location;
 
 		if( truncateLocation === 'smart' ) {
-			return Autolinker.truncate.TruncateSmart( anchorText, truncateLength );
+			return truncateSmart( anchorText, truncateLength );
 
 		} else if( truncateLocation === 'middle' ) {
-			return Autolinker.truncate.TruncateMiddle( anchorText, truncateLength );
+			return truncateMiddle( anchorText, truncateLength );
 
 		} else {
-			return Autolinker.truncate.TruncateEnd( anchorText, truncateLength );
+			return truncateEnd( anchorText, truncateLength );
 		}
 	}
 
-} );
+}

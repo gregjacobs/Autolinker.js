@@ -1,11 +1,13 @@
-/*global Autolinker, _, describe, beforeEach, afterEach, it, expect, jasmine */
+import { MentionMatcher } from "../../src/matcher/Mention";
+import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
+import { MatchChecker } from "../match/MatchChecker";
+
 describe( "Autolinker.matcher.Mention", function() {
-	var MatchChecker = Autolinker.match.MatchChecker,
-	    matcher;
+	let matcher: MentionMatcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Mention( {
-			tagBuilder : new Autolinker.AnchorTagBuilder(),
+		matcher = new MentionMatcher( {
+			tagBuilder : new AnchorTagBuilder(),
 			serviceName: 'twitter'
 		} );
 	} );
@@ -22,7 +24,7 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'should return an array of a single username match when the string is the username itself', function() {
-			var matches = matcher.parseMatches( '@asdf' );
+			let matches = matcher.parseMatches( '@asdf' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 0 );
@@ -30,7 +32,7 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'should return an array of a single username match when the username is in the middle of the string', function() {
-			var matches = matcher.parseMatches( 'Hello @asdf my good friend' );
+			let matches = matcher.parseMatches( 'Hello @asdf my good friend' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 6 );
@@ -38,7 +40,7 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'should return an array of a single username match when the username is at the end of the string', function() {
-			var matches = matcher.parseMatches( 'Hello @asdf' );
+			let matches = matcher.parseMatches( 'Hello @asdf' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 6 );
@@ -46,7 +48,7 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'should return an array of multiple usernames when there are more than one within the string', function() {
-			var matches = matcher.parseMatches( 'Talk to @asdf or @fdsa' );
+			let matches = matcher.parseMatches( 'Talk to @asdf or @fdsa' );
 
 			expect( matches.length ).toBe( 2 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 8 );
@@ -55,7 +57,7 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'a match within parenthesis should be parsed correctly', function() {
-			var matches = matcher.parseMatches( 'Hello (@asdf)' );
+			let matches = matcher.parseMatches( 'Hello (@asdf)' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'twitter', 'asdf', 7 );
@@ -63,11 +65,11 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'an Instagram username with period not at boundaries should be parsed correctly', function() {
-			var instagramMatcher = new Autolinker.matcher.Mention( {
-				tagBuilder : new Autolinker.AnchorTagBuilder(),
+			let instagramMatcher = new MentionMatcher( {
+				tagBuilder : new AnchorTagBuilder(),
 				serviceName: 'instagram'
 			} );
-			var matches = instagramMatcher.parseMatches( 'Hello (@as.df)' );
+			let matches = instagramMatcher.parseMatches( 'Hello (@as.df)' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'instagram', 'as.df', 7 );
@@ -75,11 +77,11 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'an Instagram username with period at end of string should ignore period', function() {
-			var instagramMatcher = new Autolinker.matcher.Mention( {
-				tagBuilder : new Autolinker.AnchorTagBuilder(),
+			let instagramMatcher = new MentionMatcher( {
+				tagBuilder : new AnchorTagBuilder(),
 				serviceName: 'instagram'
 			} );
-			var matches = instagramMatcher.parseMatches( 'Hello (@asdf.)' );
+			let matches = instagramMatcher.parseMatches( 'Hello (@asdf.)' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'instagram', 'asdf', 7 );

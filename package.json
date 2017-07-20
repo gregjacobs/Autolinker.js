@@ -31,6 +31,9 @@
   },
   "homepage": "https://github.com/gregjacobs/Autolinker.js",
   "devDependencies": {
+    "@types/jasmine": "^2.5.41",
+    "@types/lodash": "^4.14.70",
+    "awesome-typescript-loader": "^3.2.1",
     "gulp": "^3.9.1",
     "gulp-clone": "^1.0.0",
     "gulp-concat": "^2.6.0",
@@ -53,11 +56,13 @@
     "karma-jasmine": "^0.3.7",
     "karma-phantomjs-launcher": "^1.0.0",
     "karma-spec-reporter": "0.0.24",
-    "lodash": "^4.3.0",
+    "lodash": "^4.17.4",
     "merge-stream": "^1.0.0",
     "phantomjs-prebuilt": "^2.1.4",
     "punycode": "^2.1.0",
     "requirejs": "^2.1.11",
-    "through2": "^2.0.1"
+    "through2": "^2.0.1",
+    "typescript": "^2.4.2",
+    "webpack": "^3.3.0"
   }
 }

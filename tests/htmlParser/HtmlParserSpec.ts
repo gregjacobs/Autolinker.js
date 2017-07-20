@@ -1,11 +1,12 @@
-/*global Autolinker, _, describe, beforeEach, afterEach, it, expect, jasmine */
+import { HtmlParser } from "../../src/htmlParser/HtmlParser";
+import { CommentNode } from "../../src/htmlParser/CommentNode";
+import { ElementNode } from "../../src/htmlParser/ElementNode";
+import { EntityNode } from "../../src/htmlParser/EntityNode";
+import { TextNode } from "../../src/htmlParser/TextNode";
+import { HtmlNode } from "../../src/htmlParser/HtmlNode";
+
 describe( "Autolinker.htmlParser.HtmlParser", function() {
-	var HtmlParser = Autolinker.htmlParser.HtmlParser,
-	    CommentNode = Autolinker.htmlParser.CommentNode,
-	    ElementNode = Autolinker.htmlParser.ElementNode,
-	    EntityNode = Autolinker.htmlParser.EntityNode,
-	    TextNode = Autolinker.htmlParser.TextNode,
-	    htmlParser;
+	let htmlParser: HtmlParser;
 
 
 	beforeEach( function() {
@@ -13,28 +14,28 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	} );
 
 
-	function expectCommentNode( node, offset, text, comment ) {
+	function expectCommentNode( node: HtmlNode, offset: number, text: string, comment: string ) {
 		expect( node ).toEqual( jasmine.any( CommentNode ) );
 		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
-		expect( node.getComment() ).toBe( comment );
+		expect( ( node as CommentNode ).getComment() ).toBe( comment );
 	}
 
-	function expectElementNode( node, offset, tagText, tagName, isClosingTag ) {
+	function expectElementNode( node: HtmlNode, offset: number, tagText: string, tagName: string, isClosingTag: boolean ) {
 		expect( node ).toEqual( jasmine.any( ElementNode ) );
 		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( tagText );
-		expect( node.getTagName() ).toBe( tagName );
-		expect( node.isClosing() ).toBe( isClosingTag );
+		expect( ( node as ElementNode ).getTagName() ).toBe( tagName );
+		expect( ( node as ElementNode ).isClosing() ).toBe( isClosingTag );
 	}
 
-	function expectEntityNode( node, offset, text ) {
+	function expectEntityNode( node: HtmlNode, offset: number, text: string ) {
 		expect( node ).toEqual( jasmine.any( EntityNode ) );
 		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
 	}
 
-	function expectTextNode( node, offset, text ) {
+	function expectTextNode( node: HtmlNode, offset: number, text: string ) {
 		expect( node ).toEqual( jasmine.any( TextNode ) );
 		expect( node.getOffset() ).toBe( offset );
 		expect( node.getText() ).toBe( text );
@@ -49,7 +50,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	describe( 'text node handling', function() {
 
 		it( "should return a single text node if there are no HTML nodes in it", function() {
-			var nodes = htmlParser.parse( "Testing 123" );
+			let nodes = htmlParser.parse( "Testing 123" );
 
 			expect( nodes.length ).toBe( 1 );
 			expectTextNode( nodes[ 0 ], 0, 'Testing 123' );
@@ -61,7 +62,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	describe( 'HTML comment node handling', function() {
 
 		it( "should return a single comment node if there is only an HTML comment node in it", function() {
-			var nodes = htmlParser.parse( "<!-- Testing 123 -->" );
+			let nodes = htmlParser.parse( "<!-- Testing 123 -->" );
 
 			expect( nodes.length ).toBe( 1 );
 			expectCommentNode( nodes[ 0 ], 0, "<!-- Testing 123 -->", "Testing 123" );
@@ -69,7 +70,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should handle a multi-line comment, and trim any amount of whitespace in the comment for the comment's text", function() {
-			var nodes = htmlParser.parse( "<!-- \n  \t\n Testing 123  \n\t  \n\n -->" );
+			let nodes = htmlParser.parse( "<!-- \n  \t\n Testing 123  \n\t  \n\n -->" );
 
 			expect( nodes.length ).toBe( 1 );
 			expectCommentNode( nodes[ 0 ], 0, "<!-- \n  \t\n Testing 123  \n\t  \n\n -->", "Testing 123" );
@@ -77,7 +78,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should produce 3 nodes for a text node, comment, then text node", function() {
-			var nodes = htmlParser.parse( "Test <!-- Comment --> Test" );
+			let nodes = htmlParser.parse( "Test <!-- Comment --> Test" );
 
 			expect( nodes.length ).toBe( 3 );
 			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
@@ -87,7 +88,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should produce 4 nodes for a text node, comment, text node, comment", function() {
-			var nodes = htmlParser.parse( "Test <!-- Comment --> Test <!-- Comment 2 -->" );
+			let nodes = htmlParser.parse( "Test <!-- Comment --> Test <!-- Comment 2 -->" );
 
 			expect( nodes.length ).toBe( 4 );
 			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
@@ -102,7 +103,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	describe( 'HTML element node handling', function() {
 
 		it( "should return a single element node if there is only an HTML element node in it", function() {
-			var nodes = htmlParser.parse( "<div>" );
+			let nodes = htmlParser.parse( "<div>" );
 
 			expect( nodes.length ).toBe( 1 );
 			expectElementNode( nodes[ 0 ], 0, '<div>', 'div', false );
@@ -110,7 +111,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should produce 3 nodes for a text node, element, then text node", function() {
-			var nodes = htmlParser.parse( "Test <div> Test" );
+			let nodes = htmlParser.parse( "Test <div> Test" );
 
 			expect( nodes.length ).toBe( 3 );
 			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
@@ -120,11 +121,11 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should be able to reproduce the input string based on the text that was provided to each returned `HtmlNode`", function() {
-			var inputStr = 'Joe went to <a href="google.com">ebay.com</a> today,&nbsp;and bought <b>big</b> items',
+			let inputStr = 'Joe went to <a href="google.com">ebay.com</a> today,&nbsp;and bought <b>big</b> items',
 				nodes = htmlParser.parse( inputStr ),
 				result = [];
 
-			for( var i = 0, len = nodes.length; i < len; i++ ) {
+			for( let i = 0, len = nodes.length; i < len; i++ ) {
 				result.push( nodes[ i ].getText() );
 			}
 
@@ -134,7 +135,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly handle tags without attributes", function() {
-			var nodes = htmlParser.parse( 'Test1 <div><span>Test2</span> Test3</div>' );
+			let nodes = htmlParser.parse( 'Test1 <div><span>Test2</span> Test3</div>' );
 
 			expect( nodes.length ).toBe( 7 );
 			expectTextNode   ( nodes[ 0 ], 0, 'Test1 ' );
@@ -150,7 +151,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 		it( "should properly handle a tag where the attributes start on the " +
 			"next line",
 		function() {
-			var nodes = htmlParser.parse( 'Test <div\nclass="myClass"\nstyle="color:red"> Test' );
+			let nodes = htmlParser.parse( 'Test <div\nclass="myClass"\nstyle="color:red"> Test' );
 
 			expect( nodes.length ).toBe( 3 );
 			expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
@@ -164,7 +165,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	describe( 'HTML entity handling', function() {
 
 		it( "should *not* match the &amp; HTML entity, as this may be part of a query string", function() {
-			var nodes = htmlParser.parse( 'Me&amp;You' );
+			let nodes = htmlParser.parse( 'Me&amp;You' );
 
 			expect( nodes.length ).toBe( 1 );
 			expectTextNode( nodes[ 0 ], 0, 'Me&amp;You' );
@@ -172,7 +173,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly parse a string that begins with an HTML entity node", function() {
-			var nodes = htmlParser.parse( '&quot;Test' );
+			let nodes = htmlParser.parse( '&quot;Test' );
 
 			expect( nodes.length ).toBe( 2 );
 			expectEntityNode( nodes[ 0 ], 0, '&quot;' );
@@ -181,7 +182,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly parse a string that ends with an HTML entity node", function() {
-			var nodes = htmlParser.parse( 'Test&quot;' );
+			let nodes = htmlParser.parse( 'Test&quot;' );
 
 			expect( nodes.length ).toBe( 2 );
 			expectTextNode(   nodes[ 0 ], 0, 'Test' );
@@ -190,7 +191,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly parse a string that begins and ends with an HTML entity node", function() {
-			var nodes = htmlParser.parse( '&quot;Test&quot;' );
+			let nodes = htmlParser.parse( '&quot;Test&quot;' );
 
 			expect( nodes.length ).toBe( 3 );
 			expectEntityNode( nodes[ 0 ], 0,  '&quot;' );
@@ -200,7 +201,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly parse a string that has an HTML entity node in the middle", function() {
-			var nodes = htmlParser.parse( 'Test&quot;Test' );
+			let nodes = htmlParser.parse( 'Test&quot;Test' );
 
 			expect( nodes.length ).toBe( 3 );
 			expectTextNode(   nodes[ 0 ], 0,  'Test' );
@@ -210,7 +211,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( "should properly parse a string that only has an HTML entity node", function() {
-			var nodes = htmlParser.parse( '&quot;' );
+			let nodes = htmlParser.parse( '&quot;' );
 
 			expect( nodes.length ).toBe( 1 );
 			expectEntityNode( nodes[ 0 ], 0, '&quot;' );
@@ -222,16 +223,16 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 	describe( 'combination examples', function() {
 
 		it( "should properly create `HtmlNode` instances for each text/entity/comment/element node encountered, with the proper data filled in on each node", function() {
-			var inputStr = [
+			let inputStr = [
 				'&quot;Joe went to &quot;',
 				'<a href="google.com">ebay.com</a>&quot; ',
 				'today,&nbsp;and <!-- stuff -->bought <b>big</b> items&quot;'
 			].join( "" );
 
-			var nodes = htmlParser.parse( inputStr );
+			let nodes = htmlParser.parse( inputStr );
 			expect( nodes.length ).toBe( 17 );
 
-			var i = -1;
+			let i = -1;
 			expectEntityNode ( nodes[ ++i ], 0,   '&quot;' );
 			expectTextNode   ( nodes[ ++i ], 6,   'Joe went to ' );
 			expectEntityNode ( nodes[ ++i ], 18,  '&quot;' );
@@ -253,16 +254,16 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 		it( 'should match tags of both upper and lower case', function() {
-			var inputStr = [
+			let inputStr = [
 				'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
 				'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
 				'<b>big</b> <B><!-- Comment 2 -->items</B>'
 			].join( '' );
-			var nodes = htmlParser.parse( inputStr );
+			let nodes = htmlParser.parse( inputStr );
 
 			expect( nodes.length ).toBe( 24 );
 
-			var i = -1;
+			let i = -1;
 			expectTextNode   ( nodes[ ++i ], 0,   'Joe ' );
 			expectElementNode( nodes[ ++i ], 4,   '<!DOCTYPE html>', '!doctype', false );
 			expectCommentNode( nodes[ ++i ], 19,  '<!-- Comment -->', 'Comment' );
@@ -293,7 +294,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 	it( "should not freeze up the regular expression engine when presented with the input string in issue #54", function() {
-		var inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! 'Gefallt mir' klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
+		let inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! 'Gefallt mir' klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
 		    nodes = htmlParser.parse( inputStr );
 
 		expect( nodes.length ).toBe( 1 );
@@ -302,7 +303,7 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 
 
 	it( "should not freeze up the regular expression engine when presented with the input string in issue #172", function() {
-		var inputStr = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017',//:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
+		let inputStr = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017',//:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
 		    nodes = htmlParser.parse( inputStr );
 
 		expect( nodes.length ).toBe( 1 );
