@@ -1,4 +1,6 @@
-/*global Autolinker */
+import { Match, MatchConfig } from "./Match";
+import { MentionServices } from "../Autolinker";
+
 /**
  * @class Autolinker.match.Mention
  * @extends Autolinker.match.Match
@@ -7,7 +9,7 @@
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
+export class MentionMatch extends Match {
 
 	/**
 	 * @cfg {String} serviceName
@@ -15,12 +17,14 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * The service to point mention matches to. See {@link Autolinker#mention}
 	 * for available values.
 	 */
+	private readonly serviceName: MentionServices;
 
 	/**
 	 * @cfg {String} mention (required)
 	 *
 	 * The Mention that was matched, without the '@' character.
 	 */
+	private readonly mention: string;
 
 
 	/**
@@ -28,17 +32,12 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		Autolinker.match.Match.prototype.constructor.call( this, cfg );
-
-		// @if DEBUG
-		if( !cfg.serviceName ) throw new Error( '`serviceName` cfg required' );
-		if( !cfg.mention ) throw new Error( '`mention` cfg required' );
-		// @endif
+	constructor( cfg: MentionMatchConfig ) {
+		super( cfg );
 
 		this.mention = cfg.mention;
 		this.serviceName = cfg.serviceName;
-	},
+	}
 
 
 	/**
@@ -46,9 +45,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'mention';
-	},
+	}
 
 
 	/**
@@ -56,9 +55,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getMention : function() {
+	getMention() {
 		return this.mention;
-	},
+	}
 
 
 	/**
@@ -67,9 +66,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getServiceName : function() {
+	getServiceName() {
 		return this.serviceName;
-	},
+	}
 
 
 	/**
@@ -77,7 +76,7 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorHref : function() {
+	getAnchorHref() {
 		switch( this.serviceName ) {
 			case 'twitter' :
 				return 'https://twitter.com/' + this.mention;
@@ -87,9 +86,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 				return 'https://soundcloud.com/' + this.mention;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
-				throw new Error( 'Unknown service name to point mention to: ', this.serviceName );
+				throw new Error( 'Unknown service name to point mention to: ' + this.serviceName );
 		}
-	},
+	}
 
 
 	/**
@@ -97,9 +96,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorText : function() {
+	getAnchorText() {
 		return '@' + this.mention;
-	},
+	}
 
 
 	/**
@@ -109,8 +108,8 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String[]}
 	 */
-	getCssClassSuffixes : function() {
-		var cssClassSuffixes = Autolinker.match.Match.prototype.getCssClassSuffixes.call( this ),
+	getCssClassSuffixes() {
+		let cssClassSuffixes = super.getCssClassSuffixes(),
 		    serviceName = this.getServiceName();
 
 		if( serviceName ) {
@@ -119,4 +118,9 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 		return cssClassSuffixes;
 	}
 
-} );
+}
+
+export interface MentionMatchConfig extends MatchConfig {
+	serviceName: MentionServices;
+	mention: string;
+}

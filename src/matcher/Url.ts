@@ -1,4 +1,11 @@
-/*global Autolinker */
+import { Matcher, MatcherConfig } from "./Matcher";
+import { alphaNumericCharsStr, domainNameRegex } from "../RegexLib";
+import { StripPrefixConfig, UrlMatchTypeOptions } from "../Autolinker";
+import { tldRegex } from "./TldRegex";
+import { UrlMatch } from "../match/Url";
+import { UrlMatchValidator } from "./UrlMatchValidator";
+import { Match } from "../match/Match";
+
 /**
  * @class Autolinker.matcher.Url
  * @extends Autolinker.matcher.Matcher
@@ -7,18 +14,20 @@
  *
  * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more details.
  */
-Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+export class UrlMatcher extends Matcher {
 
 	/**
 	 * @cfg {Object} stripPrefix (required)
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
+	stripPrefix: StripPrefixConfig;
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
 	 * @inheritdoc Autolinker#stripTrailingSlash
 	 */
+	stripTrailingSlash: boolean;
 
 	/**
 	 * @cfg {Boolean} decodePercentEncoding (required)
@@ -60,8 +69,8 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #3 for more info.
 	 */
-	matcherRegex : (function() {
-		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+	matcherRegex = (function() {
+		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
 		    getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
 		    tldRegex = Autolinker.tldRegex,  // match our known top level domains (TLDs)
@@ -100,7 +109,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 			'(?:' + urlSuffixRegex.source + ')?'  // match for path, query string, and/or hash anchor - optional
 		].join( "" ), 'gi' );
-	} )(),
+	} )();
 
 
 	/**
@@ -116,7 +125,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @type {RegExp} wordCharRegExp
 	 */
-	wordCharRegExp : new RegExp( '[' + Autolinker.RegexLib.alphaNumericCharsStr + ']' ),
+	wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
 
 
 	/**
@@ -133,7 +142,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp}
 	 */
-	openParensRe : /\(/g,
+	openParensRe = /\(/g;
 
 	/**
 	 * The regular expression to match closing parenthesis in a URL match. See
@@ -142,7 +151,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp}
 	 */
-	closeParensRe : /\)/g,
+	closeParensRe = /\)/g;
 
 
 	/**
@@ -150,34 +159,29 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
-
-		// @if DEBUG
-		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
-		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
-		// @endif
+	constructor( cfg: UrlMatcherConfig ) {
+		super( cfg );
 
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
 		this.decodePercentEncoding = cfg.decodePercentEncoding;
-	},
+	}
 
 
 	/**
 	 * @inheritdoc
 	 */
-	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
+	parseMatches( text: string ) {
+		let matcherRegex = this.matcherRegex,
 		    stripPrefix = this.stripPrefix,
 		    stripTrailingSlash = this.stripTrailingSlash,
 		    decodePercentEncoding = this.decodePercentEncoding,
 		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+		    matches: Match[] = [],
+		    match: RegExpExecArray | null;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var matchStr = match[ 0 ],
+			let matchStr = match[ 0 ],
 			    schemeUrlMatch = match[ 1 ],
 			    wwwUrlMatch = match[ 4 ],
 			    wwwProtocolRelativeMatch = match[ 5 ],
@@ -187,7 +191,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 				prevChar = text.charAt( offset - 1 );
 
-			if( !Autolinker.matcher.UrlMatchValidator.isValid( matchStr, schemeUrlMatch ) ) {
+			if( !UrlMatchValidator.isValid( matchStr, schemeUrlMatch ) ) {
 				continue;
 			}
 
@@ -216,16 +220,16 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				matchStr = matchStr.substr( 0, matchStr.length - 1 );  // remove the trailing ")"
 			} else {
 				// Handle an invalid character after the TLD
-				var pos = this.matchHasInvalidCharAfterTld( matchStr, schemeUrlMatch );
+				let pos = this.matchHasInvalidCharAfterTld( matchStr, schemeUrlMatch );
 				if( pos > -1 ) {
 					matchStr = matchStr.substr( 0, pos ); // remove the trailing invalid chars
 				}
 			}
 
-			var urlMatchType = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
+			let urlMatchType: UrlMatchTypeOptions = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
 			    protocolUrlMatch = !!schemeUrlMatch;
 
-			matches.push( new Autolinker.match.Url( {
+			matches.push( new UrlMatch( {
 				tagBuilder            : tagBuilder,
 				matchedText           : matchStr,
 				offset                : offset,
@@ -240,7 +244,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		}
 
 		return matches;
-	},
+	}
 
 
 	/**
@@ -262,11 +266,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
 	 *   the end of the `matchStr`, `false` otherwise.
 	 */
-	matchHasUnbalancedClosingParen : function( matchStr ) {
-		var lastChar = matchStr.charAt( matchStr.length - 1 );
+	matchHasUnbalancedClosingParen( matchStr: string ) {
+		let lastChar = matchStr.charAt( matchStr.length - 1 );
 
 		if( lastChar === ')' ) {
-			var openParensMatch = matchStr.match( this.openParensRe ),
+			let openParensMatch = matchStr.match( this.openParensRe ),
 			    closeParensMatch = matchStr.match( this.closeParensRe ),
 			    numOpenParens = ( openParensMatch && openParensMatch.length ) || 0,
 			    numCloseParens = ( closeParensMatch && closeParensMatch.length ) || 0;
@@ -277,7 +281,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		}
 
 		return false;
-	},
+	}
 
 
 	/**
@@ -295,21 +299,19 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @return {Number} the position where the invalid character was found. If
 	 *   no such character was found, returns -1
 	 */
-	matchHasInvalidCharAfterTld : function( urlMatch, schemeUrlMatch ) {
+	matchHasInvalidCharAfterTld( urlMatch: string, schemeUrlMatch: string ) {
 		if( !urlMatch ) {
 			return -1;
 		}
 
-		var offset = 0;
+		let offset = 0;
 		if ( schemeUrlMatch ) {
 			offset = urlMatch.indexOf(':');
 			urlMatch = urlMatch.slice(offset);
 		}
 
-		var alphaNumeric = Autolinker.RegexLib.alphaNumericCharsStr;
-
-		var re = new RegExp("^((.?\/\/)?[-." + alphaNumeric + "]*[-" + alphaNumeric + "]\\.[-" + alphaNumeric + "]+)");
-		var res = re.exec( urlMatch );
+		let re = new RegExp("^((.?\/\/)?[-." + alphaNumericCharsStr + "]*[-" + alphaNumericCharsStr + "]\\.[-" + alphaNumericCharsStr + "]+)");
+		let res = re.exec( urlMatch );
 		if ( res === null ) {
 			return -1;
 		}
@@ -323,4 +325,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		return -1;
 	}
 
-} );
+}
+
+export interface UrlMatcherConfig extends MatcherConfig {
+	stripPrefix: StripPrefixConfig;
+	stripTrailingSlash: boolean;
+}

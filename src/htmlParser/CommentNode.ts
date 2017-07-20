@@ -1,4 +1,5 @@
-/*global Autolinker */
+import { HtmlNode, HtmlNodeConfig } from "./HtmlNode";
+
 /**
  * @class Autolinker.htmlParser.CommentNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -9,7 +10,7 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParser.HtmlNode, {
+export class CommentNode extends HtmlNode {
 
 	/**
 	 * @cfg {String} comment (required)
@@ -17,7 +18,13 @@ Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 * The text inside the comment tag. This text is stripped of any leading or
 	 * trailing whitespace.
 	 */
-	comment : '',
+	comment: string;
+
+	constructor( cfg: CommentNodeConfig ) {
+		super( cfg );
+
+		this.comment = cfg.comment;
+	}
 
 
 	/**
@@ -25,9 +32,9 @@ Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'comment';
-	},
+	}
 
 
 	/**
@@ -35,8 +42,12 @@ Autolinker.htmlParser.CommentNode = Autolinker.Util.extend( Autolinker.htmlParse
 	 *
 	 * @return {String}
 	 */
-	getComment : function() {
+	getComment() {
 		return this.comment;
 	}
 
-} );
+}
+
+export interface CommentNodeConfig extends HtmlNodeConfig {
+	comment: string;
+}

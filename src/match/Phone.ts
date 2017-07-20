@@ -1,4 +1,5 @@
-/*global Autolinker */
+import { Match, MatchConfig } from "./Match";
+
 /**
  * @class Autolinker.match.Phone
  * @extends Autolinker.match.Match
@@ -9,7 +10,7 @@
  * See this class's superclass ({@link Autolinker.match.Match}) for more
  * details.
  */
-Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
+export class PhoneMatch extends Match {
 
 	/**
 	 * @protected
@@ -19,6 +20,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * Note: This is a string to allow for prefixed 0's.
 	 */
+	private readonly number: string;
 
 	/**
 	 * @protected
@@ -29,6 +31,7 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * Ex: '+1 (123) 456 7879'
 	 */
+	private readonly plusSign: boolean;
 
 
 	/**
@@ -36,17 +39,12 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
-	constructor : function( cfg ) {
-		Autolinker.match.Match.prototype.constructor.call( this, cfg );
-
-		// @if DEBUG
-		if( !cfg.number ) throw new Error( '`number` cfg required' );
-		if( cfg.plusSign == null ) throw new Error( '`plusSign` cfg required' );
-		// @endif
+	constructor( cfg: PhoneMatchConfig ) {
+		super( cfg );
 
 		this.number = cfg.number;
 		this.plusSign = cfg.plusSign;
-	},
+	}
 
 
 	/**
@@ -54,9 +52,9 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getType : function() {
+	getType() {
 		return 'phone';
-	},
+	}
 
 
 	/**
@@ -67,9 +65,9 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getNumber: function() {
+	getNumber() {
 		return this.number;
-	},
+	}
 
 
 	/**
@@ -77,9 +75,9 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorHref : function() {
+	getAnchorHref() {
 		return 'tel:' + ( this.plusSign ? '+' : '' ) + this.number;
-	},
+	}
 
 
 	/**
@@ -87,8 +85,14 @@ Autolinker.match.Phone = Autolinker.Util.extend( Autolinker.match.Match, {
 	 *
 	 * @return {String}
 	 */
-	getAnchorText : function() {
+	getAnchorText() {
 		return this.matchedText;
 	}
 
-} );
+}
+
+
+export interface PhoneMatchConfig extends MatchConfig {
+	number: string;
+	plusSign: boolean;
+}

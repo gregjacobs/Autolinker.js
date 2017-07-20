@@ -1,4 +1,9 @@
-/*global Autolinker */
+import { Matcher } from "./Matcher";
+import { alphaNumericCharsStr, domainNameRegex } from "../RegexLib";
+import { tldRegex } from "./TldRegex";
+import { EmailMatch } from "../match/Email";
+import { Match } from "../match/Match";
+
 /**
  * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
@@ -7,7 +12,7 @@
  *
  * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more details.
  */
-Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+export class EmailMatcher extends Matcher {
 
 	/**
 	 * The regular expression to match email addresses. Example match:
@@ -17,7 +22,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex : (function() {
+	matcherRegex = (function() {
 		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
 			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
 			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',
@@ -32,22 +37,22 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			getDomainNameStr(1),
 			'\\.', tldRegex.source   // '.com', '.net', etc
 		].join( "" ), 'gi' );
-	} )(),
+	} )();
 
 
 	/**
 	 * @inheritdoc
 	 */
-	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
+	parseMatches( text: string ) {
+		let matcherRegex = this.matcherRegex,
 		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+		    matches: Match[] = [],
+		    match: RegExpExecArray | null;
 
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var matchedText = match[ 0 ];
+			let matchedText = match[ 0 ];
 
-			matches.push( new Autolinker.match.Email( {
+			matches.push( new EmailMatch( {
 				tagBuilder  : tagBuilder,
 				matchedText : matchedText,
 				offset      : match.index,
@@ -58,4 +63,4 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		return matches;
 	}
 
-} );
+}

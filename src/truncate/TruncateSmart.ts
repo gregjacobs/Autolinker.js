@@ -1,4 +1,3 @@
-/*global Autolinker */
 /**
  * Date: 2015-10-05
  * Author: Kasper Søfren <soefritz@gmail.com> (https://github.com/kafoso)
@@ -11,10 +10,10 @@
  * @param {String} ellipsisChars	 The characters to place within the url, e.g. "...".
  * @return {String} The truncated URL.
  */
-Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
+export function truncateSmart( url: string, truncateLen: number, ellipsisChars?: string ) {
 
-	var ellipsisLengthBeforeParsing;
-	var ellipsisLength;
+	let ellipsisLengthBeforeParsing: number;
+	let ellipsisLength: number;
 
 	if(ellipsisChars == null) {
 		ellipsisChars = '&hellip;';
@@ -25,10 +24,10 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 		ellipsisLengthBeforeParsing = ellipsisChars.length;
 	}
 
-	var parse_url = function(url){ // Functionality inspired by PHP function of same name
-		var urlObj = {};
-		var urlSub = url;
-		var match = urlSub.match(/^([a-z]+):\/\//i);
+	let parse_url = function(url: string) { // Functionality inspired by PHP function of same name
+		let urlObj: UrlObject = {};
+		let urlSub = url;
+		let match = urlSub.match(/^([a-z]+):\/\//i);
 		if (match) {
 			urlObj.scheme = match[1];
 			urlSub = urlSub.substr(match[0].length);
@@ -56,8 +55,8 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 		return urlObj;
 	};
 
-	var buildUrl = function(urlObj){
-		var url = "";
+	let buildUrl = function(urlObj: UrlObject){
+		let url = "";
 		if (urlObj.scheme && urlObj.host) {
 			url += urlObj.scheme + "://";
 		}
@@ -76,8 +75,8 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 		return url;
 	};
 
-	var buildSegment = function(segment, remainingAvailableLength){
-		var remainingAvailableLengthHalf = remainingAvailableLength/ 2,
+	let buildSegment = function(segment: string, remainingAvailableLength: number){
+		let remainingAvailableLengthHalf = remainingAvailableLength/ 2,
 				startOffset = Math.ceil(remainingAvailableLengthHalf),
 				endOffset = (-1)*Math.floor(remainingAvailableLengthHalf),
 				end = "";
@@ -89,11 +88,11 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 	if (url.length <= truncateLen) {
 		return url;
 	}
-	var availableLength = truncateLen - ellipsisLength;
-	var urlObj = parse_url(url);
+	let availableLength = truncateLen - ellipsisLength;
+	let urlObj = parse_url(url);
 	// Clean up the URL
 	if (urlObj.query) {
-		var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
+		let matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
 		if (matchQuery) {
 			// Malformed URL; two or more "?". Removed any content behind the 2nd.
 			urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
@@ -111,17 +110,17 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 		return url;
 	}
 	// Process and build the URL
-	var str = "";
+	let str = "";
 	if (urlObj.host) {
 		str += urlObj.host;
 	}
 	if (str.length >= availableLength) {
-		if (urlObj.host.length == truncateLen) {
-			return (urlObj.host.substr(0, (truncateLen - ellipsisLength)) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
+		if ((urlObj.host as string).length == truncateLen) {
+			return ((urlObj.host as string).substr(0, (truncateLen - ellipsisLength)) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
 		}
 		return buildSegment(str, availableLength).substr(0, availableLength + ellipsisLengthBeforeParsing);
 	}
-	var pathAndQuery = "";
+	let pathAndQuery = "";
 	if (urlObj.path) {
 		pathAndQuery += "/" + urlObj.path;
 	}
@@ -133,26 +132,26 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 			if ((str+pathAndQuery).length == truncateLen) {
 				return (str + pathAndQuery).substr(0, truncateLen);
 			}
-			var remainingAvailableLength = availableLength - str.length;
+			let remainingAvailableLength = availableLength - str.length;
 			return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, availableLength + ellipsisLengthBeforeParsing);
 		} else {
 			str += pathAndQuery;
 		}
 	}
 	if (urlObj.fragment) {
-		var fragment = "#"+urlObj.fragment;
+		let fragment = "#"+urlObj.fragment;
 		if ((str+fragment).length >= availableLength) {
 			if ((str+fragment).length == truncateLen) {
 				return (str + fragment).substr(0, truncateLen);
 			}
-			var remainingAvailableLength2 = availableLength - str.length;
+			let remainingAvailableLength2 = availableLength - str.length;
 			return (str + buildSegment(fragment, remainingAvailableLength2)).substr(0, availableLength + ellipsisLengthBeforeParsing);
 		} else {
 			str += fragment;
 		}
 	}
 	if (urlObj.scheme && urlObj.host) {
-		var scheme = urlObj.scheme + "://";
+		let scheme = urlObj.scheme + "://";
 		if ((str+scheme).length < availableLength) {
 			return (scheme + str).substr(0, truncateLen);
 		}
@@ -160,9 +159,18 @@ Autolinker.truncate.TruncateSmart = function(url, truncateLen, ellipsisChars){
 	if (str.length <= truncateLen) {
 		return str;
 	}
-	var end = "";
+	let end = "";
 	if (availableLength > 0) {
 		end = str.substr((-1)*Math.floor(availableLength/2));
 	}
 	return (str.substr(0, Math.ceil(availableLength/2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
-};
+}
+
+
+interface UrlObject {
+	scheme?: string;
+	host?: string;
+	path?: string;
+	query?: string;
+	fragment?: string
+}

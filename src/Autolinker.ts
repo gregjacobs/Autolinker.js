@@ -1,3 +1,17 @@
+import { defaults, remove } from "./utils";
+import { AnchorTagBuilder } from "./AnchorTagBuilder";
+import { HtmlParser } from "./htmlParser/HtmlParser";
+import { Match } from "./match/Match";
+import { UrlMatch } from "./match/Url";
+import { Matcher } from "./matcher/Matcher";
+import { HtmlTag } from "./HtmlTag";
+import { EmailMatcher } from "./matcher/Email";
+import { UrlMatcher } from "./matcher/Url";
+import { ElementNode } from "./htmlParser/ElementNode";
+import { HashtagMatcher } from "./matcher/Hashtag";
+import { PhoneMatcher } from "./matcher/Phone";
+import { MentionMatcher } from "./matcher/Mention";
+
 /**
  * @class Autolinker
  * @extends Object
@@ -108,126 +122,88 @@
  * @param {Object} [cfg] The configuration options for the Autolinker instance,
  *   specified in an Object (map).
  */
-var Autolinker = function( cfg ) {
-	cfg = cfg || {};
+export class Autolinker {
 
-	this.version = Autolinker.version;
+	/**
+	 * The Autolinker version number in the form major.minor.patch
+	 *
+	 * Ex: 0.25.1
+	 */
+	static readonly version = '/* @echo VERSION */';
 
-	this.urls = this.normalizeUrlsCfg( cfg.urls );
-	this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
-	this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
-	this.hashtag = cfg.hashtag || false;
-	this.mention = cfg.mention || false;
-	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
-	this.stripPrefix = this.normalizeStripPrefixCfg( cfg.stripPrefix );
-	this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
-	this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : true;
-
-	// Validate the value of the `mention` cfg
-	var mention = this.mention;
-	if( mention !== false && mention !== 'twitter' && mention !== 'instagram'  && mention !== 'soundcloud' ) {
-		throw new Error( "invalid `mention` cfg - see docs" );
+	/**
+	 * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
+	 * Hashtags, and Mentions found in the given chunk of HTML. Does not link URLs
+	 * found within HTML tags.
+	 *
+	 * For instance, if given the text: `You should go to http://www.yahoo.com`,
+	 * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
+	 *
+	 * Example:
+	 *
+	 *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
+	 *     // Produces: "Go to <a href="http://google.com">google.com</a>"
+	 *
+	 * @static
+	 * @param {String} textOrHtml The HTML or text to find matches within (depending
+	 *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #mention},
+	 *   {@link #hashtag}, and {@link #mention} options are enabled).
+	 * @param {Object} [options] Any of the configuration options for the Autolinker
+	 *   class, specified in an Object (map). See the class description for an
+	 *   example call.
+	 * @return {String} The HTML text, with matches automatically linked.
+	 */
+	static link( textOrHtml: string, options?: AutolinkerConfig ) {
+		const autolinker = new Autolinker( options );
+		return autolinker.link( textOrHtml );
 	}
 
-	// Validate the value of the `hashtag` cfg
-	var hashtag = this.hashtag;
-	if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
-		throw new Error( "invalid `hashtag` cfg - see docs" );
+	/**
+	 * Parses the input `textOrHtml` looking for URLs, email addresses, phone
+	 * numbers, username handles, and hashtags (depending on the configuration
+	 * of the Autolinker instance), and returns an array of {@link Autolinker.match.Match}
+	 * objects describing those matches (without making any replacements).
+	 *
+	 * Note that if parsing multiple pieces of text, it is slightly more efficient
+	 * to create an Autolinker instance, and use the instance-level {@link #parse}
+	 * method.
+	 *
+	 * Example:
+	 *
+	 *     var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
+	 *         urls: true,
+	 *         email: true
+	 *     } );
+	 *
+	 *     console.log( matches.length );           // 2
+	 *     console.log( matches[ 0 ].getType() );   // 'url'
+	 *     console.log( matches[ 0 ].getUrl() );    // 'google.com'
+	 *     console.log( matches[ 1 ].getType() );   // 'email'
+	 *     console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
+	 *
+	 * @static
+	 * @param {String} textOrHtml The HTML or text to find matches within
+	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
+	 *   {@link #hashtag}, and {@link #mention} options are enabled).
+	 * @param {Object} [options] Any of the configuration options for the Autolinker
+	 *   class, specified in an Object (map). See the class description for an
+	 *   example call.
+	 * @return {Autolinker.match.Match[]} The array of Matches found in the
+	 *   given input `textOrHtml`.
+	 */
+	static parse( textOrHtml: string, options: AutolinkerConfig ) {
+		const autolinker = new Autolinker( options );
+		return autolinker.parse( textOrHtml );
 	}
 
-	this.truncate = this.normalizeTruncateCfg( cfg.truncate );
-	this.className = cfg.className || '';
-	this.replaceFn = cfg.replaceFn || null;
-	this.context = cfg.context || this;
 
-	this.htmlParser = null;
-	this.matchers = null;
-	this.tagBuilder = null;
-};
+	/**
+	 * The Autolinker version number exposed on the instance itself.
+	 *
+	 * Ex: 0.25.1
+	 */
+	readonly version = Autolinker.version;
 
-
-
-/**
- * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
- * Hashtags, and Mentions found in the given chunk of HTML. Does not link URLs
- * found within HTML tags.
- *
- * For instance, if given the text: `You should go to http://www.yahoo.com`,
- * then the result will be `You should go to &lt;a href="http://www.yahoo.com"&gt;http://www.yahoo.com&lt;/a&gt;`
- *
- * Example:
- *
- *     var linkedText = Autolinker.link( "Go to google.com", { newWindow: false } );
- *     // Produces: "Go to <a href="http://google.com">google.com</a>"
- *
- * @static
- * @param {String} textOrHtml The HTML or text to find matches within (depending
- *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #mention},
- *   {@link #hashtag}, and {@link #mention} options are enabled).
- * @param {Object} [options] Any of the configuration options for the Autolinker
- *   class, specified in an Object (map). See the class description for an
- *   example call.
- * @return {String} The HTML text, with matches automatically linked.
- */
-Autolinker.link = function( textOrHtml, options ) {
-	var autolinker = new Autolinker( options );
-	return autolinker.link( textOrHtml );
-};
-
-
-
-/**
- * Parses the input `textOrHtml` looking for URLs, email addresses, phone
- * numbers, username handles, and hashtags (depending on the configuration
- * of the Autolinker instance), and returns an array of {@link Autolinker.match.Match}
- * objects describing those matches (without making any replacements).
- *
- * Note that if parsing multiple pieces of text, it is slightly more efficient
- * to create an Autolinker instance, and use the instance-level {@link #parse}
- * method.
- *
- * Example:
- *
- *     var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
- *         urls: true,
- *         email: true
- *     } );
- *
- *     console.log( matches.length );           // 2
- *     console.log( matches[ 0 ].getType() );   // 'url'
- *     console.log( matches[ 0 ].getUrl() );    // 'google.com'
- *     console.log( matches[ 1 ].getType() );   // 'email'
- *     console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
- *
- * @static
- * @param {String} textOrHtml The HTML or text to find matches within
- *   (depending on if the {@link #urls}, {@link #email}, {@link #phone},
- *   {@link #hashtag}, and {@link #mention} options are enabled).
- * @param {Object} [options] Any of the configuration options for the Autolinker
- *   class, specified in an Object (map). See the class description for an
- *   example call.
- * @return {Autolinker.match.Match[]} The array of Matches found in the
- *   given input `textOrHtml`.
- */
-Autolinker.parse = function( textOrHtml, options ) {
-	var autolinker = new Autolinker( options );
-	return autolinker.parse( textOrHtml );
-};
-
-
-/**
- * @static
- * @property {String} version (readonly)
- *
- * The Autolinker version number in the form major.minor.patch
- *
- * Ex: 0.25.1
- */
-Autolinker.version = '/* @echo VERSION */';
-
-
-Autolinker.prototype = {
-	constructor : Autolinker,  // fix constructor property
 
 	/**
 	 * @cfg {Boolean/Object} [urls]
@@ -264,6 +240,7 @@ Autolinker.prototype = {
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
 	 */
+	private readonly urls: UrlsConfig;
 
 	/**
 	 * @cfg {Boolean} [email=true]
@@ -271,6 +248,7 @@ Autolinker.prototype = {
 	 * `true` if email addresses should be automatically linked, `false` if they
 	 * should not be.
 	 */
+	private readonly email: boolean;
 
 	/**
 	 * @cfg {Boolean} [phone=true]
@@ -278,6 +256,7 @@ Autolinker.prototype = {
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
 	 * `false` if they should not be.
 	 */
+	private readonly phone: boolean;
 
 	/**
 	 * @cfg {Boolean/String} [hashtag=false]
@@ -291,6 +270,7 @@ Autolinker.prototype = {
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
+	private readonly hashtag: false | HashtagServices;
 
 	/**
 	 * @cfg {String/Boolean} [mention=false]
@@ -304,12 +284,14 @@ Autolinker.prototype = {
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
+	private readonly mention: false | MentionServices;
 
 	/**
 	 * @cfg {Boolean} [newWindow=true]
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
+	private readonly newWindow: boolean;
 
 	/**
 	 * @cfg {Boolean/Object} [stripPrefix]
@@ -344,6 +326,7 @@ Autolinker.prototype = {
 	 *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
 	 *   strip the `'www'`.
 	 */
+	private readonly stripPrefix: StripPrefixConfig;
 
 	/**
 	 * @cfg {Boolean} [stripTrailingSlash=true]
@@ -354,6 +337,7 @@ Autolinker.prototype = {
 	 *  Example when `true`: `http://google.com/` will be displayed as
 	 *  `http://google.com`.
 	 */
+	private readonly stripTrailingSlash: boolean;
 
 	/**
 	 * @cfg {Boolean} [decodePercentEncoding=true]
@@ -364,6 +348,7 @@ Autolinker.prototype = {
 	 *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
 	 *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
 	 */
+    private readonly decodePercentEncoding: boolean;
 
 	/**
 	 * @cfg {Number/Object} [truncate=0]
@@ -412,6 +397,7 @@ Autolinker.prototype = {
 	 *   'yahoo.com/some..to/a/file'. For more details, see
 	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
+	private readonly truncate: TruncateConfig;
 
 	/**
 	 * @cfg {String} className
@@ -429,6 +415,7 @@ Autolinker.prototype = {
 	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
 	 *   where [type] is either "instagram", "twitter" or "soundcloud"
 	 */
+	private readonly className: string;
 
 	/**
 	 * @cfg {Function} replaceFn
@@ -447,6 +434,7 @@ Autolinker.prototype = {
 	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
 	 *   for details.
 	 */
+	private readonly replaceFn: null | ( ( match: Match ) => ReplaceFnReturn );
 
 	/**
 	 * @cfg {Object} context
@@ -455,24 +443,17 @@ Autolinker.prototype = {
 	 *
 	 * Defaults to this Autolinker instance.
 	 */
+	private readonly context: any;
 
-
-	/**
-	 * @property {String} version (readonly)
-	 *
-	 * The Autolinker version number in the form major.minor.patch
-	 *
-	 * Ex: 0.25.1
-	 */
 
 	/**
 	 * @private
 	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
 	 *
 	 * The HtmlParser instance used to skip over HTML tags, while finding text
-	 * nodes to process. This is lazily instantiated in the {@link #getHtmlParser}
-	 * method.
+	 * nodes to process.
 	 */
+	private htmlParser: HtmlParser;
 
 	/**
 	 * @private
@@ -483,6 +464,7 @@ Autolinker.prototype = {
 	 *
 	 * This is lazily created in {@link #getMatchers}.
 	 */
+	private matchers: Matcher[] | null;
 
 	/**
 	 * @private
@@ -491,6 +473,41 @@ Autolinker.prototype = {
 	 * The AnchorTagBuilder instance used to build match replacement anchor tags.
 	 * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
 	 */
+	private tagBuilder: AnchorTagBuilder | null;
+
+
+	constructor( cfg: AutolinkerConfig = {} ) {
+		this.urls = this.normalizeUrlsCfg( cfg.urls );
+		this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
+		this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
+		this.hashtag = cfg.hashtag || false;
+		this.mention = cfg.mention || false;
+		this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
+		this.stripPrefix = this.normalizeStripPrefixCfg( cfg.stripPrefix );
+		this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
+		this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : true;
+
+		// Validate the value of the `mention` cfg
+		const mention = this.mention;
+		if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+			throw new Error( "invalid `mention` cfg - see docs" );
+		}
+
+		// Validate the value of the `hashtag` cfg
+		const hashtag = this.hashtag;
+		if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
+			throw new Error( "invalid `hashtag` cfg - see docs" );
+		}
+
+		this.truncate = this.normalizeTruncateCfg( cfg.truncate );
+		this.className = cfg.className || '';
+		this.replaceFn = cfg.replaceFn || null;
+		this.context = cfg.context || this;
+
+		this.htmlParser = new HtmlParser();
+		this.matchers = null;
+		this.tagBuilder = null;
+	}
 
 
 	/**
@@ -499,11 +516,10 @@ Autolinker.prototype = {
 	 *
 	 * See {@link #urls} config for details.
 	 *
-	 * @private
 	 * @param {Boolean/Object} urls
 	 * @return {Object}
 	 */
-	normalizeUrlsCfg : function( urls ) {
+	private normalizeUrlsCfg( urls: boolean | UrlsConfig | undefined ): UrlsConfig {
 		if( urls == null ) urls = true;  // default to `true`
 
 		if( typeof urls === 'boolean' ) {
@@ -516,7 +532,7 @@ Autolinker.prototype = {
 				tldMatches    : typeof urls.tldMatches === 'boolean'    ? urls.tldMatches    : true
 			};
 		}
-	},
+	}
 
 
 	/**
@@ -529,7 +545,7 @@ Autolinker.prototype = {
 	 * @param {Boolean/Object} stripPrefix
 	 * @return {Object}
 	 */
-	normalizeStripPrefixCfg : function( stripPrefix ) {
+	normalizeStripPrefixCfg( stripPrefix: boolean | StripPrefixConfig | undefined ) {
 		if( stripPrefix == null ) stripPrefix = true;  // default to `true`
 
 		if( typeof stripPrefix === 'boolean' ) {
@@ -541,7 +557,7 @@ Autolinker.prototype = {
 				www    : typeof stripPrefix.www === 'boolean'    ? stripPrefix.www    : true
 			};
 		}
-	},
+	}
 
 
 	/**
@@ -554,17 +570,17 @@ Autolinker.prototype = {
 	 * @param {Number/Object} truncate
 	 * @return {Object}
 	 */
-	normalizeTruncateCfg : function( truncate ) {
+	normalizeTruncateCfg( truncate: number | TruncateConfig | undefined ): TruncateConfig {
 		if( typeof truncate === 'number' ) {
 			return { length: truncate, location: 'end' };
 
 		} else {  // object, or undefined/null
-			return Autolinker.Util.defaults( truncate || {}, {
+			return defaults( truncate || {}, {
 				length   : Number.POSITIVE_INFINITY,
 				location : 'end'
 			} );
 		}
-	},
+	}
 
 
 	/**
@@ -598,27 +614,26 @@ Autolinker.prototype = {
 	 * @return {Autolinker.match.Match[]} The array of Matches found in the
 	 *   given input `textOrHtml`.
 	 */
-	parse : function( textOrHtml ) {
-		var htmlParser = this.getHtmlParser(),
-		    htmlNodes = htmlParser.parse( textOrHtml ),
+	parse( textOrHtml: string ) {
+		let htmlNodes = this.htmlParser.parse( textOrHtml ),
 		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have;
-		    matches = [];
+		    matches: Match[] = [];
 
 		// Find all matches within the `textOrHtml` (but not matches that are
 		// already nested within <a>, <style> and <script> tags)
-		for( var i = 0, len = htmlNodes.length; i < len; i++ ) {
-			var node = htmlNodes[ i ],
+		for( let i = 0, len = htmlNodes.length; i < len; i++ ) {
+			let node = htmlNodes[ i ],
 			    nodeType = node.getType();
 
-			if( nodeType === 'element' && ['a', 'style', 'script'].indexOf(node.getTagName()) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
-				if( !node.isClosing() ) {  // it's the start <a>, <style> or <script> tag
+			if( nodeType === 'element' && ['a', 'style', 'script'].indexOf( ( node as ElementNode ).getTagName()) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
+				if( !( node as ElementNode ).isClosing() ) {  // it's the start <a>, <style> or <script> tag
 					anchorTagStackCount++;
 				} else {  // it's the end </a>, </style> or </script> tag
 					anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
 
 			} else if( nodeType === 'text' && anchorTagStackCount === 0 ) {  // Process text nodes that are not within an <a>, <style> and <script> tag
-				var textNodeMatches = this.parseText( node.getText(), node.getOffset() );
+				let textNodeMatches = this.parseText( node.getText(), node.getOffset() );
 
 				matches.push.apply( matches, textNodeMatches );
 			}
@@ -637,7 +652,7 @@ Autolinker.prototype = {
 		matches = this.removeUnwantedMatches( matches );
 
 		return matches;
-	},
+	}
 
 
 	/**
@@ -649,12 +664,12 @@ Autolinker.prototype = {
 	 * @param {Autolinker.match.Match[]} matches
 	 * @return {Autolinker.match.Match[]}
 	 */
-	compactMatches : function( matches ) {
+	compactMatches( matches: Match[] ) {
 		// First, the matches need to be sorted in order of offset
 		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
 
-		for( var i = 0; i < matches.length - 1; i++ ) {
-			var match = matches[ i ],
+		for( let i = 0; i < matches.length - 1; i++ ) {
+			let match = matches[ i ],
 					offset = match.getOffset(),
 					matchedTextLength = match.getMatchedText().length,
 			    endIdx = offset + matchedTextLength;
@@ -662,7 +677,7 @@ Autolinker.prototype = {
 			if( i + 1 < matches.length ) {
 				// Remove subsequent matches that equal offset with current match
 				if( matches[ i + 1 ].getOffset() === offset ) {
-					var removeIdx = matches[ i + 1 ].getMatchedText().length > matchedTextLength ? i : i + 1;
+					let removeIdx = matches[ i + 1 ].getMatchedText().length > matchedTextLength ? i : i + 1;
 					matches.splice( removeIdx, 1 );
 					continue;
 				}
@@ -675,7 +690,7 @@ Autolinker.prototype = {
 		}
 
 		return matches;
-	},
+	}
 
 
 	/**
@@ -689,25 +704,23 @@ Autolinker.prototype = {
 	 *   removals.
 	 * @return {Autolinker.match.Match[]} The mutated input `matches` array.
 	 */
-	removeUnwantedMatches : function( matches ) {
-		var remove = Autolinker.Util.remove;
-
+	removeUnwantedMatches( matches: Match[] ) {
 		if( !this.hashtag ) remove( matches, function( match ) { return match.getType() === 'hashtag'; } );
 		if( !this.email )   remove( matches, function( match ) { return match.getType() === 'email'; } );
 		if( !this.phone )   remove( matches, function( match ) { return match.getType() === 'phone'; } );
 		if( !this.mention ) remove( matches, function( match ) { return match.getType() === 'mention'; } );
 		if( !this.urls.schemeMatches ) {
-			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'scheme'; } );
+			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'scheme' );
 		}
 		if( !this.urls.wwwMatches ) {
-			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'www'; } );
+			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'www' );
 		}
 		if( !this.urls.tldMatches ) {
-			remove( matches, function( m ) { return m.getType() === 'url' && m.getUrlMatchType() === 'tld'; } );
+			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'tld' );
 		}
 
 		return matches;
-	},
+	}
 
 
 	/**
@@ -731,26 +744,26 @@ Autolinker.prototype = {
 	 * @return {Autolinker.match.Match[]} The array of Matches found in the
 	 *   given input `text`.
 	 */
-	parseText : function( text, offset ) {
+	parseText( text: string, offset = 0 ) {
 		offset = offset || 0;
-		var matchers = this.getMatchers(),
-		    matches = [];
+		let matchers = this.getMatchers(),
+		    matches: Match[] = [];
 
-		for( var i = 0, numMatchers = matchers.length; i < numMatchers; i++ ) {
-			var textMatches = matchers[ i ].parseMatches( text );
+		for( let i = 0, numMatchers = matchers.length; i < numMatchers; i++ ) {
+			let textMatches = matchers[ i ].parseMatches( text );
 
 			// Correct the offset of each of the matches. They are originally
 			// the offset of the match within the provided text node, but we
 			// need to correct them to be relative to the original HTML input
 			// string (i.e. the one provided to #parse).
-			for( var j = 0, numTextMatches = textMatches.length; j < numTextMatches; j++ ) {
+			for( let j = 0, numTextMatches = textMatches.length; j < numTextMatches; j++ ) {
 				textMatches[ j ].setOffset( offset + textMatches[ j ].getOffset() );
 			}
 
 			matches.push.apply( matches, textMatches );
 		}
 		return matches;
-	},
+	}
 
 
 	/**
@@ -771,15 +784,15 @@ Autolinker.prototype = {
 	 *   (depending on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #hashtag}, and {@link #mention} options are enabled).
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
-	link : function( textOrHtml ) {
+	link( textOrHtml: string ) {
 		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
 
-		var matches = this.parse( textOrHtml ),
-			newHtml = [],
+		let matches = this.parse( textOrHtml ),
+			newHtml: string[] = [],
 			lastIndex = 0;
 
-		for( var i = 0, len = matches.length; i < len; i++ ) {
-			var match = matches[ i ];
+		for( let i = 0, len = matches.length; i < len; i++ ) {
+			let match = matches[ i ];
 
 			newHtml.push( textOrHtml.substring( lastIndex, match.getOffset() ) );
 			newHtml.push( this.createMatchReturnVal( match ) );
@@ -789,7 +802,7 @@ Autolinker.prototype = {
 		newHtml.push( textOrHtml.substring( lastIndex ) );  // handle the text after the last match
 
 		return newHtml.join( '' );
-	},
+	}
 
 
 	/**
@@ -804,9 +817,9 @@ Autolinker.prototype = {
 	 *   This is usually the anchor tag string, but may be the `matchStr` itself
 	 *   if the match is not to be replaced.
 	 */
-	createMatchReturnVal : function( match ) {
+	private createMatchReturnVal( match: Match ): string {
 		// Handle a custom `replaceFn` being provided
-		var replaceFnResult;
+		let replaceFnResult: ReplaceFnReturn;
 		if( this.replaceFn ) {
 			replaceFnResult = this.replaceFn.call( this.context, match );  // Autolinker instance is the context
 		}
@@ -817,34 +830,16 @@ Autolinker.prototype = {
 		} else if( replaceFnResult === false ) {
 			return match.getMatchedText();  // no replacement for the match
 
-		} else if( replaceFnResult instanceof Autolinker.HtmlTag ) {
+		} else if( replaceFnResult instanceof HtmlTag ) {
 			return replaceFnResult.toAnchorString();
 
 		} else {  // replaceFnResult === true, or no/unknown return value from function
 			// Perform Autolinker's default anchor tag generation
-			var anchorTag = match.buildTag();  // returns an Autolinker.HtmlTag instance
+			let anchorTag = match.buildTag();  // returns an Autolinker.HtmlTag instance
 
 			return anchorTag.toAnchorString();
 		}
-	},
-
-
-	/**
-	 * Lazily instantiates and returns the {@link #htmlParser} instance for this
-	 * Autolinker instance.
-	 *
-	 * @protected
-	 * @return {Autolinker.htmlParser.HtmlParser}
-	 */
-	getHtmlParser : function() {
-		var htmlParser = this.htmlParser;
-
-		if( !htmlParser ) {
-			htmlParser = this.htmlParser = new Autolinker.htmlParser.HtmlParser();
-		}
-
-		return htmlParser;
-	},
+	}
 
 
 	/**
@@ -854,17 +849,16 @@ Autolinker.prototype = {
 	 * @protected
 	 * @return {Autolinker.matcher.Matcher[]}
 	 */
-	getMatchers : function() {
+	getMatchers() {
 		if( !this.matchers ) {
-			var matchersNs = Autolinker.matcher,
-			    tagBuilder = this.getTagBuilder();
+			let tagBuilder = this.getTagBuilder();
 
-			var matchers = [
-				new matchersNs.Hashtag( { tagBuilder: tagBuilder, serviceName: this.hashtag } ),
-				new matchersNs.Email( { tagBuilder: tagBuilder } ),
-				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
-				new matchersNs.Mention( { tagBuilder: tagBuilder, serviceName: this.mention } ),
-				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
+			let matchers = [
+				new HashtagMatcher( { tagBuilder, serviceName: this.hashtag as HashtagServices } ),
+				new EmailMatcher( { tagBuilder } ),
+				new PhoneMatcher( { tagBuilder } ),
+				new MentionMatcher( { tagBuilder, serviceName: this.mention as MentionServices } ),
+				new UrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
 			];
 
 			return ( this.matchers = matchers );
@@ -872,7 +866,7 @@ Autolinker.prototype = {
 		} else {
 			return this.matchers;
 		}
-	},
+	}
 
 
 	/**
@@ -896,11 +890,11 @@ Autolinker.prototype = {
 	 *
 	 * @return {Autolinker.AnchorTagBuilder}
 	 */
-	getTagBuilder : function() {
-		var tagBuilder = this.tagBuilder;
+	getTagBuilder() {
+		let tagBuilder = this.tagBuilder;
 
 		if( !tagBuilder ) {
-			tagBuilder = this.tagBuilder = new Autolinker.AnchorTagBuilder( {
+			tagBuilder = this.tagBuilder = new AnchorTagBuilder( {
 				newWindow   : this.newWindow,
 				truncate    : this.truncate,
 				className   : this.className
@@ -910,12 +904,43 @@ Autolinker.prototype = {
 		return tagBuilder;
 	}
 
-};
+}
 
 
-// Autolinker Namespaces
+export interface AutolinkerConfig {
+	urls?: boolean | UrlsConfig;
+	email?: boolean;
+	phone?: boolean;
+	hashtag?: false | HashtagServices;
+	mention?: false | MentionServices;
+	newWindow?: boolean;
+	stripPrefix?: boolean | StripPrefixConfig;
+	stripTrailingSlash?: boolean;
+	truncate?: number | TruncateConfig;
+	className?: string;
+	replaceFn?: ( match: Match ) => ReplaceFnReturn | null;
+	context?: any;
+}
 
-Autolinker.match = {};
-Autolinker.matcher = {};
-Autolinker.htmlParser = {};
-Autolinker.truncate = {};
+export interface UrlsConfig {
+	schemeMatches?: boolean;
+	wwwMatches?: boolean;
+	tldMatches?: boolean;
+}
+
+export type UrlMatchTypeOptions = 'scheme' | 'www' | 'tld';
+
+export interface StripPrefixConfig {
+	scheme : boolean;
+	www    : boolean;
+}
+
+export interface TruncateConfig {
+	length?: number;
+	location?: "end" | "middle" | "smart";
+}
+
+export type HashtagServices = 'twitter' | 'facebook' | 'instagram';
+export type MentionServices = 'twitter' | 'instagram';
+
+export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;

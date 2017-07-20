@@ -1,4 +1,3 @@
-/*global Autolinker */
 /**
  * @class Autolinker.match.MatchChecker
  * @singleton
@@ -6,7 +5,15 @@
  * A testing utility used to easily make assertions about
  * {@link Autolinker.match.Match} objects.
  */
-Autolinker.match.MatchChecker = {
+import { Match } from "../../src/match/Match";
+import { UrlMatch } from "../../src/match/Url";
+import { HashtagServices, MentionServices } from "../../src/Autolinker";
+import { MentionMatch } from "../../src/match/Mention";
+import { PhoneMatch } from "../../src/match/Phone";
+import { HashtagMatch } from "../../src/match/Hashtag";
+import { EmailMatch } from "../../src/match/Email";
+
+export class MatchChecker {
 
 	/**
 	 * Expects an {@link Autolinker.match.Email Email} match.
@@ -16,16 +23,16 @@ Autolinker.match.MatchChecker = {
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectEmailMatch : function( match, email, offset ) {
-		this.expectMatchType( match, 'Email' );
+	static expectEmailMatch( match: Match, email: string, offset: number ) {
+		this.expectMatchType( match, 'email' );
 
-		expect( match.getEmail() ).toBe( email );
+		expect( ( match as EmailMatch ).getEmail() ).toBe( email );
 		expect( match.getOffset() ).toBe( offset );
-	},
+	}
 
 
 	/**
-	 * Expects a {@link Autolinker.match.Hashtag Hashtag} match.
+	 * Expects a {@link Autolinker.match.Hashtag HashtagMatch} match.
 	 *
 	 * @param {Autolinker.match.Hashtag} match The Match object to check.
 	 * @param {String} serviceName The service name to expect of where to direct
@@ -35,13 +42,13 @@ Autolinker.match.MatchChecker = {
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectHashtagMatch : function( match, serviceName, hashtag, offset ) {
-		this.expectMatchType( match, 'Hashtag' );
+	static expectHashtagMatch( match: Match, serviceName: HashtagServices, hashtag: string, offset: number ) {
+		this.expectMatchType( match, 'hashtag' );
 
-		expect( match.getServiceName() ).toBe( serviceName );
-		expect( match.getHashtag() ).toBe( hashtag );
+		expect( ( match as HashtagMatch ).getServiceName() ).toBe( serviceName );
+		expect( ( match as HashtagMatch ).getHashtag() ).toBe( hashtag );
 		expect( match.getOffset() ).toBe( offset );
-	},
+	}
 
 
 	/**
@@ -53,13 +60,13 @@ Autolinker.match.MatchChecker = {
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectPhoneMatch : function( match, number, offset ) {
-		this.expectMatchType( match, 'Phone' );
+	static expectPhoneMatch( match: Match, number: string, offset: number ) {
+		this.expectMatchType( match, 'phone' );
 
-		expect( match.getNumber() ).toBe( number );
+		expect( ( match as PhoneMatch ).getNumber() ).toBe( number );
 		expect( match.getOffset() ).toBe( offset );
-	},
-	
+	}
+
 
 	/**
 	 * Expects a {@link Autolinker.match.Mention Mention} match.
@@ -72,13 +79,13 @@ Autolinker.match.MatchChecker = {
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectMentionMatch : function( match, serviceName, mention, offset ) {
-		this.expectMatchType( match, 'Mention' );
+	static expectMentionMatch( match: Match, serviceName: MentionServices, mention: string, offset: number ) {
+		this.expectMatchType( match, 'mention' );
 
-		expect( match.getServiceName() ).toBe( serviceName );
-		expect( match.getMention() ).toBe( mention );
+		expect( ( match as MentionMatch ).getServiceName() ).toBe( serviceName );
+		expect( ( match as MentionMatch ).getMention() ).toBe( mention );
 		expect( match.getOffset() ).toBe( offset );
-	},
+	}
 
 
 	/**
@@ -89,12 +96,12 @@ Autolinker.match.MatchChecker = {
 	 * @param {Number} offset The offset for the match in the original string to
 	 *   expect.
 	 */
-	expectUrlMatch : function( match, url, offset ) {
-		this.expectMatchType( match, 'Url' );
+	static expectUrlMatch( match: Match, url: string, offset: number ) {
+		this.expectMatchType( match, 'url' );
 
-		expect( match.getUrl() ).toBe( url );
+		expect( ( match as UrlMatch ).getUrl() ).toBe( url );
 		expect( match.getOffset() ).toBe( offset );
-	},
+	}
 
 
 	// ---------------------------------------
@@ -110,10 +117,41 @@ Autolinker.match.MatchChecker = {
 	 *   'Twitter', 'Url', etc.
 	 * @throws {Error} If the `match` is not an instance of the `typeName`.
 	 */
-	expectMatchType : function( match, typeName ) {
-		if( !( match instanceof Autolinker.match[ typeName ] ) ) {
-			throw new Error( 'Expected an Autolinker.match.' + typeName + ' match object' );
+	static expectMatchType( match: Match, typeName: string ) {
+		switch( typeName ) {
+			case 'email' :
+				if( !( match instanceof EmailMatch ) ) {
+					throw new Error( 'Expected an EmailMatch object' );
+				}
+				break;
+
+			case 'hashtag' :
+				if( !( match instanceof EmailMatch ) ) {
+					throw new Error( 'Expected an EmailMatch object' );
+				}
+				break;
+
+			case 'phone' :
+				if( !( match instanceof EmailMatch ) ) {
+					throw new Error( 'Expected an EmailMatch object' );
+				}
+				break;
+
+			case 'mention' :
+				if( !( match instanceof EmailMatch ) ) {
+					throw new Error( 'Expected an EmailMatch object' );
+				}
+				break;
+
+			case 'url' :
+				if( !( match instanceof EmailMatch ) ) {
+					throw new Error( 'Expected an EmailMatch object' );
+				}
+				break;
+
+			default:
+				throw new Error( `Unknown typeName: ${typeName}` );
 		}
 	}
 
-};
+}

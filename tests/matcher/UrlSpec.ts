@@ -1,12 +1,14 @@
-/*global Autolinker, _, describe, beforeEach, afterEach, it, expect, jasmine */
+import { UrlMatcher } from "../../src/matcher/Url";
+import { MatchChecker } from "../match/MatchChecker";
+import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
+
 describe( "Autolinker.matcher.Url", function() {
-	var MatchChecker = Autolinker.match.MatchChecker,
-	    matcher;
+	let matcher: UrlMatcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Url( {
-			tagBuilder  : new Autolinker.AnchorTagBuilder(),
-			stripPrefix : false,
+		matcher = new UrlMatcher( {
+			tagBuilder  : new AnchorTagBuilder(),
+			stripPrefix : { scheme: false, www: false },
 			stripTrailingSlash : false,
 			decodePercentEncoding: false
 		} );
@@ -24,7 +26,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should return an array of a single url match when the string is the url itself', function() {
-			var matches = matcher.parseMatches( 'asdf.com' );
+			let matches = matcher.parseMatches( 'asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
@@ -32,7 +34,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should return an array of a single url match when the url is in the middle of the string', function() {
-			var matches = matcher.parseMatches( 'Hello asdf.com my good friend' );
+			let matches = matcher.parseMatches( 'Hello asdf.com my good friend' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
@@ -40,7 +42,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should return an array of a single url match when the url is at the end of the string', function() {
-			var matches = matcher.parseMatches( 'Hello asdf.com' );
+			let matches = matcher.parseMatches( 'Hello asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
@@ -48,7 +50,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should return an array of multiple urls when there are more than one within the string', function() {
-			var matches = matcher.parseMatches( 'Go to asdf.com or fdsa.com' );
+			let matches = matcher.parseMatches( 'Go to asdf.com or fdsa.com' );
 
 			expect( matches.length ).toBe( 2 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
@@ -57,39 +59,39 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'a match within parenthesis should be parsed correctly', function() {
-			var matches = matcher.parseMatches( 'Hello (asdf.com)' );
+			let matches = matcher.parseMatches( 'Hello (asdf.com)' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 7 );
 		} );
 
 		it( 'should match an IP address', function() {
-			var matches = matcher.parseMatches( 'http://127.0.0.1');
+			let matches = matcher.parseMatches( 'http://127.0.0.1');
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
 		});
 
 		it( 'should not match an invalid IP address', function() {
-			var matches = matcher.parseMatches( 'http://127.0.0.');
+			let matches = matcher.parseMatches( 'http://127.0.0.');
 
 			expect( matches.length ).toBe( 0 );
 		});
 
 		it( 'should not match an URL which does not respect the IP protocol', function() {
-			var matches = matcher.parseMatches( 'git:1.0');
+			let matches = matcher.parseMatches( 'git:1.0');
 
 			expect( matches.length ).toBe( 0 );
 		});
 
 		it( 'should not match an IP address with too much numbers', function() {
-			var matches = matcher.parseMatches( 'http://1.2.3.4.5' );
+			let matches = matcher.parseMatches( 'http://1.2.3.4.5' );
 
 			expect( matches.length ).toBe( 0 );
 		});
 
 		it( 'should match the entire URL with a check character', function() {
-			var matches = matcher.parseMatches( 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
+			let matches = matcher.parseMatches( 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
@@ -97,8 +99,8 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should match any local URL with numbers with http:// before', function() {
-			var matches = matcher.parseMatches( 'http://localhost.local001/test' );
-			var othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
+			let matches = matcher.parseMatches( 'http://localhost.local001/test' );
+			let othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
 
 			expect( matches.length ).toBe( 1 );
 			expect( othermatches.length ).toBe( 1 );
@@ -108,15 +110,15 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 		it( 'should not match a local URL with numbers that does not have the http:// before', function() {
-			var matches = matcher.parseMatches( 'localhost.local001/test' );
+			let matches = matcher.parseMatches( 'localhost.local001/test' );
 
 			expect( matches.length ).toBe( 0 );
 		});
 
 
 		it( 'should not match an address with multiple dots in domain name', function() {
-			var matches = matcher.parseMatches( 'hello:...world' );
-			var othermatches = matcher.parseMatches( 'hello:wo.....rld' );
+			let matches = matcher.parseMatches( 'hello:...world' );
+			let othermatches = matcher.parseMatches( 'hello:wo.....rld' );
 
 			expect( matches.length ).toBe( 0 );
 			expect( othermatches.length ).toBe( 0 );
@@ -133,7 +135,7 @@ describe( "Autolinker.matcher.Url", function() {
 		describe( 'protocol-relative URLs', function() {
 
 			it( 'should match a protocol-relative URL at the beginning of the string', function() {
-				var matches = matcher.parseMatches( '//asdf.com' );
+				let matches = matcher.parseMatches( '//asdf.com' );
 
 				expect( matches.length ).toBe( 1 );
 				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 0 );
@@ -141,7 +143,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 			it( 'should match a protocol-relative URL in the middle of the string', function() {
-				var matches = matcher.parseMatches( 'Hello //asdf.com today' );
+				let matches = matcher.parseMatches( 'Hello //asdf.com today' );
 
 				expect( matches.length ).toBe( 1 );
 				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
@@ -149,7 +151,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 			it( 'should match a protocol-relative URL at the end of the string', function() {
-				var matches = matcher.parseMatches( 'Hello //asdf.com' );
+				let matches = matcher.parseMatches( 'Hello //asdf.com' );
 
 				expect( matches.length ).toBe( 1 );
 				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
@@ -157,7 +159,7 @@ describe( "Autolinker.matcher.Url", function() {
 
 
 			it( 'should *not* match a protocol-relative URL if the "//" was in the middle of a word', function() {
-				var matches = matcher.parseMatches( 'asdf//asdf.com' );
+				let matches = matcher.parseMatches( 'asdf//asdf.com' );
 
 				expect( matches.length ).toBe( 0 );
 			} );

@@ -1,11 +1,13 @@
-/*global Autolinker, _, describe, beforeEach, afterEach, it, expect, jasmine */
+import { EmailMatcher } from "../../src/matcher/Email";
+import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
+import { MatchChecker } from "../match/MatchChecker";
+
 describe( "Autolinker.matcher.Email", function() {
-	var MatchChecker = Autolinker.match.MatchChecker,
-	    matcher;
+	let matcher: EmailMatcher;
 
 	beforeEach( function() {
-		matcher = new Autolinker.matcher.Email( {
-			tagBuilder : new Autolinker.AnchorTagBuilder()
+		matcher = new EmailMatcher( {
+			tagBuilder : new AnchorTagBuilder()
 		} );
 	} );
 
@@ -21,7 +23,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'should return an array of a single email address match when the string is the email address itself', function() {
-			var matches = matcher.parseMatches( 'asdf@asdf.com' );
+			let matches = matcher.parseMatches( 'asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 0 );
@@ -29,7 +31,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'should return an array of a single email address match when the email address is in the middle of the string', function() {
-			var matches = matcher.parseMatches( 'Hello asdf@asdf.com my good friend' );
+			let matches = matcher.parseMatches( 'Hello asdf@asdf.com my good friend' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
@@ -37,7 +39,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'should return an array of a single email address match when the email address is at the end of the string', function() {
-			var matches = matcher.parseMatches( 'Hello asdf@asdf.com' );
+			let matches = matcher.parseMatches( 'Hello asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
@@ -45,7 +47,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'should return an array of multiple email addresses when there are more than one within the string', function() {
-			var matches = matcher.parseMatches( 'Talk to asdf@asdf.com or fdsa@fdsa.com' );
+			let matches = matcher.parseMatches( 'Talk to asdf@asdf.com or fdsa@fdsa.com' );
 
 			expect( matches.length ).toBe( 2 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 8 );
@@ -54,7 +56,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'a match within parenthesis should be parsed correctly', function() {
-			var matches = matcher.parseMatches( 'Hello (asdf@asdf.com)' );
+			let matches = matcher.parseMatches( 'Hello (asdf@asdf.com)' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 7 );
@@ -62,7 +64,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'a match with underscores should be parsed correctly', function() {
-			var matches = matcher.parseMatches( 'Hello asdf_fdsa_asdf@asdf.com' );
+			let matches = matcher.parseMatches( 'Hello asdf_fdsa_asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf_fdsa_asdf@asdf.com', 6 );
@@ -70,7 +72,7 @@ describe( "Autolinker.matcher.Email", function() {
 
 
 		it( 'a match with an \' should be parsed correctly', function() {
-			var matches = matcher.parseMatches( 'o\'donnel@asdf.com' );
+			let matches = matcher.parseMatches( 'o\'donnel@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'o\'donnel@asdf.com', 0 );
