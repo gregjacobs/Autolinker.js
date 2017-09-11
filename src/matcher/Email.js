@@ -19,7 +19,11 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	matcherRegex : (function() {
 		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
-		    emailRegex = new RegExp( '[' + alphaNumericChars + '\\-_\';:&=+$.,]+@' ),  // something@ for email addresses (a.k.a. local-part)
+			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
+			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',
+			validCharacters = alphaNumericChars + specialCharacters,
+			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
+		    emailRegex = new RegExp( '(?:(?:[' + validCharacters + '](?![^@]*\\.\\.)(?:[' + validCharacters + '.]*[' + validCharacters + '])?)|(?:\\"[' + validRestrictedCharacters + '.]+\\"))@'),
 			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
 			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
