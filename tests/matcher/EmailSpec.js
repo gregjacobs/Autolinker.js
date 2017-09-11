@@ -76,6 +76,24 @@ describe( "Autolinker.matcher.Email", function() {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'o\'donnel@asdf.com', 0 );
 		} );
 
+		it( 'should *not* match email with incorrect domain beginning with "-"', function() {
+			var matches = matcher.parseMatches( 'asdf@-asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should *not* match email with incorrect domain ending with "-"', function() {
+			var matches = matcher.parseMatches( 'asdf@asdf-.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should *not* match email with incorrect domain beginning with "."', function() {
+			var matches = matcher.parseMatches( 'asdf@.asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
 	} );
 
 
