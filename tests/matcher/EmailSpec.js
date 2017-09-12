@@ -76,6 +76,44 @@ describe( "Autolinker.matcher.Email", function() {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'o\'donnel@asdf.com', 0 );
 		} );
 
+		it( 'should *not* match email with incorrect domain beginning with "-"', function() {
+			var matches = matcher.parseMatches( 'asdf@-asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should *not* match email with incorrect domain ending with "-"', function() {
+			var matches = matcher.parseMatches( 'asdf@asdf-.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should *not* match email with incorrect domain beginning with "."', function() {
+			var matches = matcher.parseMatches( 'asdf@.asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should *not* match email with incorrect local part beginning with "."', function() {
+			var matches = matcher.parseMatches( '.asdf@asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 1 );
+		} );
+
+		it( 'should *not* match email with incorrect local part ending with "."', function() {
+			var matches = matcher.parseMatches( 'asdf.@asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+		it( 'should match email skipping incorrect local part tailing with ".."', function() {
+			var matches = matcher.parseMatches( 'asdf..asdf@asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
+		} );
+
 	} );
 
 
