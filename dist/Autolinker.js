@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.4.3
+ * 1.4.4
  *
  * Copyright(c) 2017 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -240,7 +240,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.4.3';
+Autolinker.version = '1.4.4';
 
 
 Autolinker.prototype = {
@@ -1546,9 +1546,14 @@ Autolinker.RegexLib = (function() {
 	// See documentation below
 	var alphaNumericCharsStr = alphaCharsStr + decimalNumbersStr;
 
+	// Simplified IP regular expression
+	var ipRegex = new RegExp( '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}' );
+
+	// Protected domain label which do not allow "-" character on the beginning and the end of a single label
+	var domainLabelStr = '[' + alphaNumericCharsStr + '](?:[' + alphaNumericCharsStr + '\\-]*[' + alphaNumericCharsStr + '])?';
 
 	// See documentation below
-	var domainNameRegex = new RegExp( '[' + alphaNumericCharsStr + '.\\-]*[' + alphaNumericCharsStr + '\\-]' );
+	var domainNameRegex = new RegExp( '(?:(?:(?:' + domainLabelStr + '\\.)*(?:' + domainLabelStr + '))|(?:' + ipRegex.source + '))' );
 
 	return {
 
@@ -3206,7 +3211,11 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 */
 	matcherRegex : (function() {
 		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
-		    emailRegex = new RegExp( '[' + alphaNumericChars + '\\-_\';:&=+$.,]+@' ),  // something@ for email addresses (a.k.a. local-part)
+			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
+			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',
+			validCharacters = alphaNumericChars + specialCharacters,
+			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
+		    emailRegex = new RegExp( '(?:(?:[' + validCharacters + '](?![^@]*\\.\\.)(?:[' + validCharacters + '.]*[' + validCharacters + '])?)|(?:\\"[' + validRestrictedCharacters + '.]+\\"))@'),
 			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
 			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
@@ -3373,7 +3382,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			var matchedText = match[0],
 				cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''), // strip out non-digit characters exclude comma semicolon and #
 				plusSign = !!match[1]; // match[ 1 ] is the prefixed plus sign, if there is one
-			if (/\D/.test(match[2]) && /\D/.test(matchedText)) {
+			if (this.testMatch(match[2]) && this.testMatch(matchedText)) {
     			matches.push(new Autolinker.match.Phone({
     				tagBuilder: tagBuilder,
     				matchedText: matchedText,
@@ -3385,9 +3394,14 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		}
 
 		return matches;
+	},
+
+	testMatch: function(text) {
+		return /\D/.test(text);
 	}
 
 } );
+
 /*global Autolinker */
 /**
  * @class Autolinker.matcher.Mention
