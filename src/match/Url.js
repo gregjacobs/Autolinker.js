@@ -50,6 +50,10 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
 	 */
 
+	/**
+	 * @cfg {Boolean} decodePercentEncoding (required)
+	 * @inheritdoc Autolinker#cfg-decodePercentEncoding
+	 */
 
 	/**
 	 * @constructor
@@ -66,6 +70,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
 		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
 		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
+		if( cfg.decodePercentEncoding == null ) throw new Error( '`decodePercentEncoding` cfg required' );
 		// @endif
 
 		this.urlMatchType = cfg.urlMatchType;
@@ -74,6 +79,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
+		this.decodePercentEncoding = cfg.decodePercentEncoding;
 	},
 
 
@@ -192,6 +198,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( this.stripTrailingSlash ) {
 			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 		}
+		if( this.decodePercentEncoding ) {
+			anchorText = this.removePercentEncoding( anchorText);
+		}
 
 		return anchorText;
 	},
@@ -254,6 +263,28 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
+	},
+
+	/**
+	 * Decodes percent-encoded characters from the given `anchorText`, in preparation for the text to be displayed.
+	 *
+	 * @private
+	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
+	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
+	 */
+	removePercentEncoding : function( anchorText ) {
+		try {
+			return decodeURIComponent( anchorText
+				.replace( /%22/gi, '&quot;' )
+				.replace( /%26/gi, '&amp;' )
+				.replace( /%27/gi, '&#39;')
+				.replace( /%3C/gi, '&lt;' )
+				.replace( /%3E/gi, '&gt;' )
+			 );
+		} catch (e) {
+			// Invalid escape sequence.
+			return anchorText;
+		}
 	}
 
 } );
