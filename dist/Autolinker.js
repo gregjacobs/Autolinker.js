@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.5.0
+ * 1.6.0
  *
  * Copyright(c) 2017 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -139,6 +139,7 @@ var Autolinker = function( cfg ) {
 	this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
 	this.stripPrefix = this.normalizeStripPrefixCfg( cfg.stripPrefix );
 	this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
+	this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : true;
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
@@ -240,7 +241,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.5.0';
+Autolinker.version = '1.6.0';
 
 
 Autolinker.prototype = {
@@ -369,6 +370,16 @@ Autolinker.prototype = {
 	 *
 	 *  Example when `true`: `http://google.com/` will be displayed as
 	 *  `http://google.com`.
+	 */
+
+	/**
+	 * @cfg {Boolean} [decodePercentEncoding=true]
+	 *
+	 * `true` to decode percent-encoded characters in URL matches, `false` to keep
+	 *  the percent-encoded characters.
+	 *
+	 *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
+	 *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
 	 */
 
 	/**
@@ -870,7 +881,7 @@ Autolinker.prototype = {
 				new matchersNs.Email( { tagBuilder: tagBuilder } ),
 				new matchersNs.Phone( { tagBuilder: tagBuilder } ),
 				new matchersNs.Mention( { tagBuilder: tagBuilder, serviceName: this.mention } ),
-				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash } )
+				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
 			];
 
 			return ( this.matchers = matchers );
@@ -2935,6 +2946,10 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
 	 */
 
+	/**
+	 * @cfg {Boolean} decodePercentEncoding (required)
+	 * @inheritdoc Autolinker#cfg-decodePercentEncoding
+	 */
 
 	/**
 	 * @constructor
@@ -2950,6 +2965,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( cfg.protocolRelativeMatch == null ) throw new Error( '`protocolRelativeMatch` cfg required' );
 		if( cfg.stripPrefix == null ) throw new Error( '`stripPrefix` cfg required' );
 		if( cfg.stripTrailingSlash == null ) throw new Error( '`stripTrailingSlash` cfg required' );
+		if( cfg.decodePercentEncoding == null ) throw new Error( '`decodePercentEncoding` cfg required' );
 
 		this.urlMatchType = cfg.urlMatchType;
 		this.url = cfg.url;
@@ -2957,6 +2973,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
+		this.decodePercentEncoding = cfg.decodePercentEncoding;
 	},
 
 
@@ -3075,6 +3092,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( this.stripTrailingSlash ) {
 			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 		}
+		if( this.decodePercentEncoding ) {
+			anchorText = this.removePercentEncoding( anchorText);
+		}
 
 		return anchorText;
 	},
@@ -3137,6 +3157,28 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
+	},
+
+	/**
+	 * Decodes percent-encoded characters from the given `anchorText`, in preparation for the text to be displayed.
+	 *
+	 * @private
+	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
+	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
+	 */
+	removePercentEncoding : function( anchorText ) {
+		try {
+			return decodeURIComponent( anchorText
+				.replace( /%22/gi, '&quot;' )
+				.replace( /%26/gi, '&amp;' )
+				.replace( /%27/gi, '&#39;')
+				.replace( /%3C/gi, '&lt;' )
+				.replace( /%3E/gi, '&gt;' )
+			 );
+		} catch (e) {
+			// Invalid escape sequence.
+			return anchorText;
+		}
 	}
 
 } );
@@ -3511,6 +3553,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @inheritdoc Autolinker#stripTrailingSlash
 	 */
 
+	/**
+	 * @cfg {Boolean} decodePercentEncoding (required)
+	 * @inheritdoc Autolinker#decodePercentEncoding
+	 */
+
 
 	/**
 	 * @private
@@ -3644,6 +3691,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
+		this.decodePercentEncoding = cfg.decodePercentEncoding;
 	},
 
 
@@ -3654,6 +3702,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var matcherRegex = this.matcherRegex,
 		    stripPrefix = this.stripPrefix,
 		    stripTrailingSlash = this.stripTrailingSlash,
+		    decodePercentEncoding = this.decodePercentEncoding,
 		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
@@ -3716,7 +3765,8 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				protocolUrlMatch      : protocolUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
 				stripPrefix           : stripPrefix,
-				stripTrailingSlash    : stripTrailingSlash
+				stripTrailingSlash    : stripTrailingSlash,
+				decodePercentEncoding : decodePercentEncoding,
 			} ) );
 		}
 

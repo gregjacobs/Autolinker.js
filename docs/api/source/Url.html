@@ -67,6 +67,10 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
 	 */
 
+<span id='Autolinker-match-Url-cfg-decodePercentEncoding'>	/**
+</span>	 * @cfg {Boolean} decodePercentEncoding (required)
+	 * @inheritdoc Autolinker#cfg-decodePercentEncoding
+	 */
 
 <span id='Autolinker-match-Url-method-constructor'>	/**
 </span>	 * @constructor
@@ -83,6 +87,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( cfg.protocolRelativeMatch == null ) throw new Error( &#39;`protocolRelativeMatch` cfg required&#39; );
 		if( cfg.stripPrefix == null ) throw new Error( &#39;`stripPrefix` cfg required&#39; );
 		if( cfg.stripTrailingSlash == null ) throw new Error( &#39;`stripTrailingSlash` cfg required&#39; );
+		if( cfg.decodePercentEncoding == null ) throw new Error( &#39;`decodePercentEncoding` cfg required&#39; );
 		// @endif
 
 		this.urlMatchType = cfg.urlMatchType;
@@ -91,6 +96,7 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		this.protocolRelativeMatch = cfg.protocolRelativeMatch;
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
+		this.decodePercentEncoding = cfg.decodePercentEncoding;
 	},
 
 
@@ -209,6 +215,9 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 		if( this.stripTrailingSlash ) {
 			anchorText = this.removeTrailingSlash( anchorText );  // remove trailing slash, if there is one
 		}
+		if( this.decodePercentEncoding ) {
+			anchorText = this.removePercentEncoding( anchorText);
+		}
 
 		return anchorText;
 	},
@@ -271,6 +280,28 @@ Autolinker.match.Url = Autolinker.Util.extend( Autolinker.match.Match, {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
+	},
+
+<span id='Autolinker-match-Url-method-removePercentEncoding'>	/**
+</span>	 * Decodes percent-encoded characters from the given `anchorText`, in preparation for the text to be displayed.
+	 *
+	 * @private
+	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
+	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
+	 */
+	removePercentEncoding : function( anchorText ) {
+		try {
+			return decodeURIComponent( anchorText
+				.replace( /%22/gi, &#39;&amp;quot;&#39; )
+				.replace( /%26/gi, &#39;&amp;amp;&#39; )
+				.replace( /%27/gi, &#39;&amp;#39;&#39;)
+				.replace( /%3C/gi, &#39;&amp;lt;&#39; )
+				.replace( /%3E/gi, &#39;&amp;gt;&#39; )
+			 );
+		} catch (e) {
+			// Invalid escape sequence.
+			return anchorText;
+		}
 	}
 
 } );</pre>
