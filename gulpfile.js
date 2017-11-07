@@ -204,9 +204,9 @@ function notCommentLine(line){
 }
 
 function compareLengthLongestFirst(a, b){
-	var result = b.length - a.length
-	if (result == 0) {
-		result = a.localeCompare(b)
+	var result = b.length - a.length;
+	if (result === 0) {
+		result = a.localeCompare(b);
 	}
 	return result;
 }
@@ -217,7 +217,7 @@ function domainsToRegex(contents){
 		.filter(notCommentLine)
 		.map(dePunycodeDomain);
 	contents = [].concat.apply([], contents);
-	contents = contents.filter(function(s){ return !!s });
+	contents = contents.filter(function(s){ return !!s; });
 	contents.sort(compareLengthLongestFirst);
 	contents = contents.join('|');
 	contents = '/*global Autolinker */\nAutolinker.tldRegex = /(?:' + contents + ')/;\n';
