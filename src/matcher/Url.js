@@ -20,6 +20,11 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 * @inheritdoc Autolinker#stripTrailingSlash
 	 */
 
+	/**
+	 * @cfg {Boolean} decodePercentEncoding (required)
+	 * @inheritdoc Autolinker#decodePercentEncoding
+	 */
+
 
 	/**
 	 * @private
@@ -155,6 +160,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
 		this.stripPrefix = cfg.stripPrefix;
 		this.stripTrailingSlash = cfg.stripTrailingSlash;
+		this.decodePercentEncoding = cfg.decodePercentEncoding;
 	},
 
 
@@ -165,6 +171,7 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		var matcherRegex = this.matcherRegex,
 		    stripPrefix = this.stripPrefix,
 		    stripTrailingSlash = this.stripTrailingSlash,
+		    decodePercentEncoding = this.decodePercentEncoding,
 		    tagBuilder = this.tagBuilder,
 		    matches = [],
 		    match;
@@ -227,7 +234,8 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				protocolUrlMatch      : protocolUrlMatch,
 				protocolRelativeMatch : !!protocolRelativeMatch,
 				stripPrefix           : stripPrefix,
-				stripTrailingSlash    : stripTrailingSlash
+				stripTrailingSlash    : stripTrailingSlash,
+				decodePercentEncoding : decodePercentEncoding,
 			} ) );
 		}
 
