@@ -40,7 +40,7 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			restrictedSpecialCharacters = &#39;\\s&quot;(),:;&lt;&gt;@\\[\\]&#39;,
 			validCharacters = alphaNumericChars + specialCharacters,
 			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
-		    emailRegex = new RegExp( &#39;(?:(?:[&#39; + validCharacters + &#39;](?![^@]*\\.\\.)(?:[&#39; + validCharacters + &#39;.]*[&#39; + validCharacters + &#39;])?)|(?:\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;))@&#39;),
+		    emailRegex = new RegExp( &#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;),
 			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
 			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
