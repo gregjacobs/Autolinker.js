@@ -2657,6 +2657,20 @@ describe( "Autolinker", function() {
 			}
 		} );
 
+
+		it( "should be able to parse a very long string", function() {
+			var testStr = (function() {
+				var t = [];
+				for (var i = 0; i < 50000; i++) {
+					t.push( ' foo' );
+				}
+				return t.join( '' );
+			})();
+
+			var result = Autolinker.link( testStr );
+			expect( result ).toBe( testStr );
+		} );
+
 	} );
 
 
