@@ -212,6 +212,14 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
   5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
+- [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): Boolean<br />
+  `true` to decode percent-encoded characters in URL matches, `false` to keep
+  the percent-encoded characters.
+  
+  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
+  be displayed as `https://en.wikipedia.org/wiki/San_José`.
+  
+  Defaults to `true`.
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
   input string, one at a time. See the section
