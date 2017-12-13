@@ -98,7 +98,11 @@ Autolinker.matcher.UrlMatchValidator = {
 	},
 
 	containsMultipleDots : function ( urlMatch ) {
-		return urlMatch.indexOf("..") > -1;
+		var stringBeforeSlash = urlMatch;
+		if (this.hasFullProtocolRegex.test(urlMatch)) {
+			stringBeforeSlash = urlMatch.split('://')[1];
+		}
+		return stringBeforeSlash.split('/')[0].indexOf("..") > -1;
 	},
 
 	/**
