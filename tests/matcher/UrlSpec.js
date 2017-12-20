@@ -121,7 +121,7 @@ describe( "Autolinker.matcher.Url", function() {
 			expect( othermatches.length ).toBe( 0 );
 		});
 
-		it( 'should not an address with multiple dots in path string', function() {
+		it( 'should match an address with multiple dots in path string', function() {
 			var matches = matcher.parseMatches( 'https://gitlab.example.com/space/repo/compare/master...develop' );
 			var othermatches = matcher.parseMatches( 'https://www.google.it/search?q=autolink.js&oq=autolink.js&aqs=chrome..69i57j0l4.5161j0j7&sourceid=chrome&ie=UTF-8' );
 
