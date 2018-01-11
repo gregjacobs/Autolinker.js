@@ -309,4 +309,12 @@ describe( "Autolinker.htmlParser.HtmlParser", function() {
 		expectTextNode( nodes[ 0 ], 0, inputStr );
 	} );
 
+	it( "should not freeze up the regular expression engine when presented with the input string in issue #204", function() {
+		var inputStr = '<img src="http://example.com/Foo" border-radius:2px;moz-border-radius:2px;khtml-border-radius:2px;o-border-radius:2px;webkit-border-radius:2px;ms-border-radius:="" 2px; "=" " class=" ">',
+		    nodes = htmlParser.parse( inputStr );
+
+		expect( nodes.length ).toBe( 1 );
+		expectTextNode( nodes[ 0 ], 0, inputStr );
+	} );
+
 } );
