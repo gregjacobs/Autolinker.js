@@ -899,6 +899,17 @@ describe( "Autolinker", function() {
 			} );
 
 
+			describe( "multiple dots handling", function() {
+
+				it( "should autolink a url with multiple dots in the path", function() {
+					var result = autolinker.link( "https://gitlab.example.com/space/repo/compare/master...develop" );
+
+					expect( result ).toBe( '<a href="https://gitlab.example.com/space/repo/compare/master...develop">gitlab.example.com/space/repo/compare/master...develop</a>' );
+				} );
+
+			} );
+
+
 			it( "should automatically link multiple URLs in the same input string", function() {
 				var result = autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
 				expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://google.com">google.com</a>' );
@@ -1132,12 +1143,12 @@ describe( "Autolinker", function() {
                 expect( autolinker.link( "1-555-666-7777,234523#" ) ).toBe( '<a href="tel:15556667777,234523#">1-555-666-7777,234523#</a>' );
                 expect( autolinker.link( "+1-555-666-7777,234523#" ) ).toBe( '<a href="tel:+15556667777,234523#">+1-555-666-7777,234523#</a>' );
                 expect( autolinker.link( "+1-555-666-7777,234523,233" ) ).toBe( '<a href="tel:+15556667777,234523,233">+1-555-666-7777,234523,233</a>' );
-                expect( autolinker.link( "+22016350659,;,55#;;234   ,  3334443323" ) ).toBe( '<a href="tel:+22016350659,;,55#;;234">+22016350659,;,55#;;234</a>   ,  3334443323' );                
+                expect( autolinker.link( "+22016350659,;,55#;;234   ,  3334443323" ) ).toBe( '<a href="tel:+22016350659,;,55#;;234">+22016350659,;,55#;;234</a>   ,  3334443323' );
             } );
             it( "should NOT automatically link numbers when there are extensions with ,<numbers># followed by a number", function() {
                 expect( autolinker.link( "+1-555-666-7777,234523#233" ) ).toBe( '+1-555-666-7777,234523#233' );
                 expect( autolinker.link( "+1-555-666-7777,234523#abc" ) ).toBe( '<a href="tel:+15556667777,234523#">+1-555-666-7777,234523#</a>abc' );
-                expect( autolinker.link( "+1-555-666-7777,234523#,234523#abc" ) ).toBe( '<a href="tel:+15556667777,234523#,234523#">+1-555-666-7777,234523#,234523#</a>abc' );                
+                expect( autolinker.link( "+1-555-666-7777,234523#,234523#abc" ) ).toBe( '<a href="tel:+15556667777,234523#,234523#">+1-555-666-7777,234523#,234523#</a>abc' );
             } );
 		} );
 
