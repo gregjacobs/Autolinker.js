@@ -32,7 +32,11 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 		    tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
 		    attrNameRegex = /[^\s"'>\/=\x00-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
 		    attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
-		    nameEqualsValueRegex = attrNameRegex.source + '(?:\\s*=\\s*' + attrValueRegex.source + ')?';  // optional '=[value]'
+		    optionalAttrValueRegex = '(?:\\s*?=\\s*?' + attrValueRegex.source + ')?'; // optional '=[value]'
+
+		var getNameEqualsValueRegex = function(group) {
+			return '(?=(' + attrNameRegex.source + '))\\' + group + optionalAttrValueRegex;
+		};
 
 		return new RegExp( [
 			// for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
@@ -46,7 +50,8 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 						// Either:
 						// A. attr="value", or
 						// B. "value" alone (To cover example doctype tag: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
-						'(?:', nameEqualsValueRegex, '|', attrValueRegex.source + ')',
+						// *** Capturing Group 2 - Pseudo-atomic group for attrNameRegex
+						'(?:', getNameEqualsValueRegex(2), '|', attrValueRegex.source + ')',
 					')*',
 				'>',
 			')',
@@ -56,10 +61,10 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 			// All other HTML tags (i.e. tags that are not <!DOCTYPE>)
 			'(?:',
 				'<(/)?',  // Beginning of a tag or comment. Either '<' for a start tag, or '</' for an end tag.
-				          // *** Capturing Group 2: The slash or an empty string. Slash ('/') for end tag, empty string for start or self-closing tag.
+				          // *** Capturing Group 3: The slash or an empty string. Slash ('/') for end tag, empty string for start or self-closing tag.
 
 					'(?:',
-						commentTagRegex.source,  // *** Capturing Group 3 - A Comment Tag's Text
+						commentTagRegex.source,  // *** Capturing Group 4 - A Comment Tag's Text
 
 						'|',
 
@@ -68,7 +73,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 						// to fix a regex time complexity issue seen with the
 						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
 						'(?:',
-							// *** Capturing Group 4 - The tag name for a tag without attributes
+							// *** Capturing Group 5 - The tag name for a tag without attributes
 							'(' + tagNameRegex.source + ')',
 
 							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
@@ -81,7 +86,7 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 						// to fix a regex time complexity issue seen with the
 						// example in https://github.com/gregjacobs/Autolinker.js/issues/172
 						'(?:',
-							// *** Capturing Group 5 - The tag name for a tag with attributes
+							// *** Capturing Group 6 - The tag name for a tag with attributes
 							'(' + tagNameRegex.source + ')',
 
 							'\\s+',  // must have at least one space after the tag name to prevent ReDoS issue (issue #172)
@@ -89,7 +94,8 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 							// Zero or more attributes following the tag name
 							'(?:',
 								'(?:\\s+|\\b)',        // any number of whitespace chars before an attribute. NOTE: Using \s* here throws Chrome into an infinite loop for some reason, so using \s+|\b instead
-								nameEqualsValueRegex,  // attr="value" (with optional ="value" part)
+								// *** Capturing Group 7 - Pseudo-atomic group for attrNameRegex
+								getNameEqualsValueRegex(7),  // attr="value" (with optional ="value" part)
 							')*',
 
 							'\\s*/?',  // any trailing spaces and optional '/' before the closing '>'
@@ -127,9 +133,9 @@ Autolinker.htmlParser.HtmlParser = Autolinker.Util.extend( Object, {
 
 		while( ( currentResult = htmlRegex.exec( html ) ) !== null ) {
 			var tagText = currentResult[ 0 ],
-			    commentText = currentResult[ 3 ], // if we've matched a comment
-			    tagName = currentResult[ 1 ] || currentResult[ 4 ] || currentResult[ 5 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
-			    isClosingTag = !!currentResult[ 2 ],
+			    commentText = currentResult[ 4 ], // if we've matched a comment
+			    tagName = currentResult[ 1 ] || currentResult[ 5 ] || currentResult[ 6 ],  // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
+			    isClosingTag = !!currentResult[ 3 ],
 			    offset = currentResult.index,
 			    inBetweenTagsText = html.substring( lastIndex, offset );
 
