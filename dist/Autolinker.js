@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.6.1
+ * 1.6.2
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -241,7 +241,7 @@ Autolinker.parse = function( textOrHtml, options ) {
  *
  * Ex: 0.25.1
  */
-Autolinker.version = '1.6.1';
+Autolinker.version = '1.6.2';
 
 
 Autolinker.prototype = {
@@ -1558,13 +1558,19 @@ Autolinker.RegexLib = (function() {
 	var alphaNumericCharsStr = alphaCharsStr + decimalNumbersStr;
 
 	// Simplified IP regular expression
-	var ipRegex = new RegExp( '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}' );
+	var ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
 
 	// Protected domain label which do not allow "-" character on the beginning and the end of a single label
-	var domainLabelStr = '[' + alphaNumericCharsStr + '](?:[' + alphaNumericCharsStr + '\\-]*[' + alphaNumericCharsStr + '])?';
+	var domainLabelStr = '[' + alphaNumericCharsStr + '](?:[' + alphaNumericCharsStr + '\\-]{0,61}[' + alphaNumericCharsStr + '])?';
+
+	var getDomainLabelStr = function(group) {
+		return '(?=(' + domainLabelStr + '))\\' + group;
+	};
 
 	// See documentation below
-	var domainNameRegex = new RegExp( '(?:(?:(?:' + domainLabelStr + '\\.)*(?:' + domainLabelStr + '))|(?:' + ipRegex.source + '))' );
+	var getDomainNameStr = function(group) {
+		return '(?:' + getDomainLabelStr(group) + '(?:\\.' + getDomainLabelStr(group + 1) + '){0,126}|' + ipStr + ')';
+	};
 
 	return {
 
@@ -1598,7 +1604,7 @@ Autolinker.RegexLib = (function() {
 		 *
 		 * @property {RegExp} domainNameRegex
 		 */
-		domainNameRegex : domainNameRegex,
+		getDomainNameStr : getDomainNameStr,
 
 	};
 
@@ -3264,12 +3270,12 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			validCharacters = alphaNumericChars + specialCharacters,
 			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
 		    emailRegex = new RegExp( '(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@'),
-			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+			getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
 			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
 		return new RegExp( [
 			emailRegex.source,
-			domainNameRegex.source,
+			getDomainNameStr(1),
 			'\\.', tldRegex.source   // '.com', '.net', etc
 		].join( "" ), 'gi' );
 	} )(),
@@ -3600,9 +3606,9 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 	 *     See #3 for more info.
 	 */
 	matcherRegex : (function() {
-		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]*:(?![A-Za-z][-.+A-Za-z0-9]*:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+		var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
-		    domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+		    getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
 		    tldRegex = Autolinker.tldRegex,  // match our known top level domains (TLDs)
 		    alphaNumericCharsStr = Autolinker.RegexLib.alphaNumericCharsStr,
 
@@ -3614,22 +3620,22 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			'(?:', // parens to cover match for scheme (optional), and domain
 				'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
 					schemeRegex.source,
-					domainNameRegex.source,
+					getDomainNameStr(2),
 				')',
 
 				'|',
 
-				'(',  // *** Capturing group $2, for a 'www.' prefixed url (ex: www.google.com)
-					'(//)?',  // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
-					wwwRegex.source,
-					domainNameRegex.source,
-				')',
-
-				'|',
-
-				'(',  // *** Capturing group $4, for known a TLD url (ex: google.com)
+				'(',  // *** Capturing group $4 for a 'www.' prefixed url (ex: www.google.com)
 					'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
-					domainNameRegex.source + '\\.',
+					wwwRegex.source,
+					getDomainNameStr(6),
+				')',
+
+				'|',
+
+				'(',  // *** Capturing group $8, for known a TLD url (ex: google.com)
+					'(//)?',  // *** Capturing group $9 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
+					getDomainNameStr(10) + '\\.',
 					tldRegex.source,
 					'(?![-' + alphaNumericCharsStr + '])', // TLD not followed by a letter, behaves like unicode-aware \b
 				')',
@@ -3716,10 +3722,10 @@ Autolinker.matcher.Url = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 		while( ( match = matcherRegex.exec( text ) ) !== null ) {
 			var matchStr = match[ 0 ],
 			    schemeUrlMatch = match[ 1 ],
-			    wwwUrlMatch = match[ 2 ],
-			    wwwProtocolRelativeMatch = match[ 3 ],
-			    //tldUrlMatch = match[ 4 ],  -- not needed at the moment
-			    tldProtocolRelativeMatch = match[ 5 ],
+			    wwwUrlMatch = match[ 4 ],
+			    wwwProtocolRelativeMatch = match[ 5 ],
+			    //tldUrlMatch = match[ 8 ],  -- not needed at the moment
+			    tldProtocolRelativeMatch = match[ 9 ],
 			    offset = match.index,
 			    protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch,
 				prevChar = text.charAt( offset - 1 );
