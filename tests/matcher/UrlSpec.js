@@ -7,7 +7,8 @@ describe( "Autolinker.matcher.Url", function() {
 		matcher = new Autolinker.matcher.Url( {
 			tagBuilder  : new Autolinker.AnchorTagBuilder(),
 			stripPrefix : false,
-			stripTrailingSlash : false
+			stripTrailingSlash : false,
+			decodePercentEncoding: false
 		} );
 	} );
 
@@ -159,6 +160,12 @@ describe( "Autolinker.matcher.Url", function() {
 				var matches = matcher.parseMatches( 'asdf//asdf.com' );
 
 				expect( matches.length ).toBe( 0 );
+			} );
+
+			it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
+				const start = Date.now();
+				matcher.parseMatches( new Array(10000).join('a') );
+				expect( Date.now() - start ).toBeLessThan( 100 );
 			} );
 
 		} );
