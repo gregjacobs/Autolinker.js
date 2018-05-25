@@ -140,6 +140,11 @@ var Autolinker = function( cfg ) {
 	this.replaceFn = cfg.replaceFn || null;
 	this.context = cfg.context || this;
 
+	var applyCustomMatchers = cfg.applyCustomMatchers;
+	if( typeof applyCustomMatchers === 'function' ) {
+		this.applyCustomMatchers = applyCustomMatchers;
+	}
+
 	this.htmlParser = null;
 	this.matchers = null;
 	this.tagBuilder = null;
@@ -866,6 +871,9 @@ Autolinker.prototype = {
 				new matchersNs.Url( { tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
 			];
 
+			// merge with additional custom-made Matcher instances
+			matchers = matchers.concat(this.applyCustomMatchers(this));
+
 			return ( this.matchers = matchers );
 
 		} else {
@@ -907,8 +915,21 @@ Autolinker.prototype = {
 		}
 
 		return tagBuilder;
-	}
+	},
 
+	/**
+	 * An optional callback to be used when adding custom {@link Autolinker.Matcher Matcher}
+	 * objects. This base implementation adds a failsafe return as an empty array, preventing
+	 * it to misbehave while merging its results with default {@link Autolinker.Matcher Matchers}
+	 *
+	 * @param {Autolinker} autolinker - the actual autolinker instance
+	 *   exposed to the custom implementation of this callback function
+	 *
+	 * @return {Autolinker.matcher.Matcher[]}
+	 */
+	applyCustomMatchers: function (autolinker) {
+		return [];
+	}
 };
 
 
