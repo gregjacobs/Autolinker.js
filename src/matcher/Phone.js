@@ -40,7 +40,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			// Remove non-numeric values from phone number string
 			var matchedText = match[0],
 				cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''), // strip out non-digit characters exclude comma semicolon and #
-				plusSign = !!(match[1] || match[2]), // match[ 1 ] or match[ 3 ] is the prefixed plus sign, if there is one
+				plusSign = !!(match[1] || match[2]), // match[ 1 ] or match[ 2 ] is the prefixed plus sign, if there is one
 				before = match.index == 0 ? '' : text.substr(match.index - 1, 1),
 				after = text.substr(match.index + matchedText.length, 1),
 				contextClear = !before.match(/\d/) && !after.match(/\d/);
