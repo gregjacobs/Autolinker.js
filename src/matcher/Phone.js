@@ -45,7 +45,7 @@ Autolinker.matcher.Phone = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 				after = text.substr(match.index + matchedText.length, 1),
 				contextClear = !before.match(/\d/) && !after.match(/\d/);
 
-			if (this.testMatch(match[4]) && this.testMatch(matchedText) && contextClear) {
+			if (this.testMatch(match[3]) && this.testMatch(matchedText) && contextClear) {
 				matches.push(new Autolinker.match.Phone({
 					tagBuilder: tagBuilder,
 					matchedText: matchedText,
