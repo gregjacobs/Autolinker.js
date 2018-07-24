@@ -1107,6 +1107,10 @@ describe( "Autolinker", function() {
 				expect( autolinker.link( "1-541-754-3010" ) ).toBe(   '<a href="tel:15417543010">1-541-754-3010</a>' );
 				expect( autolinker.link( "1 (541) 754-3010" ) ).toBe( '<a href="tel:15417543010">1 (541) 754-3010</a>' );
 				expect( autolinker.link( "1.541.754.3010" ) ).toBe(   '<a href="tel:15417543010">1.541.754.3010</a>' );
+				expect( autolinker.link( "+43 5 1766 1000" ) ).toBe(  '<a href="tel:+43517661000">+43 5 1766 1000</a>' );
+				expect( autolinker.link( "+381 38 502 456" ) ).toBe(   '<a href="tel:+38138502456">+381 38 502 456</a>' );
+				expect( autolinker.link( "+38755233976" ) ).toBe( '<a href="tel:+38755233976">+38755233976</a>' );
+				expect( autolinker.link( "+852 2846 6433" ) ).toBe(   '<a href="tel:+85228466433">+852 2846 6433</a>' );
 			} );
 
 
@@ -2807,7 +2811,7 @@ describe( "Autolinker", function() {
 					mention : 'twitter'
 				} );
 
-				expect( matches.length ).toBe( 9 );
+				expect( matches.length ).toBe( 8 );
 
 				expect( matches[ 0 ].getType() ).toBe( 'phone' );
 				expect( matches[ 0 ].getNumber() ).toBe( '91234567' );
