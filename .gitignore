@@ -7,3 +7,4 @@ web.config
 _SpecRunner.html
 node_modules/
 npm-debug.log
+yarn-error.log
