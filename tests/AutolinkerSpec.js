@@ -1759,6 +1759,15 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should parse joined matchers", function() {
+				var html = "+1123123123http://google.com";
+				var tobe = "<a href=\"tel:+1123123123\">+1123123123</a><a href=\"http://google.com\">google.com</a>";
+
+				var result = autolinker.link( html );
+				expect( result ).toBe( tobe );
+			} );
+
+
 		} );
 
 
