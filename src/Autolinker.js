@@ -667,7 +667,7 @@ Autolinker.prototype = {
 				}
 
 				// Remove subsequent matches that overlap with the current match
-				if( matches[ i + 1 ].getOffset() <= endIdx ) {
+				if( matches[ i + 1 ].getOffset() < endIdx ) {
 					matches.splice( i + 1, 1 );
 				}
 			}
