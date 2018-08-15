@@ -8,7 +8,7 @@
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
+ *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram, Soundcloud)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( match ) {

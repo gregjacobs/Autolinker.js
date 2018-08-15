@@ -53,12 +53,12 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram)
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram, Soundcloud)
  * match that is encountered.
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
+ *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram, Soundcloud)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( match ) {
@@ -318,6 +318,7 @@ Autolinker.prototype = {
 	 *
 	 * - 'twitter'
 	 * - 'instagram'
+	 * - 'soundcloud'
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
@@ -444,7 +445,7 @@ Autolinker.prototype = {
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
-	 *   where [type] is either "instagram" or "twitter"
+	 *   where [type] is either "instagram", "twitter" or "soundcloud"
 	 */
 
 	/**
@@ -772,7 +773,7 @@ Autolinker.prototype = {
 
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Hashtags,
-	 * and Mentions (Twitter, Instagram) found in the given chunk of HTML. Does not link
+	 * and Mentions (Twitter, Instagram, Soundcloud) found in the given chunk of HTML. Does not link
 	 * URLs found within HTML tags.
 	 *
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`,
@@ -2342,7 +2343,7 @@ Autolinker.htmlParser.TextNode = Autolinker.Util.extend( Autolinker.htmlParser.H
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram)
+ *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram, Soundcloud)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( match ) {
@@ -2850,7 +2851,7 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * Returns the configured {@link #serviceName} to point the mention to.
-	 * Ex: 'instagram', 'twitter'.
+	 * Ex: 'instagram', 'twitter', 'soundcloud'.
 	 *
 	 * @return {String}
 	 */
@@ -2870,6 +2871,8 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 				return 'https://twitter.com/' + this.mention;
 			case 'instagram' :
 				return 'https://instagram.com/' + this.mention;
+			case 'soundcloud' :
+				return 'https://soundcloud.com/' + this.mention;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
 				throw new Error( 'Unknown service name to point mention to: ', this.serviceName );
