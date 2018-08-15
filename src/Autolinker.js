@@ -125,7 +125,7 @@ var Autolinker = function( cfg ) {
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
-	if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+	if( mention !== false && mention !== 'twitter' && mention !== 'instagram'  && mention !== 'soundcloud' ) {
 		throw new Error( "invalid `mention` cfg - see docs" );
 	}
 

@@ -85,6 +85,18 @@ describe( "Autolinker.matcher.Mention", function() {
 			MatchChecker.expectMentionMatch( matches[ 0 ], 'instagram', 'asdf', 7 );
 		} );
 
+
+		it( 'an soundcloud username with dashes not at boundaries should be parsed correctly', function() {
+			var soundcloudMatcher = new Autolinker.matcher.Mention( {
+				tagBuilder : new Autolinker.AnchorTagBuilder(),
+				serviceName: 'soundcloud'
+			} );
+			var matches = soundcloudMatcher.parseMatches( 'Hello (@as-df)' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectMentionMatch( matches[ 0 ], 'soundcloud', 'as-df', 7 );
+		} );
+
 	} );
 
 } );

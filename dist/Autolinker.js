@@ -143,7 +143,7 @@ var Autolinker = function( cfg ) {
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
-	if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+	if( mention !== false && mention !== 'twitter' && mention !== 'instagram'  && mention !== 'soundcloud' ) {
 		throw new Error( "invalid `mention` cfg - see docs" );
 	}
 
@@ -3479,7 +3479,8 @@ Autolinker.matcher.Mention = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 */
 	matcherRegexes : {
 		"twitter": new RegExp( '@[_' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,20}', 'g' ),
-		"instagram": new RegExp( '@[_.' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,50}', 'g' )
+		"instagram": new RegExp( '@[_.' + Autolinker.RegexLib.alphaNumericCharsStr + ']{1,50}', 'g' ),
+		"soundcloud": new RegExp( '@[_.' + Autolinker.RegexLib.alphaNumericCharsStr + "\-" + ']{1,50}', 'g' )
 	},
 
 	/**
