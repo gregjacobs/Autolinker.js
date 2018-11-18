@@ -41,12 +41,12 @@ Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 			validCharacters = alphaNumericChars + specialCharacters,
 			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
 		    emailRegex = new RegExp( &#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;),
-			domainNameRegex = Autolinker.RegexLib.domainNameRegex,
+			getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
 			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
 
 		return new RegExp( [
 			emailRegex.source,
-			domainNameRegex.source,
+			getDomainNameStr(1),
 			&#39;\\.&#39;, tldRegex.source   // &#39;.com&#39;, &#39;.net&#39;, etc
 		].join( &quot;&quot; ), &#39;gi&#39; );
 	} )(),

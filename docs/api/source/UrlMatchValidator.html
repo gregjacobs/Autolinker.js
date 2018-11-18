@@ -115,7 +115,11 @@ Autolinker.matcher.UrlMatchValidator = {
 	},
 
 <span id='Autolinker-matcher-UrlMatchValidator-method-containsMultipleDots'>	containsMultipleDots : function ( urlMatch ) {
-</span>		return urlMatch.indexOf(&quot;..&quot;) &gt; -1;
+</span>		var stringBeforeSlash = urlMatch;
+		if (this.hasFullProtocolRegex.test(urlMatch)) {
+			stringBeforeSlash = urlMatch.split(&#39;://&#39;)[1];
+		}
+		return stringBeforeSlash.split(&#39;/&#39;)[0].indexOf(&quot;..&quot;) &gt; -1;
 	},
 
 <span id='Autolinker-matcher-UrlMatchValidator-method-isValidUriScheme'>	/**

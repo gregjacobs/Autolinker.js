@@ -34,7 +34,8 @@ Autolinker.matcher.Mention = Autolinker.Util.extend( Autolinker.matcher.Matcher,
 	 */
 	matcherRegexes : {
 		&quot;twitter&quot;: new RegExp( &#39;@[_&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,20}&#39;, &#39;g&#39; ),
-		&quot;instagram&quot;: new RegExp( &#39;@[_.&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39; )
+		&quot;instagram&quot;: new RegExp( &#39;@[_.&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39; ),
+		&quot;soundcloud&quot;: new RegExp( &#39;@[_.&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39; )
 	},
 
 <span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>	/**

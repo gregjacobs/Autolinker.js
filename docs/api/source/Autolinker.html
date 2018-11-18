@@ -52,12 +52,12 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram)
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram, Soundcloud)
  * match that is encountered.
  *
  * For example:
  *
- *     var input = &quot;...&quot;;  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
+ *     var input = &quot;...&quot;;  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram, Soundcloud)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( match ) {
@@ -142,7 +142,7 @@ var Autolinker = function( cfg ) {
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
-	if( mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39; ) {
+	if( mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39;  &amp;&amp; mention !== &#39;soundcloud&#39; ) {
 		throw new Error( &quot;invalid `mention` cfg - see docs&quot; );
 	}
 
@@ -317,6 +317,7 @@ Autolinker.prototype = {
 	 *
 	 * - &#39;twitter&#39;
 	 * - &#39;instagram&#39;
+	 * - &#39;soundcloud&#39;
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
@@ -443,7 +444,7 @@ Autolinker.prototype = {
 	 * - Phone links will have the CSS classes: &quot;myLink myLink-phone&quot;
 	 * - Hashtag links will have the CSS classes: &quot;myLink myLink-hashtag&quot;
 	 * - Mention links will have the CSS classes: &quot;myLink myLink-mention myLink-[type]&quot;
-	 *   where [type] is either &quot;instagram&quot; or &quot;twitter&quot;
+	 *   where [type] is either &quot;instagram&quot;, &quot;twitter&quot; or &quot;soundcloud&quot;
 	 */
 
 <span id='Autolinker-cfg-replaceFn'>	/**
@@ -684,7 +685,7 @@ Autolinker.prototype = {
 				}
 
 				// Remove subsequent matches that overlap with the current match
-				if( matches[ i + 1 ].getOffset() &lt;= endIdx ) {
+				if( matches[ i + 1 ].getOffset() &lt; endIdx ) {
 					matches.splice( i + 1, 1 );
 				}
 			}
@@ -771,7 +772,7 @@ Autolinker.prototype = {
 
 <span id='Autolinker-method-link'>	/**
 </span>	 * Automatically links URLs, Email addresses, Phone numbers, Hashtags,
-	 * and Mentions (Twitter, Instagram) found in the given chunk of HTML. Does not link
+	 * and Mentions (Twitter, Instagram, Soundcloud) found in the given chunk of HTML. Does not link
 	 * URLs found within HTML tags.
 	 *
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`,

@@ -10,6 +10,8 @@
     "test": "tests"
   },
   "scripts": {
+    "build": "gulp",
+    "prepublishOnly": "gulp",
     "test": "gulp test"
   },
   "repository": {
