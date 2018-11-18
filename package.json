@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "gulp",
-    "prepublishOnly": "gulp",
+    "prepublishOnly": "gulp build",
     "test": "gulp test"
   },
   "repository": {
