@@ -1,10 +1,10 @@
 {
   "name": "autolinker",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Utility to automatically link the URLs, email addresses, phone numbers, hashtags, and mentions (Twitter, Instagram) in a given block of text/HTML",
   "main": "dist/Autolinker.js",
   "files": [
-    "dist"
+    "./dist"
   ],
   "directories": {
     "test": "tests"
