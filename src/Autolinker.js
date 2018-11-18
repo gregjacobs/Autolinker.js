@@ -35,12 +35,12 @@
  *
  * If the configuration options do not provide enough flexibility, a {@link #replaceFn}
  * may be provided to fully customize the output of Autolinker. This function is
- * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram)
+ * called once for each URL/Email/Phone#/Hashtag/Mention (Twitter, Instagram, Soundcloud)
  * match that is encountered.
  *
  * For example:
  *
- *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram)
+ *     var input = "...";  // string with URLs, Email Addresses, Phone #s, Hashtags, and Mentions (Twitter, Instagram, Soundcloud)
  *
  *     var linkedText = Autolinker.link( input, {
  *         replaceFn : function( match ) {
@@ -125,7 +125,7 @@ var Autolinker = function( cfg ) {
 
 	// Validate the value of the `mention` cfg
 	var mention = this.mention;
-	if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+	if( mention !== false && mention !== 'twitter' && mention !== 'instagram'  && mention !== 'soundcloud' ) {
 		throw new Error( "invalid `mention` cfg - see docs" );
 	}
 
@@ -300,6 +300,7 @@ Autolinker.prototype = {
 	 *
 	 * - 'twitter'
 	 * - 'instagram'
+	 * - 'soundcloud'
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
@@ -426,7 +427,7 @@ Autolinker.prototype = {
 	 * - Phone links will have the CSS classes: "myLink myLink-phone"
 	 * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
-	 *   where [type] is either "instagram" or "twitter"
+	 *   where [type] is either "instagram", "twitter" or "soundcloud"
 	 */
 
 	/**
@@ -754,7 +755,7 @@ Autolinker.prototype = {
 
 	/**
 	 * Automatically links URLs, Email addresses, Phone numbers, Hashtags,
-	 * and Mentions (Twitter, Instagram) found in the given chunk of HTML. Does not link
+	 * and Mentions (Twitter, Instagram, Soundcloud) found in the given chunk of HTML. Does not link
 	 * URLs found within HTML tags.
 	 *
 	 * For instance, if given the text: `You should go to http://www.yahoo.com`,

@@ -14,7 +14,7 @@ So, this utility attempts to handle everything. It:
 - Will properly handle URLs with query parameters or a named anchor (i.e. hash)
 - Will autolink email addresses.
 - Will autolink phone numbers.
-- Will autolink mentions (Twitter, Instagram).
+- Will autolink mentions (Twitter, Instagram, Soundcloud).
 - Will autolink hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
@@ -29,8 +29,7 @@ Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/]
 
 ## v1.0 released. Breaking Changes from 0.x -> 1.x
 
-1. `twitter` option removed, replaced with `mention` (which accepts 'twitter' 
-   and 'instagram' values)
+1. `twitter` option removed, replaced with `mention` (which accepts 'twitter', 'instagram' and 'soundcloud' values)
 2. Matching mentions (previously the `twitter` option) now defaults to
    being turned off. Previously, Twitter handle matching was on by 
    default.
@@ -147,7 +146,7 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   phone numbers. Defaults to `true`.<br /><br />
 - [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : String<br />
   A string for the service name to have mentions (@username) auto-linked to. Supported
-  values at this time are 'twitter', and 'instagram'. Pass `false` to skip
+  values at this time are 'twitter', 'soundcloud' and 'instagram'. Pass `false` to skip
   auto-linking of mentions. Defaults to `false`.<br /><br />
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
   A string for the service name to have hashtags auto-linked to. Supported

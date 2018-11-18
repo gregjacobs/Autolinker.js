@@ -63,7 +63,7 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 
 	/**
 	 * Returns the configured {@link #serviceName} to point the mention to.
-	 * Ex: 'instagram', 'twitter'.
+	 * Ex: 'instagram', 'twitter', 'soundcloud'.
 	 *
 	 * @return {String}
 	 */
@@ -83,6 +83,8 @@ Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
 				return 'https://twitter.com/' + this.mention;
 			case 'instagram' :
 				return 'https://instagram.com/' + this.mention;
+			case 'soundcloud' :
+				return 'https://soundcloud.com/' + this.mention;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
 				throw new Error( 'Unknown service name to point mention to: ', this.serviceName );
