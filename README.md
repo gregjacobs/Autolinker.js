@@ -266,6 +266,25 @@ autolinker.link( "Go to www.google.com" );
 
 ```
 
+## Retrieving the List of Matches
+
+If you're just interested in retrieving the list of [Matches](http://greg-jacobs.com/Autolinker.js/api/#!/api/Autolinker.match.Match) without producing a transformed string, you can use the [parse()](http://greg-jacobs.com/Autolinker.js/api/#!/api/Autolinker-static-method-parse) method.
+
+For example:
+
+```
+var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
+    urls: true,
+    email: true
+} );
+
+console.log( matches.length );           // 2
+console.log( matches[ 0 ].getType() );   // 'url'
+console.log( matches[ 0 ].getUrl() );    // 'google.com'
+console.log( matches[ 1 ].getType() );   // 'email'
+console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
+```
+
 
 ## Custom Replacement Function
 
