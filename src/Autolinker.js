@@ -610,7 +610,7 @@ Autolinker.prototype = {
 			var node = htmlNodes[ i ],
 			    nodeType = node.getType();
 
-			if( nodeType === 'element' && node.getTagName() === 'a' ) {  // Process HTML anchor element nodes in the input `textOrHtml` to find out when we're within an <a> tag
+			if( nodeType === 'element' && (node.getTagName() === 'a' || node.getTagName() === 'style') ) {  // Process HTML anchor element nodes in the input `textOrHtml` to find out when we're within an <a> tag
 				if( !node.isClosing() ) {  // it's the start <a> tag
 					anchorTagStackCount++;
 				} else {  // it's the end </a> tag
