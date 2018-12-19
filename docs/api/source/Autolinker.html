@@ -622,19 +622,19 @@ Autolinker.prototype = {
 		    matches = [];
 
 		// Find all matches within the `textOrHtml` (but not matches that are
-		// already nested within &lt;a&gt; tags)
+		// already nested within &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tags)
 		for( var i = 0, len = htmlNodes.length; i &lt; len; i++ ) {
 			var node = htmlNodes[ i ],
 			    nodeType = node.getType();
 
-			if( nodeType === &#39;element&#39; &amp;&amp; node.getTagName() === &#39;a&#39; ) {  // Process HTML anchor element nodes in the input `textOrHtml` to find out when we&#39;re within an &lt;a&gt; tag
-				if( !node.isClosing() ) {  // it&#39;s the start &lt;a&gt; tag
+			if( nodeType === &#39;element&#39; &amp;&amp; [&#39;a&#39;, &#39;style&#39;, &#39;script&#39;].indexOf(node.getTagName()) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we&#39;re within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
+				if( !node.isClosing() ) {  // it&#39;s the start &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
 					anchorTagStackCount++;
-				} else {  // it&#39;s the end &lt;/a&gt; tag
+				} else {  // it&#39;s the end &lt;/a&gt;, &lt;/style&gt; or &lt;/script&gt; tag
 					anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous &lt;/a&gt; tags by making sure the stack count never goes below 0
 				}
 
-			} else if( nodeType === &#39;text&#39; &amp;&amp; anchorTagStackCount === 0 ) {  // Process text nodes that are not within an &lt;a&gt; tag
+			} else if( nodeType === &#39;text&#39; &amp;&amp; anchorTagStackCount === 0 ) {  // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tag
 				var textNodeMatches = this.parseText( node.getText(), node.getOffset() );
 
 				matches.push.apply( matches, textNodeMatches );

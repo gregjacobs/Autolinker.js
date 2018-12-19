@@ -16,124 +16,89 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">/*global Autolinker */
-<span id='Autolinker-match-Mention'>/**
-</span> * @class Autolinker.match.Mention
- * @extends Autolinker.match.Match
+<span id='Autolinker-matcher-Mention'>/**
+</span> * @class Autolinker.matcher.Mention
+ * @extends Autolinker.matcher.Matcher
  *
- * Represents a Mention match found in an input string which should be Autolinked.
- *
- * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more details.
+ * Matcher to find/replace username matches in an input string.
  */
-Autolinker.match.Mention = Autolinker.Util.extend( Autolinker.match.Match, {
+Autolinker.matcher.Mention = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
 
-<span id='Autolinker-match-Mention-cfg-serviceName'>	/**
-</span>	 * @cfg {String} serviceName
+<span id='Autolinker-matcher-Mention-property-matcherRegexes'>	/**
+</span>	 * Hash of regular expression to match username handles. Example match:
 	 *
-	 * The service to point mention matches to. See {@link Autolinker#mention}
-	 * for available values.
-	 */
-
-<span id='Autolinker-match-Mention-cfg-mention'>	/**
-</span>	 * @cfg {String} mention (required)
+	 *     @asdf
 	 *
-	 * The Mention that was matched, without the &#39;@&#39; character.
+	 * @private
+	 * @property {Object} matcherRegexes
 	 */
+	matcherRegexes : {
+		&quot;twitter&quot;: new RegExp( &#39;@[_&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,20}&#39;, &#39;g&#39; ),
+		&quot;instagram&quot;: new RegExp( &#39;@[_.&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39; ),
+		&quot;soundcloud&quot;: new RegExp( &#39;@[_.&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39; )
+	},
+
+<span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>	/**
+</span>	 * The regular expression to use to check the character before a username match to
+	 * make sure we didn&#39;t accidentally match an email address.
+	 *
+	 * For example, the string &quot;asdf@asdf.com&quot; should not match &quot;@asdf&quot; as a username.
+	 *
+	 * @private
+	 * @property {RegExp} nonWordCharRegex
+	 */
+	nonWordCharRegex : new RegExp( &#39;[^&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]&#39; ),
 
 
-<span id='Autolinker-match-Mention-method-constructor'>	/**
+<span id='Autolinker-matcher-Mention-method-constructor'>	/**
 </span>	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match
-	 *   instance, specified in an Object (map).
+	 * @param {Object} cfg The configuration properties for the Match instance,
+	 *   specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		Autolinker.match.Match.prototype.constructor.call( this, cfg );
+		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
 
-		// @if DEBUG
-		if( !cfg.serviceName ) throw new Error( &#39;`serviceName` cfg required&#39; );
-		if( !cfg.mention ) throw new Error( &#39;`mention` cfg required&#39; );
-		// @endif
-
-		this.mention = cfg.mention;
 		this.serviceName = cfg.serviceName;
 	},
 
 
-<span id='Autolinker-match-Mention-method-getType'>	/**
-</span>	 * Returns the type of match that this class represents.
-	 *
-	 * @return {String}
+<span id='Autolinker-matcher-Mention-method-parseMatches'>	/**
+</span>	 * @inheritdoc
 	 */
-	getType : function() {
-		return &#39;mention&#39;;
-	},
+	parseMatches : function( text ) {
+		var matcherRegex = this.matcherRegexes[this.serviceName],
+		    nonWordCharRegex = this.nonWordCharRegex,
+		    serviceName = this.serviceName,
+		    tagBuilder = this.tagBuilder,
+		    matches = [],
+		    match;
 
-
-<span id='Autolinker-match-Mention-method-getMention'>	/**
-</span>	 * Returns the mention, without the &#39;@&#39; character.
-	 *
-	 * @return {String}
-	 */
-	getMention : function() {
-		return this.mention;
-	},
-
-
-<span id='Autolinker-match-Mention-method-getServiceName'>	/**
-</span>	 * Returns the configured {@link #serviceName} to point the mention to.
-	 * Ex: &#39;instagram&#39;, &#39;twitter&#39;, &#39;soundcloud&#39;.
-	 *
-	 * @return {String}
-	 */
-	getServiceName : function() {
-		return this.serviceName;
-	},
-
-
-<span id='Autolinker-match-Mention-method-getAnchorHref'>	/**
-</span>	 * Returns the anchor href that should be generated for the match.
-	 *
-	 * @return {String}
-	 */
-	getAnchorHref : function() {
-		switch( this.serviceName ) {
-			case &#39;twitter&#39; :
-				return &#39;https://twitter.com/&#39; + this.mention;
-			case &#39;instagram&#39; :
-				return &#39;https://instagram.com/&#39; + this.mention;
-			case &#39;soundcloud&#39; :
-				return &#39;https://soundcloud.com/&#39; + this.mention;
-
-			default :  // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
-				throw new Error( &#39;Unknown service name to point mention to: &#39;, this.serviceName );
+		if (!matcherRegex) {
+			return matches;
 		}
-	},
 
+		while( ( match = matcherRegex.exec( text ) ) !== null ) {
+			var offset = match.index,
+			    prevChar = text.charAt( offset - 1 );
 
-<span id='Autolinker-match-Mention-method-getAnchorText'>	/**
-</span>	 * Returns the anchor text that should be generated for the match.
-	 *
-	 * @return {String}
-	 */
-	getAnchorText : function() {
-		return &#39;@&#39; + this.mention;
-	},
+			// If we found the match at the beginning of the string, or we found the match
+			// and there is a whitespace char in front of it (meaning it is not an email
+			// address), then it is a username match.
+			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
+				var matchedText = match[ 0 ].replace(/\.+$/g, &#39;&#39;), // strip off trailing .
+				    mention = matchedText.slice( 1 );  // strip off the &#39;@&#39; character at the beginning
 
-
-<span id='Autolinker-match-Mention-method-getCssClassSuffixes'>	/**
-</span>	 * Returns the CSS class suffixes that should be used on a tag built with
-	 * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
-	 * details.
-	 *
-	 * @return {String[]}
-	 */
-	getCssClassSuffixes : function() {
-		var cssClassSuffixes = Autolinker.match.Match.prototype.getCssClassSuffixes.call( this ),
-		    serviceName = this.getServiceName();
-
-		if( serviceName ) {
-			cssClassSuffixes.push( serviceName );
+				matches.push( new Autolinker.match.Mention( {
+					tagBuilder    : tagBuilder,
+					matchedText   : matchedText,
+					offset        : offset,
+					serviceName   : serviceName,
+					mention       : mention
+				} ) );
+			}
 		}
-		return cssClassSuffixes;
+
+		return matches;
 	}
 
 } );

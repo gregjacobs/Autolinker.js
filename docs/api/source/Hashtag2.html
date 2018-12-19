@@ -16,91 +16,114 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">/*global Autolinker */
-<span id='Autolinker-matcher-Hashtag'>/**
-</span> * @class Autolinker.matcher.Hashtag
- * @extends Autolinker.matcher.Matcher
+<span id='Autolinker-match-Hashtag'>/**
+</span> * @class Autolinker.match.Hashtag
+ * @extends Autolinker.match.Match
  *
- * Matcher to find Hashtag matches in an input string.
+ * Represents a Hashtag match found in an input string which should be
+ * Autolinked.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more
+ * details.
  */
-Autolinker.matcher.Hashtag = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+Autolinker.match.Hashtag = Autolinker.Util.extend( Autolinker.match.Match, {
 
-<span id='Autolinker-matcher-Hashtag-cfg-serviceName'>	/**
+<span id='Autolinker-match-Hashtag-cfg-serviceName'>	/**
 </span>	 * @cfg {String} serviceName
 	 *
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
 
-
-<span id='Autolinker-matcher-Hashtag-property-matcherRegex'>	/**
-</span>	 * The regular expression to match Hashtags. Example match:
+<span id='Autolinker-match-Hashtag-cfg-hashtag'>	/**
+</span>	 * @cfg {String} hashtag (required)
 	 *
-	 *     #asdf
-	 *
-	 * @private
-	 * @property {RegExp} matcherRegex
+	 * The Hashtag that was matched, without the &#39;#&#39;.
 	 */
-	matcherRegex : new RegExp( &#39;#[_&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]{1,139}&#39;, &#39;g&#39; ),
-
-<span id='Autolinker-matcher-Hashtag-property-nonWordCharRegex'>	/**
-</span>	 * The regular expression to use to check the character before a username match to
-	 * make sure we didn&#39;t accidentally match an email address.
-	 *
-	 * For example, the string &quot;asdf@asdf.com&quot; should not match &quot;@asdf&quot; as a username.
-	 *
-	 * @private
-	 * @property {RegExp} nonWordCharRegex
-	 */
-	nonWordCharRegex : new RegExp( &#39;[^&#39; + Autolinker.RegexLib.alphaNumericCharsStr + &#39;]&#39; ),
 
 
-<span id='Autolinker-matcher-Hashtag-method-constructor'>	/**
+<span id='Autolinker-match-Hashtag-method-constructor'>	/**
 </span>	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Match instance,
-	 *   specified in an Object (map).
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
 	 */
 	constructor : function( cfg ) {
-		Autolinker.matcher.Matcher.prototype.constructor.call( this, cfg );
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
+
+		// @if DEBUG
+		// TODO: if( !serviceName ) throw new Error( &#39;`serviceName` cfg required&#39; );
+		if( !cfg.hashtag ) throw new Error( &#39;`hashtag` cfg required&#39; );
+		// @endif
 
 		this.serviceName = cfg.serviceName;
+		this.hashtag = cfg.hashtag;
 	},
 
 
-<span id='Autolinker-matcher-Hashtag-method-parseMatches'>	/**
-</span>	 * @inheritdoc
+<span id='Autolinker-match-Hashtag-method-getType'>	/**
+</span>	 * Returns the type of match that this class represents.
+	 *
+	 * @return {String}
 	 */
-	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
-		    nonWordCharRegex = this.nonWordCharRegex,
-		    serviceName = this.serviceName,
-		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+	getType : function() {
+		return &#39;hashtag&#39;;
+	},
 
-		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var offset = match.index,
-			    prevChar = text.charAt( offset - 1 );
 
-			// If we found the match at the beginning of the string, or we found the match
-			// and there is a whitespace char in front of it (meaning it is not a &#39;#&#39; char
-			// in the middle of a word), then it is a hashtag match.
-			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				var matchedText = match[ 0 ],
-				    hashtag = match[ 0 ].slice( 1 );  // strip off the &#39;#&#39; character at the beginning
+<span id='Autolinker-match-Hashtag-method-getServiceName'>	/**
+</span>	 * Returns the configured {@link #serviceName} to point the Hashtag to.
+	 * Ex: &#39;facebook&#39;, &#39;twitter&#39;.
+	 *
+	 * @return {String}
+	 */
+	getServiceName : function() {
+		return this.serviceName;
+	},
 
-				matches.push( new Autolinker.match.Hashtag( {
-					tagBuilder  : tagBuilder,
-					matchedText : matchedText,
-					offset      : offset,
-					serviceName : serviceName,
-					hashtag     : hashtag
-				} ) );
-			}
+
+<span id='Autolinker-match-Hashtag-method-getHashtag'>	/**
+</span>	 * Returns the matched hashtag, without the &#39;#&#39; character.
+	 *
+	 * @return {String}
+	 */
+	getHashtag : function() {
+		return this.hashtag;
+	},
+
+
+<span id='Autolinker-match-Hashtag-method-getAnchorHref'>	/**
+</span>	 * Returns the anchor href that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorHref : function() {
+		var serviceName = this.serviceName,
+		    hashtag = this.hashtag;
+
+		switch( serviceName ) {
+			case &#39;twitter&#39; :
+				return &#39;https://twitter.com/hashtag/&#39; + hashtag;
+			case &#39;facebook&#39; :
+				return &#39;https://www.facebook.com/hashtag/&#39; + hashtag;
+			case &#39;instagram&#39; :
+				return &#39;https://instagram.com/explore/tags/&#39; + hashtag;
+
+			default :  // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
+				throw new Error( &#39;Unknown service name to point hashtag to: &#39;, serviceName );
 		}
+	},
 
-		return matches;
+
+<span id='Autolinker-match-Hashtag-method-getAnchorText'>	/**
+</span>	 * Returns the anchor text that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorText : function() {
+		return &#39;#&#39; + this.hashtag;
 	}
 
-} );</pre>
+} );
+</pre>
 </body>
 </html>

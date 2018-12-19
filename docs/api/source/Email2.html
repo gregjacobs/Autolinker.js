@@ -16,66 +16,78 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">/*global Autolinker */
-<span id='Autolinker-matcher-Email'>/**
-</span> * @class Autolinker.matcher.Email
- * @extends Autolinker.matcher.Matcher
+<span id='Autolinker-match-Email'>/**
+</span> * @class Autolinker.match.Email
+ * @extends Autolinker.match.Match
  *
- * Matcher to find email matches in an input string.
+ * Represents a Email match found in an input string which should be Autolinked.
  *
- * See this class&#39;s superclass ({@link Autolinker.matcher.Matcher}) for more details.
+ * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more details.
  */
-Autolinker.matcher.Email = Autolinker.Util.extend( Autolinker.matcher.Matcher, {
+Autolinker.match.Email = Autolinker.Util.extend( Autolinker.match.Match, {
 
-<span id='Autolinker-matcher-Email-property-matcherRegex'>	/**
-</span>	 * The regular expression to match email addresses. Example match:
+<span id='Autolinker-match-Email-cfg-email'>	/**
+</span>	 * @cfg {String} email (required)
 	 *
-	 *     person@place.com
+	 * The email address that was matched.
+	 */
+
+
+<span id='Autolinker-match-Email-method-constructor'>	/**
+</span>	 * @constructor
+	 * @param {Object} cfg The configuration properties for the Match
+	 *   instance, specified in an Object (map).
+	 */
+	constructor : function( cfg ) {
+		Autolinker.match.Match.prototype.constructor.call( this, cfg );
+
+		// @if DEBUG
+		if( !cfg.email ) throw new Error( &#39;`email` cfg required&#39; );
+		// @endif
+
+		this.email = cfg.email;
+	},
+
+
+<span id='Autolinker-match-Email-method-getType'>	/**
+</span>	 * Returns a string name for the type of match that this class represents.
 	 *
-	 * @private
-	 * @property {RegExp} matcherRegex
+	 * @return {String}
 	 */
-	matcherRegex : (function() {
-		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
-			specialCharacters = &#39;!#$%&amp;\&#39;*+\\-\\/=?^_`{|}~&#39;,
-			restrictedSpecialCharacters = &#39;\\s&quot;(),:;&lt;&gt;@\\[\\]&#39;,
-			validCharacters = alphaNumericChars + specialCharacters,
-			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
-		    emailRegex = new RegExp( &#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;),
-			getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
-			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
-
-		return new RegExp( [
-			emailRegex.source,
-			getDomainNameStr(1),
-			&#39;\\.&#39;, tldRegex.source   // &#39;.com&#39;, &#39;.net&#39;, etc
-		].join( &quot;&quot; ), &#39;gi&#39; );
-	} )(),
+	getType : function() {
+		return &#39;email&#39;;
+	},
 
 
-<span id='Autolinker-matcher-Email-method-parseMatches'>	/**
-</span>	 * @inheritdoc
+<span id='Autolinker-match-Email-method-getEmail'>	/**
+</span>	 * Returns the email address that was matched.
+	 *
+	 * @return {String}
 	 */
-	parseMatches : function( text ) {
-		var matcherRegex = this.matcherRegex,
-		    tagBuilder = this.tagBuilder,
-		    matches = [],
-		    match;
+	getEmail : function() {
+		return this.email;
+	},
 
-		while( ( match = matcherRegex.exec( text ) ) !== null ) {
-			var matchedText = match[ 0 ];
 
-			matches.push( new Autolinker.match.Email( {
-				tagBuilder  : tagBuilder,
-				matchedText : matchedText,
-				offset      : match.index,
-				email       : matchedText
-			} ) );
-		}
+<span id='Autolinker-match-Email-method-getAnchorHref'>	/**
+</span>	 * Returns the anchor href that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorHref : function() {
+		return &#39;mailto:&#39; + this.email;
+	},
 
-		return matches;
+
+<span id='Autolinker-match-Email-method-getAnchorText'>	/**
+</span>	 * Returns the anchor text that should be generated for the match.
+	 *
+	 * @return {String}
+	 */
+	getAnchorText : function() {
+		return this.email;
 	}
 
-} );
-</pre>
+} );</pre>
 </body>
 </html>
