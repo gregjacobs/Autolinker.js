@@ -1422,6 +1422,18 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should NOT automatically link a URL found within the inner text of a style tag", function() {
+				var result = autolinker.link( 'Testing with <style> .class { background-image: url("http://www.example.com/image.png"); } </style> tags' );
+				expect( result ).toBe( 'Testing with <style> .class { background-image: url("http://www.example.com/image.png"); } </style> tags' );
+			} );
+
+
+			it( "should NOT automatically link a URL found within the inner text of a script tag", function() {
+				var result = autolinker.link( 'Testing with <script> alert("http://google.com"); </script> tags' );
+				expect( result ).toBe( 'Testing with <script> alert("http://google.com"); </script> tags' );
+			} );
+
+
 			it( "should NOT automatically link an image tag with a URL inside of it, when it has another attribute which has extraneous spaces surround its value (Issue #45)", function() {
 				var result = autolinker.link( "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>" );
 				expect( result ).toBe( "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>" );
