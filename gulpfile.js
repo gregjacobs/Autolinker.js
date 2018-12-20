@@ -4,14 +4,12 @@ const clone           = require( 'gulp-clone' ),
       connect         = require( 'gulp-connect' ),
       download        = require( 'gulp-download' ),
       gulp            = require( 'gulp' ),
-      header          = require( 'gulp-header' ),
-      jasmine         = require( 'gulp-jasmine' ),
+	  header          = require( 'gulp-header' ),
       jshint          = require( 'gulp-jshint' ),
       merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
       punycode        = require( 'punycode' ),
       rename          = require( 'gulp-rename' ),
-      through2        = require( 'through2' ),
       transform       = require( 'gulp-transform' ),
       typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
@@ -24,45 +22,104 @@ const clone           = require( 'gulp-clone' ),
 // Project configuration
 const pkg = require( './package.json' ),
       banner = createBanner(),
-      srcFiles = createSrcFilesList(),
-      srcFilesGlob = './src/**/*.js',
-      testFilesGlob = './tests/**/*.js',
-      distFolder = './dist/',
+	  buildFolder = './build',
+      distFolder = './dist',
       distFilename = 'Autolinker.js',
       minDistFilename = 'Autolinker.min.js',
-      minDistFilePath = distFolder + minDistFilename;
+	  minDistFilePath = `${distFolder}/${minDistFilename}`;
 
 
 gulp.task( 'default', [ 'doc', 'test' ] );
-gulp.task( 'lint', lintTask );
-gulp.task( 'build', [ 'lint' ], buildTask );
+gulp.task( 'build', [ 'buildSrc', 'buildBundle', 'buildExamples' ] );
+gulp.task( 'buildSrc', buildSrcTask );
+gulp.task( 'buildBundle', buildBundleTask );
+gulp.task( 'buildTests', buildTestsTask );
+gulp.task( 'buildExamples', buildExamples );
+gulp.task( 'doc', [ 'build', 'build-examples' ], docTask );
+gulp.task( 'serve', [ 'build-examples', 'doc' ], serveTask );
 gulp.task( 'test', [ 'build' ], testTask );
-gulp.task( 'doc', [ 'build', 'typescript' ], docTask );
-gulp.task( 'serve', [ 'typescript', 'doc' ], serveTask );
-gulp.task( 'typescript', typescriptTask );  // for examples
 gulp.task( 'update-tld-list', updateTldRegex );
 
 
-function buildTask() {
-	var combinedSrcFile = gulp.src( srcFiles )
-		.pipe( concat( distFilename ) )
-		.pipe( umd() )
-		.pipe( header( banner, { pkg: pkg } ) );
+function buildSrcTask() {
+	const tsResult = gulp.src( './src/**/*.ts' )
+		//.pipe( header( banner, { pkg: pkg } ) )
+		.pipe( preprocess( { context: { VERSION: pkg.version } } ) )
+		.pipe( tsProject() );
 
-	var unminifiedFile = combinedSrcFile
-		.pipe( clone() )
-		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
-		.pipe( gulp.dest( distFolder ) );
+	return merge( [
+		tsResult.dts.pipe( gulp.dest( 'dist' ) ),
+		tsResult.js.pipe( gulp.dest( 'dist' ) )
+	] );
 
-	var minifiedFile = combinedSrcFile
-		.pipe( clone() )
-		.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
-		.pipe( uglify( { preserveComments: 'license' } ) )
-		.pipe( rename( minDistFilename ) )
-		.pipe( gulp.dest( distFolder ) );
+	// var combinedSrcFile = gulp.src( srcFiles )
+	// 	.pipe( concat( distFilename ) )
+	// 	.pipe( umd() )
+	// 	.pipe( header( banner, { pkg: pkg } ) );
 
-	return merge( unminifiedFile, minifiedFile );
+	// var unminifiedFile = combinedSrcFile
+	// 	.pipe( clone() )
+	// 	.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
+	// 	.pipe( gulp.dest( distFolder ) );
+
+	// var minifiedFile = combinedSrcFile
+	// 	.pipe( clone() )
+	// 	.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
+	// 	.pipe( uglify( { preserveComments: 'license' } ) )
+	// 	.pipe( rename( minDistFilename ) )
+	// 	.pipe( gulp.dest( distFolder ) );
+
+	// return merge( unminifiedFile, minifiedFile );
 }
+
+
+function buildBundleTask() {
+	return rollup({
+		entry: './dist/Autolinker.js',
+		sourceMap: true
+	})
+		// point to the entry file.
+		.pipe(source('main.js', './src'))
+
+		// buffer the output. most gulp plugins, including gulp-sourcemaps, don't support streams.
+		.pipe(buffer())
+
+		// tell gulp-sourcemaps to load the inline sourcemap produced by rollup-stream.
+		.pipe(sourcemaps.init({loadMaps: true}))
+
+		// transform the code further here.
+
+		// if you want to output with a different name from the input file, use gulp-rename here.
+		//.pipe(rename('index.js'))
+
+		// write the sourcemap alongside the output file.
+		.pipe(sourcemaps.write('.'))
+
+		// and output to ./dist/main.js as normal.
+		.pipe(gulp.dest('./dist'));
+}
+
+
+function buildTestsTask() {
+	const tsResult = gulp.src( [ './src/**/*.ts',  './tests/**/*.ts' ] )
+		.pipe( tsProject() );
+
+	return tsResult.js.pipe( gulp.dest( 'build' ) );
+}
+
+function buildExamples() {
+	return gulp.src( [
+		'./docs/examples/live-example/src/Option.ts',
+		'./docs/examples/live-example/src/CheckboxOption.ts',
+		'./docs/examples/live-example/src/RadioOption.ts',
+		'./docs/examples/live-example/src/TextOption.ts',
+		'./docs/examples/live-example/src/main.ts'
+	] )
+		.pipe( typescript( { noImplicitAny: true, out: 'live-example-all.js' } ) )
+		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
+		.pipe( gulp.dest( './docs/examples/live-example/' ) );
+}
+
 
 
 function docTask() {
@@ -82,14 +139,6 @@ function docTask() {
 		gulp.src( srcFilesGlob )
 			.pipe( jsduck.doc() )
 	);
-}
-
-
-function lintTask() {
-	return gulp.src( [ srcFilesGlob, testFilesGlob ] )
-		.pipe( jshint() )
-		.pipe( jshint.reporter( 'jshint-stylish' ) )
-		.pipe( jshint.reporter( 'fail' ) );  // fail the task if errors
 }
 
 
@@ -116,7 +165,7 @@ function testTask( done ) {
 }
 
 
-function typescriptTask() {
+function buildExamplesTask() {
 	return gulp.src( [
 		'./docs/examples/live-example/src/Option.ts',
 		'./docs/examples/live-example/src/CheckboxOption.ts',
@@ -149,46 +198,6 @@ function createBanner() {
 		' * <%= pkg.homepage %>',
 		' */\n'
 	].join( "\n" );
-}
-
-
-/**
- * Creates the source files list, in order.
- *
- * @private
- * @return {String[]}
- */
-function createSrcFilesList() {
-	return [
-		'src/Autolinker.js',
-		'src/Util.js',
-		'src/HtmlTag.js',
-		'src/RegexLib.js',
-		'src/AnchorTagBuilder.js',
-		'src/htmlParser/HtmlParser.js',
-		'src/htmlParser/HtmlNode.js',
-		'src/htmlParser/CommentNode.js',
-		'src/htmlParser/ElementNode.js',
-		'src/htmlParser/EntityNode.js',
-		'src/htmlParser/TextNode.js',
-		'src/match/Match.js',
-		'src/match/Email.js',
-		'src/match/Hashtag.js',
-		'src/match/Phone.js',
-		'src/match/Mention.js',
-		'src/match/Url.js',
-		'src/matcher/TldRegex.js',
-		'src/matcher/Matcher.js',
-		'src/matcher/Email.js',
-		'src/matcher/Hashtag.js',
-		'src/matcher/Phone.js',
-		'src/matcher/Mention.js',
-		'src/matcher/Url.js',
-		'src/matcher/UrlMatchValidator.js',
-		'src/truncate/TruncateEnd.js',
-		'src/truncate/TruncateMiddle.js',
-		'src/truncate/TruncateSmart.js'
-	];
 }
 
 function dePunycodeDomain(d){
