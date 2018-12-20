@@ -1,5 +1,5 @@
 import { Matcher } from "./Matcher";
-import { alphaNumericCharsStr, domainNameRegex } from "../RegexLib";
+import { alphaNumericCharsStr, getDomainNameStr } from "../RegexLib";
 import { tldRegex } from "./TldRegex";
 import { EmailMatch } from "../match/Email";
 import { Match } from "../match/Match";
@@ -23,18 +23,16 @@ export class EmailMatcher extends Matcher {
 	 * @property {RegExp} matcherRegex
 	 */
 	matcherRegex = (function() {
-		var alphaNumericChars = Autolinker.RegexLib.alphaNumericCharsStr,
+		var alphaNumericChars = alphaNumericCharsStr,
 			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
 			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',
 			validCharacters = alphaNumericChars + specialCharacters,
 			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
-		    emailRegex = new RegExp( '(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@'),
-			getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
-			tldRegex = Autolinker.tldRegex;  // match our known top level domains (TLDs)
+		    emailRegex = new RegExp( '(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@');
 
 		return new RegExp( [
 			emailRegex.source,
-			getDomainNameStr(1),
+			getDomainNameStr( 1 ),
 			'\\.', tldRegex.source   // '.com', '.net', etc
 		].join( "" ), 'gi' );
 	} )();

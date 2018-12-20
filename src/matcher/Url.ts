@@ -1,5 +1,5 @@
 import { Matcher, MatcherConfig } from "./Matcher";
-import { alphaNumericCharsStr, domainNameRegex } from "../RegexLib";
+import { alphaNumericCharsStr, getDomainNameStr } from "../RegexLib";
 import { StripPrefixConfig, UrlMatchTypeOptions } from "../Autolinker";
 import { tldRegex } from "./TldRegex";
 import { UrlMatch } from "../match/Url";
@@ -33,6 +33,7 @@ export class UrlMatcher extends Matcher {
 	 * @cfg {Boolean} decodePercentEncoding (required)
 	 * @inheritdoc Autolinker#decodePercentEncoding
 	 */
+	decodePercentEncoding: boolean;
 
 
 	/**
@@ -71,10 +72,7 @@ export class UrlMatcher extends Matcher {
 	 */
 	matcherRegex = (function() {
 		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
-		    wwwRegex = /(?:www\.)/,                  // starting with 'www.'
-		    getDomainNameStr = Autolinker.RegexLib.getDomainNameStr,
-		    tldRegex = Autolinker.tldRegex,  // match our known top level domains (TLDs)
-		    alphaNumericCharsStr = Autolinker.RegexLib.alphaNumericCharsStr,
+		    wwwRegex = /(?:www\.)/,  // starting with 'www.'
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
@@ -84,7 +82,7 @@ export class UrlMatcher extends Matcher {
 			'(?:', // parens to cover match for scheme (optional), and domain
 				'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
 					schemeRegex.source,
-					getDomainNameStr(2),
+					getDomainNameStr( 2 ),
 				')',
 
 				'|',
@@ -330,4 +328,5 @@ export class UrlMatcher extends Matcher {
 export interface UrlMatcherConfig extends MatcherConfig {
 	stripPrefix: StripPrefixConfig;
 	stripTrailingSlash: boolean;
+	decodePercentEncoding: boolean;
 }

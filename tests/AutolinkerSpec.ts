@@ -2734,7 +2734,7 @@ describe( "Autolinker", function() {
 				];
 
 				errorMsg.push( '{' );
-				_.forOwn( cfg, ( value: string, key: string ) => {
+				_.forOwn( cfg, ( value: any, key: string ) => {
 					errorMsg.push( '\t' + key + ': ' + value );
 				} );
 				errorMsg.push( '}' );
@@ -2796,15 +2796,17 @@ describe( "Autolinker", function() {
 
 		describe( 'custom Phone.prototype.matcherRegex', function() {
 			const matcherRegexOriginal = PhoneMatcher.prototype.matcherRegex;
+			const testMatchOriginal = PhoneMatcher.prototype.testMatch;
 
 			beforeEach( function() {
 				const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
 				PhoneMatcher.prototype.matcherRegex = phoneInTextRegex;
-				PhoneMatcher.prototype.testMatch = function() { return true; };
+				PhoneMatcher.prototype.testMatch = () => true;
 			} );
 
 			afterEach( function() {
 				PhoneMatcher.prototype.matcherRegex = matcherRegexOriginal;
+				PhoneMatcher.prototype.testMatch = testMatchOriginal;
 			} );
 
 			it( 'should match custom matcherRegex', function() {

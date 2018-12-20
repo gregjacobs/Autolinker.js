@@ -1,10 +1,12 @@
 /*jshint node:true */
-const clone           = require( 'gulp-clone' ),
+const clean           = require( 'gulp-clean' ),
+      clone           = require( 'gulp-clone' ),
       concat          = require( 'gulp-concat' ),
       connect         = require( 'gulp-connect' ),
       download        = require( 'gulp-download' ),
       gulp            = require( 'gulp' ),
 	  header          = require( 'gulp-header' ),
+	  jasmine         = require( 'gulp-jasmine' ),
       jshint          = require( 'gulp-jshint' ),
       merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
@@ -14,8 +16,7 @@ const clone           = require( 'gulp-clone' ),
       typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
       umd             = require( 'gulp-umd' ),
-      JsDuck          = require( 'gulp-jsduck' ),
-      KarmaServer     = require( 'karma' ).Server;
+      JsDuck          = require( 'gulp-jsduck' );
 
 
 
@@ -28,16 +29,18 @@ const pkg = require( './package.json' ),
       minDistFilename = 'Autolinker.min.js',
 	  minDistFilePath = `${distFolder}/${minDistFilename}`;
 
+const tsProject = typescript.createProject( 'tsconfig.json' );
 
 gulp.task( 'default', [ 'doc', 'test' ] );
-gulp.task( 'build', [ 'buildSrc', 'buildBundle', 'buildExamples' ] );
-gulp.task( 'buildSrc', buildSrcTask );
-gulp.task( 'buildBundle', buildBundleTask );
-gulp.task( 'buildTests', buildTestsTask );
-gulp.task( 'buildExamples', buildExamples );
+gulp.task( 'build', [ 'build-src', 'build-bundle', 'build-examples' ] );
+gulp.task( 'build-src', buildSrcTask );
+gulp.task( 'build-bundle', buildBundleTask );
+gulp.task( 'build-tests', [ 'clean-tests' ], buildTestsTask );
+gulp.task( 'build-examples', buildExamples );
+gulp.task( 'clean-tests', cleanTestsTask );
 gulp.task( 'doc', [ 'build', 'build-examples' ], docTask );
 gulp.task( 'serve', [ 'build-examples', 'doc' ], serveTask );
-gulp.task( 'test', [ 'build' ], testTask );
+gulp.task( 'test', [ 'build-tests' ], testTask );
 gulp.task( 'update-tld-list', updateTldRegex );
 
 
@@ -74,34 +77,39 @@ function buildSrcTask() {
 
 
 function buildBundleTask() {
-	return rollup({
-		entry: './dist/Autolinker.js',
-		sourceMap: true
-	})
-		// point to the entry file.
-		.pipe(source('main.js', './src'))
+	// return rollup({
+	// 	entry: './dist/Autolinker.js',
+	// 	sourceMap: true
+	// })
+	// 	// point to the entry file.
+	// 	.pipe(source('main.js', './src'))
 
-		// buffer the output. most gulp plugins, including gulp-sourcemaps, don't support streams.
-		.pipe(buffer())
+	// 	// buffer the output. most gulp plugins, including gulp-sourcemaps, don't support streams.
+	// 	.pipe(buffer())
 
-		// tell gulp-sourcemaps to load the inline sourcemap produced by rollup-stream.
-		.pipe(sourcemaps.init({loadMaps: true}))
+	// 	// tell gulp-sourcemaps to load the inline sourcemap produced by rollup-stream.
+	// 	.pipe(sourcemaps.init({loadMaps: true}))
 
-		// transform the code further here.
+	// 	// transform the code further here.
 
-		// if you want to output with a different name from the input file, use gulp-rename here.
-		//.pipe(rename('index.js'))
+	// 	// if you want to output with a different name from the input file, use gulp-rename here.
+	// 	//.pipe(rename('index.js'))
 
-		// write the sourcemap alongside the output file.
-		.pipe(sourcemaps.write('.'))
+	// 	// write the sourcemap alongside the output file.
+	// 	.pipe(sourcemaps.write('.'))
 
-		// and output to ./dist/main.js as normal.
-		.pipe(gulp.dest('./dist'));
+	// 	// and output to ./dist/main.js as normal.
+	// 	.pipe(gulp.dest('./dist'));
 }
 
 
+function cleanTestsTask() {
+	return gulp.src( './build', { read: false } )
+        .pipe( clean()) ;
+}
+
 function buildTestsTask() {
-	const tsResult = gulp.src( [ './src/**/*.ts',  './tests/**/*.ts' ] )
+	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
 		.pipe( tsProject() );
 
 	return tsResult.js.pipe( gulp.dest( 'build' ) );
@@ -151,17 +159,8 @@ function serveTask() {
 
 
 function testTask( done ) {
-	return new KarmaServer( {
-		frameworks : [ 'jasmine' ],
-		reporters  : [ 'spec' ],
-		browsers   : [ 'PhantomJS' ],
-		files : [
-			'node_modules/lodash/lodash.js',  // spec helper
-			minDistFilePath,
-			testFilesGlob
-		],
-		singleRun : true
-	}, done ).start();
+	return gulp.src( './build/**/*Spec.js' )
+		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
 
 

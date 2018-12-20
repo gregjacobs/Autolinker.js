@@ -54,21 +54,20 @@ Simply clone or download the zip of the project, and link to either
 <script src="path/to/Autolinker.min.js"></script>
 ```
 
-#### Using with the [Bower](http://bower.io) package manager:
-
-Command line:
-
-```shell
-bower install Autolinker.js --save
-```
 
 #### Using with [Node.js](http://nodejs.org) via [npm](https://www.npmjs.org/):
-
-Command Line:
 
 ```shell
 npm install autolinker --save
 ```
+
+
+#### Using with [Node.js](http://nodejs.org) via [yarn](https://yarnpkg.com/):
+
+```shell
+yarn add autolinker
+```
+
 
 JavaScript:
 
@@ -76,6 +75,12 @@ JavaScript:
 var Autolinker = require( 'autolinker' );
 // note: npm wants an all-lowercase package name, but the utility is a class and
 // should be aliased with a capital letter
+```
+
+TypeScript:
+
+```ts
+import { Autolinker } from 'autolinker';
 ```
 
 
@@ -389,17 +394,28 @@ The full API docs for Autolinker may be referenced at:
 
 
 
-## Contributing
+## Developing / Contributing
 
-Pull requests definitely welcome.
+Pull requests definitely welcome. To setup the project, make
+sure you have [Node.js](https://nodejs.org) installed. Then
+open up a command prompt and type the following:
+
+```
+npm install -g yarn  # if you don't have yarn already
+
+cd Autolinker.js     # where you cloned the project
+yarn install
+```
+
+To run the tests:
+
+```
+yarn test
+```
 
 - Make sure to add tests to cover your new functionality/bugfix.
-- Run the `gulp test` command to build/test (or alternatively, open the 
+- Run the `yarn test` command to build/test (or alternatively, open the 
   `tests/index.html` file to run the tests).
-- When committing, please omit checking in the files in the `dist/` 
-  folder after building/testing. These are only committed to the 
-  repository for users downloading Autolinker via Bower. I will build 
-  these files and assign them a version number when merging your PR.
 - Please use tabs for indents! Tabs are better for everybody 
   (individuals can set their editors to different tab sizes based on 
   their visual preferences).

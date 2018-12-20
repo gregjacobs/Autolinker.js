@@ -545,7 +545,7 @@ export class Autolinker {
 	 * @param {Boolean/Object} stripPrefix
 	 * @return {Object}
 	 */
-	normalizeStripPrefixCfg( stripPrefix: boolean | StripPrefixConfig | undefined ) {
+	private normalizeStripPrefixCfg( stripPrefix: boolean | StripPrefixConfig | undefined ) {
 		if( stripPrefix == null ) stripPrefix = true;  // default to `true`
 
 		if( typeof stripPrefix === 'boolean' ) {
@@ -570,7 +570,7 @@ export class Autolinker {
 	 * @param {Number/Object} truncate
 	 * @return {Object}
 	 */
-	normalizeTruncateCfg( truncate: number | TruncateConfig | undefined ): TruncateConfig {
+	private normalizeTruncateCfg( truncate: number | TruncateConfig | undefined ): TruncateConfig {
 		if( typeof truncate === 'number' ) {
 			return { length: truncate, location: 'end' };
 
@@ -656,15 +656,17 @@ export class Autolinker {
 
 
 	/**
-	 * After we have found all matches, we need to remove subsequent matches
-	 * that overlap with a previous match. This can happen for instance with
-	 * URLs, where the url 'google.com/#link' would match '#link' as a hashtag.
+	 * After we have found all matches, we need to remove matches that overlap 
+	 * with a previous match. This can happen for instance with URLs, where the
+	 * url 'google.com/#link' would match '#link' as a hashtag. Because the 
+	 * '#link' part is contained in a larger match that comes before the HashTag
+	 * match, we'll remove the HashTag match.
 	 *
 	 * @private
 	 * @param {Autolinker.match.Match[]} matches
 	 * @return {Autolinker.match.Match[]}
 	 */
-	compactMatches( matches: Match[] ) {
+	private compactMatches( matches: Match[] ) {
 		// First, the matches need to be sorted in order of offset
 		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
 
@@ -697,6 +699,13 @@ export class Autolinker {
 	 * Removes matches for matchers that were turned off in the options. For
 	 * example, if {@link #hashtag hashtags} were not to be matched, we'll
 	 * remove them from the `matches` array here.
+	 * 
+	 * Note: we *must* use all Matchers on the input string, and then filter 
+	 * them out later. For example, if the options were `{ url: false, hashtag: true }`,
+	 * we wouldn't want to match the text '#link' as a HashTag inside of the text 
+	 * 'google.com/#link'. The way the algorithm works is that we match the full 
+	 * URL first (which prevents the accidental HashTag match), and then we'll 
+	 * simply throw away the URL match.
 	 *
 	 * @private
 	 * @param {Autolinker.match.Match[]} matches The array of matches to remove
@@ -704,11 +713,11 @@ export class Autolinker {
 	 *   removals.
 	 * @return {Autolinker.match.Match[]} The mutated input `matches` array.
 	 */
-	removeUnwantedMatches( matches: Match[] ) {
-		if( !this.hashtag ) remove( matches, function( match ) { return match.getType() === 'hashtag'; } );
-		if( !this.email )   remove( matches, function( match ) { return match.getType() === 'email'; } );
-		if( !this.phone )   remove( matches, function( match ) { return match.getType() === 'phone'; } );
-		if( !this.mention ) remove( matches, function( match ) { return match.getType() === 'mention'; } );
+	private removeUnwantedMatches( matches: Match[] ) {
+		if( !this.hashtag ) remove( matches, ( match: Match ) => { return match.getType() === 'hashtag'; } );
+		if( !this.email )   remove( matches, ( match: Match ) => { return match.getType() === 'email'; } );
+		if( !this.phone )   remove( matches, ( match: Match ) => { return match.getType() === 'phone'; } );
+		if( !this.mention ) remove( matches, ( match: Match ) => { return match.getType() === 'mention'; } );
 		if( !this.urls.schemeMatches ) {
 			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'scheme' );
 		}
@@ -744,7 +753,7 @@ export class Autolinker {
 	 * @return {Autolinker.match.Match[]} The array of Matches found in the
 	 *   given input `text`.
 	 */
-	parseText( text: string, offset = 0 ) {
+	private parseText( text: string, offset = 0 ) {
 		offset = offset || 0;
 		let matchers = this.getMatchers(),
 		    matches: Match[] = [];
@@ -920,6 +929,7 @@ export interface AutolinkerConfig {
 	className?: string;
 	replaceFn?: ( match: Match ) => ReplaceFnReturn | null;
 	context?: any;
+	decodePercentEncoding?: boolean;
 }
 
 export interface UrlsConfig {
@@ -941,6 +951,6 @@ export interface TruncateConfig {
 }
 
 export type HashtagServices = 'twitter' | 'facebook' | 'instagram';
-export type MentionServices = 'twitter' | 'instagram';
+export type MentionServices = 'twitter' | 'instagram' | 'soundcloud';
 
 export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;

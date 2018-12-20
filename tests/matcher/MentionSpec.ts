@@ -89,8 +89,8 @@ describe( "Autolinker.matcher.Mention", function() {
 
 
 		it( 'an soundcloud username with dashes not at boundaries should be parsed correctly', function() {
-			var soundcloudMatcher = new Autolinker.matcher.Mention( {
-				tagBuilder : new Autolinker.AnchorTagBuilder(),
+			var soundcloudMatcher = new MentionMatcher( {
+				tagBuilder : new AnchorTagBuilder(),
 				serviceName: 'soundcloud'
 			} );
 			var matches = soundcloudMatcher.parseMatches( 'Hello (@as-df)' );

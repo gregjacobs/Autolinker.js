@@ -126,26 +126,26 @@ export class MatchChecker {
 				break;
 
 			case 'hashtag' :
-				if( !( match instanceof EmailMatch ) ) {
-					throw new Error( 'Expected an EmailMatch object' );
+				if( !( match instanceof HashtagMatch ) ) {
+					throw new Error( 'Expected a HashtagMatch object' );
 				}
 				break;
 
 			case 'phone' :
-				if( !( match instanceof EmailMatch ) ) {
-					throw new Error( 'Expected an EmailMatch object' );
+				if( !( match instanceof PhoneMatch ) ) {
+					throw new Error( 'Expected a PhoneMatch object' );
 				}
 				break;
 
 			case 'mention' :
-				if( !( match instanceof EmailMatch ) ) {
-					throw new Error( 'Expected an EmailMatch object' );
+				if( !( match instanceof MentionMatch ) ) {
+					throw new Error( 'Expected a MentionMatch object' );
 				}
 				break;
 
 			case 'url' :
-				if( !( match instanceof EmailMatch ) ) {
-					throw new Error( 'Expected an EmailMatch object' );
+				if( !( match instanceof UrlMatch ) ) {
+					throw new Error( 'Expected a UrlMatch object' );
 				}
 				break;
 

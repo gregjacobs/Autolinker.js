@@ -262,7 +262,7 @@ export class UrlMatch extends Match {
 			anchorText = anchorText.slice( 0, -1 );
 		}
 		return anchorText;
-	},
+	}
 
 	/**
 	 * Decodes percent-encoded characters from the given `anchorText`, in preparation for the text to be displayed.
@@ -271,7 +271,7 @@ export class UrlMatch extends Match {
 	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
 	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
 	 */
-	removePercentEncoding : function( anchorText ) {
+	removePercentEncoding( anchorText: string ) {
 		try {
 			return decodeURIComponent( anchorText
 				.replace( /%22/gi, '&quot;' )

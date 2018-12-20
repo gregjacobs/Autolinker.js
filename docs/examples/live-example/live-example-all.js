@@ -1,11 +1,16 @@
 // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
 // CHANGES WILL BE OVERWRITTEN!!!
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /// <reference path="../../../../typings/tsd.d.ts" />
 /*global $ */
 var LiveExample;
@@ -16,7 +21,7 @@ var LiveExample;
      *
      * Base class for options that can be modified in the live example.
      */
-    var Option = (function () {
+    var Option = /** @class */ (function () {
         /**
          * @constructor
          * @param {OptionCfg} cfg The configuration options for this class,
@@ -74,7 +79,7 @@ var LiveExample;
      *
      * A checkbox option for the live example.
      */
-    var CheckboxOption = (function (_super) {
+    var CheckboxOption = /** @class */ (function (_super) {
         __extends(CheckboxOption, _super);
         /**
          * @constructor
@@ -82,17 +87,18 @@ var LiveExample;
          *   class, specified in an Object (map).
          */
         function CheckboxOption(cfg) {
-            _super.call(this, cfg);
+            var _this = _super.call(this, cfg) || this;
             /**
              * @cfg {Boolean} [defaultValue=false]
              *
              * `true` to check the checkbox by default.
              */
-            this.defaultValue = false;
-            this.defaultValue = cfg.defaultValue || false;
-            this.$containerEl.html(this.generateHtml());
-            this.$checkboxEl = this.$containerEl.find(':checkbox').on('change', this.updateDisplayEl.bind(this));
-            this.$valueDisplayEl = this.$containerEl.find('#' + this.containerId + '-value');
+            _this.defaultValue = false;
+            _this.defaultValue = cfg.defaultValue || false;
+            _this.$containerEl.html(_this.generateHtml());
+            _this.$checkboxEl = _this.$containerEl.find(':checkbox').on('change', _this.updateDisplayEl.bind(_this));
+            _this.$valueDisplayEl = _this.$containerEl.find('#' + _this.containerId + '-value');
+            return _this;
         }
         /**
          * @private
@@ -127,7 +133,7 @@ var LiveExample;
      *
      * A radio option for the live example.
      */
-    var RadioOption = (function (_super) {
+    var RadioOption = /** @class */ (function (_super) {
         __extends(RadioOption, _super);
         /**
          * @constructor
@@ -135,19 +141,20 @@ var LiveExample;
          *   in an Object (map).
          */
         function RadioOption(cfg) {
-            _super.call(this, cfg);
+            var _this = _super.call(this, cfg) || this;
             /**
              * @cfg {*} [defaultValue=false]
              *
              * The value in {@link #options} to select by default.
              */
-            this.defaultValue = false;
-            this.options = [].concat(cfg.options);
-            this.defaultValue = cfg.defaultValue || false;
-            this.$containerEl.html(this.generateHtml());
-            this.$valueDisplayEl = this.$containerEl.find('#' + this.containerId + '-value');
-            this.$containerEl
-                .find(':radio').on('change', this.updateDisplayEl.bind(this));
+            _this.defaultValue = false;
+            _this.options = [].concat(cfg.options);
+            _this.defaultValue = cfg.defaultValue || false;
+            _this.$containerEl.html(_this.generateHtml());
+            _this.$valueDisplayEl = _this.$containerEl.find('#' + _this.containerId + '-value');
+            _this.$containerEl
+                .find(':radio').on('change', _this.updateDisplayEl.bind(_this));
+            return _this;
         }
         /**
          * @private
@@ -209,7 +216,7 @@ var LiveExample;
      *
      * A text field option for the live example.
      */
-    var TextOption = (function (_super) {
+    var TextOption = /** @class */ (function (_super) {
         __extends(TextOption, _super);
         /**
          * @constructor
@@ -217,24 +224,25 @@ var LiveExample;
          *   specified in an Object (map).
          */
         function TextOption(cfg) {
-            _super.call(this, cfg);
+            var _this = _super.call(this, cfg) || this;
             /**
              * @cfg {Number} [size=10]
              *
              * The `size` attribute of the text field.
              */
-            this.size = 10;
+            _this.size = 10;
             /**
              * @cfg {Boolean} [defaultValue='']
              *
              * The default value for the option.
              */
-            this.defaultValue = '';
-            this.size = cfg.size || 10;
-            this.defaultValue = cfg.defaultValue || '';
-            this.$containerEl.html(this.generateHtml());
-            this.$textEl = this.$containerEl.find('input').on('keyup change', this.fireChange.bind(this));
-            this.$valueDisplayEl = this.$containerEl.find('#' + this.containerId + '-value');
+            _this.defaultValue = '';
+            _this.size = cfg.size || 10;
+            _this.defaultValue = cfg.defaultValue || '';
+            _this.$containerEl.html(_this.generateHtml());
+            _this.$textEl = _this.$containerEl.find('input').on('keyup change', _this.fireChange.bind(_this));
+            _this.$valueDisplayEl = _this.$containerEl.find('#' + _this.containerId + '-value');
+            return _this;
         }
         /**
          * @private
@@ -313,25 +321,25 @@ $(document).ready(function () {
         return [
             "var autolinker = new Autolinker( {",
             "    urls : {",
-            ("        schemeMatches : " + optionsObj.urls.schemeMatches + ","),
-            ("        wwwMatches    : " + optionsObj.urls.wwwMatches + ","),
-            ("        tldMatches    : " + optionsObj.urls.tldMatches),
+            "        schemeMatches : " + optionsObj.urls.schemeMatches + ",",
+            "        wwwMatches    : " + optionsObj.urls.wwwMatches + ",",
+            "        tldMatches    : " + optionsObj.urls.tldMatches,
             "    },",
-            ("    email       : " + optionsObj.email + ","),
-            ("    phone       : " + optionsObj.phone + ","),
-            ("    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ","),
-            ("    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ","),
+            "    email       : " + optionsObj.email + ",",
+            "    phone       : " + optionsObj.phone + ",",
+            "    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ",",
+            "    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ",",
             "",
-            ("    stripPrefix : " + optionsObj.stripPrefix + ","),
-            ("    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ","),
-            ("    newWindow   : " + optionsObj.newWindow + ","),
+            "    stripPrefix : " + optionsObj.stripPrefix + ",",
+            "    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ",",
+            "    newWindow   : " + optionsObj.newWindow + ",",
             "",
             "    truncate : {",
-            ("        length   : " + optionsObj.truncate.length + ","),
-            ("        location : '" + optionsObj.truncate.location + "'"),
+            "        length   : " + optionsObj.truncate.length + ",",
+            "        location : '" + optionsObj.truncate.location + "'",
             "    },",
             "",
-            ("    className : '" + optionsObj.className + "'"),
+            "    className : '" + optionsObj.className + "'",
             "} );",
             "",
             "var myLinkedHtml = autolinker.link( myText );"

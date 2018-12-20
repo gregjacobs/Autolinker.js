@@ -111,9 +111,7 @@ export function remove<T>( arr: T[], fn: ( item: T ) => boolean ) {
  * @return {String[]} The split array of strings, with the splitting character(s) included.
  */
 export function splitAndCapture( str: string, splitRegex: RegExp ) {
-	// @if DEBUG
 	if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
-	// @endif
 
 	let result: string[] = [],
 	    lastIdx = 0,
