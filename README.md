@@ -393,6 +393,26 @@ The full API docs for Autolinker may be referenced at:
 [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
+## Users of Internet Explorer 8 and Below
+
+Autolinker compiles into ES5, and uses ES5 library methods. If you need 
+to run Autolinker on ancient browsers (i.e. Internet Explorer 8 
+or below), you will need some polyfills. 
+
+I recommend using the [core-js](https://www.npmjs.com/package/core-js)
+ES5 polyfill. You may also be able to get away with adding this single 
+polyfill, but that may or may not be true in the future:
+
+```js
+if( typeof Array.prototype.forEach !== 'function' ) {
+    Array.prototype.forEach = function( callback, thisArg ) {
+        for( var i = 0; i < this.length; i++ ) {
+            callback.apply( thisArg || this, [ this[ i ], i, this ] );
+        }
+    };
+}
+```
+
 
 ## Developing / Contributing
 
