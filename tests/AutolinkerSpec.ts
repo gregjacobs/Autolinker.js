@@ -2794,7 +2794,9 @@ describe( "Autolinker", function() {
 			expect( ( matches[ 4 ] as HashtagMatch ).getHashtag() ).toBe( 'asdf2' );
 		} );
 
-		describe( 'custom Phone.prototype.matcherRegex', function() {
+		// TODO: This will no longer work in the TypeScript version of the codebase (2.0)
+		// Need to implement providing a custom PhoneMatcher
+		xdescribe( 'custom Phone.prototype.matcherRegex', function() {
 			const matcherRegexOriginal = PhoneMatcher.prototype.matcherRegex;
 			const testMatchOriginal = PhoneMatcher.prototype.testMatch;
 
