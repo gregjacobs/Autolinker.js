@@ -11,7 +11,8 @@ const clean           = require( 'gulp-clean' ),
       merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
       punycode        = require( 'punycode' ),
-      rename          = require( 'gulp-rename' ),
+	  rename          = require( 'gulp-rename' ),
+	  sourcemaps      = require( 'gulp-sourcemaps' ),
       transform       = require( 'gulp-transform' ),
       typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
@@ -29,14 +30,13 @@ const pkg = require( './package.json' ),
       minDistFilename = 'Autolinker.min.js',
 	  minDistFilePath = `${distFolder}/${minDistFilename}`;
 
-const tsProject = typescript.createProject( 'tsconfig.json' );
-
 gulp.task( 'default', [ 'doc', 'test' ] );
 gulp.task( 'build', [ 'build-src', 'build-bundle', 'build-examples' ] );
-gulp.task( 'build-src', buildSrcTask );
+gulp.task( 'build-src', [ 'clean-dist' ], buildSrcTask );
 gulp.task( 'build-bundle', buildBundleTask );
 gulp.task( 'build-tests', [ 'clean-tests' ], buildTestsTask );
 gulp.task( 'build-examples', buildExamples );
+gulp.task( 'clean-dist', cleanDistTask );
 gulp.task( 'clean-tests', cleanTestsTask );
 gulp.task( 'doc', [ 'build', 'build-examples' ], docTask );
 gulp.task( 'serve', [ 'build-examples', 'doc' ], serveTask );
@@ -44,15 +44,27 @@ gulp.task( 'test', [ 'build-tests' ], testTask );
 gulp.task( 'update-tld-list', updateTldRegex );
 
 
+function cleanDistTask() {
+	return gulp.src( './dist', { read: false } )
+        .pipe( clean() ) ;
+}
+
 function buildSrcTask() {
+	const tsProject = typescript.createProject( 'tsconfig.json' );
+
 	const tsResult = gulp.src( './src/**/*.ts' )
+		.pipe( sourcemaps.init() )
 		//.pipe( header( banner, { pkg: pkg } ) )
 		.pipe( preprocess( { context: { VERSION: pkg.version } } ) )
 		.pipe( tsProject() );
 
 	return merge( [
-		tsResult.dts.pipe( gulp.dest( 'dist' ) ),
-		tsResult.js.pipe( gulp.dest( 'dist' ) )
+		tsResult.dts
+			.pipe( gulp.dest( 'dist' ) ),
+
+		tsResult.js
+			.pipe( sourcemaps.write( '.', { sourceRoot: './', includeContent: false } ) )
+			.pipe( gulp.dest( 'dist' ) )
 	] );
 
 	// var combinedSrcFile = gulp.src( srcFiles )
@@ -109,6 +121,8 @@ function cleanTestsTask() {
 }
 
 function buildTestsTask() {
+	const tsProject = typescript.createProject( 'tsconfig.json' );
+
 	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
 		.pipe( tsProject() );
 

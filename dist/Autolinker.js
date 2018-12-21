@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
-var AnchorTagBuilder_1 = require("./AnchorTagBuilder");
-var HtmlParser_1 = require("./htmlParser/HtmlParser");
-var HtmlTag_1 = require("./HtmlTag");
-var Email_1 = require("./matcher/Email");
-var Url_1 = require("./matcher/Url");
-var Hashtag_1 = require("./matcher/Hashtag");
-var Phone_1 = require("./matcher/Phone");
-var Mention_1 = require("./matcher/Mention");
+var anchor_tag_builder_1 = require("./anchor-tag-builder");
+var html_parser_1 = require("./htmlParser/html-parser");
+var html_tag_1 = require("./html-tag");
+var email_matcher_1 = require("./matcher/email-matcher");
+var url_matcher_1 = require("./matcher/url-matcher");
+var hashtag_matcher_1 = require("./matcher/hashtag-matcher");
+var phone_matcher_1 = require("./matcher/phone-matcher");
+var mention_matcher_1 = require("./matcher/mention-matcher");
 /**
  * @class Autolinker
  * @extends Object
@@ -151,7 +151,7 @@ var Autolinker = /** @class */ (function () {
         this.className = cfg.className || '';
         this.replaceFn = cfg.replaceFn || null;
         this.context = cfg.context || this;
-        this.htmlParser = new HtmlParser_1.HtmlParser();
+        this.htmlParser = new html_parser_1.HtmlParser();
         this.matchers = null;
         this.tagBuilder = null;
     }
@@ -348,9 +348,11 @@ var Autolinker = /** @class */ (function () {
         return matches;
     };
     /**
-     * After we have found all matches, we need to remove subsequent matches
-     * that overlap with a previous match. This can happen for instance with
-     * URLs, where the url 'google.com/#link' would match '#link' as a hashtag.
+     * After we have found all matches, we need to remove matches that overlap
+     * with a previous match. This can happen for instance with URLs, where the
+     * url 'google.com/#link' would match '#link' as a hashtag. Because the
+     * '#link' part is contained in a larger match that comes before the HashTag
+     * match, we'll remove the HashTag match.
      *
      * @private
      * @param {Autolinker.match.Match[]} matches
@@ -380,6 +382,13 @@ var Autolinker = /** @class */ (function () {
      * Removes matches for matchers that were turned off in the options. For
      * example, if {@link #hashtag hashtags} were not to be matched, we'll
      * remove them from the `matches` array here.
+     *
+     * Note: we *must* use all Matchers on the input string, and then filter
+     * them out later. For example, if the options were `{ url: false, hashtag: true }`,
+     * we wouldn't want to match the text '#link' as a HashTag inside of the text
+     * 'google.com/#link'. The way the algorithm works is that we match the full
+     * URL first (which prevents the accidental HashTag match), and then we'll
+     * simply throw away the URL match.
      *
      * @private
      * @param {Autolinker.match.Match[]} matches The array of matches to remove
@@ -501,7 +510,7 @@ var Autolinker = /** @class */ (function () {
         else if (replaceFnResult === false) {
             return match.getMatchedText(); // no replacement for the match
         }
-        else if (replaceFnResult instanceof HtmlTag_1.HtmlTag) {
+        else if (replaceFnResult instanceof html_tag_1.HtmlTag) {
             return replaceFnResult.toAnchorString();
         }
         else { // replaceFnResult === true, or no/unknown return value from function
@@ -521,11 +530,11 @@ var Autolinker = /** @class */ (function () {
         if (!this.matchers) {
             var tagBuilder = this.getTagBuilder();
             var matchers = [
-                new Hashtag_1.HashtagMatcher({ tagBuilder: tagBuilder, serviceName: this.hashtag }),
-                new Email_1.EmailMatcher({ tagBuilder: tagBuilder }),
-                new Phone_1.PhoneMatcher({ tagBuilder: tagBuilder }),
-                new Mention_1.MentionMatcher({ tagBuilder: tagBuilder, serviceName: this.mention }),
-                new Url_1.UrlMatcher({ tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding })
+                new hashtag_matcher_1.HashtagMatcher({ tagBuilder: tagBuilder, serviceName: this.hashtag }),
+                new email_matcher_1.EmailMatcher({ tagBuilder: tagBuilder }),
+                new phone_matcher_1.PhoneMatcher({ tagBuilder: tagBuilder }),
+                new mention_matcher_1.MentionMatcher({ tagBuilder: tagBuilder, serviceName: this.mention }),
+                new url_matcher_1.UrlMatcher({ tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding })
             ];
             return (this.matchers = matchers);
         }
@@ -557,7 +566,7 @@ var Autolinker = /** @class */ (function () {
     Autolinker.prototype.getTagBuilder = function () {
         var tagBuilder = this.tagBuilder;
         if (!tagBuilder) {
-            tagBuilder = this.tagBuilder = new AnchorTagBuilder_1.AnchorTagBuilder({
+            tagBuilder = this.tagBuilder = new anchor_tag_builder_1.AnchorTagBuilder({
                 newWindow: this.newWindow,
                 truncate: this.truncate,
                 className: this.className
@@ -574,3 +583,5 @@ var Autolinker = /** @class */ (function () {
     return Autolinker;
 }());
 exports.Autolinker = Autolinker;
+
+//# sourceMappingURL=autolinker.js.map

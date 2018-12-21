@@ -48,6 +48,7 @@
     "gulp-jshint": "^2.0.0",
     "gulp-preprocess": "^2.0.0",
     "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^2.6.4",
     "gulp-transform": "^1.1.0",
     "gulp-typescript": "^5.0.0",
     "gulp-uglify": "^1.5.3",
