@@ -4,6 +4,7 @@
 .settings
 /build
 /dist
+/docs/examples/live-example/build
 web.config
 .grunt/
 _SpecRunner.html

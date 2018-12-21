@@ -1,3 +1,5 @@
+const exec = require( 'child_process' ).exec;
+
 /*jshint node:true */
 const clean           = require( 'gulp-clean' ),
       clone           = require( 'gulp-clone' ),
@@ -35,8 +37,12 @@ gulp.task( 'build', [ 'build-src', 'build-bundle', 'build-examples' ] );
 gulp.task( 'build-src', [ 'clean-dist' ], buildSrcTask );
 gulp.task( 'build-bundle', buildBundleTask );
 gulp.task( 'build-tests', [ 'clean-tests' ], buildTestsTask );
-gulp.task( 'build-examples', buildExamples );
+gulp.task( 'build-examples-typescript', [ 'clean-examples' ], buildExamplesTypeScriptTask );
+gulp.task( 'build-examples', [ 'build-examples-typescript' ], rollupExamplesTask );
 gulp.task( 'clean-dist', cleanDistTask );
+gulp.task( 'clean-examples', [ 'clean-examples-build', 'clean-examples-output' ] );
+gulp.task( 'clean-examples-build', cleanExamplesBuildTask );
+gulp.task( 'clean-examples-output', cleanExamplesOutputTask );
 gulp.task( 'clean-tests', cleanTestsTask );
 gulp.task( 'doc', [ 'build', 'build-examples' ], docTask );
 gulp.task( 'serve', [ 'build-examples', 'doc' ], serveTask );
@@ -129,7 +135,18 @@ function buildTestsTask() {
 	return tsResult.js.pipe( gulp.dest( 'build' ) );
 }
 
-function buildExamples() {
+
+function cleanExamplesBuildTask() {
+	return gulp.src( './docs/examples/live-example/build', { read: false } )
+		.pipe( clean() );
+}
+
+function cleanExamplesOutputTask() {
+	return gulp.src( './docs/examples/live-example/live-example-all.js', { read: false } )
+		.pipe( clean() );
+}
+
+function buildExamplesTypeScriptTask() {
 	return gulp.src( [
 		'./docs/examples/live-example/src/Option.ts',
 		'./docs/examples/live-example/src/CheckboxOption.ts',
@@ -137,11 +154,16 @@ function buildExamples() {
 		'./docs/examples/live-example/src/TextOption.ts',
 		'./docs/examples/live-example/src/main.ts'
 	] )
-		.pipe( typescript( { noImplicitAny: true, out: 'live-example-all.js' } ) )
+		.pipe( typescript( './docs/examples/tsconfig.json' ) )
 		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
-		.pipe( gulp.dest( './docs/examples/live-example/' ) );
+		.pipe( gulp.dest( './docs/examples/live-example/build/' ) );
 }
 
+function rollupExamplesTask( done ) {
+	exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --name "LiveExampleAll" --file ./docs/examples/live-example/live-example-all.js`, err => {
+		done( err );
+	} );
+}
 
 
 function docTask() {

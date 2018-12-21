@@ -473,6 +473,20 @@ yarn test
   their visual preferences).
 
 
+#### Running the Live Example Page Locally
+
+Run:
+
+```
+yarn build-examples
+```
+
+Then load the file: `./docs/examples/live-example/index.html` in your browser.
+
+Currently, you'll need to rebuild for each change. If anyone wants to submit a 
+PR converting this to webpack with the live development server, that would be 
+much appreciated :)
+
 ## Changelog
 
 See [Releases](https://github.com/gregjacobs/Autolinker.js/releases)

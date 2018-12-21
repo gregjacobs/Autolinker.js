@@ -1,33 +1,29 @@
-/// <reference path="../../../../typings/tsd.d.ts" />
+import { Option } from "./Option";
+import { CheckboxOption } from "./CheckboxOption";
+import { RadioOption } from "./RadioOption";
+import { TextOption } from "./TextOption";
 
-/*global $, Autolinker */
-/*jshint browser:true */
-
-import CheckboxOption = LiveExample.CheckboxOption;
-import RadioOption = LiveExample.RadioOption;
-import TextOption = LiveExample.TextOption;
-
-declare var Autolinker:any;
+declare var Autolinker: any;
 
 $( document ).ready( function() {
 	var $inputEl = $( '#input' ),
 	    $outputEl = $( '#output' ),
 	    $optionsOutputEl = $( '#options-output' ),
 
-	    urlsSchemeOption: LiveExample.Option,
-	    urlsWwwOption: LiveExample.Option,
-	    urlsTldOption: LiveExample.Option,
-	    emailOption: LiveExample.Option,
-	    phoneOption: LiveExample.Option,
-	    mentionOption: LiveExample.Option,
-	    hashtagOption: LiveExample.Option,
+	    urlsSchemeOption: Option,
+	    urlsWwwOption: Option,
+	    urlsTldOption: Option,
+	    emailOption: Option,
+	    phoneOption: Option,
+	    mentionOption: Option,
+	    hashtagOption: Option,
 
-	    newWindowOption: LiveExample.Option,
-	    stripPrefixOption: LiveExample.Option,
-			stripTrailingSlashOption: LiveExample.Option,
-	    truncateLengthOption: LiveExample.Option,
-	    truncationLocationOption: LiveExample.Option,
-	    classNameOption: LiveExample.Option;
+	    newWindowOption: Option,
+	    stripPrefixOption: Option,
+		stripTrailingSlashOption: Option,
+	    truncateLengthOption: Option,
+	    truncationLocationOption: Option,
+	    classNameOption: Option;
 
 
 	init();
@@ -60,7 +56,7 @@ $( document ).ready( function() {
 
 
 	function autolink() {
-		var inputText = $inputEl.val().replace( /\n/g, '<br>' ),
+		var inputText = ($inputEl.val() as string).replace( /\n/g, '<br>' ),
 		    optionsObj = createAutolinkerOptionsObj(),
 		    linkedHtml = Autolinker.link( inputText, optionsObj );
 
@@ -124,11 +120,11 @@ $( document ).ready( function() {
 
 
 	function syncInputScroll() {
-		$inputEl.scrollTop( $outputEl.scrollTop() );
+		$inputEl.scrollTop( $outputEl.scrollTop()! );
 	}
 
 	function syncOutputScroll() {
-		$outputEl.scrollTop( $inputEl.scrollTop() );
+		$outputEl.scrollTop( $inputEl.scrollTop()! );
 	}
 
 } );

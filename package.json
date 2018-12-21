@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "gulp",
+    "build-examples": "gulp build-examples",
     "prepublishOnly": "gulp build",
     "test": "gulp test"
   },
@@ -35,6 +36,7 @@
   "homepage": "https://github.com/gregjacobs/Autolinker.js",
   "devDependencies": {
     "@types/jasmine": "^2.5.41",
+    "@types/jquery": "^3.3.28",
     "@types/lodash": "^4.14.70",
     "awesome-typescript-loader": "^3.2.1",
     "gulp": "^3.9.1",
@@ -62,8 +64,10 @@
     "phantomjs-prebuilt": "^2.1.4",
     "punycode": "^2.1.0",
     "requirejs": "^2.1.11",
+    "rollup": "^0.68.1",
     "through2": "^2.0.1",
     "typescript": "^2.4.2",
     "webpack": "^3.3.0"
-  }
+  },
+  "dependencies": {}
 }

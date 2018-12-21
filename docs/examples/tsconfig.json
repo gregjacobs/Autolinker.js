@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "es2015",
+    "declaration": false,
+    "declarationMap": false,
+    "skipLibCheck": true
+  }
+}

@@ -1,20 +1,9 @@
-// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
-// CHANGES WILL BE OVERWRITTEN!!!
+(function () {
+    'use strict';
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/// <reference path="../../../../typings/tsd.d.ts" />
-/*global $ */
-var LiveExample;
-(function (LiveExample) {
+    // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+    // CHANGES WILL BE OVERWRITTEN!!!
+
     /**
      * @abstract
      * @class Option
@@ -69,11 +58,20 @@ var LiveExample;
         };
         return Option;
     }());
-    LiveExample.Option = Option;
-})(LiveExample || (LiveExample = {}));
-/*global $, Option */
-var LiveExample;
-(function (LiveExample) {
+
+    // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+    // CHANGES WILL BE OVERWRITTEN!!!
+
+    var __extends = (undefined && undefined.__extends) || (function () {
+        var extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
     /**
      * @class CheckboxOption
      *
@@ -106,7 +104,7 @@ var LiveExample;
          */
         CheckboxOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, defaultValue = this.defaultValue, checkboxId = containerId + '-checkbox';
-            return "\n\t\t\t\t<input type=\"checkbox\" id=\"" + checkboxId + "\" " + (defaultValue ? 'checked' : '') + ">\n\t\t\t\t<label for=\"" + checkboxId + "\">" + optionDescription + "</label>\n\t\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + defaultValue + "</span></code>)\n\t\t\t";
+            return "\n\t\t\t<input type=\"checkbox\" id=\"" + checkboxId + "\" " + (defaultValue ? 'checked' : '') + ">\n\t\t\t<label for=\"" + checkboxId + "\">" + optionDescription + "</label>\n\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + defaultValue + "</span></code>)\n\t\t";
         };
         /**
          * @private
@@ -122,19 +120,28 @@ var LiveExample;
             return this.$checkboxEl.prop('checked');
         };
         return CheckboxOption;
-    }(LiveExample.Option));
-    LiveExample.CheckboxOption = CheckboxOption;
-})(LiveExample || (LiveExample = {}));
-/*global $, Option */
-var LiveExample;
-(function (LiveExample) {
+    }(Option));
+
+    // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+    // CHANGES WILL BE OVERWRITTEN!!!
+
+    var __extends$1 = (undefined && undefined.__extends) || (function () {
+        var extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
     /**
      * @class RadioOption
      *
      * A radio option for the live example.
      */
     var RadioOption = /** @class */ (function (_super) {
-        __extends(RadioOption, _super);
+        __extends$1(RadioOption, _super);
         /**
          * @constructor
          * @param {Object} cfg The configuration options for this class, specified
@@ -162,7 +169,7 @@ var LiveExample;
          */
         RadioOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, defaultValue = this.defaultValue, radiosHtml = this.createRadiosHtml(this.options, defaultValue);
-            return "\n\t\t\t\t<label>" + optionDescription + ": </label>\n\t\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + this.formatValueForDisplay(defaultValue) + "</span></code>)\n\t\t\t\t<div class=\"pl10\">" + radiosHtml.join('<br>') + "</div>\n\t\t\t";
+            return "\n\t\t\t<label>" + optionDescription + ": </label>\n\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + this.formatValueForDisplay(defaultValue) + "</span></code>)\n\t\t\t<div class=\"pl10\">" + radiosHtml.join('<br>') + "</div>\n\t\t";
         };
         /**
          * Creates an array of '<input type="radio">' HTML tags.
@@ -175,7 +182,7 @@ var LiveExample;
         RadioOption.prototype.createRadiosHtml = function (options, defaultValue) {
             var _this = this;
             return options.map(function (option, idx) {
-                return "\n\t\t\t\t\t<input type=\"radio\" id=\"" + _this.containerId + "-radio-" + option + "\" name=\"" + _this.containerId + "-radio\" data-option-idx=\"" + idx + "\" " + (option === _this.defaultValue ? 'checked' : '') + "> \n\t\t\t\t\t<label for=\"" + _this.containerId + "-radio-" + option + "\">" + option + "</label>\n\t\t\t\t";
+                return "\n\t\t\t\t<input type=\"radio\" id=\"" + _this.containerId + "-radio-" + option + "\" name=\"" + _this.containerId + "-radio\" data-option-idx=\"" + idx + "\" " + (option === _this.defaultValue ? 'checked' : '') + "> \n\t\t\t\t<label for=\"" + _this.containerId + "-radio-" + option + "\">" + option + "</label>\n\t\t\t";
             });
         };
         /**
@@ -205,19 +212,28 @@ var LiveExample;
             return (typeof value === 'string') ? "'" + value + "'" : (value + '');
         };
         return RadioOption;
-    }(LiveExample.Option));
-    LiveExample.RadioOption = RadioOption;
-})(LiveExample || (LiveExample = {}));
-/*global $, Option */
-var LiveExample;
-(function (LiveExample) {
+    }(Option));
+
+    // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+    // CHANGES WILL BE OVERWRITTEN!!!
+
+    var __extends$2 = (undefined && undefined.__extends) || (function () {
+        var extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
     /**
      * @class TextOption
      *
      * A text field option for the live example.
      */
     var TextOption = /** @class */ (function (_super) {
-        __extends(TextOption, _super);
+        __extends$2(TextOption, _super);
         /**
          * @constructor
          * @param {TextOptionCfg} cfg The configuration options for this class,
@@ -250,7 +266,7 @@ var LiveExample;
          */
         TextOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, size = this.size, defaultValue = this.defaultValue, textFieldId = containerId + '-textField';
-            return "\n\t\t\t\t<label for=\"" + textFieldId + "\">" + optionDescription + "</label>\n\t\t\t\t<input type=\"text\" id=\"" + textFieldId + "\" value=\"" + defaultValue + "\" size=\"" + size + "\" class=\"textfield\">\n\t\t\t\t(<code>" + this.getApiDocAnchor() + "</code>)\n\t\t\t";
+            return "\n\t\t\t<label for=\"" + textFieldId + "\">" + optionDescription + "</label>\n\t\t\t<input type=\"text\" id=\"" + textFieldId + "\" value=\"" + defaultValue + "\" size=\"" + size + "\" class=\"textfield\">\n\t\t\t(<code>" + this.getApiDocAnchor() + "</code>)\n\t\t";
         };
         /**
          * @return {String}
@@ -259,96 +275,92 @@ var LiveExample;
             return this.$textEl.val();
         };
         return TextOption;
-    }(LiveExample.Option));
-    LiveExample.TextOption = TextOption;
-})(LiveExample || (LiveExample = {}));
-/// <reference path="../../../../typings/tsd.d.ts" />
-/*global $, Autolinker */
-/*jshint browser:true */
-var CheckboxOption = LiveExample.CheckboxOption;
-var RadioOption = LiveExample.RadioOption;
-var TextOption = LiveExample.TextOption;
-$(document).ready(function () {
-    var $inputEl = $('#input'), $outputEl = $('#output'), $optionsOutputEl = $('#options-output'), urlsSchemeOption, urlsWwwOption, urlsTldOption, emailOption, phoneOption, mentionOption, hashtagOption, newWindowOption, stripPrefixOption, stripTrailingSlashOption, truncateLengthOption, truncationLocationOption, classNameOption;
-    init();
-    function init() {
-        urlsSchemeOption = new CheckboxOption({ name: 'urls.schemeMatches', description: 'Scheme:// URLs', defaultValue: true }).onChange(autolink);
-        urlsWwwOption = new CheckboxOption({ name: 'urls.wwwMatches', description: '\'www\' URLS', defaultValue: true }).onChange(autolink);
-        urlsTldOption = new CheckboxOption({ name: 'urls.tldMatches', description: 'TLD URLs', defaultValue: true }).onChange(autolink);
-        emailOption = new CheckboxOption({ name: 'email', description: 'Email Addresses', defaultValue: true }).onChange(autolink);
-        phoneOption = new CheckboxOption({ name: 'phone', description: 'Phone Numbers', defaultValue: true }).onChange(autolink);
-        mentionOption = new RadioOption({ name: 'mention', description: 'Mentions', options: [false, 'twitter', 'instagram'], defaultValue: false }).onChange(autolink);
-        hashtagOption = new RadioOption({ name: 'hashtag', description: 'Hashtags', options: [false, 'twitter', 'facebook', 'instagram'], defaultValue: false }).onChange(autolink);
-        newWindowOption = new CheckboxOption({ name: 'newWindow', description: 'Open in new window', defaultValue: true }).onChange(autolink);
-        stripPrefixOption = new CheckboxOption({ name: 'stripPrefix', description: 'Strip prefix', defaultValue: true }).onChange(autolink);
-        stripTrailingSlashOption = new CheckboxOption({ name: 'stripTrailingSlash', description: 'Strip trailing slash', defaultValue: true }).onChange(autolink);
-        truncateLengthOption = new TextOption({ name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' }).onChange(autolink);
-        truncationLocationOption = new RadioOption({ name: 'truncate.location', description: 'Truncate Location', options: ['end', 'middle', 'smart'], defaultValue: 'end' }).onChange(autolink);
-        classNameOption = new TextOption({ name: 'className', description: 'CSS class(es)', size: 10 }).onChange(autolink);
-        $inputEl.on('keyup change', autolink);
-        $inputEl.on('scroll', syncOutputScroll);
-        $outputEl.on('scroll', syncInputScroll);
-        // Perform initial autolinking
-        autolink();
-    }
-    function autolink() {
-        var inputText = $inputEl.val().replace(/\n/g, '<br>'), optionsObj = createAutolinkerOptionsObj(), linkedHtml = Autolinker.link(inputText, optionsObj);
-        $optionsOutputEl.html(createCodeSample(optionsObj));
-        $outputEl.html(linkedHtml);
-    }
-    function createAutolinkerOptionsObj() {
-        return {
-            urls: {
-                schemeMatches: urlsSchemeOption.getValue(),
-                wwwMatches: urlsWwwOption.getValue(),
-                tldMatches: urlsTldOption.getValue()
-            },
-            email: emailOption.getValue(),
-            phone: phoneOption.getValue(),
-            mention: mentionOption.getValue(),
-            hashtag: hashtagOption.getValue(),
-            newWindow: newWindowOption.getValue(),
-            stripPrefix: stripPrefixOption.getValue(),
-            stripTrailingSlash: stripTrailingSlashOption.getValue(),
-            className: classNameOption.getValue(),
-            truncate: {
-                length: +truncateLengthOption.getValue(),
-                location: truncationLocationOption.getValue()
-            }
-        };
-    }
-    function createCodeSample(optionsObj) {
-        return [
-            "var autolinker = new Autolinker( {",
-            "    urls : {",
-            "        schemeMatches : " + optionsObj.urls.schemeMatches + ",",
-            "        wwwMatches    : " + optionsObj.urls.wwwMatches + ",",
-            "        tldMatches    : " + optionsObj.urls.tldMatches,
-            "    },",
-            "    email       : " + optionsObj.email + ",",
-            "    phone       : " + optionsObj.phone + ",",
-            "    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ",",
-            "    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ",",
-            "",
-            "    stripPrefix : " + optionsObj.stripPrefix + ",",
-            "    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ",",
-            "    newWindow   : " + optionsObj.newWindow + ",",
-            "",
-            "    truncate : {",
-            "        length   : " + optionsObj.truncate.length + ",",
-            "        location : '" + optionsObj.truncate.location + "'",
-            "    },",
-            "",
-            "    className : '" + optionsObj.className + "'",
-            "} );",
-            "",
-            "var myLinkedHtml = autolinker.link( myText );"
-        ].join('\n');
-    }
-    function syncInputScroll() {
-        $inputEl.scrollTop($outputEl.scrollTop());
-    }
-    function syncOutputScroll() {
-        $outputEl.scrollTop($inputEl.scrollTop());
-    }
-});
+    }(Option));
+
+    // NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR
+    $(document).ready(function () {
+        var $inputEl = $('#input'), $outputEl = $('#output'), $optionsOutputEl = $('#options-output'), urlsSchemeOption, urlsWwwOption, urlsTldOption, emailOption, phoneOption, mentionOption, hashtagOption, newWindowOption, stripPrefixOption, stripTrailingSlashOption, truncateLengthOption, truncationLocationOption, classNameOption;
+        init();
+        function init() {
+            urlsSchemeOption = new CheckboxOption({ name: 'urls.schemeMatches', description: 'Scheme:// URLs', defaultValue: true }).onChange(autolink);
+            urlsWwwOption = new CheckboxOption({ name: 'urls.wwwMatches', description: '\'www\' URLS', defaultValue: true }).onChange(autolink);
+            urlsTldOption = new CheckboxOption({ name: 'urls.tldMatches', description: 'TLD URLs', defaultValue: true }).onChange(autolink);
+            emailOption = new CheckboxOption({ name: 'email', description: 'Email Addresses', defaultValue: true }).onChange(autolink);
+            phoneOption = new CheckboxOption({ name: 'phone', description: 'Phone Numbers', defaultValue: true }).onChange(autolink);
+            mentionOption = new RadioOption({ name: 'mention', description: 'Mentions', options: [false, 'twitter', 'instagram'], defaultValue: false }).onChange(autolink);
+            hashtagOption = new RadioOption({ name: 'hashtag', description: 'Hashtags', options: [false, 'twitter', 'facebook', 'instagram'], defaultValue: false }).onChange(autolink);
+            newWindowOption = new CheckboxOption({ name: 'newWindow', description: 'Open in new window', defaultValue: true }).onChange(autolink);
+            stripPrefixOption = new CheckboxOption({ name: 'stripPrefix', description: 'Strip prefix', defaultValue: true }).onChange(autolink);
+            stripTrailingSlashOption = new CheckboxOption({ name: 'stripTrailingSlash', description: 'Strip trailing slash', defaultValue: true }).onChange(autolink);
+            truncateLengthOption = new TextOption({ name: 'truncate.length', description: 'Truncate Length', size: 2, defaultValue: '0' }).onChange(autolink);
+            truncationLocationOption = new RadioOption({ name: 'truncate.location', description: 'Truncate Location', options: ['end', 'middle', 'smart'], defaultValue: 'end' }).onChange(autolink);
+            classNameOption = new TextOption({ name: 'className', description: 'CSS class(es)', size: 10 }).onChange(autolink);
+            $inputEl.on('keyup change', autolink);
+            $inputEl.on('scroll', syncOutputScroll);
+            $outputEl.on('scroll', syncInputScroll);
+            // Perform initial autolinking
+            autolink();
+        }
+        function autolink() {
+            var inputText = $inputEl.val().replace(/\n/g, '<br>'), optionsObj = createAutolinkerOptionsObj(), linkedHtml = Autolinker.link(inputText, optionsObj);
+            $optionsOutputEl.html(createCodeSample(optionsObj));
+            $outputEl.html(linkedHtml);
+        }
+        function createAutolinkerOptionsObj() {
+            return {
+                urls: {
+                    schemeMatches: urlsSchemeOption.getValue(),
+                    wwwMatches: urlsWwwOption.getValue(),
+                    tldMatches: urlsTldOption.getValue()
+                },
+                email: emailOption.getValue(),
+                phone: phoneOption.getValue(),
+                mention: mentionOption.getValue(),
+                hashtag: hashtagOption.getValue(),
+                newWindow: newWindowOption.getValue(),
+                stripPrefix: stripPrefixOption.getValue(),
+                stripTrailingSlash: stripTrailingSlashOption.getValue(),
+                className: classNameOption.getValue(),
+                truncate: {
+                    length: +truncateLengthOption.getValue(),
+                    location: truncationLocationOption.getValue()
+                }
+            };
+        }
+        function createCodeSample(optionsObj) {
+            return [
+                "var autolinker = new Autolinker( {",
+                "    urls : {",
+                "        schemeMatches : " + optionsObj.urls.schemeMatches + ",",
+                "        wwwMatches    : " + optionsObj.urls.wwwMatches + ",",
+                "        tldMatches    : " + optionsObj.urls.tldMatches,
+                "    },",
+                "    email       : " + optionsObj.email + ",",
+                "    phone       : " + optionsObj.phone + ",",
+                "    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ",",
+                "    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ",",
+                "",
+                "    stripPrefix : " + optionsObj.stripPrefix + ",",
+                "    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ",",
+                "    newWindow   : " + optionsObj.newWindow + ",",
+                "",
+                "    truncate : {",
+                "        length   : " + optionsObj.truncate.length + ",",
+                "        location : '" + optionsObj.truncate.location + "'",
+                "    },",
+                "",
+                "    className : '" + optionsObj.className + "'",
+                "} );",
+                "",
+                "var myLinkedHtml = autolinker.link( myText );"
+            ].join('\n');
+        }
+        function syncInputScroll() {
+            $inputEl.scrollTop($outputEl.scrollTop());
+        }
+        function syncOutputScroll() {
+            $outputEl.scrollTop($inputEl.scrollTop());
+        }
+    });
+
+}());
