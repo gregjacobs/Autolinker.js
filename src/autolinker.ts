@@ -719,13 +719,13 @@ export class Autolinker {
 		if( !this.phone )   remove( matches, ( match: Match ) => { return match.getType() === 'phone'; } );
 		if( !this.mention ) remove( matches, ( match: Match ) => { return match.getType() === 'mention'; } );
 		if( !this.urls.schemeMatches ) {
-			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'scheme' );
+			remove( matches, ( m: Match ) => m.getType() === 'url' && ( m as UrlMatch ).getUrlMatchType() === 'scheme' );
 		}
 		if( !this.urls.wwwMatches ) {
-			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'www' );
+			remove( matches, ( m: Match ) => m.getType() === 'url' && ( m as UrlMatch ).getUrlMatchType() === 'www' );
 		}
 		if( !this.urls.tldMatches ) {
-			remove( matches, ( m: UrlMatch ) => m.getType() === 'url' && m.getUrlMatchType() === 'tld' );
+			remove( matches, ( m: Match ) => m.getType() === 'url' && ( m as UrlMatch ).getUrlMatchType() === 'tld' );
 		}
 
 		return matches;

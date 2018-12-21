@@ -6,6 +6,7 @@ import { HashtagMatch } from "../src/match/hashtag-match";
 import { MentionMatch } from "../src/match/mention-match";
 import { PhoneMatch } from "../src/match/phone-match";
 import { PhoneMatcher } from "../src/matcher/phone-matcher";
+import { Match } from '../src/match/match';
 
 describe( "Autolinker", function() {
 
@@ -2394,11 +2395,11 @@ describe( "Autolinker", function() {
 			it( "should populate a UrlMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
 				let result = Autolinker.link( "Website: asdf.com ", {  // purposeful trailing space
-					replaceFn : function( match: UrlMatch ) {
+					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( 'asdf.com' );
-						expect( match.getUrl() ).toBe( 'http://asdf.com' );
+						expect( ( match as UrlMatch ).getUrl() ).toBe( 'http://asdf.com' );
 					}
 				} );
 
@@ -2409,11 +2410,11 @@ describe( "Autolinker", function() {
 			it( "should populate an EmailMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
 				let result = Autolinker.link( "EmailMatch: asdf@asdf.com ", {  // purposeful trailing space
-					replaceFn : function( match: EmailMatch ) {
+					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( 'asdf@asdf.com' );
-						expect( match.getEmail() ).toBe( 'asdf@asdf.com' );
+						expect( ( match as EmailMatch ).getEmail() ).toBe( 'asdf@asdf.com' );
 					}
 				} );
 
@@ -2425,12 +2426,12 @@ describe( "Autolinker", function() {
 				let replaceFnCallCount = 0;
 				let result = Autolinker.link( "HashtagMatch: #myHashtag ", {  // purposeful trailing space
 					hashtag: 'twitter',
-					replaceFn : function( match: HashtagMatch ) {
+					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
 						expect( match.getType() ).toBe( 'hashtag' );
 						expect( match.getMatchedText() ).toBe( '#myHashtag' );
-						expect( match.getHashtag() ).toBe( 'myHashtag' );
+						expect( ( match as HashtagMatch ).getHashtag() ).toBe( 'myHashtag' );
 					}
 				} );
 
@@ -2442,11 +2443,11 @@ describe( "Autolinker", function() {
 				let replaceFnCallCount = 0;
 				let result = Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
 					mention: 'twitter',
-					replaceFn : function( match: MentionMatch ) {
+					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( '@myTwitter' );
-						expect( match.getMention() ).toBe( 'myTwitter' );
+						expect( ( match as MentionMatch ).getMention() ).toBe( 'myTwitter' );
 					}
 				} );
 
@@ -2458,11 +2459,11 @@ describe( "Autolinker", function() {
 				let replaceFnCallCount = 0;
 				let result = Autolinker.link( "Mention: @myTwitter ", {  // purposeful trailing space
 					mention: 'twitter',
-					replaceFn : function( match: MentionMatch ) {
+					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
 						expect( match.getMatchedText() ).toBe( '@myTwitter' );
-						expect( match.getMention() ).toBe( 'myTwitter' );
+						expect( ( match as MentionMatch ).getMention() ).toBe( 'myTwitter' );
 					}
 				} );
 
