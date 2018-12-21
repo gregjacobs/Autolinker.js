@@ -22,7 +22,6 @@ const clean           = require( 'gulp-clean' ),
       JsDuck          = require( 'gulp-jsduck' );
 
 
-
 // Project configuration
 const pkg = require( './package.json' ),
       banner = createBanner(),
@@ -32,22 +31,39 @@ const pkg = require( './package.json' ),
       minDistFilename = 'Autolinker.min.js',
 	  minDistFilePath = `${distFolder}/${minDistFilename}`;
 
-gulp.task( 'default', [ 'doc', 'test' ] );
-gulp.task( 'build', [ 'build-src', 'build-bundle', 'build-examples' ] );
-gulp.task( 'build-src', [ 'clean-dist' ], buildSrcTask );
-gulp.task( 'build-bundle', buildBundleTask );
-gulp.task( 'build-tests', [ 'clean-tests' ], buildTestsTask );
-gulp.task( 'build-examples-typescript', [ 'clean-examples' ], buildExamplesTypeScriptTask );
-gulp.task( 'build-examples', [ 'build-examples-typescript' ], rollupExamplesTask );
+
+// Build src private tasks
 gulp.task( 'clean-dist', cleanDistTask );
-gulp.task( 'clean-examples', [ 'clean-examples-build', 'clean-examples-output' ] );
+gulp.task( 'build-src-typescript', buildSrcTypeScriptTask );
+gulp.task( 'build-src-rollup', buildSrcRollupTask );
+
+// Build examples private tasks
 gulp.task( 'clean-examples-build', cleanExamplesBuildTask );
 gulp.task( 'clean-examples-output', cleanExamplesOutputTask );
+gulp.task( 'clean-examples', gulp.parallel( 'clean-examples-build', 'clean-examples-output' ) );
+gulp.task( 'build-examples-typescript', buildExamplesTypeScriptTask );
+gulp.task( 'build-examples-rollup', buildExamplesRollupTask );
+
+// Tests private tasks
 gulp.task( 'clean-tests', cleanTestsTask );
-gulp.task( 'doc', [ 'build', 'build-examples' ], docTask );
-gulp.task( 'serve', [ 'build-examples', 'doc' ], serveTask );
-gulp.task( 'test', [ 'build-tests' ], testTask );
+gulp.task( 'build-tests-typescript', buildTestsTypeScriptTask );
+gulp.task( 'build-tests', gulp.series( 'clean-tests', 'build-tests-typescript' ) );
+
+// Documentation private tasks
+gulp.task( 'doc', docTask );
+
+// Main Tasks
+gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup' ) );
+gulp.task( 'build-examples', gulp.series( 'clean-examples', 'build-examples-typescript', 'build-examples-rollup' ) );
+gulp.task( 'build-all', gulp.parallel( 'build-src', 'build-examples', 'build-tests' ) );
+gulp.task( 'build', gulp.series( 'build-all' ) );
+gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
+gulp.task( 'test', gulp.series( 'build-tests', testTask ) );
 gulp.task( 'update-tld-list', updateTldRegex );
+gulp.task( 'default', gulp.series( 'build', 'doc', 'test' ) );
+
+
+// -----------------------------------------------------
 
 
 function cleanDistTask() {
@@ -55,7 +71,7 @@ function cleanDistTask() {
         .pipe( clean() ) ;
 }
 
-function buildSrcTask() {
+function buildSrcTypeScriptTask() {
 	const tsProject = typescript.createProject( 'tsconfig.json' );
 
 	const tsResult = gulp.src( './src/**/*.ts' )
@@ -94,7 +110,11 @@ function buildSrcTask() {
 }
 
 
-function buildBundleTask() {
+function buildSrcRollupTask( done ) {
+	exec( `./node_modules/.bin/rollup ./build/src/index.js --file ./dist/autolinker.umd.js --format umd --name "Autolinker" --globals=Autolinker:Autolinker --sourcemap`, err => {
+		done( err );
+	} );
+
 	// return rollup({
 	// 	entry: './dist/Autolinker.js',
 	// 	sourceMap: true
@@ -126,7 +146,7 @@ function cleanTestsTask() {
         .pipe( clean()) ;
 }
 
-function buildTestsTask() {
+function buildTestsTypeScriptTask() {
 	const tsProject = typescript.createProject( 'tsconfig.json' );
 
 	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
@@ -142,7 +162,7 @@ function cleanExamplesBuildTask() {
 }
 
 function cleanExamplesOutputTask() {
-	return gulp.src( './docs/examples/live-example/live-example-all.js', { read: false } )
+	return gulp.src( './docs/examples/live-example/live-example-all.js', { read: false, allowEmpty: true } )
 		.pipe( clean() );
 }
 
@@ -159,36 +179,36 @@ function buildExamplesTypeScriptTask() {
 		.pipe( gulp.dest( './docs/examples/live-example/build/' ) );
 }
 
-function rollupExamplesTask( done ) {
-	exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --name "LiveExampleAll" --file ./docs/examples/live-example/live-example-all.js`, err => {
+function buildExamplesRollupTask( done ) {
+	exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js`, err => {
 		done( err );
 	} );
 }
 
 
 function docTask() {
-	var jsduck = new JsDuck( [
-		'--out',               './docs/api',
-		'--title',             'Autolinker v' + pkg.version + ' API Docs',
-		'--examples',          './docs/examples.json',
-		'--examples-base-url', './docs/'
-	] );
+	// var jsduck = new JsDuck( [
+	// 	'--out',               './docs/api',
+	// 	'--title',             'Autolinker v' + pkg.version + ' API Docs',
+	// 	'--examples',          './docs/examples.json',
+	// 	'--examples-base-url', './docs/'
+	// ] );
 
 	return merge(
 		// Move dist files into the docs/ folder so they can be served
 		// by GitHub pages
-		gulp.src( `${distFolder}/**/*` )
+		gulp.src( `${distFolder}/autolinker.umd*.js` )
 			.pipe( gulp.dest( './docs/dist' ) ),
 
-		gulp.src( srcFilesGlob )
-			.pipe( jsduck.doc() )
+		// 	gulp.src( srcFilesGlob )
+		// 		.pipe( jsduck.doc() )
 	);
 }
 
 
 function serveTask() {
-	gulp.watch( './docs/examples/live-example/src/**', [ 'typescript' ] );
-	gulp.watch( './src/**', [ 'doc' ] );
+	gulp.watch( './docs/examples/live-example/src/**', gulp.parallel( 'build-examples' ) );
+	gulp.watch( './src/**', gulp.series( 'build-src', 'doc' ) );
 
 	connect.server();
 }

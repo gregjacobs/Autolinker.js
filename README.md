@@ -37,10 +37,10 @@ See [Upgrading from v1.x -> v2.x (Breaking Changes)](#Upgrading from v1.x -> v2.
 #### Download
 
 Simply clone or download the zip of the project, and link to either
-`dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag:
+`dist/autolinker.umd.js` or `dist/autolinker.umd.min.js` with a script tag:
 
 ```html
-<script src="path/to/Autolinker.min.js"></script>
+<script src="path/to/autolinker.umd.min.js"></script>
 ```
 
 
@@ -58,7 +58,7 @@ yarn add autolinker
 ```
 
 
-JavaScript:
+JavaScript in Node.js or Webpack:
 
 ```javascript
 var Autolinker = require( 'autolinker' );
@@ -427,6 +427,8 @@ if( typeof Array.prototype.forEach !== 'function' ) {
    place, and these are subject to change as the regular expression needs to 
    change. Use  your own `Matcher` class instead if you would like to override 
    this functionality, such as with the `phoneMatcherFactory` config.
+5. For loading in a browser, the file name has changed from `dist/Autolinker.js` 
+   and `dist/Autolinker.min.js` to `autolinker.umd.js` and `autolinker.umd.min.js`
 
 ## Upgrading from v0.x -> v1.x (Breaking Changes)
 
@@ -478,14 +480,16 @@ yarn test
 Run:
 
 ```
-yarn build-examples
+yarn serve
 ```
 
-Then load the file: `./docs/examples/live-example/index.html` in your browser.
+Then open your browser to: http://localhost:8080/docs/examples/live-example/index.html
 
-Currently, you'll need to rebuild for each change. If anyone wants to submit a 
-PR converting this to webpack with the live development server, that would be 
-much appreciated :)
+You should be able to make a change to source files, refresh your page, and see
+the changes.
+
+Note: If anyone wants to submit a PR converting `gulp watch` to `webpack` with 
+the live development server, that would be much appreciated :)
 
 ## Changelog
 

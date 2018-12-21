@@ -12,8 +12,9 @@
   },
   "scripts": {
     "build": "gulp",
-    "build-examples": "gulp build-examples",
-    "prepublishOnly": "gulp build",
+    "build-example": "gulp build-examples",
+    "prepublishOnly": "gulp",
+    "serve": "gulp serve",
     "test": "gulp test"
   },
   "repository": {
@@ -39,7 +40,7 @@
     "@types/jquery": "^3.3.28",
     "@types/lodash": "^4.14.70",
     "awesome-typescript-loader": "^3.2.1",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-clean": "^0.4.0",
     "gulp-clone": "^1.0.0",
     "gulp-concat": "^2.6.0",
