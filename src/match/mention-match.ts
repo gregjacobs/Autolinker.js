@@ -1,5 +1,5 @@
-import { Match, MatchConfig } from "./Match";
-import { MentionServices } from "../Autolinker";
+import { Match, MatchConfig } from "./match";
+import { MentionServices } from "../autolinker";
 
 /**
  * @class Autolinker.match.Mention

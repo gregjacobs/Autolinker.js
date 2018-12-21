@@ -5,13 +5,13 @@
  * A testing utility used to easily make assertions about
  * {@link Autolinker.match.Match} objects.
  */
-import { Match } from "../../src/match/Match";
-import { UrlMatch } from "../../src/match/Url";
-import { HashtagServices, MentionServices } from "../../src/Autolinker";
-import { MentionMatch } from "../../src/match/Mention";
-import { PhoneMatch } from "../../src/match/Phone";
-import { HashtagMatch } from "../../src/match/Hashtag";
-import { EmailMatch } from "../../src/match/Email";
+import { Match } from "../../src/match/match";
+import { UrlMatch } from "../../src/match/url-match";
+import { HashtagServices, MentionServices } from "../../src/autolinker";
+import { MentionMatch } from "../../src/match/mention-match";
+import { PhoneMatch } from "../../src/match/phone-match";
+import { HashtagMatch } from "../../src/match/hashtag-match";
+import { EmailMatch } from "../../src/match/email-match";
 
 export class MatchChecker {
 

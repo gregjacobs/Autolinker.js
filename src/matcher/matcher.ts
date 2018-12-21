@@ -1,5 +1,5 @@
-import { AnchorTagBuilder } from "../AnchorTagBuilder";
-import { Match } from "../match/Match";
+import { AnchorTagBuilder } from "../anchor-tag-builder";
+import { Match } from "../match/match";
 
 /**
  * @abstract

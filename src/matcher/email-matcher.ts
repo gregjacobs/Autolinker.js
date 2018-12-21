@@ -1,8 +1,8 @@
-import { Matcher } from "./Matcher";
-import { alphaNumericCharsStr, getDomainNameStr } from "../RegexLib";
-import { tldRegex } from "./TldRegex";
-import { EmailMatch } from "../match/Email";
-import { Match } from "../match/Match";
+import { Matcher } from "./matcher";
+import { alphaNumericCharsStr, getDomainNameStr } from "../regex-lib";
+import { tldRegex } from "./tld-regex";
+import { EmailMatch } from "../match/email-match";
+import { Match } from "../match/match";
 
 /**
  * @class Autolinker.matcher.Email

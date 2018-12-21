@@ -1,9 +1,9 @@
-import { Match } from "./match/Match";
-import { HtmlTag } from "./HtmlTag";
-import { TruncateConfig } from "./Autolinker";
-import { truncateSmart } from "./truncate/truncateSmart";
-import { truncateMiddle } from "./truncate/truncateMiddle";
-import { truncateEnd } from "./truncate/truncateEnd";
+import { Match } from "./match/match";
+import { HtmlTag } from "./html-tag";
+import { TruncateConfig } from "./autolinker";
+import { truncateSmart } from "./truncate/truncate-smart";
+import { truncateMiddle } from "./truncate/truncate-middle";
+import { truncateEnd } from "./truncate/truncate-end";
 
 /**
  * @protected

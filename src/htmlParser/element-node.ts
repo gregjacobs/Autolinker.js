@@ -7,7 +7,7 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-import { HtmlNode, HtmlNodeConfig } from "./HtmlNode";
+import { HtmlNode, HtmlNodeConfig } from "./html-node";
 
 export class ElementNode extends HtmlNode {
 

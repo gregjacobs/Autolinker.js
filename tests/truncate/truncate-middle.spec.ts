@@ -1,4 +1,4 @@
-import { truncateMiddle } from "../../src/truncate/truncateMiddle";
+import { truncateMiddle } from "../../src/truncate/truncate-middle";
 
 /*
  * Date: 2015-10-05

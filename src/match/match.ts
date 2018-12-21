@@ -29,7 +29,7 @@
  *
  * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
  */
-import { AnchorTagBuilder } from "../AnchorTagBuilder";
+import { AnchorTagBuilder } from "../anchor-tag-builder";
 
 export abstract class Match {
 

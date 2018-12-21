@@ -1,8 +1,8 @@
-import { Matcher, MatcherConfig } from "./Matcher";
-import { HashtagServices } from "../Autolinker";
-import { alphaNumericCharsStr } from "../RegexLib";
-import { HashtagMatch } from "../match/Hashtag";
-import { Match } from "../match/Match";
+import { Matcher, MatcherConfig } from "./matcher";
+import { HashtagServices } from "../autolinker";
+import { alphaNumericCharsStr } from "../regex-lib";
+import { HashtagMatch } from "../match/hashtag-match";
+import { Match } from "../match/match";
 
 /**
  * @class Autolinker.matcher.Hashtag

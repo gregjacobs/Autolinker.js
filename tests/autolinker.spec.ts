@@ -1,11 +1,11 @@
 import * as _ from 'lodash';
-import { Autolinker, HashtagServices, MentionServices } from '../src/Autolinker';
-import { UrlMatch } from "../src/match/Url";
-import { EmailMatch } from "../src/match/Email";
-import { HashtagMatch } from "../src/match/Hashtag";
-import { MentionMatch } from "../src/match/Mention";
-import { PhoneMatch } from "../src/match/Phone";
-import { PhoneMatcher } from "../src/matcher/Phone";
+import { Autolinker, HashtagServices, MentionServices } from '../src/autolinker';
+import { UrlMatch } from "../src/match/url-match";
+import { EmailMatch } from "../src/match/email-match";
+import { HashtagMatch } from "../src/match/hashtag-match";
+import { MentionMatch } from "../src/match/mention-match";
+import { PhoneMatch } from "../src/match/phone-match";
+import { PhoneMatcher } from "../src/matcher/phone-matcher";
 
 describe( "Autolinker", function() {
 

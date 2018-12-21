@@ -1,5 +1,5 @@
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
-import { Match } from "../../src/match/Match";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
+import { Match } from "../../src/match/match";
 
 describe( "Autolinker.match.Match", function() {
 	let tagBuilder = new AnchorTagBuilder();

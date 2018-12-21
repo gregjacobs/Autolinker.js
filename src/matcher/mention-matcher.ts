@@ -1,8 +1,8 @@
-import { Matcher, MatcherConfig } from "./Matcher";
-import { alphaNumericCharsStr } from "../RegexLib";
-import { MentionServices } from "../Autolinker";
-import { MentionMatch } from "../match/Mention";
-import { Match } from "../match/Match";
+import { Matcher, MatcherConfig } from "./matcher";
+import { alphaNumericCharsStr } from "../regex-lib";
+import { MentionServices } from "../autolinker";
+import { MentionMatch } from "../match/mention-match";
+import { Match } from "../match/match";
 
 /**
  * @class Autolinker.matcher.Mention

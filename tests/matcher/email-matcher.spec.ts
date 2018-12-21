@@ -1,6 +1,6 @@
-import { EmailMatcher } from "../../src/matcher/Email";
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
-import { MatchChecker } from "../match/MatchChecker";
+import { EmailMatcher } from "../../src/matcher/email-matcher";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
+import { MatchChecker } from "../match/match-checker";
 
 describe( "Autolinker.matcher.Email", function() {
 	let matcher: EmailMatcher;

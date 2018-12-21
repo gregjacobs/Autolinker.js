@@ -1,6 +1,6 @@
-import { HashtagMatcher } from "../../src/matcher/Hashtag";
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
-import { MatchChecker } from "../match/MatchChecker";
+import { HashtagMatcher } from "../../src/matcher/hashtag-matcher";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
+import { MatchChecker } from "../match/match-checker";
 
 describe( "Autolinker.matcher.Hashtag", function() {
 	let matcher: HashtagMatcher;

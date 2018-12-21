@@ -15,11 +15,11 @@
  * 5. The tag name for a tag with attributes (other than the &lt;!DOCTYPE&gt; tag)
  */
 import { splitAndCapture } from "../utils";
-import { CommentNode } from "./CommentNode";
-import { ElementNode } from "./ElementNode";
-import { EntityNode } from "./EntityNode";
-import { TextNode } from "./TextNode";
-import { HtmlNode } from "./HtmlNode";
+import { CommentNode } from "./comment-node";
+import { ElementNode } from "./element-node";
+import { EntityNode } from "./entity-node";
+import { TextNode } from "./text-node";
+import { HtmlNode } from "./html-node";
 
 const htmlRegex = (function() {
 	let commentTagRegex = /!--([\s\S]+?)--/,

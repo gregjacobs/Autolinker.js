@@ -1,5 +1,5 @@
-import { Match, MatchConfig } from "./Match";
-import { StripPrefixConfig, UrlMatchTypeOptions } from "../Autolinker";
+import { Match, MatchConfig } from "./match";
+import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
 
 /**
  * @class Autolinker.match.Url

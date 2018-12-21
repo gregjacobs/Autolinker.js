@@ -1,10 +1,10 @@
-import { Matcher, MatcherConfig } from "./Matcher";
-import { alphaNumericCharsStr, getDomainNameStr } from "../RegexLib";
-import { StripPrefixConfig, UrlMatchTypeOptions } from "../Autolinker";
-import { tldRegex } from "./TldRegex";
-import { UrlMatch } from "../match/Url";
-import { UrlMatchValidator } from "./UrlMatchValidator";
-import { Match } from "../match/Match";
+import { Matcher, MatcherConfig } from "./matcher";
+import { alphaNumericCharsStr, getDomainNameStr } from "../regex-lib";
+import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
+import { tldRegex } from "./tld-regex";
+import { UrlMatch } from "../match/url-match";
+import { UrlMatchValidator } from "./url-match-validator";
+import { Match } from "../match/match";
 
 /**
  * @class Autolinker.matcher.Url

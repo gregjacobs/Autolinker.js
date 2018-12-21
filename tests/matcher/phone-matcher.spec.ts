@@ -1,6 +1,6 @@
-import { PhoneMatcher } from "../../src/matcher/Phone";
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
-import { MatchChecker } from "../match/MatchChecker";
+import { PhoneMatcher } from "../../src/matcher/phone-matcher";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
+import { MatchChecker } from "../match/match-checker";
 
 describe( "Autolinker.matcher.Phone", function() {
 	let matcher: PhoneMatcher;

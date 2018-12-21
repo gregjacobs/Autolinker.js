@@ -1,4 +1,4 @@
-import { HtmlNode, HtmlNodeConfig } from "./HtmlNode";
+import { HtmlNode, HtmlNodeConfig } from "./html-node";
 
 /**
  * @class Autolinker.htmlParser.CommentNode

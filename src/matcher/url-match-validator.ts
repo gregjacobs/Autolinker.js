@@ -1,4 +1,4 @@
-import { alphaCharsStr } from "../RegexLib";
+import { alphaCharsStr } from "../regex-lib";
 
 /**
  * @private

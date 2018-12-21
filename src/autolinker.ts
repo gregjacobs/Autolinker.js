@@ -1,16 +1,16 @@
 import { defaults, remove } from "./utils";
-import { AnchorTagBuilder } from "./AnchorTagBuilder";
-import { HtmlParser } from "./htmlParser/HtmlParser";
-import { Match } from "./match/Match";
-import { UrlMatch } from "./match/Url";
-import { Matcher } from "./matcher/Matcher";
-import { HtmlTag } from "./HtmlTag";
-import { EmailMatcher } from "./matcher/Email";
-import { UrlMatcher } from "./matcher/Url";
-import { ElementNode } from "./htmlParser/ElementNode";
-import { HashtagMatcher } from "./matcher/Hashtag";
-import { PhoneMatcher } from "./matcher/Phone";
-import { MentionMatcher } from "./matcher/Mention";
+import { AnchorTagBuilder } from "./anchor-tag-builder";
+import { HtmlParser } from "./htmlParser/html-parser";
+import { Match } from "./match/match";
+import { UrlMatch } from "./match/url-match";
+import { Matcher } from "./matcher/matcher";
+import { HtmlTag } from "./html-tag";
+import { EmailMatcher } from "./matcher/email-matcher";
+import { UrlMatcher } from "./matcher/url-matcher";
+import { ElementNode } from "./htmlParser/element-node";
+import { HashtagMatcher } from "./matcher/hashtag-matcher";
+import { PhoneMatcher } from "./matcher/phone-matcher";
+import { MentionMatcher } from "./matcher/mention-matcher";
 
 /**
  * @class Autolinker

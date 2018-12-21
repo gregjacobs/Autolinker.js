@@ -1,9 +1,9 @@
-import { HtmlParser } from "../../src/htmlParser/HtmlParser";
-import { CommentNode } from "../../src/htmlParser/CommentNode";
-import { ElementNode } from "../../src/htmlParser/ElementNode";
-import { EntityNode } from "../../src/htmlParser/EntityNode";
-import { TextNode } from "../../src/htmlParser/TextNode";
-import { HtmlNode } from "../../src/htmlParser/HtmlNode";
+import { HtmlParser } from "../../src/htmlParser/html-parser";
+import { CommentNode } from "../../src/htmlParser/comment-node";
+import { ElementNode } from "../../src/htmlParser/element-node";
+import { EntityNode } from "../../src/htmlParser/entity-node";
+import { TextNode } from "../../src/htmlParser/text-node";
+import { HtmlNode } from "../../src/htmlParser/html-node";
 
 describe( "Autolinker.htmlParser.HtmlParser", function() {
 	let htmlParser: HtmlParser;

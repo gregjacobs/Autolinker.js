@@ -1,4 +1,4 @@
-import { truncateSmart } from "../../src/truncate/truncateSmart";
+import { truncateSmart } from "../../src/truncate/truncate-smart";
 
 /*
  * Date: 2015-10-05

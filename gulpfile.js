@@ -159,7 +159,7 @@ function serveTask() {
 
 
 function testTask( done ) {
-	return gulp.src( './build/**/*Spec.js' )
+	return gulp.src( './build/**/*.spec.js' )
 		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
 

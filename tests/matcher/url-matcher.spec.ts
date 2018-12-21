@@ -1,6 +1,6 @@
-import { UrlMatcher } from "../../src/matcher/Url";
-import { MatchChecker } from "../match/MatchChecker";
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
+import { UrlMatcher } from "../../src/matcher/url-matcher";
+import { MatchChecker } from "../match/match-checker";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 
 describe( "Autolinker.matcher.Url", function() {
 	let matcher: UrlMatcher;

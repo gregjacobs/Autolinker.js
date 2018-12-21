@@ -1,4 +1,4 @@
-import { HtmlNode } from "./HtmlNode";
+import { HtmlNode } from "./html-node";
 
 /**
  * @class Autolinker.htmlParser.TextNode

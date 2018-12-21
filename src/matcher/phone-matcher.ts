@@ -1,6 +1,6 @@
-import { Matcher } from "./Matcher";
-import { PhoneMatch } from "../match/Phone";
-import { Match } from "../match/Match";
+import { Matcher } from "./matcher";
+import { PhoneMatch } from "../match/phone-match";
+import { Match } from "../match/match";
 
 /**
  * @class Autolinker.matcher.Phone

@@ -1,6 +1,6 @@
-import { MentionMatcher } from "../../src/matcher/Mention";
-import { AnchorTagBuilder } from "../../src/AnchorTagBuilder";
-import { MatchChecker } from "../match/MatchChecker";
+import { MentionMatcher } from "../../src/matcher/mention-matcher";
+import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
+import { MatchChecker } from "../match/match-checker";
 
 describe( "Autolinker.matcher.Mention", function() {
 	let matcher: MentionMatcher;
