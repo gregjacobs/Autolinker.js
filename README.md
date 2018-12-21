@@ -27,20 +27,9 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/api/](http://gregjacob
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
-## v1.0 released. Breaking Changes from 0.x -> 1.x
+## v2.0 released Dec 2018
 
-1. `twitter` option removed, replaced with `mention` (which accepts 'twitter', 'instagram' and 'soundcloud' values)
-2. Matching mentions (previously the `twitter` option) now defaults to
-   being turned off. Previously, Twitter handle matching was on by 
-   default.
-3. `replaceFn` option now called with just one argument: the `Match` 
-   object (previously was called with two arguments: `autolinker` and 
-   `match`)
-4. (Used inside the `replaceFn`) `TwitterMatch` replaced with 
-   `MentionMatch`, and `MentionMatch.getType()` now returns `'mention'` 
-   instead of `'twitter'`
-5. (Used inside the `replaceFn`) `TwitterMatch.getTwitterHandle()` -> 
-   `MentionMatch.getMention()`
+See [Upgrading from v1.x -> v2.x (Breaking Changes)](#Upgrading from v1.x -> v2.x (Breaking Changes)) at the bottom of this readme
 
 
 ## Installation
@@ -412,6 +401,49 @@ if( typeof Array.prototype.forEach !== 'function' ) {
     };
 }
 ```
+
+
+## Upgrading from v1.x -> v2.x (Breaking Changes)
+
+1. If you are still on v0.x, first follow the instructions in the 
+   [Upgrading from 0.x -> 1.x](#Upgrading from v0.x -> v1.x (Breaking Changes)) 
+   section below.
+2. Codebase has been converted to TypeScript, and uses ES6 exports. Use the `import` 
+   statement to pull in the `Autolinker` class and related entities such as
+   `Match`:
+
+   ```ts
+   import { Autolinker, Match } from 'autolinker';
+   ```
+3. You will no longer need the `@types/autolinker` package as this package now
+   exports its own types
+4. You will no longer be able to override the regular expressions in the `Matcher`
+   classes by assigning to the prototype (for instance, something like
+   `PhoneMatcher.prototype.regex = ...`). This is due to how TypeScript creates 
+   properties for class instances in the constructor rather than on prototypes, 
+   and it's not worth working around. The idea of providing your own
+   regular expression for these classes is a brittle notion anyway, as the 
+   `Matcher` classes rely on capturing groups in the RegExp being in the right 
+   place, and these are subject to change as the regular expression needs to 
+   change. Use  your own `Matcher` class instead if you would like to override 
+   this functionality, such as with the `phoneMatcherFactory` config.
+
+## Upgrading from v0.x -> v1.x (Breaking Changes)
+
+1. `twitter` option removed, replaced with `mention` (which accepts 'twitter', 
+   'instagram' and 'soundcloud' values)
+2. Matching mentions (previously the `twitter` option) now defaults to
+   being turned off. Previously, Twitter handle matching was on by 
+   default.
+3. `replaceFn` option now called with just one argument: the `Match` 
+   object (previously was called with two arguments: `autolinker` and 
+   `match`)
+4. (Used inside the `replaceFn`) `TwitterMatch` replaced with 
+   `MentionMatch`, and `MentionMatch.getType()` now returns `'mention'` 
+   instead of `'twitter'`
+5. (Used inside the `replaceFn`) `TwitterMatch.getTwitterHandle()` -> 
+   `MentionMatch.getMention()`
+
 
 
 ## Developing / Contributing
