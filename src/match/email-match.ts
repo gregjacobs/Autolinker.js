@@ -15,11 +15,11 @@ export class EmailMatch extends Match {
 	 *
 	 * The email address that was matched.
 	 */
-	private readonly email: string;
+	private readonly email: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */

@@ -23,7 +23,7 @@ import { MentionMatcher } from "./matcher/mention-matcher";
  * Utility class used to process a given string of text, and wrap the matches in
  * the appropriate anchor (&lt;a&gt;) tags to turn them into links.
  *
- * Any of the configuration options may be provided in an Object (map) provided
+ * Any of the configuration options may be provided in an Object provided
  * to the Autolinker constructor, which will configure how the {@link #link link()}
  * method will process the links.
  *
@@ -121,14 +121,13 @@ import { MentionMatcher } from "./matcher/mention-matcher";
  *   used directly as the replacement HTML for the match.
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
  *   an HTML tag before writing out its HTML text.
- *
- * @constructor
- * @param {Object} [cfg] The configuration options for the Autolinker instance,
- *   specified in an Object (map).
  */
 export default class Autolinker {
 
 	/**
+	 * @static
+	 * @property {String} version
+	 * 
 	 * The Autolinker version number in the form major.minor.patch
 	 *
 	 * Ex: 0.25.1
@@ -282,7 +281,7 @@ export default class Autolinker {
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
 	 */
-	private readonly urls: UrlsConfig;
+	private readonly urls: UrlsConfig = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [email=true]
@@ -290,7 +289,7 @@ export default class Autolinker {
 	 * `true` if email addresses should be automatically linked, `false` if they
 	 * should not be.
 	 */
-	private readonly email: boolean;
+	private readonly email: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [phone=true]
@@ -298,7 +297,7 @@ export default class Autolinker {
 	 * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
 	 * `false` if they should not be.
 	 */
-	private readonly phone: boolean;
+	private readonly phone: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean/String} [hashtag=false]
@@ -312,7 +311,7 @@ export default class Autolinker {
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
-	private readonly hashtag: false | HashtagServices;
+	private readonly hashtag: false | HashtagServices = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String/Boolean} [mention=false]
@@ -326,17 +325,17 @@ export default class Autolinker {
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
-	private readonly mention: false | MentionServices;
+	private readonly mention: false | MentionServices = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [newWindow=true]
 	 *
 	 * `true` if the links should open in a new window, `false` otherwise.
 	 */
-	private readonly newWindow: boolean;
+	private readonly newWindow: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
-	 * @cfg {Boolean/Object} [stripPrefix]
+	 * @cfg {Boolean/Object} [stripPrefix=true]
 	 *
 	 * `true` if 'http://' (or 'https://') and/or the 'www.' should be stripped
 	 * from the beginning of URL links' text, `false` otherwise. Defaults to
@@ -368,7 +367,7 @@ export default class Autolinker {
 	 *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
 	 *   strip the `'www'`.
 	 */
-	private readonly stripPrefix: StripPrefixConfig;
+	private readonly stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [stripTrailingSlash=true]
@@ -379,7 +378,7 @@ export default class Autolinker {
 	 *  Example when `true`: `http://google.com/` will be displayed as
 	 *  `http://google.com`.
 	 */
-	private readonly stripTrailingSlash: boolean;
+	private readonly stripTrailingSlash: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [decodePercentEncoding=true]
@@ -390,7 +389,7 @@ export default class Autolinker {
 	 *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
 	 *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
 	 */
-    private readonly decodePercentEncoding: boolean;
+    private readonly decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Number/Object} [truncate=0]
@@ -439,7 +438,7 @@ export default class Autolinker {
 	 *   'yahoo.com/some..to/a/file'. For more details, see
 	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
-	private readonly truncate: TruncateConfig;
+	private readonly truncate: TruncateConfig = { length: 0, location : 'end' };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} className
@@ -457,7 +456,7 @@ export default class Autolinker {
 	 * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
 	 *   where [type] is either "instagram", "twitter" or "soundcloud"
 	 */
-	private readonly className: string;
+	private readonly className: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Function} replaceFn
@@ -476,7 +475,7 @@ export default class Autolinker {
 	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
 	 *   for details.
 	 */
-	private readonly replaceFn: null | ( ( match: Match ) => ReplaceFnReturn );
+	private readonly replaceFn: null | ( ( match: Match ) => ReplaceFnReturn ) = null;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Object} context
@@ -485,7 +484,7 @@ export default class Autolinker {
 	 *
 	 * Defaults to this Autolinker instance.
 	 */
-	private readonly context: any;
+	private readonly context: any = undefined;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
@@ -495,7 +494,7 @@ export default class Autolinker {
 	 * The HtmlParser instance used to skip over HTML tags, while finding text
 	 * nodes to process.
 	 */
-	private htmlParser: HtmlParser;
+	private htmlParser = new HtmlParser();
 
 	/**
 	 * @private
@@ -506,7 +505,7 @@ export default class Autolinker {
 	 *
 	 * This is lazily created in {@link #getMatchers}.
 	 */
-	private matchers: Matcher[] | null;
+	private matchers: Matcher[] | null = null;
 
 	/**
 	 * @private
@@ -515,9 +514,14 @@ export default class Autolinker {
 	 * The AnchorTagBuilder instance used to build match replacement anchor tags.
 	 * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
 	 */
-	private tagBuilder: AnchorTagBuilder | null;
+	private tagBuilder: AnchorTagBuilder | null = null;
 
 
+	/**
+	 * @method constructor
+	 * @param {Object} [cfg] The configuration options for the Autolinker instance,
+	 *   specified in an Object (map).
+	 */
 	constructor( cfg: AutolinkerConfig = {} ) {
 		this.urls = this.normalizeUrlsCfg( cfg.urls );
 		this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
@@ -531,7 +535,7 @@ export default class Autolinker {
 
 		// Validate the value of the `mention` cfg
 		const mention = this.mention;
-		if( mention !== false && mention !== 'twitter' && mention !== 'instagram' ) {
+		if( mention !== false && mention !== 'twitter' && mention !== 'instagram' && mention !== 'soundcloud' ) {
 			throw new Error( "invalid `mention` cfg - see docs" );
 		}
 
@@ -545,10 +549,6 @@ export default class Autolinker {
 		this.className = cfg.className || '';
 		this.replaceFn = cfg.replaceFn || null;
 		this.context = cfg.context || this;
-
-		this.htmlParser = new HtmlParser();
-		this.matchers = null;
-		this.tagBuilder = null;
 	}
 
 
@@ -558,6 +558,7 @@ export default class Autolinker {
 	 *
 	 * See {@link #urls} config for details.
 	 *
+	 * @private
 	 * @param {Boolean/Object} urls
 	 * @return {Object}
 	 */
@@ -897,10 +898,10 @@ export default class Autolinker {
 	 * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
 	 * instances for this Autolinker instance.
 	 *
-	 * @protected
+	 * @private
 	 * @return {Autolinker.matcher.Matcher[]}
 	 */
-	getMatchers() {
+	private getMatchers() {
 		if( !this.matchers ) {
 			let tagBuilder = this.getTagBuilder();
 
@@ -921,27 +922,13 @@ export default class Autolinker {
 
 
 	/**
-	 * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
-	 * if it does not yet exist.
-	 *
-	 * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that
-	 * Autolinker would normally generate, and then allow for modifications before returning it. For example:
-	 *
-	 *     var html = Autolinker.link( "Test google.com", {
-	 *         replaceFn : function( match ) {
-	 *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
-	 *             tag.setAttr( 'rel', 'nofollow' );
-	 *
-	 *             return tag;
-	 *         }
-	 *     } );
-	 *
-	 *     // generated html:
-	 *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
-	 *
+	 * Returns the {@link #tagBuilder} instance for this Autolinker instance, 
+	 * lazily instantiating it if it does not yet exist.
+	 * 
+	 * @private
 	 * @return {Autolinker.AnchorTagBuilder}
 	 */
-	getTagBuilder() {
+	private getTagBuilder() {
 		let tagBuilder = this.tagBuilder;
 
 		if( !tagBuilder ) {

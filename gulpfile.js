@@ -50,17 +50,18 @@ gulp.task( 'build-tests', gulp.series( 'clean-tests', 'build-tests-typescript' )
 // Docs private tasks
 gulp.task( 'doc-setup', docSetupTask );
 gulp.task( 'doc-create', docTask );
+gulp.task( 'do-doc', gulp.series( 'doc-setup', 'doc-create' ) );
 
 // Main Tasks
 gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup', 'build-src-add-header-to-umd', 'build-src-minify-umd' ) );
 gulp.task( 'build-examples', gulp.series( 'clean-examples', 'build-examples-typescript', 'build-examples-rollup' ) );
 gulp.task( 'build-all', gulp.parallel( 'build-src', 'build-examples', 'build-tests' ) );
 gulp.task( 'build', gulp.series( 'build-all' ) );
-gulp.task( 'doc', gulp.series( 'build-src', 'doc-setup', 'doc-create' ) );
+gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
 gulp.task( 'test', gulp.series( 'build-tests', testTask ) );
 gulp.task( 'update-tld-list', updateTldRegex );
-gulp.task( 'default', gulp.series( 'build', 'doc', 'test' ) );
+gulp.task( 'default', gulp.series( 'build', 'do-doc', 'test' ) );
 
 
 // -----------------------------------------------------
@@ -190,7 +191,10 @@ function docTask() {
 	// JSDuck works solely on the file paths rather than the content, so
 	// we needed the extra output directory for the transformed input 
 	// .js files
-	return gulp.src( './build/docs-src/**/*.js' )
+	return gulp.src( [ 
+		'./build/docs-src/html-tag.js',  // we need to make sure html-tag.js is parsed first so that Autolinker.HtmlTag gets the correct class description rather than the static property found in autolinker.js
+		'./build/docs-src/**/*.js' 
+	] )
 		.pipe( jsDuck.doc() );
 }
 

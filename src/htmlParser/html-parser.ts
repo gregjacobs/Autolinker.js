@@ -1,3 +1,10 @@
+import { splitAndCapture } from "../utils";
+import { CommentNode } from "./comment-node";
+import { ElementNode } from "./element-node";
+import { EntityNode } from "./entity-node";
+import { TextNode } from "./text-node";
+import { HtmlNode } from "./html-node";
+
 /**
  * @private
  * @property {RegExp} htmlRegex
@@ -14,13 +21,6 @@
  * 4. The tag name for a tag without attributes (other than the &lt;!DOCTYPE&gt; tag)
  * 5. The tag name for a tag with attributes (other than the &lt;!DOCTYPE&gt; tag)
  */
-import { splitAndCapture } from "../utils";
-import { CommentNode } from "./comment-node";
-import { ElementNode } from "./element-node";
-import { EntityNode } from "./entity-node";
-import { TextNode } from "./text-node";
-import { HtmlNode } from "./html-node";
-
 const htmlRegex = (function() {
 	let commentTagRegex = /!--([\s\S]+?)--/,
 		tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,

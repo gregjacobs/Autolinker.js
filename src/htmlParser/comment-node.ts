@@ -18,8 +18,13 @@ export class CommentNode extends HtmlNode {
 	 * The text inside the comment tag. This text is stripped of any leading or
 	 * trailing whitespace.
 	 */
-	comment: string;
+	comment: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
+	/**
+	 * @method constructor
+	 * @param {Object} cfg The configuration options for this class, specified
+	 *   in an Object.
+	 */
 	constructor( cfg: CommentNodeConfig ) {
 		super( cfg );
 

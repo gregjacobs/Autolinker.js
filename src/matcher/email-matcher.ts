@@ -22,7 +22,7 @@ export class EmailMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex = (function() {
+	private matcherRegex = (function() {
 		var alphaNumericChars = alphaNumericCharsStr,
 			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
 			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',

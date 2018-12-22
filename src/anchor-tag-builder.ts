@@ -37,30 +37,26 @@ export class AnchorTagBuilder {
 	 * @cfg {Boolean} newWindow
 	 * @inheritdoc Autolinker#newWindow
 	 */
-	private readonly newWindow: boolean;
+	private readonly newWindow: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
-	private readonly truncate: TruncateConfig;
+	private readonly truncate: TruncateConfig = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} className
 	 * @inheritdoc Autolinker#className
 	 */
-	private readonly className: string;
+	private readonly className: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
 	 */
-	constructor( cfg: {
-		newWindow?: boolean;
-		truncate?: TruncateConfig;
-		className?: string
-	} = {} ) {
+	constructor( cfg: AnchorTagBuilderCfg = {} ) {
 		this.newWindow = cfg.newWindow || false;
 		this.truncate = cfg.truncate || {};
 		this.className = cfg.className || '';
@@ -93,7 +89,7 @@ export class AnchorTagBuilder {
 	 *   anchor tag from.
 	 * @return {Object} A key/value Object (map) of the anchor tag's attributes.
 	 */
-	createAttrs( match: Match ) {
+	protected createAttrs( match: Match ) {
 		let attrs: {[attrName: string]: string} = {
 			'href' : match.getAnchorHref()  // we'll always have the `href` attribute
 		};
@@ -130,14 +126,14 @@ export class AnchorTagBuilder {
 	 * - "myLink myLink-hashtag"                 // hashtag match
 	 * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
 	 *
-	 * @private
+	 * @protected
 	 * @param {Autolinker.match.Match} match The Match instance to generate an
 	 *   anchor tag from.
 	 * @return {String} The CSS class string for the link. Example return:
 	 *   "myLink myLink-url". If no {@link #className} was configured, returns
 	 *   an empty string.
 	 */
-	createCssClass( match: Match ) {
+	protected createCssClass( match: Match ) {
 		let className = this.className;
 
 		if( !className ) {
@@ -164,7 +160,7 @@ export class AnchorTagBuilder {
 	 *   displayed).
 	 * @return {String} The processed `anchorText`.
 	 */
-	processAnchorText( anchorText: string ) {
+	private processAnchorText( anchorText: string ) {
 		anchorText = this.doTruncate( anchorText );
 
 		return anchorText;
@@ -182,7 +178,7 @@ export class AnchorTagBuilder {
 	 *   displayed).
 	 * @return {String} The truncated anchor text.
 	 */
-	doTruncate( anchorText: string ) {
+	private doTruncate( anchorText: string ) {
 		let truncate = this.truncate;
 		if( !truncate || !truncate.length ) return anchorText;
 
@@ -199,5 +195,11 @@ export class AnchorTagBuilder {
 			return truncateEnd( anchorText, truncateLength );
 		}
 	}
+}
 
+
+export interface AnchorTagBuilderCfg {
+	newWindow?: boolean;
+	truncate?: TruncateConfig;
+	className?: string
 }

@@ -21,19 +21,19 @@ export class UrlMatcher extends Matcher {
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	stripPrefix: StripPrefixConfig;
+	private stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
 	 * @inheritdoc Autolinker#stripTrailingSlash
 	 */
-	stripTrailingSlash: boolean;
+	private stripTrailingSlash: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} decodePercentEncoding (required)
 	 * @inheritdoc Autolinker#decodePercentEncoding
 	 */
-	decodePercentEncoding: boolean;
+	private decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
@@ -70,7 +70,7 @@ export class UrlMatcher extends Matcher {
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #3 for more info.
 	 */
-	matcherRegex = (function() {
+	private matcherRegex = (function() {
 		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,  // starting with 'www.'
 
@@ -123,7 +123,7 @@ export class UrlMatcher extends Matcher {
 	 * @private
 	 * @type {RegExp} wordCharRegExp
 	 */
-	wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
+	private wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
 
 
 	/**
@@ -140,7 +140,7 @@ export class UrlMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp}
 	 */
-	openParensRe = /\(/g;
+	private openParensRe = /\(/g;
 
 	/**
 	 * The regular expression to match closing parenthesis in a URL match. See
@@ -149,11 +149,11 @@ export class UrlMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp}
 	 */
-	closeParensRe = /\)/g;
+	private closeParensRe = /\)/g;
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */
@@ -264,7 +264,7 @@ export class UrlMatcher extends Matcher {
 	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
 	 *   the end of the `matchStr`, `false` otherwise.
 	 */
-	matchHasUnbalancedClosingParen( matchStr: string ) {
+	private matchHasUnbalancedClosingParen( matchStr: string ) {
 		let lastChar = matchStr.charAt( matchStr.length - 1 );
 
 		if( lastChar === ')' ) {
@@ -297,7 +297,7 @@ export class UrlMatcher extends Matcher {
 	 * @return {Number} the position where the invalid character was found. If
 	 *   no such character was found, returns -1
 	 */
-	matchHasInvalidCharAfterTld( urlMatch: string, schemeUrlMatch: string ) {
+	private matchHasInvalidCharAfterTld( urlMatch: string, schemeUrlMatch: string ) {
 		if( !urlMatch ) {
 			return -1;
 		}

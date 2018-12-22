@@ -1,3 +1,5 @@
+import { AnchorTagBuilder } from "../anchor-tag-builder";
+
 /**
  * @abstract
  * @class Autolinker.match.Match
@@ -29,8 +31,6 @@
  *
  * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
  */
-import { AnchorTagBuilder } from "../anchor-tag-builder";
-
 export abstract class Match {
 
 	/**
@@ -39,6 +39,9 @@ export abstract class Match {
 	 * Reference to the AnchorTagBuilder instance to use to generate an anchor
 	 * tag for the Match.
 	 */
+	private __jsduckDummyDocProp = null;  // property used just to get the above doc comment into the ES5 output and documentation generator
+
+	// Actual property for the above jsdoc comment
 	private readonly tagBuilder: AnchorTagBuilder;
 
 	/**
@@ -46,18 +49,19 @@ export abstract class Match {
 	 *
 	 * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
 	 */
-	protected readonly matchedText: string;
+	protected readonly matchedText: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Number} offset (required)
 	 *
 	 * The offset of where the match was made in the input string.
 	 */
-	private offset: number;
+	private offset: number = 0;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @member Autolinker.match.Match
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
@@ -173,6 +177,20 @@ export abstract class Match {
 	 *     tag.setAttr( 'target', '_system' );
 	 *
 	 *     tag.toAnchorString();  // <a href="http://google.com" class="cordova-link" target="_system">Google</a>
+	 * 
+	 * Example Usage in {@link Autolinker#replaceFn}:
+	 *
+	 *     var html = Autolinker.link( "Test google.com", {
+	 *         replaceFn : function( match ) {
+	 *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
+	 *             tag.setAttr( 'rel', 'nofollow' );
+	 *
+	 *             return tag;
+	 *         }
+	 *     } );
+	 *
+	 *     // generated html:
+	 *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
 	 */
 	buildTag() {
 		return this.tagBuilder.build( this );

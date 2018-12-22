@@ -11,7 +11,13 @@ import { Match } from "../match/match";
  * Matcher to find/replace username matches in an input string.
  */
 export class MentionMatcher extends Matcher {
-	private serviceName: MentionServices;
+
+	/**
+	 * The name of service to link @mentions to.
+	 * 
+	 * Valid values are: 'twitter', 'instagram', or 'soundcloud'
+	 */
+	private serviceName: MentionServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * Hash of regular expression to match username handles. Example match:
@@ -40,7 +46,7 @@ export class MentionMatcher extends Matcher {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */

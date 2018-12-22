@@ -1,3 +1,5 @@
+import { HtmlNode, HtmlNodeConfig } from "./html-node";
+
 /**
  * @class Autolinker.htmlParser.ElementNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -7,8 +9,6 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-import { HtmlNode, HtmlNodeConfig } from "./html-node";
-
 export class ElementNode extends HtmlNode {
 
 	/**
@@ -16,7 +16,7 @@ export class ElementNode extends HtmlNode {
 	 *
 	 * The name of the tag that was matched.
 	 */
-	tagName: string;
+	tagName: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} closing (required)
@@ -24,9 +24,14 @@ export class ElementNode extends HtmlNode {
 	 * `true` if the element (tag) is a closing tag, `false` if its an opening
 	 * tag.
 	 */
-	closing: boolean;
+	closing: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
+	/**
+	 * @method constructor
+	 * @param {Object} cfg The configuration options for this class, specified
+	 *   in an Object.
+	 */
 	constructor( cfg: ElementNodeConfig ) {
 		super( cfg );
 

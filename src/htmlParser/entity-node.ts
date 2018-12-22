@@ -1,3 +1,5 @@
+import { HtmlNode } from "./html-node";
+
 /**
  * @class Autolinker.htmlParser.EntityNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -12,8 +14,6 @@
  * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-import { HtmlNode } from "./html-node";
-
 export class EntityNode extends HtmlNode {
 
 	/**

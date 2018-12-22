@@ -18,7 +18,7 @@ export class HashtagMatcher extends Matcher {
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
-	private readonly serviceName: HashtagServices;
+	private readonly serviceName: HashtagServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
@@ -44,7 +44,7 @@ export class HashtagMatcher extends Matcher {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 *   specified in an Object (map).
 	 */

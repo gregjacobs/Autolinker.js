@@ -16,7 +16,7 @@ export class UrlMatch extends Match {
 	 *
 	 * The url that was matched.
 	 */
-	private url: string;
+	private url: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
@@ -26,7 +26,7 @@ export class UrlMatch extends Match {
 	 * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
 	 * was matched by a known top-level domain (ex: 'google.com').
 	 */
-	private readonly urlMatchType: UrlMatchTypeOptions;
+	private readonly urlMatchType: UrlMatchTypeOptions = 'scheme';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} protocolUrlMatch (required)
@@ -34,7 +34,7 @@ export class UrlMatch extends Match {
 	 * `true` if the URL is a match which already has a protocol (i.e.
 	 * 'http://'), `false` if the match was from a 'www' or known TLD match.
 	 */
-	private readonly protocolUrlMatch: boolean;
+	private readonly protocolUrlMatch: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} protocolRelativeMatch (required)
@@ -43,26 +43,26 @@ export class UrlMatch extends Match {
 	 * is a URL that starts with '//', and will be either http:// or https://
 	 * based on the protocol that the site is loaded under.
 	 */
-	private readonly protocolRelativeMatch: boolean;
+	private readonly protocolRelativeMatch: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Object} stripPrefix (required)
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	private readonly stripPrefix: StripPrefixConfig;
+	private readonly stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
 	 * @inheritdoc Autolinker#cfg-stripTrailingSlash
 	 */
-	private readonly stripTrailingSlash: boolean;
+	private readonly stripTrailingSlash: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} decodePercentEncoding (required)
 	 * @inheritdoc Autolinker#cfg-decodePercentEncoding
 	 */
-	private readonly decodePercentEncoding: boolean;
+	private readonly decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @private
@@ -101,7 +101,7 @@ export class UrlMatch extends Match {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */
@@ -218,7 +218,7 @@ export class UrlMatch extends Match {
 	 *   which to strip off the url scheme.
 	 * @return {String} The `url`, with the scheme stripped.
 	 */
-	stripSchemePrefix( url: string ) {
+	private stripSchemePrefix( url: string ) {
 		return url.replace( this.schemePrefixRegex, '' );
 	}
 
@@ -231,7 +231,7 @@ export class UrlMatch extends Match {
 	 *   which to strip off the 'www' if it exists.
 	 * @return {String} The `url`, with the 'www' stripped.
 	 */
-	stripWwwPrefix( url: string ) {
+	private stripWwwPrefix( url: string ) {
 		return url.replace( this.wwwPrefixRegex, '$1' );  // leave any scheme ($1), it one exists
 	}
 
@@ -244,7 +244,7 @@ export class UrlMatch extends Match {
 	 *   protocol-relative prefix (such as stripping off "//")
 	 * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
 	 */
-	stripProtocolRelativePrefix( text: string ) {
+	private stripProtocolRelativePrefix( text: string ) {
 		return text.replace( this.protocolRelativeRegex, '' );
 	}
 
@@ -257,7 +257,7 @@ export class UrlMatch extends Match {
 	 *   slash ('/') that may exist.
 	 * @return {String} The `anchorText`, with the trailing slash removed.
 	 */
-	removeTrailingSlash( anchorText: string ) {
+	private removeTrailingSlash( anchorText: string ) {
 		if( anchorText.charAt( anchorText.length - 1 ) === '/' ) {
 			anchorText = anchorText.slice( 0, -1 );
 		}
@@ -271,19 +271,21 @@ export class UrlMatch extends Match {
 	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
 	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
 	 */
-	removePercentEncoding( anchorText: string ) {
+	private removePercentEncoding( anchorText: string ) {
+		let decodedAnchorText: string;
+
 		try {
-			return decodeURIComponent( anchorText
-				.replace( /%22/gi, '&quot;' )
-				.replace( /%26/gi, '&amp;' )
-				.replace( /%27/gi, '&#39;')
-				.replace( /%3C/gi, '&lt;' )
-				.replace( /%3E/gi, '&gt;' )
-			 );
-		} catch (e) {
-			// Invalid escape sequence.
+			decodedAnchorText = decodeURIComponent( anchorText );
+		} catch (e) {  // Invalid escape sequence
 			return anchorText;
 		}
+
+		return decodedAnchorText
+			.replace( /%22/gi, '&quot;' )
+			.replace( /%26/gi, '&amp;' )
+			.replace( /%27/gi, '&#39;')
+			.replace( /%3C/gi, '&lt;' )
+			.replace( /%3E/gi, '&gt;' );
 	}
 
 }

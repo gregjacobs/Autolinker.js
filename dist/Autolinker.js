@@ -205,18 +205,40 @@
      */
     var HtmlTag = /** @class */ (function () {
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
          */
         function HtmlTag(cfg) {
             if (cfg === void 0) { cfg = {}; }
+            /**
+             * @cfg {String} tagName
+             *
+             * The tag name. Ex: 'a', 'button', etc.
+             *
+             * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
+             * is executed.
+             */
+            this.tagName = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Object.<String, String>} attrs
+             *
+             * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
+             * values are the attribute values.
+             */
+            this.attrs = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} innerHTML
+             *
+             * The inner HTML for the tag.
+             */
+            this.innerHTML = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @protected
              * @property {RegExp} whitespaceRegex
              *
              * Regular expression used to match whitespace in a string of CSS classes.
              */
-            this.whitespaceRegex = /\s+/;
+            this.whitespaceRegex = /\s+/; // default value just to get the above doc comment in the ES5 output and documentation generator
             this.tagName = cfg.tagName || '';
             this.attrs = cfg.attrs || {};
             this.innerHTML = cfg.innerHtml || cfg.innerHTML || ''; // accept either the camelCased form or the fully capitalized acronym as in the DOM
@@ -641,11 +663,26 @@
      */
     var AnchorTagBuilder = /** @class */ (function () {
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
          */
         function AnchorTagBuilder(cfg) {
             if (cfg === void 0) { cfg = {}; }
+            /**
+             * @cfg {Boolean} newWindow
+             * @inheritdoc Autolinker#newWindow
+             */
+            this.newWindow = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Object} truncate
+             * @inheritdoc Autolinker#truncate
+             */
+            this.truncate = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} className
+             * @inheritdoc Autolinker#className
+             */
+            this.className = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             this.newWindow = cfg.newWindow || false;
             this.truncate = cfg.truncate || {};
             this.className = cfg.className || '';
@@ -706,7 +743,7 @@
          * - "myLink myLink-hashtag"                 // hashtag match
          * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
          *
-         * @private
+         * @protected
          * @param {Autolinker.match.Match} match The Match instance to generate an
          *   anchor tag from.
          * @return {String} The CSS class string for the link. Example return:
@@ -787,11 +824,32 @@
      */
     var HtmlNode = /** @class */ (function () {
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match instance,
          * specified in an Object (map).
          */
         function HtmlNode(cfg) {
+            /**
+             * @cfg {Number} offset (required)
+             *
+             * The offset of the HTML node in the original text that was parsed.
+             */
+            this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} text (required)
+             *
+             * The text that was matched for the HtmlNode.
+             *
+             * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
+             *   this will be the tag's text.
+             * - In the case of an {@link Autolinker.htmlParser.CommentNode CommentNode},
+             *   this will be the comment's text.
+             * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this
+             *   will be the text itself.
+             * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
+             *   this will be the text of the HTML entity.
+             */
+            this.text = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             this.offset = cfg.offset;
             this.text = cfg.text;
         }
@@ -840,8 +898,20 @@
      */
     var CommentNode = /** @class */ (function (_super) {
         __extends(CommentNode, _super);
+        /**
+         * @method constructor
+         * @param {Object} cfg The configuration options for this class, specified
+         *   in an Object.
+         */
         function CommentNode(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} comment (required)
+             *
+             * The text inside the comment tag. This text is stripped of any leading or
+             * trailing whitespace.
+             */
+            _this.comment = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.comment = cfg.comment;
             return _this;
         }
@@ -877,10 +947,37 @@
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         };
     })();
+    /**
+     * @class Autolinker.htmlParser.ElementNode
+     * @extends Autolinker.htmlParser.HtmlNode
+     *
+     * Represents an HTML element node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
+     *
+     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+     * details.
+     */
     var ElementNode = /** @class */ (function (_super) {
         __extends$1(ElementNode, _super);
+        /**
+         * @method constructor
+         * @param {Object} cfg The configuration options for this class, specified
+         *   in an Object.
+         */
         function ElementNode(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} tagName (required)
+             *
+             * The name of the tag that was matched.
+             */
+            _this.tagName = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} closing (required)
+             *
+             * `true` if the element (tag) is a closing tag, `false` if its an opening
+             * tag.
+             */
+            _this.closing = false; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.tagName = cfg.tagName;
             _this.closing = cfg.closing;
             return _this;
@@ -927,6 +1024,20 @@
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         };
     })();
+    /**
+     * @class Autolinker.htmlParser.EntityNode
+     * @extends Autolinker.htmlParser.HtmlNode
+     *
+     * Represents a known HTML entity node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
+     * Ex: '&amp;nbsp;', or '&amp#160;' (which will be retrievable from the {@link #getText}
+     * method.
+     *
+     * Note that this class will only be returned from the HtmlParser for the set of
+     * checked HTML entity nodes  defined by the {@link Autolinker.htmlParser.HtmlParser#htmlCharacterEntitiesRegex}.
+     *
+     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+     * details.
+     */
     var EntityNode = /** @class */ (function (_super) {
         __extends$2(EntityNode, _super);
         function EntityNode() {
@@ -1259,6 +1370,25 @@
          *   instance, specified in an Object (map).
          */
         function Match(cfg) {
+            /**
+             * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+             *
+             * Reference to the AnchorTagBuilder instance to use to generate an anchor
+             * tag for the Match.
+             */
+            this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
+            /**
+             * @cfg {String} matchedText (required)
+             *
+             * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
+             */
+            this.matchedText = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Number} offset (required)
+             *
+             * The offset of where the match was made in the input string.
+             */
+            this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
             this.tagBuilder = cfg.tagBuilder;
             this.matchedText = cfg.matchedText;
             this.offset = cfg.offset;
@@ -1333,6 +1463,20 @@
          *     tag.setAttr( 'target', '_system' );
          *
          *     tag.toAnchorString();  // <a href="http://google.com" class="cordova-link" target="_system">Google</a>
+         *
+         * Example Usage in {@link Autolinker#replaceFn}:
+         *
+         *     var html = Autolinker.link( "Test google.com", {
+         *         replaceFn : function( match ) {
+         *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
+         *             tag.setAttr( 'rel', 'nofollow' );
+         *
+         *             return tag;
+         *         }
+         *     } );
+         *
+         *     // generated html:
+         *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
          */
         Match.prototype.buildTag = function () {
             return this.tagBuilder.build(this);
@@ -1364,12 +1508,18 @@
     var EmailMatch = /** @class */ (function (_super) {
         __extends$4(EmailMatch, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match
          *   instance, specified in an Object (map).
          */
         function EmailMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} email (required)
+             *
+             * The email address that was matched.
+             */
+            _this.email = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.email = cfg.email;
             return _this;
         }
@@ -1425,7 +1575,7 @@
      * @class Autolinker.match.Hashtag
      * @extends Autolinker.match.Match
      *
-     * Represents a HashtagMatch match found in an input string which should be
+     * Represents a Hashtag match found in an input string which should be
      * Autolinked.
      *
      * See this class's superclass ({@link Autolinker.match.Match}) for more
@@ -1434,12 +1584,25 @@
     var HashtagMatch = /** @class */ (function (_super) {
         __extends$5(HashtagMatch, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match
          *   instance, specified in an Object (map).
          */
         function HashtagMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} serviceName
+             *
+             * The service to point hashtag matches to. See {@link Autolinker#hashtag}
+             * for available values.
+             */
+            _this.serviceName = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} hashtag (required)
+             *
+             * The HashtagMatch that was matched, without the '#'.
+             */
+            _this.hashtag = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.serviceName = cfg.serviceName;
             _this.hashtag = cfg.hashtag;
             return _this;
@@ -1522,12 +1685,25 @@
     var MentionMatch = /** @class */ (function (_super) {
         __extends$6(MentionMatch, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match
          *   instance, specified in an Object (map).
          */
         function MentionMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} serviceName
+             *
+             * The service to point mention matches to. See {@link Autolinker#mention}
+             * for available values.
+             */
+            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} mention (required)
+             *
+             * The Mention that was matched, without the '@' character.
+             */
+            _this.mention = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.mention = cfg.mention;
             _this.serviceName = cfg.serviceName;
             return _this;
@@ -1625,12 +1801,31 @@
     var PhoneMatch = /** @class */ (function (_super) {
         __extends$7(PhoneMatch, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match
          *   instance, specified in an Object (map).
          */
         function PhoneMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @protected
+             * @property {String} number (required)
+             *
+             * The phone number that was matched, without any delimiter characters.
+             *
+             * Note: This is a string to allow for prefixed 0's.
+             */
+            _this.number = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @protected
+             * @property  {Boolean} plusSign (required)
+             *
+             * `true` if the matched phone number started with a '+' sign. We'll include
+             * it in the `tel:` URL if so, as this is needed for international numbers.
+             *
+             * Ex: '+1 (123) 456 7879'
+             */
+            _this.plusSign = false; // default value just to get the above doc comment in the ES5 output and documentation generator
             _this.number = cfg.number;
             _this.plusSign = cfg.plusSign;
             return _this;
@@ -1697,12 +1892,58 @@
     var UrlMatch = /** @class */ (function (_super) {
         __extends$8(UrlMatch, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match
          *   instance, specified in an Object (map).
          */
         function UrlMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} url (required)
+             *
+             * The url that was matched.
+             */
+            _this.url = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
+             *
+             * The type of URL match that this class represents. This helps to determine
+             * if the match was made in the original text with a prefixed scheme (ex:
+             * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
+             * was matched by a known top-level domain (ex: 'google.com').
+             */
+            _this.urlMatchType = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} protocolUrlMatch (required)
+             *
+             * `true` if the URL is a match which already has a protocol (i.e.
+             * 'http://'), `false` if the match was from a 'www' or known TLD match.
+             */
+            _this.protocolUrlMatch = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} protocolRelativeMatch (required)
+             *
+             * `true` if the URL is a protocol-relative match. A protocol-relative match
+             * is a URL that starts with '//', and will be either http:// or https://
+             * based on the protocol that the site is loaded under.
+             */
+            _this.protocolRelativeMatch = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Object} stripPrefix (required)
+             *
+             * The Object form of {@link Autolinker#cfg-stripPrefix}.
+             */
+            _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} stripTrailingSlash (required)
+             * @inheritdoc Autolinker#cfg-stripTrailingSlash
+             */
+            _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} decodePercentEncoding (required)
+             * @inheritdoc Autolinker#cfg-decodePercentEncoding
+             */
+            _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @private
              * @property {RegExp} schemePrefixRegex
@@ -1872,18 +2113,19 @@
          * @return {String} The `anchorText`, with the percent-encoded characters decoded.
          */
         UrlMatch.prototype.removePercentEncoding = function (anchorText) {
+            var decodedAnchorText;
             try {
-                return decodeURIComponent(anchorText
-                    .replace(/%22/gi, '&quot;')
-                    .replace(/%26/gi, '&amp;')
-                    .replace(/%27/gi, '&#39;')
-                    .replace(/%3C/gi, '&lt;')
-                    .replace(/%3E/gi, '&gt;'));
+                decodedAnchorText = decodeURIComponent(anchorText);
             }
-            catch (e) {
-                // Invalid escape sequence.
+            catch (e) { // Invalid escape sequence
                 return anchorText;
             }
+            return decodedAnchorText
+                .replace(/%22/gi, '&quot;')
+                .replace(/%26/gi, '&amp;')
+                .replace(/%27/gi, '&#39;')
+                .replace(/%3C/gi, '&lt;')
+                .replace(/%3E/gi, '&gt;');
         };
         return UrlMatch;
     }(Match));
@@ -1900,11 +2142,18 @@
      */
     var Matcher = /** @class */ (function () {
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Matcher
          *   instance, specified in an Object (map).
          */
         function Matcher(cfg) {
+            /**
+             * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+             *
+             * Reference to the AnchorTagBuilder instance to use to generate HTML tags
+             * for {@link Autolinker.match.Match Matches}.
+             */
+            this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
             this.tagBuilder = cfg.tagBuilder;
         }
         return Matcher;
@@ -2218,12 +2467,28 @@
     var UrlMatcher = /** @class */ (function (_super) {
         __extends$a(UrlMatcher, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match instance,
          *   specified in an Object (map).
          */
         function UrlMatcher(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {Object} stripPrefix (required)
+             *
+             * The Object form of {@link Autolinker#cfg-stripPrefix}.
+             */
+            _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} stripTrailingSlash (required)
+             * @inheritdoc Autolinker#stripTrailingSlash
+             */
+            _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} decodePercentEncoding (required)
+             * @inheritdoc Autolinker#decodePercentEncoding
+             */
+            _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @private
              * @property {RegExp} matcherRegex
@@ -2476,12 +2741,19 @@
     var HashtagMatcher = /** @class */ (function (_super) {
         __extends$b(HashtagMatcher, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match instance,
          *   specified in an Object (map).
          */
         function HashtagMatcher(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @cfg {String} serviceName
+             *
+             * The service to point hashtag matches to. See {@link Autolinker#hashtag}
+             * for available values.
+             */
+            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * The regular expression to match Hashtags. Example match:
              *
@@ -2623,12 +2895,18 @@
     var MentionMatcher = /** @class */ (function (_super) {
         __extends$d(MentionMatcher, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration properties for the Match instance,
          *   specified in an Object (map).
          */
         function MentionMatcher(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * The name of service to link @mentions to.
+             *
+             * Valid values are: 'twitter', 'instagram', or 'soundcloud'
+             */
+            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * Hash of regular expression to match username handles. Example match:
              *
@@ -2692,7 +2970,7 @@
      * Utility class used to process a given string of text, and wrap the matches in
      * the appropriate anchor (&lt;a&gt;) tags to turn them into links.
      *
-     * Any of the configuration options may be provided in an Object (map) provided
+     * Any of the configuration options may be provided in an Object provided
      * to the Autolinker constructor, which will configure how the {@link #link link()}
      * method will process the links.
      *
@@ -2790,12 +3068,13 @@
      *   used directly as the replacement HTML for the match.
      * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
      *   an HTML tag before writing out its HTML text.
-     *
-     * @constructor
-     * @param {Object} [cfg] The configuration options for the Autolinker instance,
-     *   specified in an Object (map).
      */
     var Autolinker = /** @class */ (function () {
+        /**
+         * @method constructor
+         * @param {Object} [cfg] The configuration options for the Autolinker instance,
+         *   specified in an Object (map).
+         */
         function Autolinker(cfg) {
             if (cfg === void 0) { cfg = {}; }
             /**
@@ -2804,6 +3083,259 @@
              * Ex: 0.25.1
              */
             this.version = Autolinker.version;
+            /**
+             * @cfg {Boolean/Object} [urls]
+             *
+             * `true` if URLs should be automatically linked, `false` if they should not
+             * be. Defaults to `true`.
+             *
+             * Examples:
+             *
+             *     urls: true
+             *
+             *     // or
+             *
+             *     urls: {
+             *         schemeMatches : true,
+             *         wwwMatches    : true,
+             *         tldMatches    : true
+             *     }
+             *
+             * As shown above, this option also accepts an Object form with 3 properties
+             * to allow for more customization of what exactly gets linked. All default
+             * to `true`:
+             *
+             * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
+             *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+             *   `false` to prevent these types of matches.
+             * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
+             *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+             *   matches. Note that if the URL had a prefixed scheme, and
+             *   `schemeMatches` is true, it will still be linked.
+             * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
+             *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
+             *   `'www.'`. This option attempts to match anything that looks like a URL
+             *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+             *   to prevent these types of matches.
+             */
+            this.urls = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} [email=true]
+             *
+             * `true` if email addresses should be automatically linked, `false` if they
+             * should not be.
+             */
+            this.email = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} [phone=true]
+             *
+             * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
+             * `false` if they should not be.
+             */
+            this.phone = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean/String} [hashtag=false]
+             *
+             * A string for the service name to have hashtags (ex: "#myHashtag")
+             * auto-linked to. The currently-supported values are:
+             *
+             * - 'twitter'
+             * - 'facebook'
+             * - 'instagram'
+             *
+             * Pass `false` to skip auto-linking of hashtags.
+             */
+            this.hashtag = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String/Boolean} [mention=false]
+             *
+             * A string for the service name to have mentions (ex: "@myuser")
+             * auto-linked to. The currently supported values are:
+             *
+             * - 'twitter'
+             * - 'instagram'
+             * - 'soundcloud'
+             *
+             * Defaults to `false` to skip auto-linking of mentions.
+             */
+            this.mention = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} [newWindow=true]
+             *
+             * `true` if the links should open in a new window, `false` otherwise.
+             */
+            this.newWindow = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean/Object} [stripPrefix=true]
+             *
+             * `true` if 'http://' (or 'https://') and/or the 'www.' should be stripped
+             * from the beginning of URL links' text, `false` otherwise. Defaults to
+             * `true`.
+             *
+             * Examples:
+             *
+             *     stripPrefix: true
+             *
+             *     // or
+             *
+             *     stripPrefix: {
+             *         scheme : true,
+             *         www    : true
+             *     }
+             *
+             * As shown above, this option also accepts an Object form with 2 properties
+             * to allow for more customization of what exactly is prevented from being
+             * displayed. Both default to `true`:
+             *
+             * @cfg {Boolean} [stripPrefix.scheme] `true` to prevent the scheme part of
+             *   a URL match from being displayed to the user. Example:
+             *   `'http://google.com'` will be displayed as `'google.com'`. `false` to
+             *   not strip the scheme. NOTE: Only an `'http://'` or `'https://'` scheme
+             *   will be removed, so as not to remove a potentially dangerous scheme
+             *   (such as `'file://'` or `'javascript:'`)
+             * @cfg {Boolean} [stripPrefix.www] www (Boolean): `true` to prevent the
+             *   `'www.'` part of a URL match from being displayed to the user. Ex:
+             *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
+             *   strip the `'www'`.
+             */
+            this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} [stripTrailingSlash=true]
+             *
+             * `true` to remove the trailing slash from URL matches, `false` to keep
+             *  the trailing slash.
+             *
+             *  Example when `true`: `http://google.com/` will be displayed as
+             *  `http://google.com`.
+             */
+            this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} [decodePercentEncoding=true]
+             *
+             * `true` to decode percent-encoded characters in URL matches, `false` to keep
+             *  the percent-encoded characters.
+             *
+             *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
+             *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
+             */
+            this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Number/Object} [truncate=0]
+             *
+             * ## Number Form
+             *
+             * A number for how many characters matched text should be truncated to
+             * inside the text of a link. If the matched text is over this number of
+             * characters, it will be truncated to this length by adding a two period
+             * ellipsis ('..') to the end of the string.
+             *
+             * For example: A url like 'http://www.yahoo.com/some/long/path/to/a/file'
+             * truncated to 25 characters might look something like this:
+             * 'yahoo.com/some/long/pat..'
+             *
+             * Example Usage:
+             *
+             *     truncate: 25
+             *
+             *
+             *  Defaults to `0` for "no truncation."
+             *
+             *
+             * ## Object Form
+             *
+             * An Object may also be provided with two properties: `length` (Number) and
+             * `location` (String). `location` may be one of the following: 'end'
+             * (default), 'middle', or 'smart'.
+             *
+             * Example Usage:
+             *
+             *     truncate: { length: 25, location: 'middle' }
+             *
+             * @cfg {Number} [truncate.length=0] How many characters to allow before
+             *   truncation will occur. Defaults to `0` for "no truncation."
+             * @cfg {"end"/"middle"/"smart"} [truncate.location="end"]
+             *
+             * - 'end' (default): will truncate up to the number of characters, and then
+             *   add an ellipsis at the end. Ex: 'yahoo.com/some/long/pat..'
+             * - 'middle': will truncate and add the ellipsis in the middle. Ex:
+             *   'yahoo.com/s..th/to/a/file'
+             * - 'smart': for URLs where the algorithm attempts to strip out unnecessary
+             *   parts first (such as the 'www.', then URL scheme, hash, etc.),
+             *   attempting to make the URL human-readable before looking for a good
+             *   point to insert the ellipsis if it is still too long. Ex:
+             *   'yahoo.com/some..to/a/file'. For more details, see
+             *   {@link Autolinker.truncate.TruncateSmart}.
+             */
+            this.truncate = { length: 0, location: 'end' }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {String} className
+             *
+             * A CSS class name to add to the generated links. This class will be added
+             * to all links, as well as this class plus match suffixes for styling
+             * url/email/phone/hashtag/mention links differently.
+             *
+             * For example, if this config is provided as "myLink", then:
+             *
+             * - URL links will have the CSS classes: "myLink myLink-url"
+             * - Email links will have the CSS classes: "myLink myLink-email", and
+             * - Phone links will have the CSS classes: "myLink myLink-phone"
+             * - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
+             * - Mention links will have the CSS classes: "myLink myLink-mention myLink-[type]"
+             *   where [type] is either "instagram", "twitter" or "soundcloud"
+             */
+            this.className = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Function} replaceFn
+             *
+             * A function to individually process each match found in the input string.
+             *
+             * See the class's description for usage.
+             *
+             * The `replaceFn` can be called with a different context object (`this`
+             * reference) using the {@link #context} cfg.
+             *
+             * This function is called with the following parameter:
+             *
+             * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
+             *   can be used to retrieve information about the match that the `replaceFn`
+             *   is currently processing. See {@link Autolinker.match.Match} subclasses
+             *   for details.
+             */
+            this.replaceFn = null; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Object} context
+             *
+             * The context object (`this` reference) to call the `replaceFn` with.
+             *
+             * Defaults to this Autolinker instance.
+             */
+            this.context = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @private
+             * @property {Autolinker.htmlParser.HtmlParser} htmlParser
+             *
+             * The HtmlParser instance used to skip over HTML tags, while finding text
+             * nodes to process.
+             */
+            this.htmlParser = new HtmlParser();
+            /**
+             * @private
+             * @property {Autolinker.matcher.Matcher[]} matchers
+             *
+             * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
+             * instance.
+             *
+             * This is lazily created in {@link #getMatchers}.
+             */
+            this.matchers = null;
+            /**
+             * @private
+             * @property {Autolinker.AnchorTagBuilder} tagBuilder
+             *
+             * The AnchorTagBuilder instance used to build match replacement anchor tags.
+             * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
+             */
+            this.tagBuilder = null;
             this.urls = this.normalizeUrlsCfg(cfg.urls);
             this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
             this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
@@ -2815,7 +3347,7 @@
             this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : true;
             // Validate the value of the `mention` cfg
             var mention = this.mention;
-            if (mention !== false && mention !== 'twitter' && mention !== 'instagram') {
+            if (mention !== false && mention !== 'twitter' && mention !== 'instagram' && mention !== 'soundcloud') {
                 throw new Error("invalid `mention` cfg - see docs");
             }
             // Validate the value of the `hashtag` cfg
@@ -2827,9 +3359,6 @@
             this.className = cfg.className || '';
             this.replaceFn = cfg.replaceFn || null;
             this.context = cfg.context || this;
-            this.htmlParser = new HtmlParser();
-            this.matchers = null;
-            this.tagBuilder = null;
         }
         /**
          * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
@@ -2900,6 +3429,7 @@
          *
          * See {@link #urls} config for details.
          *
+         * @private
          * @param {Boolean/Object} urls
          * @return {Object}
          */
@@ -3199,7 +3729,7 @@
          * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
          * instances for this Autolinker instance.
          *
-         * @protected
+         * @private
          * @return {Autolinker.matcher.Matcher[]}
          */
         Autolinker.prototype.getMatchers = function () {
@@ -3219,24 +3749,10 @@
             }
         };
         /**
-         * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
-         * if it does not yet exist.
+         * Returns the {@link #tagBuilder} instance for this Autolinker instance,
+         * lazily instantiating it if it does not yet exist.
          *
-         * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that
-         * Autolinker would normally generate, and then allow for modifications before returning it. For example:
-         *
-         *     var html = Autolinker.link( "Test google.com", {
-         *         replaceFn : function( match ) {
-         *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
-         *             tag.setAttr( 'rel', 'nofollow' );
-         *
-         *             return tag;
-         *         }
-         *     } );
-         *
-         *     // generated html:
-         *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
-         *
+         * @private
          * @return {Autolinker.AnchorTagBuilder}
          */
         Autolinker.prototype.getTagBuilder = function () {
@@ -3251,6 +3767,9 @@
             return tagBuilder;
         };
         /**
+         * @static
+         * @property {String} version
+         *
          * The Autolinker version number in the form major.minor.patch
          *
          * Ex: 0.25.1

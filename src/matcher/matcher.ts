@@ -19,11 +19,14 @@ export abstract class Matcher {
 	 * Reference to the AnchorTagBuilder instance to use to generate HTML tags
 	 * for {@link Autolinker.match.Match Matches}.
 	 */
+	private __jsduckDummyDocProp = null;  // property used just to get the above doc comment into the ES5 output and documentation generator
+
+	// Actual property for the above jsdoc comment
 	protected tagBuilder: AnchorTagBuilder;
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Matcher
 	 *   instance, specified in an Object (map).
 	 */

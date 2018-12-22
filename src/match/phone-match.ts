@@ -20,7 +20,7 @@ export class PhoneMatch extends Match {
 	 *
 	 * Note: This is a string to allow for prefixed 0's.
 	 */
-	private readonly number: string;
+	private readonly number: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @protected
@@ -31,11 +31,11 @@ export class PhoneMatch extends Match {
 	 *
 	 * Ex: '+1 (123) 456 7879'
 	 */
-	private readonly plusSign: boolean;
+	private readonly plusSign: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */

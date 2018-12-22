@@ -22,7 +22,7 @@ export abstract class HtmlNode {
 	 *
 	 * The offset of the HTML node in the original text that was parsed.
 	 */
-	offset: number;
+	offset: number = 0;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} text (required)
@@ -38,11 +38,11 @@ export abstract class HtmlNode {
 	 * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
 	 *   this will be the text of the HTML entity.
 	 */
-	text: string;
+	text: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match instance,
 	 * specified in an Object (map).
 	 */

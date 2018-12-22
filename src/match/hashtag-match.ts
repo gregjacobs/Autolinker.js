@@ -4,7 +4,7 @@ import { Match, MatchConfig } from "./match";
  * @class Autolinker.match.Hashtag
  * @extends Autolinker.match.Match
  *
- * Represents a HashtagMatch match found in an input string which should be
+ * Represents a Hashtag match found in an input string which should be
  * Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more
@@ -18,18 +18,18 @@ export class HashtagMatch extends Match {
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
-	private readonly serviceName: string;
+	private readonly serviceName: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} hashtag (required)
 	 *
 	 * The HashtagMatch that was matched, without the '#'.
 	 */
-	private readonly hashtag: string;
+	private readonly hashtag: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */

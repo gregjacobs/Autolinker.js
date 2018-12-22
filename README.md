@@ -489,6 +489,46 @@ the changes.
 Note: If anyone wants to submit a PR converting `gulp watch` to `webpack` with 
 the live development server, that would be much appreciated :)
 
+
+#### Documentation Generator Notes
+
+This project uses [JSDuck](https://github.com/senchalabs/jsduck) for its 
+documentation generation, which produces the page at [http://gregjacobs.github.io/Autolinker.js](http://gregjacobs.github.io/Autolinker.js).
+
+Unfortunately, JSDuck is a very old project that is no longer maintained. As 
+such, it doesn't support TypeScript or anything from ES6 (the `class` keyword, 
+arrow functions, etc). However, I have yet to find a better documentation 
+generator that creates such a useful API site. (Suggestions for a new one are 
+welcome though - please raise an issue.)
+
+Since ES6 is not supported, we must generate the documentation from the ES5 
+output. As such, a few precautions must be taken care of to make sure the 
+documentation comes out right:
+
+1. `@cfg` documentation tags must exist above a class property that has a 
+   default value, or else it won't end up in the ES5 output. For example:
+
+   ```ts
+   // Will correctly end up in the ES5 output
+
+   /**
+    * @cfg {String} title
+    */
+   readonly title: string = '';
+
+
+
+   // Will *not* end up in ES5 output, and thus, won't end up in the generated
+   // documentation
+
+   /**
+    * @cfg {String} title
+    */
+   readonly title: string;
+   ```
+2. The `@constructor` tag must be replaced with `@method constructor`
+
+
 ## Changelog
 
 See [Releases](https://github.com/gregjacobs/Autolinker.js/releases)

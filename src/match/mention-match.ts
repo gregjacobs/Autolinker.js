@@ -17,18 +17,18 @@ export class MentionMatch extends Match {
 	 * The service to point mention matches to. See {@link Autolinker#mention}
 	 * for available values.
 	 */
-	private readonly serviceName: MentionServices;
+	private readonly serviceName: MentionServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} mention (required)
 	 *
 	 * The Mention that was matched, without the '@' character.
 	 */
-	private readonly mention: string;
+	private readonly mention: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration properties for the Match
 	 *   instance, specified in an Object (map).
 	 */

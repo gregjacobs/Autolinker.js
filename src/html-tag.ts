@@ -1,3 +1,5 @@
+import { indexOf } from "./utils";
+
 /**
  * @class Autolinker.HtmlTag
  * @extends Object
@@ -72,8 +74,6 @@
  *     // generated html:
  *     //   Test <button title="Load URL: http://google.com">Load URL: google.com</button>
  */
-import { indexOf } from "./utils";
-
 export class HtmlTag {
 
 	/**
@@ -84,7 +84,7 @@ export class HtmlTag {
 	 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
 	 * is executed.
 	 */
-	private tagName: string;
+	private tagName: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Object.<String, String>} attrs
@@ -92,14 +92,14 @@ export class HtmlTag {
 	 * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
 	 * values are the attribute values.
 	 */
-	private attrs: { [key: string]: string };
+	private attrs: { [key: string]: string } = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} innerHTML
 	 *
 	 * The inner HTML for the tag.
 	 */
-	private innerHTML: string;
+	private innerHTML: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @protected
@@ -107,19 +107,14 @@ export class HtmlTag {
 	 *
 	 * Regular expression used to match whitespace in a string of CSS classes.
 	 */
-	protected whitespaceRegex = /\s+/;
+	protected whitespaceRegex = /\s+/;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
 	 */
-	constructor( cfg: {
-		tagName?: string;
-		attrs?: { [key: string]: string };
-		innerHtml?: string;
-		innerHTML?: string;
-	} = {} ) {
+	constructor( cfg: HtmlTagCfg = {} ) {
 		this.tagName = cfg.tagName || '';
 		this.attrs = cfg.attrs || {};
 		this.innerHTML = cfg.innerHtml || cfg.innerHTML || '';  // accept either the camelCased form or the fully capitalized acronym as in the DOM
@@ -345,7 +340,7 @@ export class HtmlTag {
 	 * @protected
 	 * @return {String} Example return: `attr1="value1" attr2="value2"`
 	 */
-	buildAttrsStr() {
+	protected buildAttrsStr() {
 		if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
 
 		let attrs = this.getAttrs(),
@@ -359,4 +354,12 @@ export class HtmlTag {
 		return attrsArr.join( " " );
 	}
 
+}
+
+
+export interface HtmlTagCfg {
+	tagName?: string;
+	attrs?: { [key: string]: string };
+	innerHtml?: string;
+	innerHTML?: string;
 }
