@@ -473,6 +473,20 @@ yarn test
   their visual preferences).
 
 
+#### Building the Project Fully
+
+For this you will need [Ruby](https://www.ruby-lang.org) installed (note: Ruby
+comes pre-installed on MacOS), with the [JSDuck](https://github.com/senchalabs/jsduck) 
+gem. 
+
+See https://github.com/senchalabs/jsduck#getting-it for installation 
+instructions on Windows/Mac/Linux
+
+[JSDuck](https://github.com/senchalabs/jsduck) is used to build the project's
+API/documentation site. See [Documentation Generator Notes](#Documentation Generator Notes)
+for more info.
+
+
 #### Running the Live Example Page Locally
 
 Run:
