@@ -2798,18 +2798,18 @@ describe( "Autolinker", function() {
 		// TODO: This will no longer work in the TypeScript version of the codebase (2.0)
 		// Need to implement providing a custom PhoneMatcher
 		xdescribe( 'custom Phone.prototype.matcherRegex', function() {
-			const matcherRegexOriginal = PhoneMatcher.prototype.matcherRegex;
-			const testMatchOriginal = PhoneMatcher.prototype.testMatch;
+			// const matcherRegexOriginal = PhoneMatcher.prototype.matcherRegex;
+			// const testMatchOriginal = PhoneMatcher.prototype.testMatch;
 
 			beforeEach( function() {
 				const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
-				PhoneMatcher.prototype.matcherRegex = phoneInTextRegex;
-				PhoneMatcher.prototype.testMatch = () => true;
+				// PhoneMatcher.prototype.matcherRegex = phoneInTextRegex;
+				// PhoneMatcher.prototype.testMatch = () => true;
 			} );
 
 			afterEach( function() {
-				PhoneMatcher.prototype.matcherRegex = matcherRegexOriginal;
-				PhoneMatcher.prototype.testMatch = testMatchOriginal;
+				// PhoneMatcher.prototype.matcherRegex = matcherRegexOriginal;
+				// PhoneMatcher.prototype.testMatch = testMatchOriginal;
 			} );
 
 			it( 'should match custom matcherRegex', function() {
