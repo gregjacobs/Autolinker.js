@@ -265,27 +265,32 @@ export class UrlMatch extends Match {
 	}
 
 	/**
-	 * Decodes percent-encoded characters from the given `anchorText`, in preparation for the text to be displayed.
+	 * Decodes percent-encoded characters from the given `anchorText`, in 
+	 * preparation for the text to be displayed.
 	 *
 	 * @private
-	 * @param {String} anchorText The text of the anchor that is being generated, for which to decode any percent-encoded characters.
-	 * @return {String} The `anchorText`, with the percent-encoded characters decoded.
+	 * @param {String} anchorText The text of the anchor that is being 
+	 *   generated, for which to decode any percent-encoded characters.
+	 * @return {String} The `anchorText`, with the percent-encoded characters 
+	 *   decoded.
 	 */
 	private removePercentEncoding( anchorText: string ) {
-		let decodedAnchorText: string;
+		// First, convert a few of the known % encodings to the corresponding
+		// HTML entities that could accidentally be interpretted as special
+		// HTML characters
+		const preProcessedEntityAnchorText = anchorText
+			.replace( /%22/gi, '&quot;' ) // " char
+			.replace( /%26/gi, '&amp;' )  // & char
+			.replace( /%27/gi, '&#39;')   // ' char
+			.replace( /%3C/gi, '&lt;' )   // < char
+			.replace( /%3E/gi, '&gt;' );  // > char
 
 		try {
-			decodedAnchorText = decodeURIComponent( anchorText );
-		} catch (e) {  // Invalid escape sequence
-			return anchorText;
+			// Now attempt to decode the rest of the anchor text
+			return decodeURIComponent( preProcessedEntityAnchorText );
+		} catch( e ) {  // Invalid % escape sequence in the anchor text
+			return preProcessedEntityAnchorText;
 		}
-
-		return decodedAnchorText
-			.replace( /%22/gi, '&quot;' )
-			.replace( /%26/gi, '&amp;' )
-			.replace( /%27/gi, '&#39;')
-			.replace( /%3C/gi, '&lt;' )
-			.replace( /%3E/gi, '&gt;' );
 	}
 
 }
