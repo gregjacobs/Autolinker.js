@@ -41,14 +41,21 @@ var hashtag_match_1 = require(&quot;../match/hashtag-match&quot;);
  */
 var HashtagMatcher =  (function (_super) {
     __extends(HashtagMatcher, _super);
-<span id='HashtagMatcher-method-constructor'><span id='HashtagMatcher'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-matcher-Hashtag-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
     function HashtagMatcher(cfg) {
         var _this = _super.call(this, cfg) || this;
-<span id='HashtagMatcher-property-matcherRegex'>        /**
+<span id='Autolinker-matcher-Hashtag-cfg-serviceName'>        /**
+</span>         * @cfg {String} serviceName
+         *
+         * The service to point hashtag matches to. See {@link Autolinker#hashtag}
+         * for available values.
+         */
+        _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Hashtag-property-matcherRegex'>        /**
 </span>         * The regular expression to match Hashtags. Example match:
          *
          *     #asdf
@@ -57,7 +64,7 @@ var HashtagMatcher =  (function (_super) {
          * @property {RegExp} matcherRegex
          */
         _this.matcherRegex = new RegExp(&#39;#[_&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,139}&#39;, &#39;g&#39;);
-<span id='HashtagMatcher-property-nonWordCharRegex'>        /**
+<span id='Autolinker-matcher-Hashtag-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to
          * make sure we didn&#39;t accidentally match an email address.
          *
@@ -70,7 +77,7 @@ var HashtagMatcher =  (function (_super) {
         _this.serviceName = cfg.serviceName;
         return _this;
     }
-<span id='HashtagMatcher-method-parseMatches'>    /**
+<span id='Autolinker-matcher-Hashtag-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
     HashtagMatcher.prototype.parseMatches = function (text) {

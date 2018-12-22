@@ -33,14 +33,14 @@ var url_matcher_1 = require(&quot;./matcher/url-matcher&quot;);
 var hashtag_matcher_1 = require(&quot;./matcher/hashtag-matcher&quot;);
 var phone_matcher_1 = require(&quot;./matcher/phone-matcher&quot;);
 var mention_matcher_1 = require(&quot;./matcher/mention-matcher&quot;);
-<span id='Autolinker-method-constructor'><span id='Autolinker'>/**
-</span></span> * @class Autolinker
+<span id='Autolinker'>/**
+</span> * @class Autolinker
  * @extends Object
  *
  * Utility class used to process a given string of text, and wrap the matches in
  * the appropriate anchor (&amp;lt;a&amp;gt;) tags to turn them into links.
  *
- * Any of the configuration options may be provided in an Object (map) provided
+ * Any of the configuration options may be provided in an Object provided
  * to the Autolinker constructor, which will configure how the {@link #link link()}
  * method will process the links.
  *
@@ -138,12 +138,13 @@ var mention_matcher_1 = require(&quot;./matcher/mention-matcher&quot;);
  *   used directly as the replacement HTML for the match.
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
  *   an HTML tag before writing out its HTML text.
- *
- * @constructor
- * @param {Object} [cfg] The configuration options for the Autolinker instance,
- *   specified in an Object (map).
  */
 var Autolinker =  (function () {
+<span id='Autolinker-method-constructor'>    /**
+</span>     * @method constructor
+     * @param {Object} [cfg] The configuration options for the Autolinker instance,
+     *   specified in an Object (map).
+     */
     function Autolinker(cfg) {
         if (cfg === void 0) { cfg = {}; }
 <span id='Autolinker-property-version'>        /**
@@ -152,6 +153,259 @@ var Autolinker =  (function () {
          * Ex: 0.25.1
          */
         this.version = Autolinker.version;
+<span id='Autolinker-cfg-urls'>        /**
+</span>         * @cfg {Boolean/Object} [urls]
+         *
+         * `true` if URLs should be automatically linked, `false` if they should not
+         * be. Defaults to `true`.
+         *
+         * Examples:
+         *
+         *     urls: true
+         *
+         *     // or
+         *
+         *     urls: {
+         *         schemeMatches : true,
+         *         wwwMatches    : true,
+         *         tldMatches    : true
+         *     }
+         *
+         * As shown above, this option also accepts an Object form with 3 properties
+         * to allow for more customization of what exactly gets linked. All default
+         * to `true`:
+         *
+         * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
+         *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+         *   `false` to prevent these types of matches.
+         * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
+         *   `&#39;www.&#39;`, i.e. `www.google.com`. `false` to prevent these types of
+         *   matches. Note that if the URL had a prefixed scheme, and
+         *   `schemeMatches` is true, it will still be linked.
+         * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
+         *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
+         *   `&#39;www.&#39;`. This option attempts to match anything that looks like a URL
+         *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+         *   to prevent these types of matches.
+         */
+        this.urls = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-email'>        /**
+</span>         * @cfg {Boolean} [email=true]
+         *
+         * `true` if email addresses should be automatically linked, `false` if they
+         * should not be.
+         */
+        this.email = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-phone'>        /**
+</span>         * @cfg {Boolean} [phone=true]
+         *
+         * `true` if Phone numbers (&quot;(555)555-5555&quot;) should be automatically linked,
+         * `false` if they should not be.
+         */
+        this.phone = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-hashtag'>        /**
+</span>         * @cfg {Boolean/String} [hashtag=false]
+         *
+         * A string for the service name to have hashtags (ex: &quot;#myHashtag&quot;)
+         * auto-linked to. The currently-supported values are:
+         *
+         * - &#39;twitter&#39;
+         * - &#39;facebook&#39;
+         * - &#39;instagram&#39;
+         *
+         * Pass `false` to skip auto-linking of hashtags.
+         */
+        this.hashtag = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-mention'>        /**
+</span>         * @cfg {String/Boolean} [mention=false]
+         *
+         * A string for the service name to have mentions (ex: &quot;@myuser&quot;)
+         * auto-linked to. The currently supported values are:
+         *
+         * - &#39;twitter&#39;
+         * - &#39;instagram&#39;
+         * - &#39;soundcloud&#39;
+         *
+         * Defaults to `false` to skip auto-linking of mentions.
+         */
+        this.mention = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-newWindow'>        /**
+</span>         * @cfg {Boolean} [newWindow=true]
+         *
+         * `true` if the links should open in a new window, `false` otherwise.
+         */
+        this.newWindow = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-stripPrefix'>        /**
+</span>         * @cfg {Boolean/Object} [stripPrefix=true]
+         *
+         * `true` if &#39;http://&#39; (or &#39;https://&#39;) and/or the &#39;www.&#39; should be stripped
+         * from the beginning of URL links&#39; text, `false` otherwise. Defaults to
+         * `true`.
+         *
+         * Examples:
+         *
+         *     stripPrefix: true
+         *
+         *     // or
+         *
+         *     stripPrefix: {
+         *         scheme : true,
+         *         www    : true
+         *     }
+         *
+         * As shown above, this option also accepts an Object form with 2 properties
+         * to allow for more customization of what exactly is prevented from being
+         * displayed. Both default to `true`:
+         *
+         * @cfg {Boolean} [stripPrefix.scheme] `true` to prevent the scheme part of
+         *   a URL match from being displayed to the user. Example:
+         *   `&#39;http://google.com&#39;` will be displayed as `&#39;google.com&#39;`. `false` to
+         *   not strip the scheme. NOTE: Only an `&#39;http://&#39;` or `&#39;https://&#39;` scheme
+         *   will be removed, so as not to remove a potentially dangerous scheme
+         *   (such as `&#39;file://&#39;` or `&#39;javascript:&#39;`)
+         * @cfg {Boolean} [stripPrefix.www] www (Boolean): `true` to prevent the
+         *   `&#39;www.&#39;` part of a URL match from being displayed to the user. Ex:
+         *   `&#39;www.google.com&#39;` will be displayed as `&#39;google.com&#39;`. `false` to not
+         *   strip the `&#39;www&#39;`.
+         */
+        this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-stripTrailingSlash'>        /**
+</span>         * @cfg {Boolean} [stripTrailingSlash=true]
+         *
+         * `true` to remove the trailing slash from URL matches, `false` to keep
+         *  the trailing slash.
+         *
+         *  Example when `true`: `http://google.com/` will be displayed as
+         *  `http://google.com`.
+         */
+        this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-decodePercentEncoding'>        /**
+</span>         * @cfg {Boolean} [decodePercentEncoding=true]
+         *
+         * `true` to decode percent-encoded characters in URL matches, `false` to keep
+         *  the percent-encoded characters.
+         *
+         *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
+         *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
+         */
+        this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-truncate'>        /**
+</span>         * @cfg {Number/Object} [truncate=0]
+         *
+         * ## Number Form
+         *
+         * A number for how many characters matched text should be truncated to
+         * inside the text of a link. If the matched text is over this number of
+         * characters, it will be truncated to this length by adding a two period
+         * ellipsis (&#39;..&#39;) to the end of the string.
+         *
+         * For example: A url like &#39;http://www.yahoo.com/some/long/path/to/a/file&#39;
+         * truncated to 25 characters might look something like this:
+         * &#39;yahoo.com/some/long/pat..&#39;
+         *
+         * Example Usage:
+         *
+         *     truncate: 25
+         *
+         *
+         *  Defaults to `0` for &quot;no truncation.&quot;
+         *
+         *
+         * ## Object Form
+         *
+         * An Object may also be provided with two properties: `length` (Number) and
+         * `location` (String). `location` may be one of the following: &#39;end&#39;
+         * (default), &#39;middle&#39;, or &#39;smart&#39;.
+         *
+         * Example Usage:
+         *
+         *     truncate: { length: 25, location: &#39;middle&#39; }
+         *
+         * @cfg {Number} [truncate.length=0] How many characters to allow before
+         *   truncation will occur. Defaults to `0` for &quot;no truncation.&quot;
+         * @cfg {&quot;end&quot;/&quot;middle&quot;/&quot;smart&quot;} [truncate.location=&quot;end&quot;]
+         *
+         * - &#39;end&#39; (default): will truncate up to the number of characters, and then
+         *   add an ellipsis at the end. Ex: &#39;yahoo.com/some/long/pat..&#39;
+         * - &#39;middle&#39;: will truncate and add the ellipsis in the middle. Ex:
+         *   &#39;yahoo.com/s..th/to/a/file&#39;
+         * - &#39;smart&#39;: for URLs where the algorithm attempts to strip out unnecessary
+         *   parts first (such as the &#39;www.&#39;, then URL scheme, hash, etc.),
+         *   attempting to make the URL human-readable before looking for a good
+         *   point to insert the ellipsis if it is still too long. Ex:
+         *   &#39;yahoo.com/some..to/a/file&#39;. For more details, see
+         *   {@link Autolinker.truncate.TruncateSmart}.
+         */
+        this.truncate = { length: 0, location: &#39;end&#39; }; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-className'>        /**
+</span>         * @cfg {String} className
+         *
+         * A CSS class name to add to the generated links. This class will be added
+         * to all links, as well as this class plus match suffixes for styling
+         * url/email/phone/hashtag/mention links differently.
+         *
+         * For example, if this config is provided as &quot;myLink&quot;, then:
+         *
+         * - URL links will have the CSS classes: &quot;myLink myLink-url&quot;
+         * - Email links will have the CSS classes: &quot;myLink myLink-email&quot;, and
+         * - Phone links will have the CSS classes: &quot;myLink myLink-phone&quot;
+         * - Hashtag links will have the CSS classes: &quot;myLink myLink-hashtag&quot;
+         * - Mention links will have the CSS classes: &quot;myLink myLink-mention myLink-[type]&quot;
+         *   where [type] is either &quot;instagram&quot;, &quot;twitter&quot; or &quot;soundcloud&quot;
+         */
+        this.className = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-replaceFn'>        /**
+</span>         * @cfg {Function} replaceFn
+         *
+         * A function to individually process each match found in the input string.
+         *
+         * See the class&#39;s description for usage.
+         *
+         * The `replaceFn` can be called with a different context object (`this`
+         * reference) using the {@link #context} cfg.
+         *
+         * This function is called with the following parameter:
+         *
+         * @cfg {Autolinker.match.Match} replaceFn.match The Match instance which
+         *   can be used to retrieve information about the match that the `replaceFn`
+         *   is currently processing. See {@link Autolinker.match.Match} subclasses
+         *   for details.
+         */
+        this.replaceFn = null; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-context'>        /**
+</span>         * @cfg {Object} context
+         *
+         * The context object (`this` reference) to call the `replaceFn` with.
+         *
+         * Defaults to this Autolinker instance.
+         */
+        this.context = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-property-htmlParser'>        /**
+</span>         * @private
+         * @property {Autolinker.htmlParser.HtmlParser} htmlParser
+         *
+         * The HtmlParser instance used to skip over HTML tags, while finding text
+         * nodes to process.
+         */
+        this.htmlParser = new html_parser_1.HtmlParser();
+<span id='Autolinker-property-matchers'>        /**
+</span>         * @private
+         * @property {Autolinker.matcher.Matcher[]} matchers
+         *
+         * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
+         * instance.
+         *
+         * This is lazily created in {@link #getMatchers}.
+         */
+        this.matchers = null;
+<span id='Autolinker-property-tagBuilder'>        /**
+</span>         * @private
+         * @property {Autolinker.AnchorTagBuilder} tagBuilder
+         *
+         * The AnchorTagBuilder instance used to build match replacement anchor tags.
+         * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
+         */
+        this.tagBuilder = null;
         this.urls = this.normalizeUrlsCfg(cfg.urls);
         this.email = typeof cfg.email === &#39;boolean&#39; ? cfg.email : true;
         this.phone = typeof cfg.phone === &#39;boolean&#39; ? cfg.phone : true;
@@ -163,7 +417,7 @@ var Autolinker =  (function () {
         this.decodePercentEncoding = typeof cfg.decodePercentEncoding === &#39;boolean&#39; ? cfg.decodePercentEncoding : true;
         // Validate the value of the `mention` cfg
         var mention = this.mention;
-        if (mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39;) {
+        if (mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39; &amp;&amp; mention !== &#39;soundcloud&#39;) {
             throw new Error(&quot;invalid `mention` cfg - see docs&quot;);
         }
         // Validate the value of the `hashtag` cfg
@@ -175,9 +429,6 @@ var Autolinker =  (function () {
         this.className = cfg.className || &#39;&#39;;
         this.replaceFn = cfg.replaceFn || null;
         this.context = cfg.context || this;
-        this.htmlParser = new html_parser_1.HtmlParser();
-        this.matchers = null;
-        this.tagBuilder = null;
     }
 <span id='Autolinker-static-method-link'>    /**
 </span>     * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
@@ -248,6 +499,7 @@ var Autolinker =  (function () {
      *
      * See {@link #urls} config for details.
      *
+     * @private
      * @param {Boolean/Object} urls
      * @return {Object}
      */
@@ -547,7 +799,7 @@ var Autolinker =  (function () {
 </span>     * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
      * instances for this Autolinker instance.
      *
-     * @protected
+     * @private
      * @return {Autolinker.matcher.Matcher[]}
      */
     Autolinker.prototype.getMatchers = function () {
@@ -567,24 +819,10 @@ var Autolinker =  (function () {
         }
     };
 <span id='Autolinker-method-getTagBuilder'>    /**
-</span>     * Returns the {@link #tagBuilder} instance for this Autolinker instance, lazily instantiating it
-     * if it does not yet exist.
+</span>     * Returns the {@link #tagBuilder} instance for this Autolinker instance,
+     * lazily instantiating it if it does not yet exist.
      *
-     * This method may be used in a {@link #replaceFn} to generate the {@link Autolinker.HtmlTag HtmlTag} instance that
-     * Autolinker would normally generate, and then allow for modifications before returning it. For example:
-     *
-     *     var html = Autolinker.link( &quot;Test google.com&quot;, {
-     *         replaceFn : function( match ) {
-     *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
-     *             tag.setAttr( &#39;rel&#39;, &#39;nofollow&#39; );
-     *
-     *             return tag;
-     *         }
-     *     } );
-     *
-     *     // generated html:
-     *     //   Test &lt;a href=&quot;http://google.com&quot; target=&quot;_blank&quot; rel=&quot;nofollow&quot;&gt;google.com&lt;/a&gt;
-     *
+     * @private
      * @return {Autolinker.AnchorTagBuilder}
      */
     Autolinker.prototype.getTagBuilder = function () {
@@ -598,8 +836,11 @@ var Autolinker =  (function () {
         }
         return tagBuilder;
     };
-<span id='Autolinker-property-version'>    /**
-</span>     * The Autolinker version number in the form major.minor.patch
+<span id='Autolinker-static-property-version'>    /**
+</span>     * @static
+     * @property {String} version
+     *
+     * The Autolinker version number in the form major.minor.patch
      *
      * Ex: 0.25.1
      */

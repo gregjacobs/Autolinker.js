@@ -17,6 +17,11 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var utils_1 = require(&quot;../utils&quot;);
+var comment_node_1 = require(&quot;./comment-node&quot;);
+var element_node_1 = require(&quot;./element-node&quot;);
+var entity_node_1 = require(&quot;./entity-node&quot;);
+var text_node_1 = require(&quot;./text-node&quot;);
 <span id='global-property-htmlRegex'>/**
 </span> * @private
  * @property {RegExp} htmlRegex
@@ -33,11 +38,6 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
  * 4. The tag name for a tag without attributes (other than the &amp;lt;!DOCTYPE&amp;gt; tag)
  * 5. The tag name for a tag with attributes (other than the &amp;lt;!DOCTYPE&amp;gt; tag)
  */
-var utils_1 = require(&quot;../utils&quot;);
-var comment_node_1 = require(&quot;./comment-node&quot;);
-var element_node_1 = require(&quot;./element-node&quot;);
-var entity_node_1 = require(&quot;./entity-node&quot;);
-var text_node_1 = require(&quot;./text-node&quot;);
 var htmlRegex = (function () {
     var commentTagRegex = /!--([\s\S]+?)--/, tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/, attrNameRegex = /[^\s&quot;&#39;&gt;\/=\x00-\x1F\x7F]+/, // the unicode range accounts for excluding control chars, and the delete char
     attrValueRegex = /(?:&quot;[^&quot;]*?&quot;|&#39;[^&#39;]*?&#39;|[^&#39;&quot;=&lt;&gt;`\s]+)/, // double quoted, single quoted, or unquoted attribute values

@@ -43,18 +43,37 @@ var match_1 = require(&quot;./match&quot;);
  */
 var PhoneMatch =  (function (_super) {
     __extends(PhoneMatch, _super);
-<span id='PhoneMatch-method-constructor'><span id='PhoneMatch'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-match-Phone-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match
      *   instance, specified in an Object (map).
      */
     function PhoneMatch(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-match-Phone-property-number'>        /**
+</span>         * @protected
+         * @property {String} number (required)
+         *
+         * The phone number that was matched, without any delimiter characters.
+         *
+         * Note: This is a string to allow for prefixed 0&#39;s.
+         */
+        _this.number = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-match-Phone-property-plusSign'>        /**
+</span>         * @protected
+         * @property  {Boolean} plusSign (required)
+         *
+         * `true` if the matched phone number started with a &#39;+&#39; sign. We&#39;ll include
+         * it in the `tel:` URL if so, as this is needed for international numbers.
+         *
+         * Ex: &#39;+1 (123) 456 7879&#39;
+         */
+        _this.plusSign = false; // default value just to get the above doc comment in the ES5 output and documentation generator
         _this.number = cfg.number;
         _this.plusSign = cfg.plusSign;
         return _this;
     }
-<span id='PhoneMatch-method-getType'>    /**
+<span id='Autolinker-match-Phone-method-getType'>    /**
 </span>     * Returns a string name for the type of match that this class represents.
      *
      * @return {String}
@@ -62,7 +81,7 @@ var PhoneMatch =  (function (_super) {
     PhoneMatch.prototype.getType = function () {
         return &#39;phone&#39;;
     };
-<span id='PhoneMatch-method-getNumber'>    /**
+<span id='Autolinker-match-Phone-method-getNumber'>    /**
 </span>     * Returns the phone number that was matched as a string, without any
      * delimiter characters.
      *
@@ -73,7 +92,7 @@ var PhoneMatch =  (function (_super) {
     PhoneMatch.prototype.getNumber = function () {
         return this.number;
     };
-<span id='PhoneMatch-method-getAnchorHref'>    /**
+<span id='Autolinker-match-Phone-method-getAnchorHref'>    /**
 </span>     * Returns the anchor href that should be generated for the match.
      *
      * @return {String}
@@ -81,7 +100,7 @@ var PhoneMatch =  (function (_super) {
     PhoneMatch.prototype.getAnchorHref = function () {
         return &#39;tel:&#39; + (this.plusSign ? &#39;+&#39; : &#39;&#39;) + this.number;
     };
-<span id='PhoneMatch-method-getAnchorText'>    /**
+<span id='Autolinker-match-Phone-method-getAnchorText'>    /**
 </span>     * Returns the anchor text that should be generated for the match.
      *
      * @return {String}

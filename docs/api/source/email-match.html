@@ -41,17 +41,23 @@ var match_1 = require(&quot;./match&quot;);
  */
 var EmailMatch =  (function (_super) {
     __extends(EmailMatch, _super);
-<span id='EmailMatch-method-constructor'><span id='EmailMatch'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-match-Email-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match
      *   instance, specified in an Object (map).
      */
     function EmailMatch(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-match-Email-cfg-email'>        /**
+</span>         * @cfg {String} email (required)
+         *
+         * The email address that was matched.
+         */
+        _this.email = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
         _this.email = cfg.email;
         return _this;
     }
-<span id='EmailMatch-method-getType'>    /**
+<span id='Autolinker-match-Email-method-getType'>    /**
 </span>     * Returns a string name for the type of match that this class represents.
      *
      * @return {String}
@@ -59,7 +65,7 @@ var EmailMatch =  (function (_super) {
     EmailMatch.prototype.getType = function () {
         return &#39;email&#39;;
     };
-<span id='EmailMatch-method-getEmail'>    /**
+<span id='Autolinker-match-Email-method-getEmail'>    /**
 </span>     * Returns the email address that was matched.
      *
      * @return {String}
@@ -67,7 +73,7 @@ var EmailMatch =  (function (_super) {
     EmailMatch.prototype.getEmail = function () {
         return this.email;
     };
-<span id='EmailMatch-method-getAnchorHref'>    /**
+<span id='Autolinker-match-Email-method-getAnchorHref'>    /**
 </span>     * Returns the anchor href that should be generated for the match.
      *
      * @return {String}
@@ -75,7 +81,7 @@ var EmailMatch =  (function (_super) {
     EmailMatch.prototype.getAnchorHref = function () {
         return &#39;mailto:&#39; + this.email;
     };
-<span id='EmailMatch-method-getAnchorText'>    /**
+<span id='Autolinker-match-Email-method-getAnchorText'>    /**
 </span>     * Returns the anchor text that should be generated for the match.
      *
      * @return {String}

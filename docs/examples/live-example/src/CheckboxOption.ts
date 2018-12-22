@@ -24,7 +24,7 @@ export class CheckboxOption extends Option {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {CheckboxOptionCfg} cfg The configuration options for this
 	 *   class, specified in an Object (map).
 	 */

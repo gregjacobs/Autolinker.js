@@ -41,14 +41,20 @@ var mention_match_1 = require(&quot;../match/mention-match&quot;);
  */
 var MentionMatcher =  (function (_super) {
     __extends(MentionMatcher, _super);
-<span id='MentionMatcher-method-constructor'><span id='MentionMatcher'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-matcher-Mention-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
     function MentionMatcher(cfg) {
         var _this = _super.call(this, cfg) || this;
-<span id='MentionMatcher-property-matcherRegexes'>        /**
+<span id='Autolinker-matcher-Mention-property-serviceName'>        /**
+</span>         * The name of service to link @mentions to.
+         *
+         * Valid values are: &#39;twitter&#39;, &#39;instagram&#39;, or &#39;soundcloud&#39;
+         */
+        _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Mention-property-matcherRegexes'>        /**
 </span>         * Hash of regular expression to match username handles. Example match:
          *
          *     @asdf
@@ -61,7 +67,7 @@ var MentionMatcher =  (function (_super) {
             &#39;instagram&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39;),
             &#39;soundcloud&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39;)
         };
-<span id='MentionMatcher-property-nonWordCharRegex'>        /**
+<span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to
          * make sure we didn&#39;t accidentally match an email address.
          *
@@ -74,7 +80,7 @@ var MentionMatcher =  (function (_super) {
         _this.serviceName = cfg.serviceName;
         return _this;
     }
-<span id='MentionMatcher-method-parseMatches'>    /**
+<span id='Autolinker-matcher-Mention-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
     MentionMatcher.prototype.parseMatches = function (text) {

@@ -43,8 +43,20 @@ var html_node_1 = require(&quot;./html-node&quot;);
  */
 var CommentNode =  (function (_super) {
     __extends(CommentNode, _super);
+<span id='Autolinker-htmlParser-CommentNode-method-constructor'>    /**
+</span>     * @method constructor
+     * @param {Object} cfg The configuration options for this class, specified
+     *   in an Object.
+     */
     function CommentNode(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-htmlParser-CommentNode-cfg-comment'>        /**
+</span>         * @cfg {String} comment (required)
+         *
+         * The text inside the comment tag. This text is stripped of any leading or
+         * trailing whitespace.
+         */
+        _this.comment = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
         _this.comment = cfg.comment;
         return _this;
     }

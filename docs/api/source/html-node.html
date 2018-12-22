@@ -35,16 +35,37 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
  *    common ones such as &amp;amp;quot; and &amp;amp;nbsp;
  */
 var HtmlNode =  (function () {
-<span id='HtmlNode-method-constructor'><span id='HtmlNode'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-htmlParser-HtmlNode-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
      * specified in an Object (map).
      */
     function HtmlNode(cfg) {
+<span id='Autolinker-htmlParser-HtmlNode-cfg-offset'>        /**
+</span>         * @cfg {Number} offset (required)
+         *
+         * The offset of the HTML node in the original text that was parsed.
+         */
+        this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-htmlParser-HtmlNode-cfg-text'>        /**
+</span>         * @cfg {String} text (required)
+         *
+         * The text that was matched for the HtmlNode.
+         *
+         * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
+         *   this will be the tag&#39;s text.
+         * - In the case of an {@link Autolinker.htmlParser.CommentNode CommentNode},
+         *   this will be the comment&#39;s text.
+         * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this
+         *   will be the text itself.
+         * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
+         *   this will be the text of the HTML entity.
+         */
+        this.text = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
         this.offset = cfg.offset;
         this.text = cfg.text;
     }
-<span id='HtmlNode-method-getOffset'>    /**
+<span id='Autolinker-htmlParser-HtmlNode-method-getOffset'>    /**
 </span>     * Retrieves the {@link #offset} of the HtmlNode. This is the offset of the
      * HTML node in the original string that was parsed.
      *
@@ -53,7 +74,7 @@ var HtmlNode =  (function () {
     HtmlNode.prototype.getOffset = function () {
         return this.offset;
     };
-<span id='HtmlNode-method-getText'>    /**
+<span id='Autolinker-htmlParser-HtmlNode-method-getText'>    /**
 </span>     * Retrieves the {@link #text} for the HtmlNode.
      *
      * @return {String}

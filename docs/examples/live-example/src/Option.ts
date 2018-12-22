@@ -58,7 +58,7 @@ export abstract class Option {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {OptionCfg} cfg The configuration options for this class,
 	 *   specified in an Object (map).
 	 */

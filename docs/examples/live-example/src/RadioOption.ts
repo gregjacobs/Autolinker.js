@@ -36,7 +36,7 @@ export class RadioOption extends Option {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {Object} cfg The configuration options for this class, specified
 	 *   in an Object (map).
 	 */

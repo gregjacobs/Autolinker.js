@@ -30,6 +30,7 @@ var __extends = (this &amp;&amp; this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var html_node_1 = require(&quot;./html-node&quot;);
 <span id='Autolinker-htmlParser-ElementNode'>/**
 </span> * @class Autolinker.htmlParser.ElementNode
  * @extends Autolinker.htmlParser.HtmlNode
@@ -39,11 +40,28 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
  * See this class&#39;s superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
  * details.
  */
-var html_node_1 = require(&quot;./html-node&quot;);
 var ElementNode =  (function (_super) {
     __extends(ElementNode, _super);
+<span id='Autolinker-htmlParser-ElementNode-method-constructor'>    /**
+</span>     * @method constructor
+     * @param {Object} cfg The configuration options for this class, specified
+     *   in an Object.
+     */
     function ElementNode(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-htmlParser-ElementNode-cfg-tagName'>        /**
+</span>         * @cfg {String} tagName (required)
+         *
+         * The name of the tag that was matched.
+         */
+        _this.tagName = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-htmlParser-ElementNode-cfg-closing'>        /**
+</span>         * @cfg {Boolean} closing (required)
+         *
+         * `true` if the element (tag) is a closing tag, `false` if its an opening
+         * tag.
+         */
+        _this.closing = false; // default value just to get the above doc comment in the ES5 output and documentation generator
         _this.tagName = cfg.tagName;
         _this.closing = cfg.closing;
         return _this;

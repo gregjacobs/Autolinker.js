@@ -34,7 +34,7 @@ export class TextOption extends Option {
 
 
 	/**
-	 * @constructor
+	 * @method constructor
 	 * @param {TextOptionCfg} cfg The configuration options for this class,
 	 *   specified in an Object (map).
 	 */

@@ -12,7 +12,7 @@
      */
     var Option = /** @class */ (function () {
         /**
-         * @constructor
+         * @method constructor
          * @param {OptionCfg} cfg The configuration options for this class,
          *   specified in an Object (map).
          */
@@ -83,7 +83,7 @@
     var CheckboxOption = /** @class */ (function (_super) {
         __extends(CheckboxOption, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {CheckboxOptionCfg} cfg The configuration options for this
          *   class, specified in an Object (map).
          */
@@ -149,7 +149,7 @@
     var RadioOption = /** @class */ (function (_super) {
         __extends$1(RadioOption, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {Object} cfg The configuration options for this class, specified
          *   in an Object (map).
          */
@@ -244,7 +244,7 @@
     var TextOption = /** @class */ (function (_super) {
         __extends$2(TextOption, _super);
         /**
-         * @constructor
+         * @method constructor
          * @param {TextOptionCfg} cfg The configuration options for this class,
          *   specified in an Object (map).
          */

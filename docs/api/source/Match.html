@@ -56,6 +56,25 @@ var Match =  (function () {
      *   instance, specified in an Object (map).
      */
     function Match(cfg) {
+<span id='Autolinker-match-Match-cfg-tagBuilder'>        /**
+</span>         * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+         *
+         * Reference to the AnchorTagBuilder instance to use to generate an anchor
+         * tag for the Match.
+         */
+        this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
+<span id='Autolinker-match-Match-cfg-matchedText'>        /**
+</span>         * @cfg {String} matchedText (required)
+         *
+         * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
+         */
+        this.matchedText = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-match-Match-cfg-offset'>        /**
+</span>         * @cfg {Number} offset (required)
+         *
+         * The offset of where the match was made in the input string.
+         */
+        this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
         this.tagBuilder = cfg.tagBuilder;
         this.matchedText = cfg.matchedText;
         this.offset = cfg.offset;
@@ -130,6 +149,20 @@ var Match =  (function () {
      *     tag.setAttr( &#39;target&#39;, &#39;_system&#39; );
      *
      *     tag.toAnchorString();  // &lt;a href=&quot;http://google.com&quot; class=&quot;cordova-link&quot; target=&quot;_system&quot;&gt;Google&lt;/a&gt;
+     *
+     * Example Usage in {@link Autolinker#replaceFn}:
+     *
+     *     var html = Autolinker.link( &quot;Test google.com&quot;, {
+     *         replaceFn : function( match ) {
+     *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
+     *             tag.setAttr( &#39;rel&#39;, &#39;nofollow&#39; );
+     *
+     *             return tag;
+     *         }
+     *     } );
+     *
+     *     // generated html:
+     *     //   Test &lt;a href=&quot;http://google.com&quot; target=&quot;_blank&quot; rel=&quot;nofollow&quot;&gt;google.com&lt;/a&gt;
      */
     Match.prototype.buildTag = function () {
         return this.tagBuilder.build(this);

@@ -28,12 +28,19 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
  * nodes of any HTML string, which is handled by {@link Autolinker#parse}.
  */
 var Matcher =  (function () {
-<span id='Matcher-method-constructor'><span id='Matcher'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-matcher-Matcher-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Matcher
      *   instance, specified in an Object (map).
      */
     function Matcher(cfg) {
+<span id='Autolinker-matcher-Matcher-cfg-tagBuilder'>        /**
+</span>         * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+         *
+         * Reference to the AnchorTagBuilder instance to use to generate HTML tags
+         * for {@link Autolinker.match.Match Matches}.
+         */
+        this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
         this.tagBuilder = cfg.tagBuilder;
     }
     return Matcher;

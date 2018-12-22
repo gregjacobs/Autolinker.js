@@ -48,17 +48,32 @@ var truncate_end_1 = require(&quot;./truncate/truncate-end&quot;);
  *     //   Test &lt;a href=&quot;http://google.com&quot; target=&quot;_blank&quot; rel=&quot;nofollow&quot;&gt;google.com&lt;/a&gt;
  */
 var AnchorTagBuilder =  (function () {
-<span id='AnchorTagBuilder-method-constructor'><span id='AnchorTagBuilder'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-AnchorTagBuilder-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} [cfg] The configuration options for the AnchorTagBuilder instance, specified in an Object (map).
      */
     function AnchorTagBuilder(cfg) {
         if (cfg === void 0) { cfg = {}; }
+<span id='Autolinker-AnchorTagBuilder-cfg-newWindow'>        /**
+</span>         * @cfg {Boolean} newWindow
+         * @inheritdoc Autolinker#newWindow
+         */
+        this.newWindow = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-AnchorTagBuilder-cfg-truncate'>        /**
+</span>         * @cfg {Object} truncate
+         * @inheritdoc Autolinker#truncate
+         */
+        this.truncate = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-AnchorTagBuilder-cfg-className'>        /**
+</span>         * @cfg {String} className
+         * @inheritdoc Autolinker#className
+         */
+        this.className = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
         this.newWindow = cfg.newWindow || false;
         this.truncate = cfg.truncate || {};
         this.className = cfg.className || &#39;&#39;;
     }
-<span id='AnchorTagBuilder-method-build'>    /**
+<span id='Autolinker-AnchorTagBuilder-method-build'>    /**
 </span>     * Generates the actual anchor (&amp;lt;a&amp;gt;) tag to use in place of the
      * matched text, via its `match` object.
      *
@@ -73,7 +88,7 @@ var AnchorTagBuilder =  (function () {
             innerHtml: this.processAnchorText(match.getAnchorText())
         });
     };
-<span id='AnchorTagBuilder-method-createAttrs'>    /**
+<span id='Autolinker-AnchorTagBuilder-method-createAttrs'>    /**
 </span>     * Creates the Object (map) of the HTML attributes for the anchor (&amp;lt;a&amp;gt;)
      *   tag being generated.
      *
@@ -101,7 +116,7 @@ var AnchorTagBuilder =  (function () {
         }
         return attrs;
     };
-<span id='AnchorTagBuilder-method-createCssClass'>    /**
+<span id='Autolinker-AnchorTagBuilder-method-createCssClass'>    /**
 </span>     * Creates the CSS class that will be used for a given anchor tag, based on
      * the `matchType` and the {@link #className} config.
      *
@@ -114,7 +129,7 @@ var AnchorTagBuilder =  (function () {
      * - &quot;myLink myLink-hashtag&quot;                 // hashtag match
      * - &quot;myLink myLink-mention myLink-twitter&quot;  // mention match with Twitter service
      *
-     * @private
+     * @protected
      * @param {Autolinker.match.Match} match The Match instance to generate an
      *   anchor tag from.
      * @return {String} The CSS class string for the link. Example return:
@@ -134,7 +149,7 @@ var AnchorTagBuilder =  (function () {
             return returnClasses.join(&#39; &#39;);
         }
     };
-<span id='AnchorTagBuilder-method-processAnchorText'>    /**
+<span id='Autolinker-AnchorTagBuilder-method-processAnchorText'>    /**
 </span>     * Processes the `anchorText` by truncating the text according to the
      * {@link #truncate} config.
      *
@@ -147,7 +162,7 @@ var AnchorTagBuilder =  (function () {
         anchorText = this.doTruncate(anchorText);
         return anchorText;
     };
-<span id='AnchorTagBuilder-method-doTruncate'>    /**
+<span id='Autolinker-AnchorTagBuilder-method-doTruncate'>    /**
 </span>     * Performs the truncation of the `anchorText` based on the {@link #truncate}
      * option. If the `anchorText` is longer than the length specified by the
      * {@link #truncate} option, the truncation is performed based on the

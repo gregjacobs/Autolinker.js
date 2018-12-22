@@ -45,14 +45,30 @@ var url_match_validator_1 = require(&quot;./url-match-validator&quot;);
  */
 var UrlMatcher =  (function (_super) {
     __extends(UrlMatcher, _super);
-<span id='UrlMatcher-method-constructor'><span id='UrlMatcher'>    /**
-</span></span>     * @constructor
+<span id='Autolinker-matcher-Url-method-constructor'>    /**
+</span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
     function UrlMatcher(cfg) {
         var _this = _super.call(this, cfg) || this;
-<span id='UrlMatcher-property-matcherRegex'>        /**
+<span id='Autolinker-matcher-Url-cfg-stripPrefix'>        /**
+</span>         * @cfg {Object} stripPrefix (required)
+         *
+         * The Object form of {@link Autolinker#cfg-stripPrefix}.
+         */
+        _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Url-cfg-stripTrailingSlash'>        /**
+</span>         * @cfg {Boolean} stripTrailingSlash (required)
+         * @inheritdoc Autolinker#stripTrailingSlash
+         */
+        _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Url-cfg-decodePercentEncoding'>        /**
+</span>         * @cfg {Boolean} decodePercentEncoding (required)
+         * @inheritdoc Autolinker#decodePercentEncoding
+         */
+        _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Url-property-matcherRegex'>        /**
 </span>         * @private
          * @property {RegExp} matcherRegex
          *
@@ -116,7 +132,7 @@ var UrlMatcher =  (function (_super) {
                 &#39;(?:&#39; + urlSuffixRegex.source + &#39;)?&#39; // match for path, query string, and/or hash anchor - optional
             ].join(&quot;&quot;), &#39;gi&#39;);
         })();
-<span id='UrlMatcher-property-wordCharRegExp'>        /**
+<span id='Autolinker-matcher-Url-property-wordCharRegExp'>        /**
 </span>         * A regular expression to use to check the character before a protocol-relative
          * URL match. We don&#39;t want to match a protocol-relative URL if it is part
          * of another word.
@@ -130,7 +146,7 @@ var UrlMatcher =  (function (_super) {
          * @type {RegExp} wordCharRegExp
          */
         _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
-<span id='UrlMatcher-property-openParensRe'>        /**
+<span id='Autolinker-matcher-Url-property-openParensRe'>        /**
 </span>         * The regular expression to match opening parenthesis in a URL match.
          *
          * This is to determine if we have unbalanced parenthesis in the URL, and to
@@ -145,7 +161,7 @@ var UrlMatcher =  (function (_super) {
          * @property {RegExp}
          */
         _this.openParensRe = /\(/g;
-<span id='UrlMatcher-property-closeParensRe'>        /**
+<span id='Autolinker-matcher-Url-property-closeParensRe'>        /**
 </span>         * The regular expression to match closing parenthesis in a URL match. See
          * {@link #openParensRe} for more information.
          *
@@ -158,7 +174,7 @@ var UrlMatcher =  (function (_super) {
         _this.decodePercentEncoding = cfg.decodePercentEncoding;
         return _this;
     }
-<span id='UrlMatcher-method-parseMatches'>    /**
+<span id='Autolinker-matcher-Url-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
     UrlMatcher.prototype.parseMatches = function (text) {
@@ -214,7 +230,7 @@ var UrlMatcher =  (function (_super) {
         }
         return matches;
     };
-<span id='UrlMatcher-method-matchHasUnbalancedClosingParen'>    /**
+<span id='Autolinker-matcher-Url-method-matchHasUnbalancedClosingParen'>    /**
 </span>     * Determines if a match found has an unmatched closing parenthesis. If so,
      * this parenthesis will be removed from the match itself, and appended
      * after the generated anchor tag.
@@ -243,7 +259,7 @@ var UrlMatcher =  (function (_super) {
         }
         return false;
     };
-<span id='UrlMatcher-method-matchHasInvalidCharAfterTld'>    /**
+<span id='Autolinker-matcher-Url-method-matchHasInvalidCharAfterTld'>    /**
 </span>     * Determine if there&#39;s an invalid character after the TLD in a URL. Valid
      * characters after TLD are &#39;:/?#&#39;. Exclude scheme matched URLs from this
      * check.
