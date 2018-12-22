@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+<span id='Autolinker-htmlParser-HtmlNode'>/**
+</span> * @abstract
+ * @class Autolinker.htmlParser.HtmlNode
+ *
+ * Represents an HTML node found in an input string. An HTML node is one of the
+ * following:
+ *
+ * 1. An {@link Autolinker.htmlParser.ElementNode ElementNode}, which represents
+ *    HTML tags.
+ * 2. A {@link Autolinker.htmlParser.CommentNode CommentNode}, which represents
+ *    HTML comments.
+ * 3. A {@link Autolinker.htmlParser.TextNode TextNode}, which represents text
+ *    outside or within HTML tags.
+ * 4. A {@link Autolinker.htmlParser.EntityNode EntityNode}, which represents
+ *    one of the known HTML entities that Autolinker looks for. This includes
+ *    common ones such as &amp;amp;quot; and &amp;amp;nbsp;
+ */
+var HtmlNode =  (function () {
+<span id='HtmlNode-method-constructor'><span id='HtmlNode'>    /**
+</span></span>     * @constructor
+     * @param {Object} cfg The configuration properties for the Match instance,
+     * specified in an Object (map).
+     */
+    function HtmlNode(cfg) {
+        this.offset = cfg.offset;
+        this.text = cfg.text;
+    }
+<span id='HtmlNode-method-getOffset'>    /**
+</span>     * Retrieves the {@link #offset} of the HtmlNode. This is the offset of the
+     * HTML node in the original string that was parsed.
+     *
+     * @return {Number}
+     */
+    HtmlNode.prototype.getOffset = function () {
+        return this.offset;
+    };
+<span id='HtmlNode-method-getText'>    /**
+</span>     * Retrieves the {@link #text} for the HtmlNode.
+     *
+     * @return {String}
+     */
+    HtmlNode.prototype.getText = function () {
+        return this.text;
+    };
+    return HtmlNode;
+}());
+exports.HtmlNode = HtmlNode;
+
+//# sourceMappingURL=html-node.js.map
+</pre>
+</body>
+</html>

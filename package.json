@@ -51,6 +51,7 @@
     "gulp-jsduck": "^0.3.0",
     "gulp-preprocess": "^2.0.0",
     "gulp-rename": "^1.2.2",
+    "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-transform": "^1.1.0",
     "gulp-typescript": "^5.0.0",
@@ -63,5 +64,6 @@
     "rollup": "^0.68.1",
     "through2": "^2.0.1",
     "typescript": "^3.2.2"
-  }
+  },
+  "dependencies": {}
 }

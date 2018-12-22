@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+var __extends = (this &amp;&amp; this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array &amp;&amp; function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var html_node_1 = require(&quot;./html-node&quot;);
+<span id='Autolinker-htmlParser-CommentNode'>/**
+</span> * @class Autolinker.htmlParser.CommentNode
+ * @extends Autolinker.htmlParser.HtmlNode
+ *
+ * Represents an HTML comment node that has been parsed by the
+ * {@link Autolinker.htmlParser.HtmlParser}.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
+ * details.
+ */
+var CommentNode =  (function (_super) {
+    __extends(CommentNode, _super);
+    function CommentNode(cfg) {
+        var _this = _super.call(this, cfg) || this;
+        _this.comment = cfg.comment;
+        return _this;
+    }
+<span id='Autolinker-htmlParser-CommentNode-method-getType'>    /**
+</span>     * Returns a string name for the type of node that this class represents.
+     *
+     * @return {String}
+     */
+    CommentNode.prototype.getType = function () {
+        return &#39;comment&#39;;
+    };
+<span id='Autolinker-htmlParser-CommentNode-method-getComment'>    /**
+</span>     * Returns the comment inside the comment tag.
+     *
+     * @return {String}
+     */
+    CommentNode.prototype.getComment = function () {
+        return this.comment;
+    };
+    return CommentNode;
+}(html_node_1.HtmlNode));
+exports.CommentNode = CommentNode;
+
+//# sourceMappingURL=comment-node.js.map
+</pre>
+</body>
+</html>

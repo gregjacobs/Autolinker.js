@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+var __extends = (this &amp;&amp; this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array &amp;&amp; function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var match_1 = require(&quot;./match&quot;);
+<span id='Autolinker-match-Phone'>/**
+</span> * @class Autolinker.match.Phone
+ * @extends Autolinker.match.Match
+ *
+ * Represents a Phone number match found in an input string which should be
+ * Autolinked.
+ *
+ * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more
+ * details.
+ */
+var PhoneMatch =  (function (_super) {
+    __extends(PhoneMatch, _super);
+<span id='PhoneMatch-method-constructor'><span id='PhoneMatch'>    /**
+</span></span>     * @constructor
+     * @param {Object} cfg The configuration properties for the Match
+     *   instance, specified in an Object (map).
+     */
+    function PhoneMatch(cfg) {
+        var _this = _super.call(this, cfg) || this;
+        _this.number = cfg.number;
+        _this.plusSign = cfg.plusSign;
+        return _this;
+    }
+<span id='PhoneMatch-method-getType'>    /**
+</span>     * Returns a string name for the type of match that this class represents.
+     *
+     * @return {String}
+     */
+    PhoneMatch.prototype.getType = function () {
+        return &#39;phone&#39;;
+    };
+<span id='PhoneMatch-method-getNumber'>    /**
+</span>     * Returns the phone number that was matched as a string, without any
+     * delimiter characters.
+     *
+     * Note: This is a string to allow for prefixed 0&#39;s.
+     *
+     * @return {String}
+     */
+    PhoneMatch.prototype.getNumber = function () {
+        return this.number;
+    };
+<span id='PhoneMatch-method-getAnchorHref'>    /**
+</span>     * Returns the anchor href that should be generated for the match.
+     *
+     * @return {String}
+     */
+    PhoneMatch.prototype.getAnchorHref = function () {
+        return &#39;tel:&#39; + (this.plusSign ? &#39;+&#39; : &#39;&#39;) + this.number;
+    };
+<span id='PhoneMatch-method-getAnchorText'>    /**
+</span>     * Returns the anchor text that should be generated for the match.
+     *
+     * @return {String}
+     */
+    PhoneMatch.prototype.getAnchorText = function () {
+        return this.matchedText;
+    };
+    return PhoneMatch;
+}(match_1.Match));
+exports.PhoneMatch = PhoneMatch;
+
+//# sourceMappingURL=phone-match.js.map
+</pre>
+</body>
+</html>

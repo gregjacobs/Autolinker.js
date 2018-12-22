@@ -15,7 +15,8 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*global Autolinker */
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 <span id='Autolinker-matcher-Matcher'>/**
 </span> * @abstract
  * @class Autolinker.matcher.Matcher
@@ -26,40 +27,20 @@
  * Note that Matchers do not take HTML into account - they must be fed the text
  * nodes of any HTML string, which is handled by {@link Autolinker#parse}.
  */
-Autolinker.matcher.Matcher = Autolinker.Util.extend( Object, {
+var Matcher =  (function () {
+<span id='Matcher-method-constructor'><span id='Matcher'>    /**
+</span></span>     * @constructor
+     * @param {Object} cfg The configuration properties for the Matcher
+     *   instance, specified in an Object (map).
+     */
+    function Matcher(cfg) {
+        this.tagBuilder = cfg.tagBuilder;
+    }
+    return Matcher;
+}());
+exports.Matcher = Matcher;
 
-<span id='Autolinker-matcher-Matcher-cfg-tagBuilder'>	/**
-</span>	 * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
-	 *
-	 * Reference to the AnchorTagBuilder instance to use to generate HTML tags
-	 * for {@link Autolinker.match.Match Matches}.
-	 */
-
-
-<span id='Autolinker-matcher-Matcher-method-constructor'>	/**
-</span>	 * @constructor
-	 * @param {Object} cfg The configuration properties for the Matcher
-	 *   instance, specified in an Object (map).
-	 */
-	constructor : function( cfg ) {
-		// @if DEBUG
-		if( !cfg.tagBuilder ) throw new Error( &#39;`tagBuilder` cfg required&#39; );
-		// @endif
-
-		this.tagBuilder = cfg.tagBuilder;
-	},
-
-
-<span id='Autolinker-matcher-Matcher-method-parseMatches'>	/**
-</span>	 * Parses the input `text` and returns the array of {@link Autolinker.match.Match Matches}
-	 * for the matcher.
-	 *
-	 * @abstract
-	 * @param {String} text The text to scan and replace matches in.
-	 * @return {Autolinker.match.Match[]}
-	 */
-	parseMatches : Autolinker.Util.abstractMethod
-
-} );</pre>
+//# sourceMappingURL=matcher.js.map
+</pre>
 </body>
 </html>

@@ -9,10 +9,11 @@ const _               = require( 'lodash' ),
 	  header          = require( 'gulp-header' ),
 	  jasmine         = require( 'gulp-jasmine' ),
 	  json5           = require( 'json5' ),
-      merge           = require( 'merge-stream' ),
-      preprocess      = require( 'gulp-preprocess' ),
+	  merge           = require( 'merge-stream' ),
+	  preprocess      = require( 'gulp-preprocess' ),
       punycode        = require( 'punycode' ),
 	  rename          = require( 'gulp-rename' ),
+	  replace         = require( 'gulp-replace' ),
 	  sourcemaps      = require( 'gulp-sourcemaps' ),
       transform       = require( 'gulp-transform' ),
       typescript      = require( 'gulp-typescript' ),
@@ -46,14 +47,16 @@ gulp.task( 'clean-tests', cleanTestsTask );
 gulp.task( 'build-tests-typescript', buildTestsTypeScriptTask );
 gulp.task( 'build-tests', gulp.series( 'clean-tests', 'build-tests-typescript' ) );
 
-// Documentation private tasks
-gulp.task( 'doc', docTask );
+// Docs private tasks
+gulp.task( 'doc-setup', docSetupTask );
+gulp.task( 'doc-create', docTask );
 
 // Main Tasks
 gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup', 'build-src-add-header-to-umd', 'build-src-minify-umd' ) );
 gulp.task( 'build-examples', gulp.series( 'clean-examples', 'build-examples-typescript', 'build-examples-rollup' ) );
 gulp.task( 'build-all', gulp.parallel( 'build-src', 'build-examples', 'build-tests' ) );
 gulp.task( 'build', gulp.series( 'build-all' ) );
+gulp.task( 'doc', gulp.series( 'build-src', 'doc-setup', 'doc-create' ) );
 gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
 gulp.task( 'test', gulp.series( 'build-tests', testTask ) );
 gulp.task( 'update-tld-list', updateTldRegex );
@@ -160,29 +163,41 @@ function buildExamplesRollupTask( done ) {
 }
 
 
-function docTask() {
-	// var jsduck = new JsDuck( [
-	// 	'--out',               './docs/api',
-	// 	'--title',             'Autolinker v' + pkg.version + ' API Docs',
-	// 	'--examples',          './docs/examples.json',
-	// 	'--examples-base-url', './docs/'
-	// ] );
-
+function docSetupTask() {
 	return merge(
 		// Move dist files into the docs/ folder so they can be served
 		// by GitHub pages
 		gulp.src( `./dist/autolinker.umd*.js` )
 			.pipe( gulp.dest( './docs/dist' ) ),
 
-		// 	gulp.src( srcFilesGlob )
-		// 		.pipe( jsduck.doc() )
+		// TypeScript adds its own @class decorator to ES5 constructor functions. 
+		// We want to remove this so we don't confuse JSDuck with extra classes
+		// in the output
+		gulp.src( './dist/commonjs/**/*.js' )
+			.pipe( replace( '/** @class */', '' ) )
+			.pipe( gulp.dest( './build/docs-src' ) )
 	);
+}
+
+function docTask() {
+	var jsDuck = new JsDuck( [
+		'--out',               './docs/api',
+		'--title',             'Autolinker v' + pkg.version + ' API Docs',
+		'--examples',          './docs/examples.json',
+		'--examples-base-url', './docs/'
+	] );
+
+	// JSDuck works solely on the file paths rather than the content, so
+	// we needed the extra output directory for the transformed input 
+	// .js files
+	return gulp.src( './build/docs-src/**/*.js' )
+		.pipe( jsDuck.doc() );
 }
 
 
 function serveTask() {
 	gulp.watch( './docs/examples/live-example/src/**', gulp.parallel( 'build-examples' ) );
-	gulp.watch( './src/**', gulp.series( 'build-src', 'doc' ) );
+	gulp.watch( './src/**', gulp.series( 'doc' ) );
 
 	connect.server();
 }
