@@ -1,15 +1,14 @@
-const exec = require( 'child_process' ).exec;
-
 /*jshint node:true */
-const clean           = require( 'gulp-clean' ),
-      clone           = require( 'gulp-clone' ),
-      concat          = require( 'gulp-concat' ),
+const _               = require( 'lodash' ),
+      clean           = require( 'gulp-clean' ),
       connect         = require( 'gulp-connect' ),
-      download        = require( 'gulp-download' ),
+	  download        = require( 'gulp-download' ),
+	  exec            = require( 'child_process' ).exec,
+	  fs              = require( 'fs' ),
       gulp            = require( 'gulp' ),
 	  header          = require( 'gulp-header' ),
 	  jasmine         = require( 'gulp-jasmine' ),
-      jshint          = require( 'gulp-jshint' ),
+	  json5           = require( 'json5' ),
       merge           = require( 'merge-stream' ),
       preprocess      = require( 'gulp-preprocess' ),
       punycode        = require( 'punycode' ),
@@ -18,24 +17,22 @@ const clean           = require( 'gulp-clean' ),
       transform       = require( 'gulp-transform' ),
       typescript      = require( 'gulp-typescript' ),
       uglify          = require( 'gulp-uglify' ),
-      umd             = require( 'gulp-umd' ),
       JsDuck          = require( 'gulp-jsduck' );
-
 
 // Project configuration
 const pkg = require( './package.json' ),
-      banner = createBanner(),
-	  buildFolder = './build',
-      distFolder = './dist',
-      distFilename = 'Autolinker.js',
-      minDistFilename = 'Autolinker.min.js',
-	  minDistFilePath = `${distFolder}/${minDistFilename}`;
+      tsconfig = json5.parse( fs.readFileSync( './tsconfig.json', 'utf-8' ) ),
+      banner = createBanner();
 
 
 // Build src private tasks
 gulp.task( 'clean-dist', cleanDistTask );
-gulp.task( 'build-src-typescript', buildSrcTypeScriptTask );
+gulp.task( 'build-src-typescript-commonjs', buildSrcTypeScriptCommonjsTask );
+gulp.task( 'build-src-typescript-es2015', buildSrcTypeScriptEs2015Task );
+gulp.task( 'build-src-typescript', gulp.parallel( 'build-src-typescript-commonjs', 'build-src-typescript-es2015' ) );
 gulp.task( 'build-src-rollup', buildSrcRollupTask );
+gulp.task( 'build-src-add-header-to-umd', buildSrcAddHeaderToUmdTask );
+gulp.task( 'build-src-minify-umd', buildSrcMinifyUmdTask );
 
 // Build examples private tasks
 gulp.task( 'clean-examples-build', cleanExamplesBuildTask );
@@ -53,7 +50,7 @@ gulp.task( 'build-tests', gulp.series( 'clean-tests', 'build-tests-typescript' )
 gulp.task( 'doc', docTask );
 
 // Main Tasks
-gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup' ) );
+gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup', 'build-src-add-header-to-umd', 'build-src-minify-umd' ) );
 gulp.task( 'build-examples', gulp.series( 'clean-examples', 'build-examples-typescript', 'build-examples-rollup' ) );
 gulp.task( 'build-all', gulp.parallel( 'build-src', 'build-examples', 'build-tests' ) );
 gulp.task( 'build', gulp.series( 'build-all' ) );
@@ -67,97 +64,73 @@ gulp.task( 'default', gulp.series( 'build', 'doc', 'test' ) );
 
 
 function cleanDistTask() {
-	return gulp.src( './dist', { read: false } )
+	return gulp.src( './dist', { read: false, allowEmpty: true } )
         .pipe( clean() ) ;
 }
 
-function buildSrcTypeScriptTask() {
-	const tsProject = typescript.createProject( 'tsconfig.json' );
+function buildSrcTypeScriptCommonjsTask() {
+	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
+		noEmit: false,  // Note: noEmit set to 'true' in tsconfig.json to prevent accidental use of 'tsc' command
+		module: 'commonjs'
+	} ) );
+	
+	return buildSrcTypeScript( tsProject, './dist/commonjs' );
+}
 
+function buildSrcTypeScriptEs2015Task() {
+	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
+		noEmit: false,  // Note: noEmit set to 'true' in tsconfig.json to prevent accidental use of 'tsc' command
+		module: 'es2015'
+	} ) );
+
+	return buildSrcTypeScript( tsProject, './dist/es2015' );
+}
+
+
+function buildSrcTypeScript( tsProject, outputDir ) {
 	const tsResult = gulp.src( './src/**/*.ts' )
-		.pipe( sourcemaps.init() )
-		//.pipe( header( banner, { pkg: pkg } ) )
 		.pipe( preprocess( { context: { VERSION: pkg.version } } ) )
+		.pipe( sourcemaps.init() )  // preprocess doesn't seem to support sourcemaps, so initializing it after
 		.pipe( tsProject() );
 
 	return merge( [
 		tsResult.dts
-			.pipe( gulp.dest( 'dist' ) ),
+			.pipe( gulp.dest( outputDir ) ),
 
 		tsResult.js
-			.pipe( sourcemaps.write( '.', { sourceRoot: './', includeContent: false } ) )
-			.pipe( gulp.dest( 'dist' ) )
+			.pipe( sourcemaps.write( '.' ) )
+			.pipe( gulp.dest( outputDir ) )
 	] );
-
-	// var combinedSrcFile = gulp.src( srcFiles )
-	// 	.pipe( concat( distFilename ) )
-	// 	.pipe( umd() )
-	// 	.pipe( header( banner, { pkg: pkg } ) );
-
-	// var unminifiedFile = combinedSrcFile
-	// 	.pipe( clone() )
-	// 	.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: true } } ) )
-	// 	.pipe( gulp.dest( distFolder ) );
-
-	// var minifiedFile = combinedSrcFile
-	// 	.pipe( clone() )
-	// 	.pipe( preprocess( { context: { VERSION: pkg.version, DEBUG: false } } ) )  // removes DEBUG tagged code
-	// 	.pipe( uglify( { preserveComments: 'license' } ) )
-	// 	.pipe( rename( minDistFilename ) )
-	// 	.pipe( gulp.dest( distFolder ) );
-
-	// return merge( unminifiedFile, minifiedFile );
 }
+
 
 
 function buildSrcRollupTask( done ) {
-	exec( `./node_modules/.bin/rollup ./build/src/index.js --file ./dist/autolinker.umd.js --format umd --name "Autolinker" --globals=Autolinker:Autolinker --sourcemap`, err => {
+	exec( `./node_modules/.bin/rollup ./dist/es2015/autolinker.js --file ./dist/Autolinker.js --format umd --name "Autolinker" --sourcemap`, err => {
 		done( err );
 	} );
-
-	// return rollup({
-	// 	entry: './dist/Autolinker.js',
-	// 	sourceMap: true
-	// })
-	// 	// point to the entry file.
-	// 	.pipe(source('main.js', './src'))
-
-	// 	// buffer the output. most gulp plugins, including gulp-sourcemaps, don't support streams.
-	// 	.pipe(buffer())
-
-	// 	// tell gulp-sourcemaps to load the inline sourcemap produced by rollup-stream.
-	// 	.pipe(sourcemaps.init({loadMaps: true}))
-
-	// 	// transform the code further here.
-
-	// 	// if you want to output with a different name from the input file, use gulp-rename here.
-	// 	//.pipe(rename('index.js'))
-
-	// 	// write the sourcemap alongside the output file.
-	// 	.pipe(sourcemaps.write('.'))
-
-	// 	// and output to ./dist/main.js as normal.
-	// 	.pipe(gulp.dest('./dist'));
 }
 
-
-function cleanTestsTask() {
-	return gulp.src( './build', { read: false } )
-        .pipe( clean()) ;
+function buildSrcAddHeaderToUmdTask() {
+	return gulp.src( './dist/Autolinker.js' )
+		.pipe( sourcemaps.init( { loadMaps: true } ) )
+		.pipe( header( banner, { pkg: pkg } ) )
+		.pipe( sourcemaps.write( '.' ) )
+		.pipe( gulp.dest( './dist' ) );
 }
 
-function buildTestsTypeScriptTask() {
-	const tsProject = typescript.createProject( 'tsconfig.json' );
-
-	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
-		.pipe( tsProject() );
-
-	return tsResult.js.pipe( gulp.dest( 'build' ) );
+function buildSrcMinifyUmdTask() {
+	return gulp.src( './dist/Autolinker.js' )
+		.pipe( sourcemaps.init( { loadMaps: true } ) )
+		.pipe( uglify( { preserveComments: 'license' } ) )
+		.pipe( rename( 'Autolinker.min.js' ) )
+		.pipe( sourcemaps.write( '.' ) )
+		.pipe( gulp.dest( './dist' ) );
 }
 
 
 function cleanExamplesBuildTask() {
-	return gulp.src( './docs/examples/live-example/build', { read: false } )
+	return gulp.src( './docs/examples/live-example/build', { read: false , allowEmpty: true } )
 		.pipe( clean() );
 }
 
@@ -179,6 +152,7 @@ function buildExamplesTypeScriptTask() {
 		.pipe( gulp.dest( './docs/examples/live-example/build/' ) );
 }
 
+
 function buildExamplesRollupTask( done ) {
 	exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js`, err => {
 		done( err );
@@ -197,7 +171,7 @@ function docTask() {
 	return merge(
 		// Move dist files into the docs/ folder so they can be served
 		// by GitHub pages
-		gulp.src( `${distFolder}/autolinker.umd*.js` )
+		gulp.src( `./dist/autolinker.umd*.js` )
 			.pipe( gulp.dest( './docs/dist' ) ),
 
 		// 	gulp.src( srcFilesGlob )
@@ -219,19 +193,24 @@ function testTask( done ) {
 		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
 
-
-function buildExamplesTask() {
-	return gulp.src( [
-		'./docs/examples/live-example/src/Option.ts',
-		'./docs/examples/live-example/src/CheckboxOption.ts',
-		'./docs/examples/live-example/src/RadioOption.ts',
-		'./docs/examples/live-example/src/TextOption.ts',
-		'./docs/examples/live-example/src/main.ts'
-	] )
-		.pipe( typescript( { noImplicitAny: true, out: 'live-example-all.js' } ) )
-		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
-		.pipe( gulp.dest( './docs/examples/live-example/' ) );
+function cleanTestsTask() {
+	return gulp.src( './build', { read: false, allowEmpty: true } )
+        .pipe( clean()) ;
 }
+
+function buildTestsTypeScriptTask() {
+	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
+		noEmit: false,
+		module: 'commonjs'
+	} ) );
+
+	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
+		.pipe( tsProject() );
+
+	return tsResult.js.pipe( gulp.dest( 'build' ) );
+}
+
+
 
 
 /**
@@ -290,13 +269,13 @@ function domainsToRegex(contents){
 }
 
 function updateTldRegex(){
-	return download('http://data.iana.org/TLD/tlds-alpha-by-domain.txt')
-		.pipe(transform(domainsToRegex, { encoding: 'utf8' }))
+	return download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
+		.pipe( transform( domainsToRegex, { encoding: 'utf8' } ) )
 		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `gulp update-tld-list`\n\n' ) )
-		.pipe(rename(function(path){
+		.pipe( rename(function(path) {
 			path.basename = "TldRegex";
 			path.extname = '.js';
 		}))
-		.pipe(gulp.dest('./src/matcher/'));
+		.pipe( gulp.dest('./src/matcher/') );
 }
 

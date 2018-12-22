@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Autolinker, HashtagServices, MentionServices } from '../src/autolinker';
+import Autolinker, { HashtagServices, MentionServices } from '../src/autolinker';
 import { UrlMatch } from "../src/match/url-match";
 import { EmailMatch } from "../src/match/email-match";
 import { HashtagMatch } from "../src/match/hashtag-match";

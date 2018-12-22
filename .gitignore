@@ -2,12 +2,15 @@
 .idea
 .project
 .settings
-/build
-/dist
-/docs/examples/live-example/build
-web.config
-.grunt/
-_SpecRunner.html
 node_modules/
 npm-debug.log
 yarn-error.log
+
+# Temporary build artifacts
+/build
+/docs/examples/live-example/build
+
+# Note: /dist/Autolinker.js and /dist/Autolinker.min.js are not gitignored to
+# allow for Bower
+/dist/commonjs
+/dist/es2015

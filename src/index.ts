@@ -1,5 +1,7 @@
+export { default } from './autolinker';
+export { default as Autolinker } from './autolinker';
+
 export * from './anchor-tag-builder';
-export * from './autolinker';
 export * from './html-tag';
-export * from './match';
-export * from './matcher';
+export * from './match/index';
+export * from './matcher/index';

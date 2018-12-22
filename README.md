@@ -37,10 +37,10 @@ See [Upgrading from v1.x -> v2.x (Breaking Changes)](#Upgrading from v1.x -> v2.
 #### Download
 
 Simply clone or download the zip of the project, and link to either
-`dist/autolinker.umd.js` or `dist/autolinker.umd.min.js` with a script tag:
+`dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag:
 
 ```html
-<script src="path/to/autolinker.umd.min.js"></script>
+<script src="path/to/Autolinker.min.js"></script>
 ```
 
 
@@ -427,8 +427,6 @@ if( typeof Array.prototype.forEach !== 'function' ) {
    place, and these are subject to change as the regular expression needs to 
    change. Use  your own `Matcher` class instead if you would like to override 
    this functionality, such as with the `phoneMatcherFactory` config.
-5. For loading in a browser, the file name has changed from `dist/Autolinker.js` 
-   and `dist/Autolinker.min.js` to `autolinker.umd.js` and `autolinker.umd.min.js`
 
 ## Upgrading from v0.x -> v1.x (Breaking Changes)
 
