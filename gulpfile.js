@@ -27,7 +27,8 @@ const pkg = require( './package.json' ),
 
 
 // Build src private tasks
-gulp.task( 'clean-dist', cleanDistTask );
+gulp.task( 'clean-src-output', cleanSrcOutputTask );
+
 gulp.task( 'build-src-typescript-commonjs', buildSrcTypeScriptCommonjsTask );
 gulp.task( 'build-src-typescript-es2015', buildSrcTypeScriptEs2015Task );
 gulp.task( 'build-src-typescript', gulp.parallel( 'build-src-typescript-commonjs', 'build-src-typescript-es2015' ) );
@@ -35,41 +36,80 @@ gulp.task( 'build-src-rollup', buildSrcRollupTask );
 gulp.task( 'build-src-add-header-to-umd', buildSrcAddHeaderToUmdTask );
 gulp.task( 'build-src-minify-umd', buildSrcMinifyUmdTask );
 
+gulp.task( 'do-build-src', gulp.series( 
+	'build-src-typescript',
+	'build-src-rollup',
+	'build-src-add-header-to-umd', 
+	'build-src-minify-umd'
+), )
+
 // Build examples private tasks
-gulp.task( 'clean-examples-build', cleanExamplesBuildTask );
 gulp.task( 'clean-examples-output', cleanExamplesOutputTask );
-gulp.task( 'clean-examples', gulp.parallel( 'clean-examples-build', 'clean-examples-output' ) );
+
 gulp.task( 'build-examples-typescript', buildExamplesTypeScriptTask );
 gulp.task( 'build-examples-rollup', buildExamplesRollupTask );
 
+gulp.task( 'do-build-examples', gulp.series( 
+	'build-examples-typescript',
+	'build-examples-rollup'
+) );
+
 // Tests private tasks
-gulp.task( 'clean-tests', cleanTestsTask );
-gulp.task( 'build-tests-typescript', buildTestsTypeScriptTask );
-gulp.task( 'build-tests', gulp.series( 'clean-tests', 'build-tests-typescript' ) );
+gulp.task( 'clean-unit-tests', cleanUnitTestsTask );
+gulp.task( 'clean-integration-tests', done => done() );
+gulp.task( 'clean-tests', gulp.parallel( 'clean-unit-tests', 'clean-integration-tests' ) );
+
+gulp.task( 'build-unit-tests', buildTestsTypeScriptTask );
+gulp.task( 'build-integration-tests', done => done() );
+gulp.task( 'run-unit-tests', runUnitTestsTask );
+gulp.task( 'run-integration-tests', done => done() );
+
+gulp.task( 'do-test', gulp.series( 
+	gulp.parallel( 
+		gulp.series( 'build-unit-tests', 'run-unit-tests' ), 
+		gulp.series( 'build-integration-tests', 'run-integration-tests' )
+	)
+) );
 
 // Docs private tasks
 gulp.task( 'doc-setup', docSetupTask );
 gulp.task( 'doc-create', docTask );
+
 gulp.task( 'do-doc', gulp.series( 'doc-setup', 'doc-create' ) );
 
+
 // Main Tasks
-gulp.task( 'build-src', gulp.series( 'clean-dist', 'build-src-typescript', 'build-src-rollup', 'build-src-add-header-to-umd', 'build-src-minify-umd' ) );
-gulp.task( 'build-examples', gulp.series( 'clean-examples', 'build-examples-typescript', 'build-examples-rollup' ) );
-gulp.task( 'build-all', gulp.parallel( 'build-src', 'build-examples', 'build-tests' ) );
+gulp.task( 'clean-all', gulp.parallel(
+	'clean-src-output',
+	'clean-examples-output'
+) );
+
+gulp.task( 'build-all', gulp.series(
+	'clean-all',
+	gulp.parallel(
+		gulp.series( 'do-build-src', 'do-doc' ),
+		'do-build-examples'
+	)
+) );
 gulp.task( 'build', gulp.series( 'build-all' ) );
+gulp.task( 'build-src', gulp.series( 'clean-src-output', 'do-build-src' ) );
+gulp.task( 'build-examples', gulp.series( 'clean-examples-output', 'do-build-examples' ) );
+gulp.task( 'clean', gulp.series( 'clean-all' ) );
 gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
+
 gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
-gulp.task( 'test', gulp.series( 'build-tests', testTask ) );
+gulp.task( 'test', gulp.series( 'clean-tests', 'do-test' ) );
 gulp.task( 'update-tld-regex', updateTldRegex );
-gulp.task( 'default', gulp.series( 'build', 'do-doc', 'test' ) );
+
+gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );
 
 
 // -----------------------------------------------------
 
 
-function cleanDistTask() {
+function cleanSrcOutputTask() {
 	return gulp.src( './dist', { read: false, allowEmpty: true } )
-        .pipe( clean() ) ;
+        .pipe( clean() );
 }
 
 function buildSrcTypeScriptCommonjsTask() {
@@ -133,13 +173,11 @@ function buildSrcMinifyUmdTask() {
 }
 
 
-function cleanExamplesBuildTask() {
-	return gulp.src( './docs/examples/live-example/build', { read: false , allowEmpty: true } )
-		.pipe( clean() );
-}
-
 function cleanExamplesOutputTask() {
-	return gulp.src( './docs/examples/live-example/live-example-all.js', { read: false, allowEmpty: true } )
+	return gulp.src( [
+		'./docs/examples/live-example/build',
+		'./docs/examples/live-example/live-example-all.js'
+	], { read: false, allowEmpty: true } )
 		.pipe( clean() );
 }
 
@@ -207,12 +245,12 @@ function serveTask() {
 }
 
 
-function testTask( done ) {
+function runUnitTestsTask( done ) {
 	return gulp.src( './build/**/*.spec.js' )
 		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
 
-function cleanTestsTask() {
+function cleanUnitTestsTask() {
 	return gulp.src( './build', { read: false, allowEmpty: true } )
         .pipe( clean()) ;
 }
