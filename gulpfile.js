@@ -3,13 +3,14 @@ const _               = require( 'lodash' ),
       clean           = require( 'gulp-clean' ),
       connect         = require( 'gulp-connect' ),
 	  download        = require( 'gulp-download' ),
-	  exec            = require( 'child_process' ).exec,
+	  exec            = require( 'child-process-promise' ).exec,
 	  fs              = require( 'fs' ),
       gulp            = require( 'gulp' ),
 	  header          = require( 'gulp-header' ),
 	  jasmine         = require( 'gulp-jasmine' ),
 	  json5           = require( 'json5' ),
 	  merge           = require( 'merge-stream' ),
+	  mkdirp          = require( 'mkdirp' ),
 	  preprocess      = require( 'gulp-preprocess' ),
       punycode        = require( 'punycode' ),
 	  rename          = require( 'gulp-rename' ),
@@ -22,9 +23,14 @@ const _               = require( 'lodash' ),
 
 // Project configuration
 const pkg = require( './package.json' ),
-      tsconfig = json5.parse( fs.readFileSync( './tsconfig.json', 'utf-8' ) ),
       banner = createBanner();
 
+const tsconfigContents = json5.parse( fs.readFileSync( './tsconfig.json', 'utf-8' ) ),
+      tsconfig = _.merge( {}, tsconfigContents, {
+		  compilerOptions: {
+			  noEmit: false,  // Note: noEmit set to 'true' in tsconfig.json to prevent accidental use of 'tsc' command
+		  }
+	  } );
 
 // Build src private tasks
 gulp.task( 'clean-src-output', cleanSrcOutputTask );
@@ -54,15 +60,21 @@ gulp.task( 'do-build-examples', gulp.series(
 	'build-examples-rollup'
 ) );
 
+// Docs private tasks
+gulp.task( 'doc-setup', docSetupTask );
+gulp.task( 'doc-create', docTask );
+
+gulp.task( 'do-doc', gulp.series( 'doc-setup', 'doc-create' ) );
+
 // Tests private tasks
 gulp.task( 'clean-unit-tests', cleanUnitTestsTask );
-gulp.task( 'clean-integration-tests', done => done() );
+gulp.task( 'clean-integration-tests', cleanIntegrationTestsTask );
 gulp.task( 'clean-tests', gulp.parallel( 'clean-unit-tests', 'clean-integration-tests' ) );
 
 gulp.task( 'build-unit-tests', buildTestsTypeScriptTask );
-gulp.task( 'build-integration-tests', done => done() );
+gulp.task( 'build-integration-tests', gulp.series( 'do-build-src', buildIntegrationTestsTask ) );
 gulp.task( 'run-unit-tests', runUnitTestsTask );
-gulp.task( 'run-integration-tests', done => done() );
+gulp.task( 'run-integration-tests', runIntegrationTestsTask );
 
 gulp.task( 'do-test', gulp.series( 
 	gulp.parallel( 
@@ -70,12 +82,6 @@ gulp.task( 'do-test', gulp.series(
 		gulp.series( 'build-integration-tests', 'run-integration-tests' )
 	)
 ) );
-
-// Docs private tasks
-gulp.task( 'doc-setup', docSetupTask );
-gulp.task( 'doc-create', docTask );
-
-gulp.task( 'do-doc', gulp.series( 'doc-setup', 'doc-create' ) );
 
 
 // Main Tasks
@@ -114,7 +120,6 @@ function cleanSrcOutputTask() {
 
 function buildSrcTypeScriptCommonjsTask() {
 	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
-		noEmit: false,  // Note: noEmit set to 'true' in tsconfig.json to prevent accidental use of 'tsc' command
 		module: 'commonjs'
 	} ) );
 	
@@ -123,7 +128,6 @@ function buildSrcTypeScriptCommonjsTask() {
 
 function buildSrcTypeScriptEs2015Task() {
 	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
-		noEmit: false,  // Note: noEmit set to 'true' in tsconfig.json to prevent accidental use of 'tsc' command
 		module: 'es2015'
 	} ) );
 
@@ -150,9 +154,7 @@ function buildSrcTypeScript( tsProject, outputDir ) {
 
 
 function buildSrcRollupTask( done ) {
-	exec( `./node_modules/.bin/rollup ./dist/es2015/autolinker.js --file ./dist/Autolinker.js --format umd --name "Autolinker" --sourcemap`, err => {
-		done( err );
-	} );
+	return exec( `./node_modules/.bin/rollup ./dist/es2015/autolinker.js --file ./dist/Autolinker.js --format umd --name "Autolinker" --sourcemap` );
 }
 
 function buildSrcAddHeaderToUmdTask() {
@@ -196,9 +198,7 @@ function buildExamplesTypeScriptTask() {
 
 
 function buildExamplesRollupTask( done ) {
-	exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js`, err => {
-		done( err );
-	} );
+	return exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js` );
 }
 
 
@@ -252,7 +252,12 @@ function runUnitTestsTask( done ) {
 
 function cleanUnitTestsTask() {
 	return gulp.src( './build', { read: false, allowEmpty: true } )
-        .pipe( clean()) ;
+        .pipe( clean() );
+}
+
+function cleanIntegrationTestsTask() {
+	return gulp.src( './.tmp/tests-integration', { read: false, allowEmpty: true } )
+		.pipe( clean() );
 }
 
 function buildTestsTypeScriptTask() {
@@ -266,6 +271,33 @@ function buildTestsTypeScriptTask() {
 
 	return tsResult.js.pipe( gulp.dest( 'build' ) );
 }
+
+async function buildIntegrationTestsTask( done ) {
+	mkdirp.sync( './.tmp/tests-integration' );
+
+	await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, { 
+		cwd: __dirname 
+	} );
+	await streamToPromise(
+		gulp.src( './tests-integration/**' )
+			.pipe( gulp.dest( './.tmp/tests-integration' ) )
+	);
+	await exec( `${__dirname}/node_modules/.bin/yarn add ./autolinker.tar.gz`, { 
+		cwd: `${__dirname}/.tmp/tests-integration`
+	} );
+	await streamToPromise(
+		gulp.src( './.tmp/tests-integration/**/*.ts' )
+			.pipe( typescript( tsconfig.compilerOptions ) )
+			.pipe( gulp.dest( './.tmp/tests-integration' ) )
+	);
+}
+
+
+function runIntegrationTestsTask() {
+	return gulp.src( './.tmp/tests-integration/**/*.spec.js' )
+		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
+}
+
 
 
 /**
@@ -335,4 +367,15 @@ function compareLengthLongestFirst(a, b){
 		result = a.localeCompare(b);
 	}
 	return result;
+}
+
+
+/**
+ * Helper function to turn a stream into a promise
+ */
+function streamToPromise( stream ) {
+	return new Promise( ( resolve, reject ) => {
+		stream.on( "end", resolve );
+		stream.on( "error", reject );
+	} );
 }
