@@ -38,12 +38,14 @@ gulp.task( 'clean-src-output', cleanSrcOutputTask );
 gulp.task( 'build-src-typescript-commonjs', buildSrcTypeScriptCommonjsTask );
 gulp.task( 'build-src-typescript-es2015', buildSrcTypeScriptEs2015Task );
 gulp.task( 'build-src-typescript', gulp.parallel( 'build-src-typescript-commonjs', 'build-src-typescript-es2015' ) );
+gulp.task( 'build-src-fix-commonjs-index', buildSrcFixCommonJsIndexTask );
 gulp.task( 'build-src-rollup', buildSrcRollupTask );
 gulp.task( 'build-src-add-header-to-umd', buildSrcAddHeaderToUmdTask );
 gulp.task( 'build-src-minify-umd', buildSrcMinifyUmdTask );
 
 gulp.task( 'do-build-src', gulp.series( 
 	'build-src-typescript',
+	'build-src-fix-commonjs-index',
 	'build-src-rollup',
 	'build-src-add-header-to-umd', 
 	'build-src-minify-umd'
@@ -151,6 +153,75 @@ function buildSrcTypeScript( tsProject, outputDir ) {
 	] );
 }
 
+
+/**
+ * Ultimate in hackery: by default, with TypeScript's default commonjs output of
+ * the source ES6 modules, users would be required to `require()` Autolinker in 
+ * the following way:
+ * 
+ *     const Autolinker = require( 'autolinker' ).default;   // (ugh)
+ * 
+ * In order to maintain backward compatibility with the v1.x interface, and to 
+ * make things simpler for users, we want to allow the following statement:
+ * 
+ *     const Autolinker = require( 'autolinker' );
+ * 
+ * In order to get this to work, we need to change the generated output index.js 
+ * line: 
+ *     exports.default = autolinker_1.default; 
+ * to:
+ *     exports = autolinker_1.default;   // make the Autolinker class the actual export
+ * 
+ * This function essentially changes the generated index.js from its original 
+ * content of:
+ * 
+ *     "use strict";
+ *     function __export(m) {
+ *         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+ *     }
+ *     Object.defineProperty(exports, "__esModule", { value: true });
+ *     var autolinker_1 = require("./autolinker");
+ *     exports.default = autolinker_1.default;   // <-- target of change
+ *     var autolinker_2 = require("./autolinker");
+ *     exports.Autolinker = autolinker_2.default;
+ *     __export(require("./anchor-tag-builder"));
+ *     __export(require("./html-tag"));
+ *     __export(require("./match/index"));
+ *     __export(require("./matcher/index"));
+ * 
+ * to this:
+ * 
+ *     "use strict";
+ *     function __export(m) {
+ *         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+ *     }
+ *     Object.defineProperty(exports, "__esModule", { value: true });
+ *     var autolinker_1 = require("./autolinker");
+ * 
+ *     // Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
+ *     exports = module.exports = autolinker_1.default;                // redefine 'exports' object as the Autolinker class itself
+ *     Object.defineProperty(exports, "__esModule", { value: true });  // redeclare '__esModule' on new 'exports' object
+ * 
+ *     exports.default = autolinker_1.default;    // continue to allow 'default' property import for ES6 default import
+ *     var autolinker_2 = require("./autolinker");
+ *     exports.Autolinker = autolinker_2.default;
+ *     __export(require("./anchor-tag-builder"));
+ *     __export(require("./html-tag"));
+ *     __export(require("./match/index"));
+ *     __export(require("./matcher/index"));
+ */
+async function buildSrcFixCommonJsIndexTask() {
+	const indexJsContents = fs.readFileSync( './dist/commonjs/index.js', 'utf-8' )
+		.replace( 'exports.default =', `
+			// Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
+			exports = module.exports = autolinker_1.default;                // redefine 'exports' object as the Autolinker class itself
+			Object.defineProperty(exports, "__esModule", { value: true });  // redeclare '__esModule' on new 'exports' object
+
+			exports.default =
+		`.trimRight().replace( /^\t{3}/gm, '' ) );
+	
+	fs.writeFileSync( './dist/commonjs/index.js', indexJsContents );
+}
 
 
 function buildSrcRollupTask( done ) {

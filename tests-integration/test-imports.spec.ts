@@ -27,67 +27,82 @@ import Autolinker, {
 describe( 'Autolinker imports tests - ', () => {
 
 	it( `Autolinker should be the default export of 'autolinker'`, () => {
-		expect( Autolinker ).toBeDefined();
+		expect( Autolinker ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( Autolinker.link ).toEqual( jasmine.any( Function ) );
+
+		expect( Autolinker.link( 'Hello google.com', { newWindow: false } ) )
+			.toBe( 'Hello <a href="http://google.com">google.com</a>' );
 	} );
 
 
 	it( `Autolinker should also be a named export of 'autolinker'`, () => {
-		expect( NamedAutolinker ).toBeDefined();
+		expect( NamedAutolinker ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( NamedAutolinker.link ).toEqual( jasmine.any( Function ) );
 	} );
 
 
 	it( `AnchorTagBuilder should be a named export of 'autolinker'`, () => {
-		expect( AnchorTagBuilder ).toBeDefined();
+		expect( AnchorTagBuilder ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( AnchorTagBuilder.prototype.build ).toEqual( jasmine.any( Function ) );
 	} );
 
 
 	it( `AnchorTagBuilder should be a named export of 'autolinker'`, () => {
-		expect( HtmlTag ).toBeDefined();
+		expect( HtmlTag ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( HtmlTag.prototype.getTagName ).toEqual( jasmine.any( Function ) );
 	} );
 
 
 	it( `The 'Match' classes should be named exports of 'autolinker'`, () => {
-		expect( Match ).toBeDefined();
+		expect( Match ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( Match.name ).toBe( 'Match' );  // function name
 		expect( Match.prototype.getMatchedText ).toEqual( jasmine.any( Function ) );
 
-		expect( EmailMatch ).toBeDefined();
+		expect( EmailMatch ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( EmailMatch.name ).toBe( 'EmailMatch' );  // function name
 		expect( EmailMatch.prototype.getEmail ).toEqual( jasmine.any( Function ) );
 
-		expect( HashtagMatch ).toBeDefined();
+		expect( HashtagMatch ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( HashtagMatch.name ).toBe( 'HashtagMatch' );  // function name
 		expect( HashtagMatch.prototype.getHashtag ).toEqual( jasmine.any( Function ) );
 
-		expect( MentionMatch ).toBeDefined();
+		expect( MentionMatch ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( MentionMatch.name ).toBe( 'MentionMatch' );  // function name
 		expect( MentionMatch.prototype.getMention ).toEqual( jasmine.any( Function ) );
 
-		expect( PhoneMatch ).toBeDefined();
+		expect( PhoneMatch ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( PhoneMatch.name ).toBe( 'PhoneMatch' );  // function name
 		expect( PhoneMatch.prototype.getNumber ).toEqual( jasmine.any( Function ) );
 
-		expect( UrlMatch ).toBeDefined();
+		expect( UrlMatch ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( UrlMatch.name ).toBe( 'UrlMatch' );  // function name
 		expect( UrlMatch.prototype.getUrl ).toEqual( jasmine.any( Function ) );
 	} );
 
 
 	it( `The 'Matcher' classes should be named exports of 'autolinker'`, () => {
-		expect( Matcher ).toBeDefined();
+		expect( Matcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( Matcher.name ).toBe( 'Matcher' );  // function name
 		// Note: no methods which can be checked here - abstract methods are not compiled into ES5
 
-		expect( EmailMatcher ).toBeDefined();
+		expect( EmailMatcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( EmailMatcher.name ).toBe( 'EmailMatcher' );  // function name
 		expect( EmailMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 
-		expect( HashtagMatcher ).toBeDefined();
+		expect( HashtagMatcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( HashtagMatcher.name ).toBe( 'HashtagMatcher' );  // function name
 		expect( HashtagMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 
-		expect( MentionMatcher ).toBeDefined();
+		expect( MentionMatcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( MentionMatcher.name ).toBe( 'MentionMatcher' );  // function name
 		expect( MentionMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 
-		expect( PhoneMatcher ).toBeDefined();
+		expect( PhoneMatcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( PhoneMatcher.name ).toBe( 'PhoneMatcher' );  // function name
 		expect( PhoneMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 
-		expect( UrlMatcher ).toBeDefined();
+		expect( UrlMatcher ).toEqual( jasmine.any( Function ) );  // constructor function
+		expect( UrlMatcher.name ).toBe( 'UrlMatcher' );  // function name
 		expect( UrlMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 	} );
 
