@@ -29,7 +29,7 @@ Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/]
 
 ## v2.0 released Dec 2018
 
-See [Upgrading from v1.x -> v2.x (Breaking Changes)](#Upgrading from v1.x -> v2.x (Breaking Changes)) at the bottom of this readme
+See [Upgrading from v1.x -> v2.x (Breaking Changes)](#upgrading-from-v1x---v2x-breaking-changes) at the bottom of this readme
 
 
 ## Installation
@@ -406,7 +406,7 @@ if( typeof Array.prototype.forEach !== 'function' ) {
 ## Upgrading from v1.x -> v2.x (Breaking Changes)
 
 1. If you are still on v0.x, first follow the instructions in the 
-   [Upgrading from 0.x -> 1.x](#Upgrading from v0.x -> v1.x (Breaking Changes)) 
+   [Upgrading from 0.x -> 1.x](#upgrading-from-v0x---v1x-breaking-changes) 
    section below.
 2. Codebase has been converted to TypeScript, and uses ES6 exports. Use the `import` 
    statement to pull in the `Autolinker` class and related entities such as
