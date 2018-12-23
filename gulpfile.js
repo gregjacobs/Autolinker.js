@@ -230,8 +230,6 @@ function buildTestsTypeScriptTask() {
 }
 
 
-
-
 /**
  * Creates the banner comment with license header that is placed over the
  * concatenated/minified files.
