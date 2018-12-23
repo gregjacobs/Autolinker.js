@@ -72,7 +72,7 @@ gulp.task( 'clean-integration-tests', cleanIntegrationTestsTask );
 gulp.task( 'clean-tests', gulp.parallel( 'clean-unit-tests', 'clean-integration-tests' ) );
 
 gulp.task( 'build-unit-tests', buildTestsTypeScriptTask );
-gulp.task( 'build-integration-tests', gulp.series( 'do-build-src', buildIntegrationTestsTask ) );
+gulp.task( 'build-integration-tests', buildIntegrationTestsTask );
 gulp.task( 'run-unit-tests', runUnitTestsTask );
 gulp.task( 'run-integration-tests', runIntegrationTestsTask );
 
@@ -104,7 +104,7 @@ gulp.task( 'clean', gulp.series( 'clean-all' ) );
 gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 
 gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
-gulp.task( 'test', gulp.series( 'clean-tests', 'do-test' ) );
+gulp.task( 'test', gulp.series( gulp.parallel( 'clean-tests', 'build-src' ), 'do-test' ) );
 gulp.task( 'update-tld-regex', updateTldRegex );
 
 gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );
@@ -119,7 +119,7 @@ function cleanSrcOutputTask() {
 }
 
 function buildSrcTypeScriptCommonjsTask() {
-	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
+	const tsProject = typescript.createProject( Object.assign( {}, tsconfig.compilerOptions, {
 		module: 'commonjs'
 	} ) );
 	
@@ -127,7 +127,7 @@ function buildSrcTypeScriptCommonjsTask() {
 }
 
 function buildSrcTypeScriptEs2015Task() {
-	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
+	const tsProject = typescript.createProject( Object.assign( {}, tsconfig.compilerOptions, {
 		module: 'es2015'
 	} ) );
 
@@ -282,7 +282,9 @@ async function buildIntegrationTestsTask( done ) {
 		gulp.src( './tests-integration/**' )
 			.pipe( gulp.dest( './.tmp/tests-integration' ) )
 	);
-	await exec( `${__dirname}/node_modules/.bin/yarn add ./autolinker.tar.gz`, { 
+	// Note: yarn was caching old versions of the tarball, even with --force
+	// Using npm here instead.
+	await exec( `${__dirname}/node_modules/.bin/npm install ./autolinker.tar.gz --force`, { 
 		cwd: `${__dirname}/.tmp/tests-integration`
 	} );
 	await streamToPromise(

@@ -65,6 +65,7 @@
     "lodash": "^4.17.4",
     "merge-stream": "^1.0.0",
     "mkdirp": "^0.5.1",
+    "npm": "^6.5.0",
     "punycode": "^2.1.0",
     "rollup": "^0.68.1",
     "through2": "^2.0.1",
