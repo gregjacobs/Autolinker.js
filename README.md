@@ -421,12 +421,12 @@ if( typeof Array.prototype.forEach !== 'function' ) {
    classes by assigning to the prototype (for instance, something like
    `PhoneMatcher.prototype.regex = ...`). This is due to how TypeScript creates 
    properties for class instances in the constructor rather than on prototypes, 
-   and it's not worth working around. The idea of providing your own
-   regular expression for these classes is a brittle notion anyway, as the 
+   and it's not worth working around. The notion of providing your own
+   regular expression for these classes is brittle anyway, as the 
    `Matcher` classes rely on capturing groups in the RegExp being in the right 
    place, and these are subject to change as the regular expression needs to 
-   change. Use  your own `Matcher` class instead if you would like to override 
-   this functionality, such as with the `phoneMatcherFactory` config.
+   be updated. Use your own `Matcher` class instead if you would like to 
+   override this functionality, such as with the `phoneMatcherFactory` config.
 
 ## Upgrading from v0.x -> v1.x (Breaking Changes)
 
