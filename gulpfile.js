@@ -60,7 +60,7 @@ gulp.task( 'build', gulp.series( 'build-all' ) );
 gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 gulp.task( 'serve', gulp.series( gulp.parallel( 'build-examples', 'doc' ), serveTask ) );
 gulp.task( 'test', gulp.series( 'build-tests', testTask ) );
-gulp.task( 'update-tld-list', updateTldRegex );
+gulp.task( 'update-tld-regex', updateTldRegex );
 gulp.task( 'default', gulp.series( 'build', 'do-doc', 'test' ) );
 
 
@@ -253,16 +253,44 @@ function createBanner() {
 	].join( "\n" );
 }
 
+
+function updateTldRegex(){
+	return download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
+		.pipe( transform( domainsToRegex, { encoding: 'utf8' } ) )
+		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' ) )
+		.pipe( rename( path => {
+			path.basename = "tld-regex";
+			path.extname = '.ts';
+		} ) )
+		.pipe( gulp.dest( './src/matcher/' ) );
+}
+
+
+function domainsToRegex(contents){
+	contents = contents
+		.split( '\n' )
+		.filter( notCommentLine )
+		.map( dePunycodeDomain );
+	
+	contents = [].concat.apply([], contents);
+	contents = contents.filter( s => !!s );  // remove empty elements
+	contents.sort( compareLengthLongestFirst );
+	contents = contents.join('|');
+	contents = 'export const tldRegex = /(?:' + contents + ')/;\n';
+
+	return contents;
+}
+
+function notCommentLine(line){
+	return !/^#/.test(line);
+}
+
 function dePunycodeDomain(d){
 	d = d.toLowerCase();
 	if (/xn--/.test(d)){
 		return [d, punycode.toUnicode(d)];
 	}
 	return [d];
-}
-
-function notCommentLine(line){
-	return !/^#/.test(line);
 }
 
 function compareLengthLongestFirst(a, b){
@@ -272,29 +300,3 @@ function compareLengthLongestFirst(a, b){
 	}
 	return result;
 }
-
-function domainsToRegex(contents){
-	contents = contents
-		.split('\n')
-		.filter(notCommentLine)
-		.map(dePunycodeDomain);
-	contents = [].concat.apply([], contents);
-	contents = contents.filter(function(s){ return !!s; });
-	contents.sort(compareLengthLongestFirst);
-	contents = contents.join('|');
-	contents = '/*global Autolinker */\nAutolinker.tldRegex = /(?:' + contents + ')/;\n';
-
-	return contents;
-}
-
-function updateTldRegex(){
-	return download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
-		.pipe( transform( domainsToRegex, { encoding: 'utf8' } ) )
-		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `gulp update-tld-list`\n\n' ) )
-		.pipe( rename(function(path) {
-			path.basename = "TldRegex";
-			path.extname = '.js';
-		}))
-		.pipe( gulp.dest('./src/matcher/') );
-}
-

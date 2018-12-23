@@ -17,7 +17,8 @@
     "build-example": "gulp build-examples",
     "prepublishOnly": "gulp",
     "serve": "gulp serve",
-    "test": "gulp test"
+    "test": "gulp test",
+    "update-tld-regex": "gulp update-tld-regex"
   },
   "repository": {
     "type": "git",
