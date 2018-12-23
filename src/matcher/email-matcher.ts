@@ -19,10 +19,10 @@ export class EmailMatcher extends Matcher {
 	 *
 	 *     person@place.com
 	 *
-	 * @private
+	 * @protected
 	 * @property {RegExp} matcherRegex
 	 */
-	private matcherRegex = (function() {
+	protected matcherRegex = (function() {
 		var alphaNumericChars = alphaNumericCharsStr,
 			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
 			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',

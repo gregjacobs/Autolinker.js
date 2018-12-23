@@ -18,7 +18,7 @@ export class HashtagMatcher extends Matcher {
 	 * The service to point hashtag matches to. See {@link Autolinker#hashtag}
 	 * for available values.
 	 */
-	private readonly serviceName: HashtagServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected readonly serviceName: HashtagServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
@@ -26,10 +26,10 @@ export class HashtagMatcher extends Matcher {
 	 *
 	 *     #asdf
 	 *
-	 * @private
+	 * @protected
 	 * @property {RegExp} matcherRegex
 	 */
-	matcherRegex = new RegExp( '#[_' + alphaNumericCharsStr + ']{1,139}', 'g' );
+	protected matcherRegex = new RegExp( '#[_' + alphaNumericCharsStr + ']{1,139}', 'g' );
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -37,10 +37,10 @@ export class HashtagMatcher extends Matcher {
 	 *
 	 * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
 	 *
-	 * @private
+	 * @protected
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
+	protected nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
 
 
 	/**

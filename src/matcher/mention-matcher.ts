@@ -13,11 +13,13 @@ import { Match } from "../match/match";
 export class MentionMatcher extends Matcher {
 
 	/**
+	 * @cfg {'twitter'/'instagram'/'soundcloud'} protected
+	 * 
 	 * The name of service to link @mentions to.
 	 * 
 	 * Valid values are: 'twitter', 'instagram', or 'soundcloud'
 	 */
-	private serviceName: MentionServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected serviceName: MentionServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * Hash of regular expression to match username handles. Example match:
@@ -27,7 +29,7 @@ export class MentionMatcher extends Matcher {
 	 * @private
 	 * @property {Object} matcherRegexes
 	 */
-	private readonly matcherRegexes: {[key: string]: RegExp} = {
+	protected readonly matcherRegexes: {[key: string]: RegExp} = {
 		'twitter': new RegExp( '@[_' + alphaNumericCharsStr + ']{1,20}', 'g' ),
 		'instagram': new RegExp( '@[_.' + alphaNumericCharsStr + ']{1,50}', 'g' ),
 		'soundcloud': new RegExp( '@[_.' + alphaNumericCharsStr + "\-" + ']{1,50}', 'g' )
@@ -42,7 +44,7 @@ export class MentionMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	private readonly nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
+	protected readonly nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
 
 
 	/**

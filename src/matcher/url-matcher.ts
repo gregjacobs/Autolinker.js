@@ -21,23 +21,23 @@ export class UrlMatcher extends Matcher {
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	private stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
 	 * @inheritdoc Autolinker#stripTrailingSlash
 	 */
-	private stripTrailingSlash: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected stripTrailingSlash: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} decodePercentEncoding (required)
 	 * @inheritdoc Autolinker#decodePercentEncoding
 	 */
-	private decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 
 	/**
-	 * @private
+	 * @protected
 	 * @property {RegExp} matcherRegex
 	 *
 	 * The regular expression to match URLs with an optional scheme, port
@@ -70,7 +70,7 @@ export class UrlMatcher extends Matcher {
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #3 for more info.
 	 */
-	private matcherRegex = (function() {
+	protected matcherRegex = (function() {
 		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,  // starting with 'www.'
 
@@ -120,10 +120,10 @@ export class UrlMatcher extends Matcher {
 	 *
 	 * This regular expression is used to test the character before the '//'.
 	 *
-	 * @private
+	 * @protected
 	 * @type {RegExp} wordCharRegExp
 	 */
-	private wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
+	protected wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
 
 
 	/**
@@ -137,19 +137,19 @@ export class UrlMatcher extends Matcher {
 	 * part, so if we find that we have unbalanced parenthesis, we will drop the
 	 * last one for the match.
 	 *
-	 * @private
+	 * @protected
 	 * @property {RegExp}
 	 */
-	private openParensRe = /\(/g;
+	protected openParensRe = /\(/g;
 
 	/**
 	 * The regular expression to match closing parenthesis in a URL match. See
 	 * {@link #openParensRe} for more information.
 	 *
-	 * @private
+	 * @protected
 	 * @property {RegExp}
 	 */
-	private closeParensRe = /\)/g;
+	protected closeParensRe = /\)/g;
 
 
 	/**
@@ -259,12 +259,12 @@ export class UrlMatcher extends Matcher {
 	 * In this case, the last closing parenthesis should *not* be part of the
 	 * URL itself, and this method will return `true`.
 	 *
-	 * @private
+	 * @protected
 	 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
 	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
 	 *   the end of the `matchStr`, `false` otherwise.
 	 */
-	private matchHasUnbalancedClosingParen( matchStr: string ) {
+	protected matchHasUnbalancedClosingParen( matchStr: string ) {
 		let lastChar = matchStr.charAt( matchStr.length - 1 );
 
 		if( lastChar === ')' ) {
@@ -287,7 +287,7 @@ export class UrlMatcher extends Matcher {
 	 * characters after TLD are ':/?#'. Exclude scheme matched URLs from this
 	 * check.
 	 *
-	 * @private
+	 * @protected
 	 * @param {String} urlMatch The matched URL, if there was one. Will be an
 	 *   empty string if the match is not a URL match.
 	 * @param {String} schemeUrlMatch The match URL string for a scheme
@@ -297,7 +297,7 @@ export class UrlMatcher extends Matcher {
 	 * @return {Number} the position where the invalid character was found. If
 	 *   no such character was found, returns -1
 	 */
-	private matchHasInvalidCharAfterTld( urlMatch: string, schemeUrlMatch: string ) {
+	protected matchHasInvalidCharAfterTld( urlMatch: string, schemeUrlMatch: string ) {
 		if( !urlMatch ) {
 			return -1;
 		}
