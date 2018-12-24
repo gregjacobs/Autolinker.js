@@ -1,0 +1,34 @@
+// @types/puppeteer causing a lot of conflicts with @types/node. Removing for now.
+//import puppeteer, { Browser, Page } from 'puppeteer';
+const puppeteer = require( 'puppeteer' );
+
+describe( 'Autolinker.js UMD file in browser', function() {
+	let browser: any;  // :Browser
+	let page: any;     // :Page
+  
+	beforeAll( async () => {
+		browser = await puppeteer.launch( { headless: true } );
+		page = await browser.newPage();
+
+		// Print errors from the page
+		page.on( 'pageerror', ( err: Error ) => console.error( err ) );
+
+		await page.goto( `file://${__dirname}/test-browser-umd.html`, { 
+			waitUntil: 'load' 
+		} );
+	} );
+  
+	afterAll( async () => {
+		await browser.close();
+	} );
+  
+
+	it( 'should have the `window.Autolinker` global, and Autolinker should work', async () => {
+		const innerHTML = await page.evaluate( () => {
+			return ( document as any ).querySelector( '#result' ).innerHTML.trim();
+		} );
+
+		expect( innerHTML ).toBe( 'Go to <a href="http://google.com">google.com</a>' );
+	} );
+
+} );

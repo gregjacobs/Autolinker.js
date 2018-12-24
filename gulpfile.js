@@ -239,7 +239,12 @@ function buildSrcAddHeaderToUmdTask() {
 function buildSrcMinifyUmdTask() {
 	return gulp.src( './dist/Autolinker.js' )
 		.pipe( sourcemaps.init( { loadMaps: true } ) )
-		.pipe( uglify( { preserveComments: 'license' } ) )
+		.pipe( uglify( { 
+			output: { 
+				comments: 'some', 
+				ascii_only: true  // Don't convert \uXXXX sequences to unicode. Doing so makes the 'alphaCharsStr' not parse as a regular expression inside a character class
+			} 
+		} ) )
 		.pipe( rename( 'Autolinker.min.js' ) )
 		.pipe( sourcemaps.write( '.' ) )
 		.pipe( gulp.dest( './dist' ) );
