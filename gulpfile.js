@@ -1,25 +1,29 @@
 /*jshint node:true */
-const _               = require( 'lodash' ),
-      clean           = require( 'gulp-clean' ),
-      connect         = require( 'gulp-connect' ),
-	  download        = require( 'gulp-download' ),
-	  exec            = require( 'child-process-promise' ).exec,
-	  fs              = require( 'fs' ),
-      gulp            = require( 'gulp' ),
-	  header          = require( 'gulp-header' ),
-	  jasmine         = require( 'gulp-jasmine' ),
-	  json5           = require( 'json5' ),
-	  merge           = require( 'merge-stream' ),
-	  mkdirp          = require( 'mkdirp' ),
-	  preprocess      = require( 'gulp-preprocess' ),
-      punycode        = require( 'punycode' ),
-	  rename          = require( 'gulp-rename' ),
-	  replace         = require( 'gulp-replace' ),
-	  sourcemaps      = require( 'gulp-sourcemaps' ),
-      transform       = require( 'gulp-transform' ),
-      typescript      = require( 'gulp-typescript' ),
-      uglify          = require( 'gulp-uglify' ),
-      JsDuck          = require( 'gulp-jsduck' );
+"use strict";
+const _                 = require( 'lodash' ),
+      clean             = require( 'gulp-clean' ),
+      connect           = require( 'gulp-connect' ),
+	  download          = require( 'gulp-download' ),
+	  exec              = require( 'child-process-promise' ).exec,
+	  fs                = require( 'fs' ),
+      gulp              = require( 'gulp' ),
+	  header            = require( 'gulp-header' ),
+	  HtmlWebpackPlugin = require( 'html-webpack-plugin' ),
+	  jasmine           = require( 'gulp-jasmine' ),
+      JsDuck            = require( 'gulp-jsduck' ),
+	  json5             = require( 'json5' ),
+	  merge             = require( 'merge-stream' ),
+	  mkdirp            = require( 'mkdirp' ),
+	  path              = require( 'path' ),
+	  preprocess        = require( 'gulp-preprocess' ),
+      punycode          = require( 'punycode' ),
+	  rename            = require( 'gulp-rename' ),
+	  replace           = require( 'gulp-replace' ),
+	  sourcemaps        = require( 'gulp-sourcemaps' ),
+      transform         = require( 'gulp-transform' ),
+      typescript        = require( 'gulp-typescript' ),
+	  uglify            = require( 'gulp-uglify' ),
+	  webpack           = require( 'webpack' );
 
 // Project configuration
 const pkg = require( './package.json' ),
@@ -79,10 +83,12 @@ gulp.task( 'run-unit-tests', runUnitTestsTask );
 gulp.task( 'run-integration-tests', runIntegrationTestsTask );
 
 gulp.task( 'do-test', gulp.series( 
-	gulp.parallel( 
-		gulp.series( 'build-unit-tests', 'run-unit-tests' ), 
-		gulp.series( 'build-integration-tests', 'run-integration-tests' )
-	)
+	gulp.parallel( 'build-unit-tests', 'build-integration-tests' ),
+	// IMPORTANT: Seems we have to run the unit tests first, and then the 
+	// integration tests after. The gulp-jasmine plugin doesn't seem to like two
+	// running at the same time
+	'run-unit-tests',
+	'run-integration-tests'
 ) );
 
 
@@ -321,7 +327,7 @@ function serveTask() {
 }
 
 
-function runUnitTestsTask( done ) {
+function runUnitTestsTask() {
 	return gulp.src( './build/**/*.spec.js' )
 		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
@@ -351,25 +357,72 @@ function buildTestsTypeScriptTask() {
 async function buildIntegrationTestsTask( done ) {
 	mkdirp.sync( './.tmp/tests-integration' );
 
+	// First, create a .tar.gz output file like the one that would be downloaded
+	// from npm
 	await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, { 
 		cwd: __dirname 
 	} );
+
+	// Copy everything from ./tests-integration to ./.tmp/tests-integration
 	await streamToPromise(
 		gulp.src( './tests-integration/**' )
 			.pipe( gulp.dest( './.tmp/tests-integration' ) )
 	);
-	// Note: yarn was caching old versions of the tarball, even with --force
-	// Using npm here instead.
+
+	// Locally install the package created in the first step into the ./.tmp/tests-integration
+	// directory. Note: yarn was caching old versions of the tarball, even 
+	// with --force, so using npm here instead.
 	await exec( `${__dirname}/node_modules/.bin/npm install ./autolinker.tar.gz --force`, { 
 		cwd: `${__dirname}/.tmp/tests-integration`
 	} );
+
+	// Compile the .spec.ts files into .spec.js so we can run them
 	await streamToPromise(
-		gulp.src( './.tmp/tests-integration/**/*.ts' )
+		gulp.src( './.tmp/tests-integration/**/*.spec.ts' )
 			.pipe( typescript( tsconfig.compilerOptions ) )
 			.pipe( gulp.dest( './.tmp/tests-integration' ) )
 	);
+
+	// Compile the test-webpack-typescript test project
+	await buildWebpackTypeScriptTestProject();
 }
 
+
+async function buildWebpackTypeScriptTestProject() {
+	const testsIntegrationTmpDir = path.join( __dirname, '.tmp', 'tests-integration', 'test-webpack-typescript' );
+
+	return new Promise( ( resolve, reject ) => {
+		webpack( {
+			context: testsIntegrationTmpDir,
+			entry: path.resolve( testsIntegrationTmpDir, './page.ts' ),
+			output: {
+				path: path.resolve( testsIntegrationTmpDir, './webpack-output' )
+			},
+			mode: 'production',
+			module: {
+				rules: [
+					{ 
+						test: /\.ts$/, 
+						loader: 'awesome-typescript-loader', 
+						options: {
+							configFileName: path.resolve( testsIntegrationTmpDir, 'tsconfig.json' )
+						} 
+					}
+				]
+			},
+			plugins: [
+				new HtmlWebpackPlugin( { template: path.resolve( testsIntegrationTmpDir, './page.html' ) } )
+			]
+		}, ( err, stats ) => {
+			if( err || stats.hasErrors() ) {
+				console.error( stats.toString() );
+				reject( err || stats.toString() );
+			} else {
+				resolve();
+			}
+		} );
+	} );
+}
 
 function runIntegrationTestsTask() {
 	return gulp.src( './.tmp/tests-integration/**/*.spec.js' )

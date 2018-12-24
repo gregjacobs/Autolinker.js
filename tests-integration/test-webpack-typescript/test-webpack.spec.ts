@@ -1,4 +1,4 @@
-describe( 'Autolinker.js UMD file in browser', function() {
+describe( 'Webpack build with TypeScript in a browser', function() {
 	// @types/puppeteer causing a lot of conflicts with @types/node. Removing for now.
 	//import puppeteer, { Browser, Page } from 'puppeteer';
 	const puppeteer = require( 'puppeteer' );
@@ -13,7 +13,7 @@ describe( 'Autolinker.js UMD file in browser', function() {
 		// Print errors from the page
 		page.on( 'pageerror', ( err: Error ) => console.error( err ) );
 
-		await page.goto( `file://${__dirname}/test-browser-umd.html`, { 
+		await page.goto( `file://${__dirname}/page.html`, { 
 			waitUntil: 'load' 
 		} );
 	} );
@@ -23,21 +23,14 @@ describe( 'Autolinker.js UMD file in browser', function() {
 	} );
   
 
-	it( 'should have the `window.Autolinker` global, and Autolinker should work', async () => {
+	it( 'Autolinker should work', async () => {
 		const innerHTML = await page.evaluate( () => {
 			return ( document as any ).querySelector( '#result' ).innerHTML.trim();
 		} );
 
 		expect( innerHTML ).toBe( 'Go to <a href="http://google.com">google.com</a>' );
 	} );
-  
-
-	it( 'should expose `Autolinker.matcher.Matcher` so that it can be extended', async () => {
-		const typeofMatcher = await page.evaluate( () => {
-			return typeof ( window as any ).Autolinker.matcher.Matcher;
-		} );
-
-		expect( typeofMatcher ).toBe( 'function' );  // constructor function
-	} );
 
 } );
+
+

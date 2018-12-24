@@ -44,7 +44,7 @@
     "@types/jasmine": "^2.5.41",
     "@types/jquery": "^3.3.28",
     "@types/lodash": "^4.14.70",
-    "awesome-typescript-loader": "^3.2.1",
+    "awesome-typescript-loader": "^5.2.1",
     "child-process-promise": "^2.2.1",
     "gulp": "^4.0.0",
     "gulp-clean": "^0.4.0",
@@ -60,6 +60,7 @@
     "gulp-transform": "^1.1.0",
     "gulp-typescript": "^5.0.0",
     "gulp-uglify": "^3.0.1",
+    "html-webpack-plugin": "^3.2.0",
     "jasmine": "^3.3.1",
     "json5": "^2.1.0",
     "lodash": "^4.17.4",
@@ -71,6 +72,7 @@
     "rollup": "^0.68.1",
     "through2": "^2.0.1",
     "typescript": "^3.2.2",
+    "webpack": "^4.28.2",
     "yarn": "^1.12.3"
   },
   "dependencies": {}
