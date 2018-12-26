@@ -495,9 +495,9 @@ Run:
 yarn serve
 ```
 
-Then open your browser to: http://localhost:8080/docs/examples/live-example/index.html
+Then open your browser to: http://localhost:8080/docs/examples/index.html
 
-You should be able to make a change to source files, refresh your page, and see
+You should be able to make a change to source files, and refresh the page to see
 the changes.
 
 Note: If anyone wants to submit a PR converting `gulp watch` to `webpack` with 

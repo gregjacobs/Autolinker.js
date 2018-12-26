@@ -97,7 +97,8 @@ gulp.task( 'do-test', gulp.series(
 // Main Tasks
 gulp.task( 'clean-all', gulp.parallel(
 	'clean-src-output',
-	'clean-example-output'
+	'clean-example-output',
+	'clean-tests'
 ) );
 
 gulp.task( 'build-all', gulp.series(
@@ -113,7 +114,7 @@ gulp.task( 'build-example', gulp.series( 'clean-example-output', 'do-build-examp
 gulp.task( 'clean', gulp.series( 'clean-all' ) );
 gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 
-gulp.task( 'serve', gulp.series( gulp.parallel( 'build-example', 'doc' ), serveTask ) );
+gulp.task( 'serve', gulp.series( 'build-src', 'build-example', serveTask ) );
 gulp.task( 'test', gulp.series( gulp.parallel( 'clean-tests', 'build-src' ), 'do-test' ) );
 gulp.task( 'update-tld-regex', updateTldRegex );
 
@@ -280,7 +281,12 @@ function copyExampleToDocsDir() {
 
 		gulp.src( [ './live-example/live-example.css' ] )
 			.pipe( header( '/* NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n   CHANGES WILL BE OVERWRITTEN!!! */\n\n' ) )
-			.pipe( gulp.dest( './docs/examples/' ) )
+			.pipe( gulp.dest( './docs/examples/' ) ),
+
+		// Move dist files into the docs/ folder so they can be served
+		// by the example page within GitHub pages
+		gulp.src( `./dist/Autolinker*.js` )
+			.pipe( gulp.dest( './docs/dist' ) ),
 	);
 }
 
@@ -298,11 +304,6 @@ function buildExampleRollupTask() {
 
 function docSetupTask() {
 	return mergeStream(
-		// Move dist files into the docs/ folder so they can be served
-		// by GitHub pages
-		gulp.src( `./dist/autolinker.umd*.js` )
-			.pipe( gulp.dest( './docs/dist' ) ),
-
 		// TypeScript adds its own @class decorator to ES5 constructor functions. 
 		// We want to remove this so we don't confuse JSDuck with extra classes
 		// in the output
@@ -332,8 +333,8 @@ function docTask() {
 
 
 function serveTask() {
-	gulp.watch( './live-example/**/*.(html|css|ts)', gulp.parallel( 'build-example' ) );
-	gulp.watch( './src/**', gulp.series( 'doc' ) );
+	gulp.watch( './live-example/**/*.(html|css|ts)', gulp.series( 'build-example' ) );
+	gulp.watch( './src/**', gulp.series( 'build-src', 'build-example' ) );
 
 	connect.server();
 }
