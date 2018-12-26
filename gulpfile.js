@@ -259,13 +259,29 @@ function buildSrcMinifyUmdTask() {
 
 
 function cleanExampleOutputTask() {
-	return gulp.src( [ './.tmp/live-example' ], { read: false, allowEmpty: true } )
-		.pipe( clean() );
+	return mergeStream(
+		gulp.src( [ './.tmp/live-example' ], { read: false, allowEmpty: true } )
+			.pipe( clean() ),
+			
+		gulp.src( [ 
+			'./docs/examples/index.html',
+			'./docs/examples/live-example.js',
+			'./docs/examples/live-example.css'
+		], { read: false, allowEmpty: true } )
+			.pipe( clean() )
+	);
 }
 
 function copyExampleToDocsDir() {
-	return gulp.src( [ './live-example/index.html', './live-example/live-example.css' ] )
-		.pipe( gulp.dest( './docs/examples/' ) );
+	return mergeStream(
+		gulp.src( [ './live-example/index.html' ] )
+			.pipe( header( '<!-- NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n     CHANGES WILL BE OVERWRITTEN!!! -->\n\n' ) )
+			.pipe( gulp.dest( './docs/examples/' ) ),
+
+		gulp.src( [ './live-example/live-example.css' ] )
+			.pipe( header( '/* NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n   CHANGES WILL BE OVERWRITTEN!!! */\n\n' ) )
+			.pipe( gulp.dest( './docs/examples/' ) )
+	);
 }
 
 function buildExampleTypeScriptTask() {
@@ -276,7 +292,7 @@ function buildExampleTypeScriptTask() {
 }
 
 function buildExampleRollupTask() {
-	return exec( `./node_modules/.bin/rollup ./.tmp/live-example/main.js --format iife --file ./docs/examples/live-example-all.js` );
+	return exec( `./node_modules/.bin/rollup ./.tmp/live-example/main.js --format iife --file ./docs/examples/live-example.js` );
 }
 
 
