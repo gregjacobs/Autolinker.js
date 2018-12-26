@@ -11,6 +11,7 @@ describe( 'Autolinker.js UMD file in browser', function() {
 		page = await browser.newPage();
 
 		// Print errors from the page
+		page.on( 'console', ( msg: any ) => console.log( 'PAGE LOG:', msg.text() ) );
 		page.on( 'pageerror', ( err: Error ) => console.error( err ) );
 
 		await page.goto( `file://${__dirname}/test-browser-umd.html`, { 

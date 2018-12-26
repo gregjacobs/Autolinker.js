@@ -247,9 +247,8 @@ function buildSrcMinifyUmdTask() {
 		.pipe( sourcemaps.init( { loadMaps: true } ) )
 		.pipe( uglify( { 
 			output: { 
-				comments: 'some', 
-				ascii_only: true  // Don't convert \uXXXX sequences to unicode. Doing so makes the 'alphaCharsStr' not parse as a regular expression inside a character class
-			} 
+				comments: /^!/  // preserve license comment
+			}
 		} ) )
 		.pipe( rename( 'Autolinker.min.js' ) )
 		.pipe( sourcemaps.write( '.' ) )
