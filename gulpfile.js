@@ -233,7 +233,7 @@ async function buildSrcFixCommonJsIndexTask() {
 }
 
 
-function buildSrcRollupTask( done ) {
+function buildSrcRollupTask() {
 	return exec( `./node_modules/.bin/rollup ./dist/es2015/autolinker.js --file ./dist/Autolinker.js --format umd --name "Autolinker" --sourcemap` );
 }
 
@@ -367,7 +367,7 @@ function buildTestsTypeScriptTask() {
 	return tsResult.js.pipe( gulp.dest( './.tmp/tests-unit' ) );
 }
 
-async function buildIntegrationTestsTask( done ) {
+async function buildIntegrationTestsTask() {
 	mkdirp.sync( './.tmp/tests-integration' );
 
 	// First, create a .tar.gz output file like the one that would be downloaded
