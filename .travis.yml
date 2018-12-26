@@ -1,8 +1,6 @@
 language: node_js
 node_js:
+  - "lts/*"  # latest long-term-support version of node.js
+  - "iojs"
   - "9.0"
   - "8.9"
-  - "7.10.1"
-  - "6.11.5"
-before_script:
-  - npm install grunt-cli -g
