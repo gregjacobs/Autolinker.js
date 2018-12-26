@@ -12,7 +12,7 @@ const _                 = require( 'lodash' ),
 	  jasmine           = require( 'gulp-jasmine' ),
       JsDuck            = require( 'gulp-jsduck' ),
 	  json5             = require( 'json5' ),
-	  merge             = require( 'merge-stream' ),
+	  mergeStream       = require( 'merge-stream' ),
 	  mkdirp            = require( 'mkdirp' ),
 	  path              = require( 'path' ),
 	  preprocess        = require( 'gulp-preprocess' ),
@@ -149,7 +149,7 @@ function buildSrcTypeScript( tsProject, outputDir ) {
 		.pipe( sourcemaps.init() )  // preprocess doesn't seem to support sourcemaps, so initializing it after
 		.pipe( tsProject() );
 
-	return merge( [
+	return mergeStream( [
 		tsResult.dts
 			.pipe( gulp.dest( outputDir ) ),
 
@@ -205,8 +205,8 @@ function buildSrcTypeScript( tsProject, outputDir ) {
  *     var autolinker_1 = require("./autolinker");
  * 
  *     // Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
- *     exports = module.exports = autolinker_1.default;                // redefine 'exports' object as the Autolinker class itself
- *     Object.defineProperty(exports, "__esModule", { value: true });  // redeclare '__esModule' on new 'exports' object
+ *     exports = module.exports = autolinker_1.default;                  // redefine 'exports' object as the Autolinker class itself
+ *     Object.defineProperty( exports, "__esModule", { value: true } );  // redeclare '__esModule' on new 'exports' object
  * 
  *     exports.default = autolinker_1.default;    // continue to allow 'default' property import for ES6 default import
  *     var autolinker_2 = require("./autolinker");
@@ -220,8 +220,8 @@ async function buildSrcFixCommonJsIndexTask() {
 	const indexJsContents = fs.readFileSync( './dist/commonjs/index.js', 'utf-8' )
 		.replace( 'exports.default =', `
 			// Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
-			exports = module.exports = autolinker_1.default;                // redefine 'exports' object as the Autolinker class itself
-			Object.defineProperty(exports, "__esModule", { value: true });  // redeclare '__esModule' on new 'exports' object
+			exports = module.exports = autolinker_1.default;                  // redefine 'exports' object as the Autolinker class itself
+			Object.defineProperty( exports, "__esModule", { value: true } );  // redeclare '__esModule' on new 'exports' object
 
 			exports.default =
 		`.trimRight().replace( /^\t{3}/gm, '' ) );
@@ -278,13 +278,13 @@ function buildExamplesTypeScriptTask() {
 }
 
 
-function buildExamplesRollupTask( done ) {
+function buildExamplesRollupTask() {
 	return exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js` );
 }
 
 
 function docSetupTask() {
-	return merge(
+	return mergeStream(
 		// Move dist files into the docs/ folder so they can be served
 		// by GitHub pages
 		gulp.src( `./dist/autolinker.umd*.js` )
@@ -295,7 +295,7 @@ function docSetupTask() {
 		// in the output
 		gulp.src( './dist/commonjs/**/*.js' )
 			.pipe( replace( '/** @class */', '' ) )
-			.pipe( gulp.dest( './build/docs-src' ) )
+			.pipe( gulp.dest( './.tmp/docs-src' ) )
 	);
 }
 
@@ -311,8 +311,8 @@ function docTask() {
 	// we needed the extra output directory for the transformed input 
 	// .js files
 	return gulp.src( [ 
-		'./build/docs-src/html-tag.js',  // we need to make sure html-tag.js is parsed first so that Autolinker.HtmlTag gets the correct class description rather than the static property found in autolinker.js
-		'./build/docs-src/**/*.js' 
+		'./.tmp/docs-src/html-tag.js',  // we need to make sure html-tag.js is parsed first so that Autolinker.HtmlTag gets the correct class description rather than the static property found in autolinker.js
+		'./.tmp/docs-src/**/*.js' 
 	] )
 		.pipe( jsDuck.doc() );
 }
@@ -327,12 +327,12 @@ function serveTask() {
 
 
 function runUnitTestsTask() {
-	return gulp.src( './build/**/*.spec.js' )
+	return gulp.src( './.tmp/tests-unit/**/*.spec.js' )
 		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
 }
 
 function cleanUnitTestsTask() {
-	return gulp.src( './build', { read: false, allowEmpty: true } )
+	return gulp.src( './.tmp/tests-unit', { read: false, allowEmpty: true } )
         .pipe( clean() );
 }
 
@@ -350,7 +350,7 @@ function buildTestsTypeScriptTask() {
 	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
 		.pipe( tsProject() );
 
-	return tsResult.js.pipe( gulp.dest( 'build' ) );
+	return tsResult.js.pipe( gulp.dest( './.tmp/tests-unit' ) );
 }
 
 async function buildIntegrationTestsTask( done ) {

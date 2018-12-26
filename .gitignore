@@ -8,7 +8,6 @@ npm-debug.log
 yarn-error.log
 
 # Temporary build artifacts
-/build
 /docs/examples/live-example/build
 
 # Note: /dist/Autolinker.js and /dist/Autolinker.min.js are not gitignored to
