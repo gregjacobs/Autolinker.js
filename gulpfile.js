@@ -373,7 +373,7 @@ async function buildIntegrationTestsTask() {
 	// First, create a .tar.gz output file like the one that would be downloaded
 	// from npm
 	await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, { 
-		cwd: __dirname 
+		cwd: __dirname
 	} );
 
 	// Copy everything from ./tests-integration to ./.tmp/tests-integration
