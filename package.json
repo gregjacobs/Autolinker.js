@@ -15,7 +15,7 @@
   "scripts": {
     "build": "gulp",
     "build-src": "gulp build-src",
-    "build-example": "gulp build-examples",
+    "build-example": "gulp build-example",
     "clean": "gulp clean",
     "prepublishOnly": "gulp",
     "serve": "gulp serve",
