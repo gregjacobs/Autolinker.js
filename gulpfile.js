@@ -58,10 +58,12 @@ gulp.task( 'do-build-src', gulp.series(
 // Build examples private tasks
 gulp.task( 'clean-examples-output', cleanExamplesOutputTask );
 
+gulp.task( 'build-examples-copy-to-docs-dir', copyExampleToDocsDir );
 gulp.task( 'build-examples-typescript', buildExamplesTypeScriptTask );
 gulp.task( 'build-examples-rollup', buildExamplesRollupTask );
 
 gulp.task( 'do-build-examples', gulp.series( 
+	'build-examples-copy-to-docs-dir',
 	'build-examples-typescript',
 	'build-examples-rollup'
 ) );
@@ -257,29 +259,24 @@ function buildSrcMinifyUmdTask() {
 
 
 function cleanExamplesOutputTask() {
-	return gulp.src( [
-		'./docs/examples/live-example/build',
-		'./docs/examples/live-example/live-example-all.js'
-	], { read: false, allowEmpty: true } )
+	return gulp.src( [ './.tmp/live-example' ], { read: false, allowEmpty: true } )
 		.pipe( clean() );
 }
 
-function buildExamplesTypeScriptTask() {
-	return gulp.src( [
-		'./docs/examples/live-example/src/Option.ts',
-		'./docs/examples/live-example/src/CheckboxOption.ts',
-		'./docs/examples/live-example/src/RadioOption.ts',
-		'./docs/examples/live-example/src/TextOption.ts',
-		'./docs/examples/live-example/src/main.ts'
-	] )
-		.pipe( typescript( './docs/examples/tsconfig.json' ) )
-		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
-		.pipe( gulp.dest( './docs/examples/live-example/build/' ) );
+function copyExampleToDocsDir() {
+	return gulp.src( [ './live-example/index.html', './live-example/live-example.css' ] )
+		.pipe( gulp.dest( './docs/examples/' ) );
 }
 
+function buildExamplesTypeScriptTask() {
+	return gulp.src( [ './live-example/src/**/*.ts' ] )
+		.pipe( typescript( './live-example/tsconfig.json' ) )
+		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
+		.pipe( gulp.dest( './.tmp/live-example/' ) );
+}
 
 function buildExamplesRollupTask() {
-	return exec( `./node_modules/.bin/rollup ./docs/examples/live-example/build/main.js --format iife --file ./docs/examples/live-example/live-example-all.js` );
+	return exec( `./node_modules/.bin/rollup ./.tmp/live-example/main.js --format iife --file ./docs/examples/live-example-all.js` );
 }
 
 
