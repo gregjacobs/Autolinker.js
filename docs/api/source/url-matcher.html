@@ -69,7 +69,7 @@ var UrlMatcher =  (function (_super) {
          */
         _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-matcher-Url-property-matcherRegex'>        /**
-</span>         * @private
+</span>         * @protected
          * @property {RegExp} matcherRegex
          *
          * The regular expression to match URLs with an optional scheme, port
@@ -142,7 +142,7 @@ var UrlMatcher =  (function (_super) {
          *
          * This regular expression is used to test the character before the &#39;//&#39;.
          *
-         * @private
+         * @protected
          * @type {RegExp} wordCharRegExp
          */
         _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
@@ -157,7 +157,7 @@ var UrlMatcher =  (function (_super) {
          * part, so if we find that we have unbalanced parenthesis, we will drop the
          * last one for the match.
          *
-         * @private
+         * @protected
          * @property {RegExp}
          */
         _this.openParensRe = /\(/g;
@@ -165,7 +165,7 @@ var UrlMatcher =  (function (_super) {
 </span>         * The regular expression to match closing parenthesis in a URL match. See
          * {@link #openParensRe} for more information.
          *
-         * @private
+         * @protected
          * @property {RegExp}
          */
         _this.closeParensRe = /\)/g;
@@ -244,7 +244,7 @@ var UrlMatcher =  (function (_super) {
      * In this case, the last closing parenthesis should *not* be part of the
      * URL itself, and this method will return `true`.
      *
-     * @private
+     * @protected
      * @param {String} matchStr The full match string from the {@link #matcherRegex}.
      * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
      *   the end of the `matchStr`, `false` otherwise.
@@ -264,7 +264,7 @@ var UrlMatcher =  (function (_super) {
      * characters after TLD are &#39;:/?#&#39;. Exclude scheme matched URLs from this
      * check.
      *
-     * @private
+     * @protected
      * @param {String} urlMatch The matched URL, if there was one. Will be an
      *   empty string if the match is not a URL match.
      * @param {String} schemeUrlMatch The match URL string for a scheme

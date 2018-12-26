@@ -16,11 +16,20 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
+// WARNING: This file is modified a bit when it is compiled into index.js in 
+// order to support nodejs interoperability with require(&#39;autolinker&#39;) directly. 
+// This is done by the buildSrcFixCommonJsIndexTask() function in the gulpfile. 
+// See that function for more details.
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 var autolinker_1 = require(&quot;./autolinker&quot;);
+
+// Note: the following two lines are added by gulpfile.js&#39;s buildSrcFixCommonJsIndexTask() to allow require(&#39;autolinker&#39;) to work correctly
+exports = module.exports = autolinker_1.default;                // redefine &#39;exports&#39; object as the Autolinker class itself
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });  // redeclare &#39;__esModule&#39; on new &#39;exports&#39; object
+
 exports.default = autolinker_1.default;
 var autolinker_2 = require(&quot;./autolinker&quot;);
 exports.Autolinker = autolinker_2.default;

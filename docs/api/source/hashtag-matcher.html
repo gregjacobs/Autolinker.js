@@ -60,7 +60,7 @@ var HashtagMatcher =  (function (_super) {
          *
          *     #asdf
          *
-         * @private
+         * @protected
          * @property {RegExp} matcherRegex
          */
         _this.matcherRegex = new RegExp(&#39;#[_&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,139}&#39;, &#39;g&#39;);
@@ -70,7 +70,7 @@ var HashtagMatcher =  (function (_super) {
          *
          * For example, the string &quot;asdf@asdf.com&quot; should not match &quot;@asdf&quot; as a username.
          *
-         * @private
+         * @protected
          * @property {RegExp} nonWordCharRegex
          */
         _this.nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
