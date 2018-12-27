@@ -81,7 +81,7 @@ var PhoneMatch =  (function (_super) {
     PhoneMatch.prototype.getType = function () {
         return &#39;phone&#39;;
     };
-<span id='Autolinker-match-Phone-method-getNumber'>    /**
+<span id='Autolinker-match-Phone-method-getPhoneNumber'>    /**
 </span>     * Returns the phone number that was matched as a string, without any
      * delimiter characters.
      *
@@ -89,8 +89,19 @@ var PhoneMatch =  (function (_super) {
      *
      * @return {String}
      */
-    PhoneMatch.prototype.getNumber = function () {
+    PhoneMatch.prototype.getPhoneNumber = function () {
         return this.number;
+    };
+<span id='Autolinker-match-Phone-method-getNumber'>    /**
+</span>     * Alias of {@link #getPhoneNumber}, returns the phone number that was
+     * matched as a string, without any delimiter characters.
+     *
+     * Note: This is a string to allow for prefixed 0&#39;s.
+     *
+     * @return {String}
+     */
+    PhoneMatch.prototype.getNumber = function () {
+        return this.getPhoneNumber();
     };
 <span id='Autolinker-match-Phone-method-getAnchorHref'>    /**
 </span>     * Returns the anchor href that should be generated for the match.

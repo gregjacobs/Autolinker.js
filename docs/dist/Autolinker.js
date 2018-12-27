@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 2.0.1
+ * 2.1.0
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -1846,8 +1846,19 @@
          *
          * @return {String}
          */
-        PhoneMatch.prototype.getNumber = function () {
+        PhoneMatch.prototype.getPhoneNumber = function () {
             return this.number;
+        };
+        /**
+         * Alias of {@link #getPhoneNumber}, returns the phone number that was
+         * matched as a string, without any delimiter characters.
+         *
+         * Note: This is a string to allow for prefixed 0's.
+         *
+         * @return {String}
+         */
+        PhoneMatch.prototype.getNumber = function () {
+            return this.getPhoneNumber();
         };
         /**
          * Returns the anchor href that should be generated for the match.
@@ -3069,7 +3080,7 @@
      *                     }
      *
      *                 case 'phone' :
-     *                     var phoneNumber = match.getNumber();
+     *                     var phoneNumber = match.getPhoneNumber();
      *                     console.log( phoneNumber );
      *
      *                     return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
@@ -3807,7 +3818,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '2.0.1';
+        Autolinker.version = '2.1.0';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
