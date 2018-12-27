@@ -406,15 +406,17 @@ var Autolinker =  (function () {
          * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
          */
         this.tagBuilder = null;
+        // Note: when `this.something` is used in the rhs of these assignments,
+        //       it refers to the default values set above the constructor
         this.urls = this.normalizeUrlsCfg(cfg.urls);
-        this.email = typeof cfg.email === &#39;boolean&#39; ? cfg.email : true;
-        this.phone = typeof cfg.phone === &#39;boolean&#39; ? cfg.phone : true;
-        this.hashtag = cfg.hashtag || false;
-        this.mention = cfg.mention || false;
-        this.newWindow = typeof cfg.newWindow === &#39;boolean&#39; ? cfg.newWindow : true;
+        this.email = typeof cfg.email === &#39;boolean&#39; ? cfg.email : this.email;
+        this.phone = typeof cfg.phone === &#39;boolean&#39; ? cfg.phone : this.phone;
+        this.hashtag = cfg.hashtag || this.hashtag;
+        this.mention = cfg.mention || this.mention;
+        this.newWindow = typeof cfg.newWindow === &#39;boolean&#39; ? cfg.newWindow : this.newWindow;
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-        this.stripTrailingSlash = typeof cfg.stripTrailingSlash === &#39;boolean&#39; ? cfg.stripTrailingSlash : true;
-        this.decodePercentEncoding = typeof cfg.decodePercentEncoding === &#39;boolean&#39; ? cfg.decodePercentEncoding : true;
+        this.stripTrailingSlash = typeof cfg.stripTrailingSlash === &#39;boolean&#39; ? cfg.stripTrailingSlash : this.stripTrailingSlash;
+        this.decodePercentEncoding = typeof cfg.decodePercentEncoding === &#39;boolean&#39; ? cfg.decodePercentEncoding : this.decodePercentEncoding;
         // Validate the value of the `mention` cfg
         var mention = this.mention;
         if (mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39; &amp;&amp; mention !== &#39;soundcloud&#39;) {
@@ -426,8 +428,8 @@ var Autolinker =  (function () {
             throw new Error(&quot;invalid `hashtag` cfg - see docs&quot;);
         }
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);
-        this.className = cfg.className || &#39;&#39;;
-        this.replaceFn = cfg.replaceFn || null;
+        this.className = cfg.className || this.className;
+        this.replaceFn = cfg.replaceFn || this.replaceFn;
         this.context = cfg.context || this;
     }
 <span id='Autolinker-static-method-link'>    /**
@@ -593,21 +595,21 @@ var Autolinker =  (function () {
      *   given input `textOrHtml`.
      */
     Autolinker.prototype.parse = function (textOrHtml) {
-        var htmlNodes = this.htmlParser.parse(textOrHtml), anchorTagStackCount = 0, // used to only process text around anchor tags, and any inner text/html they may have;
+        var htmlNodes = this.htmlParser.parse(textOrHtml), skipTagNames = [&#39;a&#39;, &#39;style&#39;, &#39;script&#39;], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don&#39;t want to autolink something that is already linked inside of an &lt;a&gt; tag, for instance
         matches = [];
         // Find all matches within the `textOrHtml` (but not matches that are
         // already nested within &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tags)
         for (var i = 0, len = htmlNodes.length; i &lt; len; i++) {
             var node = htmlNodes[i], nodeType = node.getType();
-            if (nodeType === &#39;element&#39; &amp;&amp; [&#39;a&#39;, &#39;style&#39;, &#39;script&#39;].indexOf(node.getTagName()) !== -1) { // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we&#39;re within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
+            if (nodeType === &#39;element&#39; &amp;&amp; skipTagNames.indexOf(node.getTagName()) !== -1) { // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we&#39;re within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
                 if (!node.isClosing()) { // it&#39;s the start &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
-                    anchorTagStackCount++;
+                    skipTagsStackCount++;
                 }
                 else { // it&#39;s the end &lt;/a&gt;, &lt;/style&gt; or &lt;/script&gt; tag
-                    anchorTagStackCount = Math.max(anchorTagStackCount - 1, 0); // attempt to handle extraneous &lt;/a&gt; tags by making sure the stack count never goes below 0
+                    skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous &lt;/a&gt; tags by making sure the stack count never goes below 0
                 }
             }
-            else if (nodeType === &#39;text&#39; &amp;&amp; anchorTagStackCount === 0) { // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tag
+            else if (nodeType === &#39;text&#39; &amp;&amp; skipTagsStackCount === 0) { // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tag
                 var textNodeMatches = this.parseText(node.getText(), node.getOffset());
                 matches.push.apply(matches, textNodeMatches);
             }
@@ -844,7 +846,7 @@ var Autolinker =  (function () {
      *
      * Ex: 0.25.1
      */
-    Autolinker.version = &#39;1.8.3&#39;;
+    Autolinker.version = &#39;2.0.0&#39;;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.

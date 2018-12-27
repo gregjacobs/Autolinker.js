@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 1.8.3
+ * 2.0.0
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -3367,15 +3367,17 @@
              * Note: this is lazily instantiated in the {@link #getTagBuilder} method.
              */
             this.tagBuilder = null;
+            // Note: when `this.something` is used in the rhs of these assignments,
+            //       it refers to the default values set above the constructor
             this.urls = this.normalizeUrlsCfg(cfg.urls);
-            this.email = typeof cfg.email === 'boolean' ? cfg.email : true;
-            this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : true;
-            this.hashtag = cfg.hashtag || false;
-            this.mention = cfg.mention || false;
-            this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : true;
+            this.email = typeof cfg.email === 'boolean' ? cfg.email : this.email;
+            this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : this.phone;
+            this.hashtag = cfg.hashtag || this.hashtag;
+            this.mention = cfg.mention || this.mention;
+            this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
             this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-            this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : true;
-            this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : true;
+            this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : this.stripTrailingSlash;
+            this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : this.decodePercentEncoding;
             // Validate the value of the `mention` cfg
             var mention = this.mention;
             if (mention !== false && mention !== 'twitter' && mention !== 'instagram' && mention !== 'soundcloud') {
@@ -3387,8 +3389,8 @@
                 throw new Error("invalid `hashtag` cfg - see docs");
             }
             this.truncate = this.normalizeTruncateCfg(cfg.truncate);
-            this.className = cfg.className || '';
-            this.replaceFn = cfg.replaceFn || null;
+            this.className = cfg.className || this.className;
+            this.replaceFn = cfg.replaceFn || this.replaceFn;
             this.context = cfg.context || this;
         }
         /**
@@ -3805,7 +3807,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '1.8.3';
+        Autolinker.version = '2.0.0';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

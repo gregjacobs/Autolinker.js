@@ -91,7 +91,7 @@ import { MentionMatcher } from "./matcher/mention-matcher";
  *                     }
  *
  *                 case 'phone' :
- *                     var phoneNumber = match.getPhoneNumber();
+ *                     var phoneNumber = match.getNumber();
  *                     console.log( phoneNumber );
  *
  *                     return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
