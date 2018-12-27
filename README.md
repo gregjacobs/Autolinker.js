@@ -108,20 +108,20 @@ var linkedText = Autolinker.link( "Check out google.com", { className: "myLink" 
 These are the options which may be specified for linking. These are specified by
 providing an Object as the second parameter to [Autolinker.link()](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-static-method-link). These include:
 
-- [newWindow](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow) : Boolean<br />
+- [newWindow](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow) : boolean<br />
   `true` to have the links should open in a new window when clicked, `false`
   otherwise. Defaults to `true`.<br /><br />
-- [urls](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-urls) : Boolean/Object<br />
+- [urls](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-urls) : boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
 
   This option also accepts an Object form with 3 properties to allow for 
   more customization of what exactly gets linked. All default to `true`:
 
-    - schemeMatches (Boolean): `true` to match URLs found prefixed with a scheme,
+    - schemeMatches (boolean): `true` to match URLs found prefixed with a scheme,
       i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
       prevent these types of matches.
-    - wwwMatches (Boolean): `true` to match urls found prefixed with `'www.'`,
+    - wwwMatches (boolean): `true` to match urls found prefixed with `'www.'`,
       i.e. `www.google.com`. `false` to prevent these types of matches. Note
       that if the URL had a prefixed scheme, and `schemeMatches` is true, it
       will still be linked.
@@ -132,21 +132,21 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
 
   Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
 
-- [email](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-email) : Boolean<br />
+- [email](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-email) : boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
   email addresses. Defaults to `true`.<br /><br />
-- [phone](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-phone) : Boolean<br />
+- [phone](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-phone) : boolean<br />
   `true` to have phone numbers auto-linked, `false` to skip auto-linking of
   phone numbers. Defaults to `true`.<br /><br />
-- [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : String<br />
+- [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : string<br />
   A string for the service name to have mentions (@username) auto-linked to. Supported
   values at this time are 'twitter', 'soundcloud' and 'instagram'. Pass `false` to skip
   auto-linking of mentions. Defaults to `false`.<br /><br />
-- [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : Boolean/String<br />
+- [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : boolean/string<br />
   A string for the service name to have hashtags auto-linked to. Supported
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.<br /><br />
-- [stripPrefix](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripPrefix) : Boolean<br />
+- [stripPrefix](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripPrefix) : boolean<br />
   `true` to have the `'http://'` (or `'https://'`) and/or the `'www.'` 
   stripped from the beginning of displayed links, `false` otherwise. 
   Defaults to `true`.<br />
@@ -155,22 +155,22 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   more customization of what exactly is prevented from being displayed. 
   Both default to `true`:
 
-    - scheme (Boolean): `true` to prevent the scheme part of a URL match
+    - scheme (boolean): `true` to prevent the scheme part of a URL match
       from being displayed to the user. Example: `'http://google.com'` 
       will be displayed as `'google.com'`. `false` to not strip the 
       scheme. NOTE: Only an `'http://'` or `'https://'` scheme will be
       removed, so as not to remove a potentially dangerous scheme (such
       as `'file://'` or `'javascript:'`).
-    - www (Boolean): `true` to prevent the `'www.'` part of a URL match
+    - www (boolean): `true` to prevent the `'www.'` part of a URL match
       from being displayed to the user. Ex: `'www.google.com'` will be
       displayed as `'google.com'`. `false` to not strip the `'www'`.
   
   <br /><br />
-- [stripTrailingSlash](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripTrailingSlash) : Boolean<br />
+- [stripTrailingSlash](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripTrailingSlash) : boolean<br />
   `true` to remove the trailing slash from URL matches, `false` to keep
   the trailing slash. Example when `true`: `http://google.com/` will be 
   displayed as `http://google.com`. Defaults to `true`.
-- [truncate](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-truncate) : Number/Object<br />
+- [truncate](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-truncate) : number/Object<br />
   A number for how many characters long URLs/emails/Twitter handles/Twitter
   hashtags should be truncated to inside the text of a link. If the match is
   over the number of characters, it will be truncated to this length by
@@ -192,7 +192,7 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   hash, etc.) before trying to find a good point to insert the ellipsis if it is
   still too long. For details, see source code of:
   [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker.truncate.TruncateSmart)
-- [className](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-className) : String<br />
+- [className](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-className) : string<br />
   A CSS class name to add to the generated anchor tags. This class will be added
   to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
   suffixes for styling url/email/phone/hashtag/mention links differently.
@@ -205,7 +205,7 @@ providing an Object as the second parameter to [Autolinker.link()](http://gregja
   4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
   5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
   5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
-- [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): Boolean<br />
+- [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): boolean<br />
   `true` to decode percent-encoded characters in URL matches, `false` to keep
   the percent-encoded characters.
   
@@ -362,10 +362,10 @@ The `replaceFn` is provided one argument:
 A replacement of the match is made based on the return value of the function.
 The following return values may be provided:
 
-1. No return value (`undefined`), or `true` (Boolean): Delegate back to
+1. No return value (`undefined`), or `true` (boolean): Delegate back to
    Autolinker to replace the match as it normally would.
-2. `false` (Boolean): Do not replace the current match at all - leave as-is.
-3. Any String: If a string is returned from the function, the string will be used
+2. `false` (boolean): Do not replace the current match at all - leave as-is.
+3. Any string: If a string is returned from the function, the string will be used
    directly as the replacement HTML for the match.
 4. An [Autolinker.HtmlTag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker.HtmlTag)
    instance, which can be used to build/modify an HTML tag before writing out its
