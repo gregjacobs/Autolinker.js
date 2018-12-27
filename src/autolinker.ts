@@ -659,7 +659,8 @@ export default class Autolinker {
 	 */
 	parse( textOrHtml: string ) {
 		let htmlNodes = this.htmlParser.parse( textOrHtml ),
-		    anchorTagStackCount = 0,  // used to only process text around anchor tags, and any inner text/html they may have;
+			skipTagNames = [ 'a', 'style', 'script'],
+		    skipTagsStackCount = 0,  // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
 		    matches: Match[] = [];
 
 		// Find all matches within the `textOrHtml` (but not matches that are
@@ -668,14 +669,14 @@ export default class Autolinker {
 			let node = htmlNodes[ i ],
 			    nodeType = node.getType();
 
-			if( nodeType === 'element' && ['a', 'style', 'script'].indexOf( ( node as ElementNode ).getTagName()) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
+			if( nodeType === 'element' && skipTagNames.indexOf( ( node as ElementNode ).getTagName() ) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
 				if( !( node as ElementNode ).isClosing() ) {  // it's the start <a>, <style> or <script> tag
-					anchorTagStackCount++;
+					skipTagsStackCount++;
 				} else {  // it's the end </a>, </style> or </script> tag
-					anchorTagStackCount = Math.max( anchorTagStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
+					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
 
-			} else if( nodeType === 'text' && anchorTagStackCount === 0 ) {  // Process text nodes that are not within an <a>, <style> and <script> tag
+			} else if( nodeType === 'text' && skipTagsStackCount === 0 ) {  // Process text nodes that are not within an <a>, <style> and <script> tag
 				let textNodeMatches = this.parseText( node.getText(), node.getOffset() );
 
 				matches.push.apply( matches, textNodeMatches );
