@@ -115,7 +115,7 @@ gulp.task( 'clean', gulp.series( 'clean-all' ) );
 gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 
 gulp.task( 'serve', gulp.series( 'build-src', 'build-example', serveTask ) );
-gulp.task( 'test', gulp.series( gulp.parallel( 'clean-tests', 'build-src' ), 'do-test' ) );
+gulp.task( 'test', gulp.series( 'build-src', 'build-example', 'clean-tests', 'do-test' ) );
 gulp.task( 'update-tld-regex', updateTldRegex );
 
 gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );
@@ -261,7 +261,7 @@ function buildSrcMinifyUmdTask() {
 
 function cleanExampleOutputTask() {
 	return mergeStream(
-		gulp.src( [ './.tmp/live-example' ], { read: false, allowEmpty: true } )
+		gulp.src( './.tmp/live-example', { read: false, allowEmpty: true } )
 			.pipe( clean() ),
 			
 		gulp.src( [ 
@@ -269,17 +269,20 @@ function cleanExampleOutputTask() {
 			'./docs/examples/live-example.js',
 			'./docs/examples/live-example.css'
 		], { read: false, allowEmpty: true } )
-			.pipe( clean() )
+			.pipe( clean() ),
+
+		gulp.src( './docs/dist', { read: false, allowEmpty: true } )
+			.pipe( clean() ),
 	);
 }
 
 function copyExampleToDocsDir() {
 	return mergeStream(
-		gulp.src( [ './live-example/index.html' ] )
+		gulp.src( './live-example/index.html' )
 			.pipe( header( '<!-- NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n     CHANGES WILL BE OVERWRITTEN!!! -->\n\n' ) )
 			.pipe( gulp.dest( './docs/examples/' ) ),
 
-		gulp.src( [ './live-example/live-example.css' ] )
+		gulp.src( './live-example/live-example.css' )
 			.pipe( header( '/* NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n   CHANGES WILL BE OVERWRITTEN!!! */\n\n' ) )
 			.pipe( gulp.dest( './docs/examples/' ) ),
 
@@ -291,7 +294,7 @@ function copyExampleToDocsDir() {
 }
 
 function buildExampleTypeScriptTask() {
-	return gulp.src( [ './live-example/src/**/*.ts' ] )
+	return gulp.src( './live-example/src/**/*.ts' )
 		.pipe( typescript( './live-example/tsconfig.json' ) )
 		.pipe( header( '// NOTE: THIS IS A GENERATED FILE - DO NOT MODIFY AS YOUR\n// CHANGES WILL BE OVERWRITTEN!!!\n\n' ) )
 		.pipe( gulp.dest( './.tmp/live-example/' ) );
