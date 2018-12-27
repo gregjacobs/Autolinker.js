@@ -445,7 +445,7 @@ if( typeof Object.assign !== 'function' ) {
    [Upgrading from 0.x -> 1.x](#upgrading-from-v0x---v1x-breaking-changes) 
    section below.
 2. The codebase has been converted to TypeScript, and uses ES6 exports. You can
-   now use the `import`  statement to pull in the `Autolinker` class and related 
+   now use the `import` statement to pull in the `Autolinker` class and related 
    entities such as `Match`:
 
    ```ts
