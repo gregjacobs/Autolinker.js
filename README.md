@@ -408,25 +408,41 @@ if( typeof Array.prototype.forEach !== 'function' ) {
 1. If you are still on v0.x, first follow the instructions in the 
    [Upgrading from 0.x -> 1.x](#upgrading-from-v0x---v1x-breaking-changes) 
    section below.
-2. Codebase has been converted to TypeScript, and uses ES6 exports. Use the `import` 
-   statement to pull in the `Autolinker` class and related entities such as
-   `Match`:
+2. The codebase has been converted to TypeScript, and uses ES6 exports. You can
+   now use the `import`  statement to pull in the `Autolinker` class and related 
+   entities such as `Match`:
 
    ```ts
-   import { Autolinker, Match } from 'autolinker';
+   // ES6/TypeScript/Webpack
+   import Autolinker, { Match } from 'autolinker';
    ```
+
+   The `require()` interface is still supported as well for Node.js:
+
+   ```ts
+   // Node.js
+   const Autolinker = require( 'autolinker' );
+   ```
+
 3. You will no longer need the `@types/autolinker` package as this package now
    exports its own types
-4. You will no longer be able to override the regular expressions in the `Matcher`
-   classes by assigning to the prototype (for instance, something like
+4. You will no longer be able to override the regular expressions in the 
+  `Matcher` classes by assigning to the prototype (for instance, something like
    `PhoneMatcher.prototype.regex = ...`). This is due to how TypeScript creates 
-   properties for class instances in the constructor rather than on prototypes, 
-   and it's not worth working around. The notion of providing your own
-   regular expression for these classes is brittle anyway, as the 
-   `Matcher` classes rely on capturing groups in the RegExp being in the right 
-   place, and these are subject to change as the regular expression needs to 
-   be updated. Use your own `Matcher` class instead if you would like to 
-   override this functionality, such as with the `phoneMatcherFactory` config.
+   properties for class instances in the constructor rather than on prototypes. 
+   
+   The idea of providing your own regular expression for these classes is a 
+   brittle notion anyway, as the  `Matcher` classes rely on capturing groups in 
+   the RegExp being in the right place, or even multiple capturing groups for 
+   the same piece of information to support a different format. These capturing
+   groups and associated code are subject to change as the regular expression 
+   needs to be updated, and will not involve a major version release of 
+   Autolinker.
+   
+   In the future you will be able to override the default `Matcher` classes
+   entirely to provide your own implementation, but please raise an issue (or
+   +1 an issue) if you think the library should support a currently-unsupported
+   format.
 
 ## Upgrading from v0.x -> v1.x (Breaking Changes)
 
