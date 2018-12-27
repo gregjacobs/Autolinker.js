@@ -332,9 +332,9 @@ var linkedText = Autolinker.link( input, {
                 }
 
             case 'phone' :
-                console.log( "Phone Number: ", match.getNumber() );
+                console.log( "Phone Number: ", match.getPhoneNumber() );
 
-                return '<a href="http://newplace.to.link.phone.numbers.to/">' + match.getNumber() + '</a>';
+                return '<a href="http://newplace.to.link.phone.numbers.to/">' + match.getPhoneNumber() + '</a>';
 
             case 'mention' :
                 console.log( "Mention: ", match.getMention() );

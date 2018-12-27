@@ -58,15 +58,28 @@ export class PhoneMatch extends Match {
 
 
 	/**
-	 * Returns the phone number that was matched as a string, without any
-	 * delimiter characters.
+	 * Returns the phone number that was matched as a string, without any 
+	 * delimiter characters. 
+	 *
+	 * Note: This is a string to allow for prefixed 0's.
+	 *
+	 * @return {String}
+	 */
+	getPhoneNumber() {
+		return this.number;
+	}
+
+
+	/**
+	 * Alias of {@link #getPhoneNumber}, returns the phone number that was 
+	 * matched as a string, without any delimiter characters.
 	 *
 	 * Note: This is a string to allow for prefixed 0's.
 	 *
 	 * @return {String}
 	 */
 	getNumber() {
-		return this.number;
+		return this.getPhoneNumber();
 	}
 
 

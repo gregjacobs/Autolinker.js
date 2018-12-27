@@ -1,6 +1,7 @@
 import { PhoneMatcher } from "../../src/matcher/phone-matcher";
 import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 import { MatchChecker } from "../match/match-checker";
+import { PhoneMatch } from "../../src";
 
 describe( "Autolinker.matcher.Phone", function() {
 	let matcher: PhoneMatcher;
@@ -63,5 +64,34 @@ describe( "Autolinker.matcher.Phone", function() {
 
 	} );
 
+
+	describe( 'getPhoneNumber()', function() {
+
+		it( `should should return the matched phone number without any 
+			 formatting`, 
+		() => {
+			let matches = matcher.parseMatches( 'Talk to (123) 456-7890' );
+
+			expect( matches.length ).toBe( 1 );
+			expect( matches[ 0 ] ).toEqual( jasmine.any( PhoneMatch ) );
+			expect( ( matches[ 0 ] as PhoneMatch ).getPhoneNumber() ).toBe( '1234567890' );
+		} );
+
+	} );
+
+
+	describe( 'getNumber()', function() {
+
+		it( `as an alias of getPhoneNumber(), should return the matched phone 
+			 number, without any formatting`, 
+		() => {
+			let matches = matcher.parseMatches( 'Talk to (123) 456-7890' );
+
+			expect( matches.length ).toBe( 1 );
+			expect( matches[ 0 ] ).toEqual( jasmine.any( PhoneMatch ) );
+			expect( ( matches[ 0 ] as PhoneMatch ).getNumber() ).toBe( '1234567890' );
+		} );
+
+	} );
 
 } );
