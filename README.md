@@ -389,8 +389,8 @@ to run Autolinker on ancient browsers (i.e. Internet Explorer 8
 or below), you will need some polyfills. 
 
 I recommend using the [core-js](https://www.npmjs.com/package/core-js)
-ES5 polyfill. You may also be able to get away with adding this single 
-polyfill, but that may or may not be true in the future:
+ES5 polyfill. You may also be able to get away with adding the following two
+polyfills, but that may or may not be true in the future:
 
 ```js
 if( typeof Array.prototype.forEach !== 'function' ) {
@@ -398,6 +398,23 @@ if( typeof Array.prototype.forEach !== 'function' ) {
         for( var i = 0; i < this.length; i++ ) {
             callback.apply( thisArg || this, [ this[ i ], i, this ] );
         }
+    };
+}
+
+if( typeof Object.assign !== 'function' ) {
+    Object.assign = function( target ) {
+        var srcObjs = Array.prototype.slice.call( arguments, 1 );
+
+        for( var i = 0, len = srcObjs.length; i < len; i++ ) {
+            var currentSrcObj = srcObjs[ i ];
+
+            for( var prop in currentSrcObj ) {
+                if( currentSrcObj.hasOwnProperty( prop ) ) {
+                    target[ prop ] = currentSrcObj[ prop ];
+                }
+            }
+        }
+        return target;
     };
 }
 ```
