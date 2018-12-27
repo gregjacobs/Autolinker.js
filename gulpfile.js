@@ -103,10 +103,9 @@ gulp.task( 'clean-all', gulp.parallel(
 
 gulp.task( 'build-all', gulp.series(
 	'clean-all',
-	gulp.parallel(
-		gulp.series( 'do-build-src', 'do-doc' ),
-		'do-build-example'
-	)
+	'do-build-src',
+	'do-build-example', 
+	'do-doc'
 ) );
 gulp.task( 'build', gulp.series( 'build-all' ) );
 gulp.task( 'build-src', gulp.series( 'clean-src-output', 'do-build-src' ) );
