@@ -92,6 +92,7 @@ gulp.task( 'do-test', gulp.series(
 	'run-unit-tests',
 	'run-integration-tests'
 ) );
+gulp.task( 'do-unit-tests', gulp.series( 'build-unit-tests', 'run-unit-tests' ) );  // just runs the unit tests without the integration tests
 
 
 // Main Tasks
@@ -115,6 +116,7 @@ gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 
 gulp.task( 'serve', gulp.series( 'build-src', 'build-example', serveTask ) );
 gulp.task( 'test', gulp.series( 'build-src', 'build-example', 'clean-tests', 'do-test' ) );
+gulp.task( 'test-unit', gulp.series( 'clean-unit-tests', 'do-unit-tests' ) );  // just runs the unit tests without the integration tests
 gulp.task( 'update-tld-regex', updateTldRegex );
 
 gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );

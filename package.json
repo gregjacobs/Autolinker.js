@@ -20,6 +20,7 @@
     "prepublishOnly": "gulp",
     "serve": "gulp serve",
     "test": "gulp test",
+    "test-unit": "gulp test-unit",
     "update-tld-regex": "gulp update-tld-regex"
   },
   "repository": {
