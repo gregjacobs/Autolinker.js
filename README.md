@@ -34,42 +34,55 @@ See [Upgrading from v1.x -> v2.x (Breaking Changes)](#upgrading-from-v1x---v2x-b
 
 ## Installation
 
-#### Download
-
-Simply clone or download the zip of the project, and link to either
-`dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag:
-
-```html
-<script src="path/to/Autolinker.min.js"></script>
-```
-
-
-#### Using with [Node.js](http://nodejs.org) via [npm](https://www.npmjs.org/):
+#### Installing with the [npm](https://www.npmjs.org/) package manager:
 
 ```shell
 npm install autolinker --save
 ```
 
 
-#### Using with [Node.js](http://nodejs.org) via [yarn](https://yarnpkg.com/):
+#### Installing with the [Yarn](https://yarnpkg.com/) package manager:
 
 ```shell
 yarn add autolinker
 ```
 
 
-JavaScript in Node.js or Webpack:
+#### Installing with the [Bower](http://bower.io) package manager:	
+  
+```shell
+bower install Autolinker.js --save
+```
+
+
+#### Direct download
+
+Simply clone this repository or download a zip of the project, and link to 
+either `dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag.
+
+
+## Importing Autolinker
+
+#### ES6/TypeScript/Webpack:
+
+```ts
+import Autolinker from 'autolinker';
+```
+
+#### Node.js:
 
 ```javascript
-var Autolinker = require( 'autolinker' );
+const Autolinker = require( 'autolinker' );
 // note: npm wants an all-lowercase package name, but the utility is a class and
 // should be aliased with a capital letter
 ```
 
-TypeScript:
+#### Browser
 
-```ts
-import { Autolinker } from 'autolinker';
+```html
+<!-- 'Autolinker.js' or 'Autolinker.min.js' - non-minified is better for 
+     debugging, minified is better for users' download time -->
+<script src="path/to/autolinker/dist/Autolinker.min.js"></script>
 ```
 
 
@@ -96,17 +109,23 @@ slightly more efficient to create a single Autolinker instance, and run the
 method repeatedly (i.e. use the "class" form above).
 
 
-#### Example:
+#### Examples:
 
 ```javascript
-var linkedText = Autolinker.link( "Check out google.com", { className: "myLink" } );
-// Produces: "Check out <a class="myLink myLink-url" href="http://google.com" target="_blank">google.com</a>"
+var linkedText = Autolinker.link( "Check out google.com" );
+// Produces: "Check out <a href="http://google.com" target="_blank">google.com</a>"
+
+var linkedText = Autolinker.link( "Check out google.com", { 
+    newWindow: false 
+} );
+// Produces: "Check out <a href="http://google.com">google.com</a>"
 ```
 
 ## Options
 
-These are the options which may be specified for linking. These are specified by
-providing an Object as the second parameter to [Autolinker.link()](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-static-method-link). These include:
+The following are the options which may be specified for linking. These are 
+specified by providing an Object as the second parameter to [Autolinker.link()](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-static-method-link). 
+These include:
 
 - [newWindow](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow) : boolean<br />
   `true` to have the links should open in a new window when clicked, `false`
