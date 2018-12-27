@@ -1,0 +1,22 @@
+<!-- HTML page which is loaded into Chrome via Puppeteer in the 
+	 test-browser-umd.spec.ts file. This page is used to make sure that the
+	 Autolinker UMD file exposes Autolinker as a global variable when it is 
+	 included in a <script> tag -->
+<html>
+	<head>
+		<!-- Note: node_modules will be installed when this file is moved to the
+		     './.tmp/tests-integration' folder -->
+		<script src="../node_modules/autolinker/dist/Autolinker.min.js"></script>
+	</head>
+
+	<body>
+		Result: <span id="result"></span>
+
+		<script>
+			var resultEl = document.getElementById( 'result' );
+			
+			var linkedStr = Autolinker.link( 'Go to google.com', { newWindow: false } );
+			resultEl.innerHTML = linkedStr;
+		</script>
+	</body>
+</html>

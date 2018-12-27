@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+var __extends = (this &amp;&amp; this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array &amp;&amp; function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var matcher_1 = require(&quot;./matcher&quot;);
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+var mention_match_1 = require(&quot;../match/mention-match&quot;);
+<span id='Autolinker-matcher-Mention'>/**
+</span> * @class Autolinker.matcher.Mention
+ * @extends Autolinker.matcher.Matcher
+ *
+ * Matcher to find/replace username matches in an input string.
+ */
+var MentionMatcher =  (function (_super) {
+    __extends(MentionMatcher, _super);
+<span id='Autolinker-matcher-Mention-method-constructor'>    /**
+</span>     * @method constructor
+     * @param {Object} cfg The configuration properties for the Match instance,
+     *   specified in an Object (map).
+     */
+    function MentionMatcher(cfg) {
+        var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-matcher-Mention-cfg-protected'>        /**
+</span>         * @cfg {&#39;twitter&#39;/&#39;instagram&#39;/&#39;soundcloud&#39;} protected
+         *
+         * The name of service to link @mentions to.
+         *
+         * Valid values are: &#39;twitter&#39;, &#39;instagram&#39;, or &#39;soundcloud&#39;
+         */
+        _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-matcher-Mention-property-matcherRegexes'>        /**
+</span>         * Hash of regular expression to match username handles. Example match:
+         *
+         *     @asdf
+         *
+         * @private
+         * @property {Object} matcherRegexes
+         */
+        _this.matcherRegexes = {
+            &#39;twitter&#39;: new RegExp(&#39;@[_&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,20}&#39;, &#39;g&#39;),
+            &#39;instagram&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39;),
+            &#39;soundcloud&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39;)
+        };
+<span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>        /**
+</span>         * The regular expression to use to check the character before a username match to
+         * make sure we didn&#39;t accidentally match an email address.
+         *
+         * For example, the string &quot;asdf@asdf.com&quot; should not match &quot;@asdf&quot; as a username.
+         *
+         * @private
+         * @property {RegExp} nonWordCharRegex
+         */
+        _this.nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
+        _this.serviceName = cfg.serviceName;
+        return _this;
+    }
+<span id='Autolinker-matcher-Mention-method-parseMatches'>    /**
+</span>     * @inheritdoc
+     */
+    MentionMatcher.prototype.parseMatches = function (text) {
+        var serviceName = this.serviceName, matcherRegex = this.matcherRegexes[this.serviceName], nonWordCharRegex = this.nonWordCharRegex, tagBuilder = this.tagBuilder, matches = [], match;
+        if (!matcherRegex) {
+            return matches;
+        }
+        while ((match = matcherRegex.exec(text)) !== null) {
+            var offset = match.index, prevChar = text.charAt(offset - 1);
+            // If we found the match at the beginning of the string, or we found the match
+            // and there is a whitespace char in front of it (meaning it is not an email
+            // address), then it is a username match.
+            if (offset === 0 || nonWordCharRegex.test(prevChar)) {
+                var matchedText = match[0].replace(/\.+$/g, &#39;&#39;), // strip off trailing .
+                mention = matchedText.slice(1); // strip off the &#39;@&#39; character at the beginning
+                matches.push(new mention_match_1.MentionMatch({
+                    tagBuilder: tagBuilder,
+                    matchedText: matchedText,
+                    offset: offset,
+                    serviceName: serviceName,
+                    mention: mention
+                }));
+            }
+        }
+        return matches;
+    };
+    return MentionMatcher;
+}(matcher_1.Matcher));
+exports.MentionMatcher = MentionMatcher;
+
+//# sourceMappingURL=mention-matcher.js.map
+</pre>
+</body>
+</html>
