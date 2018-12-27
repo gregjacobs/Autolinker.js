@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 2.0.0
+ * 2.0.1
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -3069,7 +3069,7 @@
      *                     }
      *
      *                 case 'phone' :
-     *                     var phoneNumber = match.getPhoneNumber();
+     *                     var phoneNumber = match.getNumber();
      *                     console.log( phoneNumber );
      *
      *                     return '<a href="http://newplace.to.link.phone.numbers.to/">' + phoneNumber + '</a>';
@@ -3807,7 +3807,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '2.0.0';
+        Autolinker.version = '2.0.1';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

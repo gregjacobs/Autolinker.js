@@ -108,7 +108,7 @@ var mention_matcher_1 = require(&quot;./matcher/mention-matcher&quot;);
  *                     }
  *
  *                 case &#39;phone&#39; :
- *                     var phoneNumber = match.getPhoneNumber();
+ *                     var phoneNumber = match.getNumber();
  *                     console.log( phoneNumber );
  *
  *                     return &#39;&lt;a href=&quot;http://newplace.to.link.phone.numbers.to/&quot;&gt;&#39; + phoneNumber + &#39;&lt;/a&gt;&#39;;
@@ -846,7 +846,7 @@ var Autolinker =  (function () {
      *
      * Ex: 0.25.1
      */
-    Autolinker.version = &#39;2.0.0&#39;;
+    Autolinker.version = &#39;2.0.1&#39;;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.
