@@ -129,7 +129,7 @@ These include:
 
 - [newWindow](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow) : boolean<br />
   `true` to have the links should open in a new window when clicked, `false`
-  otherwise. Defaults to `true`.<br /><br />
+  otherwise. Defaults to `true`.
 - [urls](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-urls) : boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
