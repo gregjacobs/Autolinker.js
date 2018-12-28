@@ -416,9 +416,9 @@ The full API docs for Autolinker may be referenced at:
 
 ## Users of Internet Explorer 8 and Below
 
-Autolinker compiles into ES5, and uses ES5 library methods. If you need 
-to run Autolinker on ancient browsers (i.e. Internet Explorer 8 
-or below), you will need some polyfills. 
+Autolinker compiles into ES5, and uses ES5 library methods. If you need to run 
+Autolinker on old browsers (i.e. Internet Explorer 8 or below), you will need 
+some polyfills. 
 
 I recommend using the [core-js](https://www.npmjs.com/package/core-js)
 ES5 polyfill. You may also be able to get away with adding the following two
