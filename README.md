@@ -132,8 +132,8 @@ These include:
   otherwise. Defaults to `true`.
   
 - [urls](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-urls) : boolean/Object<br />
-  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
-  Defaults to `true`.<br>
+  `true` to have URLs auto-linked, `false` to skip auto-linking of URLs. Defaults 
+  to `true`.
 
   This option also accepts an Object form with 3 properties to allow for 
   more customization of what exactly gets linked. All default to `true`:
@@ -148,7 +148,6 @@ These include:
     - tldMatches: `true` to match URLs with known top level domains (.com, .net,
       etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`,
       `asdf.org/?page=1`, etc. `false` to prevent these types of matches.
-      <br />
 
   Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
 
@@ -198,10 +197,10 @@ These include:
   A number for how many characters long URLs/emails/Twitter handles/Twitter
   hashtags should be truncated to inside the text of a link. If the match is
   over the number of characters, it will be truncated to this length by
-  replacing the end of the string with a two period ellipsis ('..').<br /><br />
+  replacing the end of the string with a two period ellipsis ('..').
 
   Example: a url like 'http://www.yahoo.com/some/long/path/to/a/file' truncated
-  to 25 characters may look like this: 'yahoo.com/some/long/pat..'<br /><br />
+  to 25 characters may look like this: 'yahoo.com/some/long/pat..'
 
   In the object form, both `length` and `location` may be specified to perform
   truncation. Available options for `location` are: 'end' (default), 'middle',
@@ -224,12 +223,12 @@ These include:
 
   For example, if this config is provided as "myLink", then:
 
-  1) URL links will have the CSS classes: "myLink myLink-url"<br />
-  2) Email links will have the CSS classes: "myLink myLink-email"<br />
-  3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
-  4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
-  5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
-  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"
+  - URL links will have the CSS classes: "myLink myLink-url"
+  - Email links will have the CSS classes: "myLink myLink-email"
+  - Phone links will have the CSS classes: "myLink myLink-phone"
+  - Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"
+  - Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"
+  - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
 
 - [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): boolean<br />
   `true` to decode percent-encoded characters in URL matches, `false` to keep
