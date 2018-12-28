@@ -65,9 +65,9 @@ var MentionMatcher =  (function (_super) {
          * @property {Object} matcherRegexes
          */
         _this.matcherRegexes = {
-            &#39;twitter&#39;: new RegExp(&#39;@[_&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,20}&#39;, &#39;g&#39;),
-            &#39;instagram&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]{1,50}&#39;, &#39;g&#39;),
-            &#39;soundcloud&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39;)
+            &#39;twitter&#39;: new RegExp(&#39;@[_&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]{1,20}&#39;, &#39;g&#39;),
+            &#39;instagram&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]{1,50}&#39;, &#39;g&#39;),
+            &#39;soundcloud&#39;: new RegExp(&#39;@[_.&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;\-&quot; + &#39;]{1,50}&#39;, &#39;g&#39;)
         };
 <span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to
@@ -78,7 +78,7 @@ var MentionMatcher =  (function (_super) {
          * @private
          * @property {RegExp} nonWordCharRegex
          */
-        _this.nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
+        _this.nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
         _this.serviceName = cfg.serviceName;
         return _this;
     }

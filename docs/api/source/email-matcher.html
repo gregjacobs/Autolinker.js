@@ -55,7 +55,7 @@ var EmailMatcher =  (function (_super) {
          * @property {RegExp} matcherRegex
          */
         _this.matcherRegex = (function () {
-            var alphaNumericChars = regex_lib_1.alphaNumericCharsStr, specialCharacters = &#39;!#$%&amp;\&#39;*+\\-\\/=?^_`{|}~&#39;, restrictedSpecialCharacters = &#39;\\s&quot;(),:;&lt;&gt;@\\[\\]&#39;, validCharacters = alphaNumericChars + specialCharacters, validRestrictedCharacters = validCharacters + restrictedSpecialCharacters, emailRegex = new RegExp(&#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;);
+            var specialCharacters = &#39;!#$%&amp;\&#39;*+\\-\\/=?^_`{|}~&#39;, restrictedSpecialCharacters = &#39;\\s&quot;(),:;&lt;&gt;@\\[\\]&#39;, validCharacters = regex_lib_1.alphaNumericAndMarksCharsStr + specialCharacters, validRestrictedCharacters = validCharacters + restrictedSpecialCharacters, emailRegex = new RegExp(&#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;);
             return new RegExp([
                 emailRegex.source,
                 regex_lib_1.getDomainNameStr(1),

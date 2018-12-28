@@ -107,7 +107,7 @@ var UrlMatcher =  (function (_super) {
             wwwRegex = /(?:www\.)/, // starting with &#39;www.&#39;
             // Allow optional path, query string, and hash anchor, not ending in the following characters: &quot;?!:,.;&quot;
             // http://blog.codinghorror.com/the-problem-with-urls/
-            urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]?!:,.;\u2713]*[&#39; + regex_lib_1.alphaNumericCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]\u2713])?&#39;);
+            urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]?!:,.;\u2713]*[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]\u2713])?&#39;);
             return new RegExp([
                 &#39;(?:&#39;,
                 &#39;(&#39;,
@@ -145,7 +145,7 @@ var UrlMatcher =  (function (_super) {
          * @protected
          * @type {RegExp} wordCharRegExp
          */
-        _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericCharsStr + &#39;]&#39;);
+        _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-Url-property-openParensRe'>        /**
 </span>         * The regular expression to match opening parenthesis in a URL match.
          *
@@ -283,7 +283,7 @@ var UrlMatcher =  (function (_super) {
             offset = urlMatch.indexOf(&#39;:&#39;);
             urlMatch = urlMatch.slice(offset);
         }
-        var re = new RegExp(&quot;^((.?\/\/)?[-.&quot; + regex_lib_1.alphaNumericCharsStr + &quot;]*[-&quot; + regex_lib_1.alphaNumericCharsStr + &quot;]\\.[-&quot; + regex_lib_1.alphaNumericCharsStr + &quot;]+)&quot;);
+        var re = new RegExp(&quot;^((.?\/\/)?[-.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]*[-&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]\\.[-&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]+)&quot;);
         var res = re.exec(urlMatch);
         if (res === null) {
             return -1;

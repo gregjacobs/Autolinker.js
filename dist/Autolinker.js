@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 2.1.0
+ * 2.2.0
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -2192,7 +2192,7 @@
      * These would be the characters matched by unicode regex engines `\p{L}`
      * escape ("all letters").
      *
-     * Taken from the XRegExp library: http://xregexp.com/
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
      * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Letter'
      *   regex's bmp
      *
@@ -2211,13 +2211,48 @@
         .source; // see note in above variable description
     /**
      * The string form of a regular expression that would match all of the
+     * combining mark characters in the unicode character set when placed in a
+     * RegExp character class (`[]`).
+     *
+     * These would be the characters matched by unicode regex engines `\p{M}`
+     * escape ("all marks").
+     *
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
+     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Mark'
+     *   regex's bmp
+     *
+     * VERY IMPORTANT: This set of characters is defined inside of a Regular
+     *   Expression literal rather than a string literal to prevent UglifyJS from
+     *   compressing the unicode escape sequences into their actual unicode
+     *   characters. If Uglify compresses these into the unicode characters
+     *   themselves, this results in the error "Range out of order in character
+     *   class" when these characters are used inside of a Regular Expression
+     *   character class (`[]`). See usages of this const. Alternatively, we can set
+     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
+     *   help others who are pulling in Autolinker into their own build and running
+     *   UglifyJS themselves.
+     */
+    var marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0711\u0730-\u074A\u07A6-\u07B0\u07EB-\u07F3\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D4-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A70\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0C00-\u0C03\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0D01-\u0D03\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D\u135D-\u135F\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u180B-\u180D\u1885\u1886\u18A9\u1920-\u192B\u1930-\u193B\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F\u1AB0-\u1ABE\u1B00-\u1B04\u1B34-\u1B44\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BE6-\u1BF3\u1C24-\u1C37\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF2-\u1CF4\u1CF8\u1CF9\u1DC0-\u1DF5\u1DFB-\u1DFF\u20D0-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA66F-\uA672\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8E0-\uA8F1\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9E5\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F/
+        .source; // see note in above variable description
+    /**
+     * The string form of a regular expression that would match all of the
+     * alphabetic ("letter") chars and combining marks in the unicode character set
+     * when placed in a RegExp character class (`[]`). This includes all
+     * international alphabetic characters.
+     *
+     * These would be the characters matched by unicode regex engines `\p{L}\p{M}`
+     * escapes.
+     */
+    var alphaCharsAndMarksStr = alphaCharsStr + marksStr;
+    /**
+     * The string form of a regular expression that would match all of the
      * decimal number chars in the unicode character set when placed in a RegExp
      * character class (`[]`).
      *
      * These would be the characters matched by unicode regex engines `\p{Nd}`
      * escape ("all decimal numbers")
      *
-     * Taken from the XRegExp library: http://xregexp.com/
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
      * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Decimal_Number'
      *   regex's bmp
      *
@@ -2236,17 +2271,27 @@
         .source; // see note in above variable description
     /**
      * The string form of a regular expression that would match all of the
-     * letters and decimal number chars in the unicode character set when placed
-     * in a RegExp character class (`[]`).
+     * letters and decimal number chars in the unicode character set when placed in
+     * a RegExp character class (`[]`).
      *
-     * These would be the characters matched by unicode regex engines `[\p{L}\p{Nd}]`
-     * escape ("all letters and decimal numbers")
+     * These would be the characters matched by unicode regex engines
+     * `[\p{L}\p{Nd}]` escape ("all letters and decimal numbers")
      */
-    var alphaNumericCharsStr = alphaCharsStr + decimalNumbersStr;
+    var alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
+    /**
+     * The string form of a regular expression that would match all of the
+     * letters, combining marks, and decimal number chars in the unicode character
+     * set when placed in a RegExp character class (`[]`).
+     *
+     * These would be the characters matched by unicode regex engines
+     * `[\p{L}\p{M}\p{Nd}]` escape ("all letters, combining marks, and decimal
+     * numbers")
+     */
+    var alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
     // Simplified IP regular expression
     var ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
     // Protected domain label which do not allow "-" character on the beginning and the end of a single label
-    var domainLabelStr = '[' + alphaNumericCharsStr + '](?:[' + alphaNumericCharsStr + '\\-]{0,61}[' + alphaNumericCharsStr + '])?';
+    var domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
     var getDomainLabelStr = function (group) {
         return '(?=(' + domainLabelStr + '))\\' + group;
     };
@@ -2296,7 +2341,7 @@
              * @property {RegExp} matcherRegex
              */
             _this.matcherRegex = (function () {
-                var alphaNumericChars = alphaNumericCharsStr, specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~', restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]', validCharacters = alphaNumericChars + specialCharacters, validRestrictedCharacters = validCharacters + restrictedSpecialCharacters, emailRegex = new RegExp('(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@');
+                var specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~', restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]', validCharacters = alphaNumericAndMarksCharsStr + specialCharacters, validRestrictedCharacters = validCharacters + restrictedSpecialCharacters, emailRegex = new RegExp('(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@');
                 return new RegExp([
                     emailRegex.source,
                     getDomainNameStr(1),
@@ -2568,7 +2613,7 @@
                 wwwRegex = /(?:www\.)/, // starting with 'www.'
                 // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
                 // http://blog.codinghorror.com/the-problem-with-urls/
-                urlSuffixRegex = new RegExp('[/?#](?:[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?');
+                urlSuffixRegex = new RegExp('[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?');
                 return new RegExp([
                     '(?:',
                     '(',
@@ -2606,7 +2651,7 @@
              * @protected
              * @type {RegExp} wordCharRegExp
              */
-            _this.wordCharRegExp = new RegExp('[' + alphaNumericCharsStr + ']');
+            _this.wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
             /**
              * The regular expression to match opening parenthesis in a URL match.
              *
@@ -2744,7 +2789,7 @@
                 offset = urlMatch.indexOf(':');
                 urlMatch = urlMatch.slice(offset);
             }
-            var re = new RegExp("^((.?\/\/)?[-." + alphaNumericCharsStr + "]*[-" + alphaNumericCharsStr + "]\\.[-" + alphaNumericCharsStr + "]+)");
+            var re = new RegExp("^((.?\/\/)?[-." + alphaNumericAndMarksCharsStr + "]*[-" + alphaNumericAndMarksCharsStr + "]\\.[-" + alphaNumericAndMarksCharsStr + "]+)");
             var res = re.exec(urlMatch);
             if (res === null) {
                 return -1;
@@ -2802,7 +2847,7 @@
              * @protected
              * @property {RegExp} matcherRegex
              */
-            _this.matcherRegex = new RegExp('#[_' + alphaNumericCharsStr + ']{1,139}', 'g');
+            _this.matcherRegex = new RegExp('#[_' + alphaNumericAndMarksCharsStr + ']{1,139}', 'g');
             /**
              * The regular expression to use to check the character before a username match to
              * make sure we didn't accidentally match an email address.
@@ -2812,7 +2857,7 @@
              * @protected
              * @property {RegExp} nonWordCharRegex
              */
-            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericCharsStr + ']');
+            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
             _this.serviceName = cfg.serviceName;
             return _this;
         }
@@ -2958,9 +3003,9 @@
              * @property {Object} matcherRegexes
              */
             _this.matcherRegexes = {
-                'twitter': new RegExp('@[_' + alphaNumericCharsStr + ']{1,20}', 'g'),
-                'instagram': new RegExp('@[_.' + alphaNumericCharsStr + ']{1,50}', 'g'),
-                'soundcloud': new RegExp('@[_.' + alphaNumericCharsStr + "\-" + ']{1,50}', 'g')
+                'twitter': new RegExp('@[_' + alphaNumericAndMarksCharsStr + ']{1,20}', 'g'),
+                'instagram': new RegExp('@[_.' + alphaNumericAndMarksCharsStr + ']{1,50}', 'g'),
+                'soundcloud': new RegExp('@[_.' + alphaNumericAndMarksCharsStr + "\-" + ']{1,50}', 'g')
             };
             /**
              * The regular expression to use to check the character before a username match to
@@ -2971,7 +3016,7 @@
              * @private
              * @property {RegExp} nonWordCharRegex
              */
-            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericCharsStr + ']');
+            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
             _this.serviceName = cfg.serviceName;
             return _this;
         }
@@ -3818,7 +3863,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '2.1.0';
+        Autolinker.version = '2.2.0';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
