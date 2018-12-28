@@ -63,7 +63,7 @@ var HashtagMatcher =  (function (_super) {
          * @protected
          * @property {RegExp} matcherRegex
          */
-        _this.matcherRegex = new RegExp(&#39;#[_&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]{1,139}&#39;, &#39;g&#39;);
+        _this.matcherRegex = new RegExp(&quot;#[_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,139}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 139 characters
 <span id='Autolinker-matcher-Hashtag-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to
          * make sure we didn&#39;t accidentally match an email address.

@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 2.2.0
+ * 2.2.1
  *
  * Copyright(c) 2018 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -2847,7 +2847,7 @@
              * @protected
              * @property {RegExp} matcherRegex
              */
-            _this.matcherRegex = new RegExp('#[_' + alphaNumericAndMarksCharsStr + ']{1,139}', 'g');
+            _this.matcherRegex = new RegExp("#[_" + alphaNumericAndMarksCharsStr + "]{1,139}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 139 characters
             /**
              * The regular expression to use to check the character before a username match to
              * make sure we didn't accidentally match an email address.
@@ -3003,9 +3003,9 @@
              * @property {Object} matcherRegexes
              */
             _this.matcherRegexes = {
-                'twitter': new RegExp('@[_' + alphaNumericAndMarksCharsStr + ']{1,20}', 'g'),
-                'instagram': new RegExp('@[_.' + alphaNumericAndMarksCharsStr + ']{1,50}', 'g'),
-                'soundcloud': new RegExp('@[_.' + alphaNumericAndMarksCharsStr + "\-" + ']{1,50}', 'g')
+                'twitter': new RegExp("@[_" + alphaNumericAndMarksCharsStr + "]{1,50}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'),
+                'instagram': new RegExp("@[_." + alphaNumericAndMarksCharsStr + "]{1,30}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'),
+                'soundcloud': new RegExp("@[-_." + alphaNumericAndMarksCharsStr + "]{1,50}(?![-_" + alphaNumericAndMarksCharsStr + "])", 'g') // lookahead used to make sure we don't match something above 50 characters
             };
             /**
              * The regular expression to use to check the character before a username match to
@@ -3863,7 +3863,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '2.2.0';
+        Autolinker.version = '2.2.1';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
