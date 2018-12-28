@@ -1,6 +1,6 @@
 import { Matcher, MatcherConfig } from "./matcher";
 import { HashtagServices } from "../autolinker";
-import { alphaNumericCharsStr } from "../regex-lib";
+import { alphaNumericAndMarksCharsStr } from "../regex-lib";
 import { HashtagMatch } from "../match/hashtag-match";
 import { Match } from "../match/match";
 
@@ -29,7 +29,7 @@ export class HashtagMatcher extends Matcher {
 	 * @protected
 	 * @property {RegExp} matcherRegex
 	 */
-	protected matcherRegex = new RegExp( '#[_' + alphaNumericCharsStr + ']{1,139}', 'g' );
+	protected matcherRegex = new RegExp( '#[_' + alphaNumericAndMarksCharsStr + ']{1,139}', 'g' );
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -40,7 +40,7 @@ export class HashtagMatcher extends Matcher {
 	 * @protected
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	protected nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
+	protected nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
 
 
 	/**

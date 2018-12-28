@@ -1,5 +1,5 @@
 import { Matcher } from "./matcher";
-import { alphaNumericCharsStr, getDomainNameStr } from "../regex-lib";
+import { alphaNumericAndMarksCharsStr, getDomainNameStr } from "../regex-lib";
 import { tldRegex } from "./tld-regex";
 import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
@@ -23,10 +23,9 @@ export class EmailMatcher extends Matcher {
 	 * @property {RegExp} matcherRegex
 	 */
 	protected matcherRegex = (function() {
-		var alphaNumericChars = alphaNumericCharsStr,
-			specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
+		var specialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~',
 			restrictedSpecialCharacters = '\\s"(),:;<>@\\[\\]',
-			validCharacters = alphaNumericChars + specialCharacters,
+			validCharacters = alphaNumericAndMarksCharsStr + specialCharacters,
 			validRestrictedCharacters = validCharacters + restrictedSpecialCharacters,
 		    emailRegex = new RegExp( '(?:[' + validCharacters + '](?:[' + validCharacters + ']|\\.(?!\\.|@))*|\\"[' + validRestrictedCharacters + '.]+\\")@');
 

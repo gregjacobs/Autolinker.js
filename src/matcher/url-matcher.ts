@@ -1,5 +1,5 @@
 import { Matcher, MatcherConfig } from "./matcher";
-import { alphaNumericCharsStr, getDomainNameStr } from "../regex-lib";
+import { alphaNumericCharsStr, alphaNumericAndMarksCharsStr, getDomainNameStr } from "../regex-lib";
 import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
 import { tldRegex } from "./tld-regex";
 import { UrlMatch } from "../match/url-match";
@@ -76,7 +76,7 @@ export class UrlMatcher extends Matcher {
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?' );
+		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?' );
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -123,7 +123,7 @@ export class UrlMatcher extends Matcher {
 	 * @protected
 	 * @type {RegExp} wordCharRegExp
 	 */
-	protected wordCharRegExp = new RegExp( '[' + alphaNumericCharsStr + ']' );
+	protected wordCharRegExp = new RegExp( '[' + alphaNumericAndMarksCharsStr + ']' );
 
 
 	/**
@@ -308,7 +308,7 @@ export class UrlMatcher extends Matcher {
 			urlMatch = urlMatch.slice(offset);
 		}
 
-		let re = new RegExp("^((.?\/\/)?[-." + alphaNumericCharsStr + "]*[-" + alphaNumericCharsStr + "]\\.[-" + alphaNumericCharsStr + "]+)");
+		let re = new RegExp( "^((.?\/\/)?[-." + alphaNumericAndMarksCharsStr + "]*[-" + alphaNumericAndMarksCharsStr + "]\\.[-" + alphaNumericAndMarksCharsStr + "]+)" );
 		let res = re.exec( urlMatch );
 		if ( res === null ) {
 			return -1;

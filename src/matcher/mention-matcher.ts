@@ -1,5 +1,5 @@
 import { Matcher, MatcherConfig } from "./matcher";
-import { alphaNumericCharsStr } from "../regex-lib";
+import { alphaNumericAndMarksCharsStr } from "../regex-lib";
 import { MentionServices } from "../autolinker";
 import { MentionMatch } from "../match/mention-match";
 import { Match } from "../match/match";
@@ -30,9 +30,9 @@ export class MentionMatcher extends Matcher {
 	 * @property {Object} matcherRegexes
 	 */
 	protected readonly matcherRegexes: {[key: string]: RegExp} = {
-		'twitter': new RegExp( '@[_' + alphaNumericCharsStr + ']{1,20}', 'g' ),
-		'instagram': new RegExp( '@[_.' + alphaNumericCharsStr + ']{1,50}', 'g' ),
-		'soundcloud': new RegExp( '@[_.' + alphaNumericCharsStr + "\-" + ']{1,50}', 'g' )
+		'twitter': new RegExp( '@[_' + alphaNumericAndMarksCharsStr + ']{1,20}', 'g' ),
+		'instagram': new RegExp( '@[_.' + alphaNumericAndMarksCharsStr + ']{1,50}', 'g' ),
+		'soundcloud': new RegExp( '@[_.' + alphaNumericAndMarksCharsStr + "\-" + ']{1,50}', 'g' )
 	};
 
 	/**
@@ -44,7 +44,7 @@ export class MentionMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	protected readonly nonWordCharRegex = new RegExp( '[^' + alphaNumericCharsStr + ']' );
+	protected readonly nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
 
 
 	/**
