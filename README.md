@@ -130,6 +130,7 @@ These include:
 - [newWindow](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow) : boolean<br />
   `true` to have the links should open in a new window when clicked, `false`
   otherwise. Defaults to `true`.
+  
 - [urls](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-urls) : boolean/Object<br />
   `true` to have URLs auto-linked, `false` to skip auto-linking of URLs.
   Defaults to `true`.<br>
@@ -153,22 +154,26 @@ These include:
 
 - [email](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-email) : boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
-  email addresses. Defaults to `true`.<br /><br />
+  email addresses. Defaults to `true`.
+  
 - [phone](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-phone) : boolean<br />
   `true` to have phone numbers auto-linked, `false` to skip auto-linking of
-  phone numbers. Defaults to `true`.<br /><br />
+  phone numbers. Defaults to `true`.
+
 - [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : string<br />
   A string for the service name to have mentions (@username) auto-linked to. Supported
   values at this time are 'twitter', 'soundcloud' and 'instagram'. Pass `false` to skip
-  auto-linking of mentions. Defaults to `false`.<br /><br />
+  auto-linking of mentions. Defaults to `false`.
+
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : boolean/string<br />
   A string for the service name to have hashtags auto-linked to. Supported
   values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
-  auto-linking of hashtags. Defaults to `false`.<br /><br />
+  auto-linking of hashtags. Defaults to `false`.
+
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripPrefix) : boolean<br />
   `true` to have the `'http://'` (or `'https://'`) and/or the `'www.'` 
   stripped from the beginning of displayed links, `false` otherwise. 
-  Defaults to `true`.<br />
+  Defaults to `true`.
   
   This option also accepts an Object form with 2 properties to allow for 
   more customization of what exactly is prevented from being displayed. 
@@ -183,12 +188,12 @@ These include:
     - www (boolean): `true` to prevent the `'www.'` part of a URL match
       from being displayed to the user. Ex: `'www.google.com'` will be
       displayed as `'google.com'`. `false` to not strip the `'www'`.
-  
-  <br /><br />
+
 - [stripTrailingSlash](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripTrailingSlash) : boolean<br />
   `true` to remove the trailing slash from URL matches, `false` to keep
   the trailing slash. Example when `true`: `http://google.com/` will be 
   displayed as `http://google.com`. Defaults to `true`.
+
 - [truncate](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-truncate) : number/Object<br />
   A number for how many characters long URLs/emails/Twitter handles/Twitter
   hashtags should be truncated to inside the text of a link. If the match is
@@ -211,6 +216,7 @@ These include:
   hash, etc.) before trying to find a good point to insert the ellipsis if it is
   still too long. For details, see source code of:
   [TruncateSmart](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker.truncate.TruncateSmart)
+  
 - [className](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-className) : string<br />
   A CSS class name to add to the generated anchor tags. This class will be added
   to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
@@ -223,7 +229,8 @@ These include:
   3) Phone links will have the CSS classes: "myLink myLink-phone"<br />
   4) Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"<br />
   5) Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"<br />
-  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"<br />
+  5) Hashtag links will have the CSS classes: "myLink myLink-hashtag"
+
 - [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): boolean<br />
   `true` to decode percent-encoded characters in URL matches, `false` to keep
   the percent-encoded characters.
@@ -232,6 +239,7 @@ These include:
   be displayed as `https://en.wikipedia.org/wiki/San_José`.
   
   Defaults to `true`.
+
 - [replaceFn](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-replaceFn) : Function<br />
   A function to use to programmatically make replacements of matches in the
   input string, one at a time. See the section
@@ -241,18 +249,24 @@ These include:
 For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow), you could do:
 
 ```javascript
-var linkedText = Autolinker.link( "Check out google.com", { newWindow: false } );
+var linkedText = Autolinker.link( "Check out google.com", { 
+    newWindow: false 
+} );
 // Produces: "Check out <a href="http://google.com">google.com</a>"
 ```
 
 And if you wanted to truncate the length of URLs (while also not opening in a new window), you could do:
 
 ```javascript
-var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { truncate: 25, newWindow: false } );
+var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { 
+    truncate: 25, 
+    newWindow: false 
+} );
 // Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
 ```
 
 ## More Examples
+
 One could update an entire DOM element that has unlinked text to auto-link them
 as such:
 
