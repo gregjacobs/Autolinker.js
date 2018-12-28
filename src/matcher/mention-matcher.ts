@@ -30,9 +30,9 @@ export class MentionMatcher extends Matcher {
 	 * @property {Object} matcherRegexes
 	 */
 	protected readonly matcherRegexes: {[key: string]: RegExp} = {
-		'twitter': new RegExp( '@[_' + alphaNumericAndMarksCharsStr + ']{1,20}', 'g' ),
-		'instagram': new RegExp( '@[_.' + alphaNumericAndMarksCharsStr + ']{1,50}', 'g' ),
-		'soundcloud': new RegExp( '@[_.' + alphaNumericAndMarksCharsStr + "\-" + ']{1,50}', 'g' )
+		'twitter': new RegExp( `@[_${alphaNumericAndMarksCharsStr}]{1,50}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' ),       // lookahead used to make sure we don't match something above 50 characters
+		'instagram': new RegExp( `@[_.${alphaNumericAndMarksCharsStr}]{1,30}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' ),    // lookahead used to make sure we don't match something above 30 characters
+		'soundcloud': new RegExp( `@[-_.${alphaNumericAndMarksCharsStr}]{1,50}(?![-_${alphaNumericAndMarksCharsStr}])`, 'g' )  // lookahead used to make sure we don't match something above 50 characters
 	};
 
 	/**
@@ -82,7 +82,7 @@ export class MentionMatcher extends Matcher {
 			// and there is a whitespace char in front of it (meaning it is not an email
 			// address), then it is a username match.
 			if( offset === 0 || nonWordCharRegex.test( prevChar ) ) {
-				let matchedText = match[ 0 ].replace(/\.+$/g, ''), // strip off trailing .
+				let matchedText = match[ 0 ].replace( /\.+$/g, '' ), // strip off trailing .
 				    mention = matchedText.slice( 1 );  // strip off the '@' character at the beginning
 
 				matches.push( new MentionMatch( {
