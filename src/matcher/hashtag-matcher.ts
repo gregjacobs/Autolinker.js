@@ -29,7 +29,7 @@ export class HashtagMatcher extends Matcher {
 	 * @protected
 	 * @property {RegExp} matcherRegex
 	 */
-	protected matcherRegex = new RegExp( '#[_' + alphaNumericAndMarksCharsStr + ']{1,139}', 'g' );
+	protected matcherRegex = new RegExp( `#[_${alphaNumericAndMarksCharsStr}]{1,139}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 139 characters
 
 	/**
 	 * The regular expression to use to check the character before a username match to
