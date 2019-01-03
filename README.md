@@ -113,7 +113,7 @@ method repeatedly (i.e. use the "class" form above).
 
 ```javascript
 var linkedText = Autolinker.link( "Check out google.com" );
-// Produces: "Check out <a href="http://google.com" target="_blank">google.com</a>"
+// Produces: "Check out <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>"
 
 var linkedText = Autolinker.link( "Check out google.com", { 
     newWindow: false 
