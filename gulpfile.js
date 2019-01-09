@@ -19,6 +19,9 @@ const _                 = require( 'lodash' ),
       punycode          = require( 'punycode' ),
 	  rename            = require( 'gulp-rename' ),
 	  replace           = require( 'gulp-replace' ),
+	  rollup            = require( 'rollup' ),
+	  rollupResolveNode = require( 'rollup-plugin-node-resolve' ),
+	  rollupCommonjs    = require( 'rollup-plugin-commonjs' ),
 	  sourcemaps        = require( 'gulp-sourcemaps' ),
       transform         = require( 'gulp-transform' ),
       typescript        = require( 'gulp-typescript' ),
@@ -234,8 +237,27 @@ async function buildSrcFixCommonJsIndexTask() {
 }
 
 
-function buildSrcRollupTask() {
-	return exec( `./node_modules/.bin/rollup ./dist/es2015/autolinker.js --file ./dist/Autolinker.js --format umd --name "Autolinker" --sourcemap` );
+async function buildSrcRollupTask() {
+	// create a bundle
+	const bundle = await rollup.rollup( {
+		input: './dist/es2015/autolinker.js',
+		plugins: [
+			rollupResolveNode( {
+				jsnext: true,
+				browser: true,
+			} ),
+			rollupCommonjs()
+		],
+		treeshake: true
+	} );
+
+	// write the bundle to disk
+	return bundle.write( {
+		file: './dist/Autolinker.js',
+		format: 'umd',
+		name: 'Autolinker',
+		sourcemap: true
+	} );
 }
 
 function buildSrcAddHeaderToUmdTask() {
@@ -301,8 +323,25 @@ function buildExampleTypeScriptTask() {
 		.pipe( gulp.dest( './.tmp/live-example/' ) );
 }
 
-function buildExampleRollupTask() {
-	return exec( `./node_modules/.bin/rollup ./.tmp/live-example/main.js --format iife --file ./docs/examples/live-example.js` );
+async function buildExampleRollupTask() {
+	// create a bundle
+	const bundle = await rollup.rollup( {
+		input: './.tmp/live-example/main.js',
+		plugins: [
+			rollupResolveNode( {
+				jsnext: true,
+				browser: true,
+			} ),
+			rollupCommonjs()
+		]
+	} );
+
+	// write the bundle to disk
+	return bundle.write( {
+		file: './docs/examples/live-example.js',
+		format: 'iife',
+		sourcemap: true
+	} );
 }
 
 
