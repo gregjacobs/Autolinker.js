@@ -78,7 +78,6 @@
     "webpack": "^4.28.2",
     "yarn": "^1.12.3"
   },
-  "dependencies": {}
   "dependencies": {
     "tslib": "^1.9.3"
   }
