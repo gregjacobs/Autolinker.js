@@ -20,10 +20,8 @@
 // order to support nodejs interoperability with require(&#39;autolinker&#39;) directly. 
 // This is done by the buildSrcFixCommonJsIndexTask() function in the gulpfile. 
 // See that function for more details.
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var tslib_1 = require(&quot;tslib&quot;);
 var autolinker_1 = require(&quot;./autolinker&quot;);
 
 // Note: the following two lines are added by gulpfile.js&#39;s buildSrcFixCommonJsIndexTask() to allow require(&#39;autolinker&#39;) to work correctly
@@ -33,10 +31,10 @@ Object.defineProperty( exports, &quot;__esModule&quot;, { value: true } );  // r
 exports.default = autolinker_1.default;
 var autolinker_2 = require(&quot;./autolinker&quot;);
 exports.Autolinker = autolinker_2.default;
-__export(require(&quot;./anchor-tag-builder&quot;));
-__export(require(&quot;./html-tag&quot;));
-__export(require(&quot;./match/index&quot;));
-__export(require(&quot;./matcher/index&quot;));
+tslib_1.__exportStar(require(&quot;./anchor-tag-builder&quot;), exports);
+tslib_1.__exportStar(require(&quot;./html-tag&quot;), exports);
+tslib_1.__exportStar(require(&quot;./match/index&quot;), exports);
+tslib_1.__exportStar(require(&quot;./matcher/index&quot;), exports);
 
 //# sourceMappingURL=index.js.map
 </pre>

@@ -340,7 +340,7 @@ async function buildExampleRollupTask() {
 	return bundle.write( {
 		file: './docs/examples/live-example.js',
 		format: 'iife',
-		sourcemap: true
+		sourcemap: false
 	} );
 }
 

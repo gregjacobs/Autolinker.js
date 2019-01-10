@@ -16,20 +16,8 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
-var __extends = (this &amp;&amp; this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array &amp;&amp; function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var tslib_1 = require(&quot;tslib&quot;);
 var match_1 = require(&quot;./match&quot;);
 <span id='Autolinker-match-Hashtag'>/**
 </span> * @class Autolinker.match.Hashtag
@@ -42,7 +30,7 @@ var match_1 = require(&quot;./match&quot;);
  * details.
  */
 var HashtagMatch =  (function (_super) {
-    __extends(HashtagMatch, _super);
+    tslib_1.__extends(HashtagMatch, _super);
 <span id='Autolinker-match-Hashtag-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match

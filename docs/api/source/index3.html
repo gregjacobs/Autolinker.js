@@ -16,16 +16,14 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
-__export(require(&quot;./email-matcher&quot;));
-__export(require(&quot;./hashtag-matcher&quot;));
-__export(require(&quot;./matcher&quot;));
-__export(require(&quot;./mention-matcher&quot;));
-__export(require(&quot;./phone-matcher&quot;));
-__export(require(&quot;./url-matcher&quot;));
+var tslib_1 = require(&quot;tslib&quot;);
+tslib_1.__exportStar(require(&quot;./email-matcher&quot;), exports);
+tslib_1.__exportStar(require(&quot;./hashtag-matcher&quot;), exports);
+tslib_1.__exportStar(require(&quot;./matcher&quot;), exports);
+tslib_1.__exportStar(require(&quot;./mention-matcher&quot;), exports);
+tslib_1.__exportStar(require(&quot;./phone-matcher&quot;), exports);
+tslib_1.__exportStar(require(&quot;./url-matcher&quot;), exports);
 
 //# sourceMappingURL=index.js.map
 </pre>

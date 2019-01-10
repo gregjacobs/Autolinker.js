@@ -530,9 +530,8 @@ To run the tests:
 yarn test
 ```
 
-- Make sure to add tests to cover your new functionality/bugfix.
-- Run the `yarn test` command to build/test (or alternatively, open the 
-  `tests/index.html` file to run the tests).
+- Make sure to add tests to cover your new functionality/bugfix
+- Run the `yarn test` command to build/test
 - Please use tabs for indents! Tabs are better for everybody 
   (individuals can set their editors to different tab sizes based on 
   their visual preferences).

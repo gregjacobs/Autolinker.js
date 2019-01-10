@@ -16,20 +16,8 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
-var __extends = (this &amp;&amp; this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array &amp;&amp; function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var tslib_1 = require(&quot;tslib&quot;);
 var matcher_1 = require(&quot;./matcher&quot;);
 var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var tld_regex_1 = require(&quot;./tld-regex&quot;);
@@ -43,7 +31,7 @@ var email_match_1 = require(&quot;../match/email-match&quot;);
  * See this class&#39;s superclass ({@link Autolinker.matcher.Matcher}) for more details.
  */
 var EmailMatcher =  (function (_super) {
-    __extends(EmailMatcher, _super);
+    tslib_1.__extends(EmailMatcher, _super);
     function EmailMatcher() {
         var _this = _super !== null &amp;&amp; _super.apply(this, arguments) || this;
 <span id='Autolinker-matcher-Email-property-matcherRegex'>        /**
