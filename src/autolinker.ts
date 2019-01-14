@@ -1,6 +1,5 @@
-import { defaults, remove } from "./utils";
+import { defaults, remove, splitAndCapture } from "./utils";
 import { AnchorTagBuilder } from "./anchor-tag-builder";
-import { HtmlParser } from "./htmlParser/html-parser";
 import { Match } from "./match/match";
 import { EmailMatch } from "./match/email-match";
 import { HashtagMatch } from "./match/hashtag-match";
@@ -11,10 +10,10 @@ import { Matcher } from "./matcher/matcher";
 import { HtmlTag } from "./html-tag";
 import { EmailMatcher } from "./matcher/email-matcher";
 import { UrlMatcher } from "./matcher/url-matcher";
-import { ElementNode } from "./htmlParser/element-node";
 import { HashtagMatcher } from "./matcher/hashtag-matcher";
 import { PhoneMatcher } from "./matcher/phone-matcher";
 import { MentionMatcher } from "./matcher/mention-matcher";
+import { parseHtml } from './htmlParser/parse-html';
 
 /**
  * @class Autolinker
@@ -489,15 +488,6 @@ export default class Autolinker {
 
 	/**
 	 * @private
-	 * @property {Autolinker.htmlParser.HtmlParser} htmlParser
-	 *
-	 * The HtmlParser instance used to skip over HTML tags, while finding text
-	 * nodes to process.
-	 */
-	private htmlParser = new HtmlParser();
-
-	/**
-	 * @private
 	 * @property {Autolinker.matcher.Matcher[]} matchers
 	 *
 	 * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
@@ -660,30 +650,46 @@ export default class Autolinker {
 	 *   given input `textOrHtml`.
 	 */
 	parse( textOrHtml: string ) {
-		let htmlNodes = this.htmlParser.parse( textOrHtml ),
-			skipTagNames = [ 'a', 'style', 'script'],
+		let skipTagNames = [ 'a', 'style', 'script' ],
 		    skipTagsStackCount = 0,  // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
-		    matches: Match[] = [];
-
+			matches: Match[] = [];
+			
 		// Find all matches within the `textOrHtml` (but not matches that are
 		// already nested within <a>, <style> and <script> tags)
-		for( let i = 0, len = htmlNodes.length; i < len; i++ ) {
-			let node = htmlNodes[ i ],
-			    nodeType = node.getType();
-
-			if( nodeType === 'element' && skipTagNames.indexOf( ( node as ElementNode ).getTagName() ) !== -1 ) {  // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
-				if( !( node as ElementNode ).isClosing() ) {  // it's the start <a>, <style> or <script> tag
+		parseHtml( textOrHtml, {
+			onOpenTag: ( tagName: string ) => {
+				console.log( 'open tag: ', tagName );
+				if( skipTagNames.indexOf( tagName ) >= 0 ) {
 					skipTagsStackCount++;
-				} else {  // it's the end </a>, </style> or </script> tag
+				}
+			},
+			onText: ( text: string, offset: number ) => {
+				console.log( 'text: ', text );
+				if( skipTagsStackCount === 0 ) {
+					// Process text nodes that are not within an <a>, <style> or <script> tag
+					const htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
+					const textSplit = splitAndCapture( text, htmlCharacterEntitiesRegex );
+
+					let currentOffset = offset;
+					textSplit.forEach( ( splitText, i ) => {
+						if( i % 2 === 0 ) {  // even number matches are text, odd numbers are html entities
+							// TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+							let textNodeMatches = this.parseText( splitText, currentOffset );
+							matches.push.apply( matches, textNodeMatches );
+						}
+						currentOffset += splitText.length;
+					} );
+				}
+			},
+			onCloseTag: ( tagName: string ) => {
+				console.log( 'end tag: ', tagName );
+				if( skipTagNames.indexOf( tagName ) >= 0 ) {
 					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
-
-			} else if( nodeType === 'text' && skipTagsStackCount === 0 ) {  // Process text nodes that are not within an <a>, <style> and <script> tag
-				let textNodeMatches = this.parseText( node.getText(), node.getOffset() );
-
-				matches.push.apply( matches, textNodeMatches );
 			}
-		}
+		} );
+
+
 
 
 		// After we have found all matches, remove subsequent matches that
