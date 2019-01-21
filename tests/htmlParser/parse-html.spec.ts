@@ -20,7 +20,12 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 		offset: number;
 	}
 
-	type Node = OpenTagNode | CloseTagNode | TextNode;
+	interface CommentNode {
+		type: 'comment',
+		offset: number;
+	}
+
+	type Node = OpenTagNode | CloseTagNode | TextNode | CommentNode;
 
 	/**
 	 * Runs parseHtml() and captures the emitted openTag/closeTag/text nodes.
@@ -37,6 +42,9 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 			}, 
 			onCloseTag: ( tagName: string, offset: number ) => {
 				parsedNodes.push( { type: 'closeTag', tagName, offset } );
+			},
+			onComment: ( offset: number ) => {
+				parsedNodes.push( { type: 'comment', offset } );
 			}
 		} );
 		return parsedNodes;
@@ -205,6 +213,7 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 			] );
 		} );
 
+
 		it( "should properly handle a tag where the attributes start on the " +
 			"next line",
 		function() {
@@ -220,45 +229,72 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 	} );
 
 
-	// describe( 'HTML comment node handling', function() {
+	describe( 'HTML comment node handling', function() {
 
-	// 	it( "should return a single comment node if there is only an HTML comment node in it", function() {
-	// 		let nodes = parseHtmlAndCapture( "<!-- Testing 123 -->" );
+		it( `should properly handle text that starts with the sequence '<!' but
+		     doesn't form a comment tag`,
+		function() {
+			let nodes = parseHtmlAndCapture( '<! Hello' );
 
-	// 		expect( nodes.length ).toBe( 1 );
-	// 		expectCommentNode( nodes[ 0 ], 0, "<!-- Testing 123 -->", "Testing 123" );
-	// 	} );
-
-
-	// 	it( "should handle a multi-line comment, and trim any amount of whitespace in the comment for the comment's text", function() {
-	// 		let nodes = parseHtmlAndCapture( "<!-- \n  \t\n Testing 123  \n\t  \n\n -->" );
-
-	// 		expect( nodes.length ).toBe( 1 );
-	// 		expectCommentNode( nodes[ 0 ], 0, "<!-- \n  \t\n Testing 123  \n\t  \n\n -->", "Testing 123" );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: '<! Hello', offset: 0 }
+			] );
+		} );
 
 
-	// 	it( "should produce 3 nodes for a text node, comment, then text node", function() {
-	// 		let nodes = parseHtmlAndCapture( "Test <!-- Comment --> Test" );
+		it( "should return a single comment node if there is only an HTML comment node in it", function() {
+			let nodes = parseHtmlAndCapture( "<!-- Testing 123 -->" );
+			console.log( nodes );
 
-	// 		expect( nodes.length ).toBe( 3 );
-	// 		expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
-	// 		expectCommentNode( nodes[ 1 ], 5, '<!-- Comment -->', 'Comment' );
-	// 		expectTextNode   ( nodes[ 2 ], 21, ' Test' );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'comment', offset: 0 }
+			] );
+		} );
 
 
-	// 	it( "should produce 4 nodes for a text node, comment, text node, comment", function() {
-	// 		let nodes = parseHtmlAndCapture( "Test <!-- Comment --> Test <!-- Comment 2 -->" );
+		it( "should handle a multi-line comment", function() {
+			let nodes = parseHtmlAndCapture( "<!-- \n  \t\n Testing 123  \n\t  \n\n -->" );
 
-	// 		expect( nodes.length ).toBe( 4 );
-	// 		expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
-	// 		expectCommentNode( nodes[ 1 ], 5, '<!-- Comment -->', 'Comment' );
-	// 		expectTextNode   ( nodes[ 2 ], 21, ' Test ' );
-	// 		expectCommentNode( nodes[ 3 ], 27, '<!-- Comment 2 -->', 'Comment 2' );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'comment', offset: 0 }
+			] );
+		} );
 
-	// } );
+
+		it( "should handle a comment in the middle of text", function() {
+			let nodes = parseHtmlAndCapture( "Test <!-- Comment --> Test" );
+
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: 'Test ', offset: 0 },
+				{ type: 'comment', offset: 5 },
+				{ type: 'text', text: ' Test', offset: 21 }
+			] );
+		} );
+
+
+		it( "should handle a comment in the middle of a tag", function() {
+			let nodes = parseHtmlAndCapture( "<div><!-- Comment --></div>" );
+
+			expect( nodes ).toEqual( [
+				{ type: 'openTag', tagName: 'div', offset: 0 },
+				{ type: 'comment', offset: 5 },
+				{ type: 'closeTag', tagName: 'div', offset: 21 }
+			] );
+		} );
+
+
+		it( "should handle multiple comments", function() {
+			let nodes = parseHtmlAndCapture( "Test <!-- Comment --> Test <!-- Comment 2 -->" );
+
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: 'Test ', offset: 0 },
+				{ type: 'comment', offset: 5 },
+				{ type: 'text', text: ' Test ', offset: 21 },
+				{ type: 'comment', offset: 27 }
+			] );
+		} );
+
+	} );
 
 
 	// describe( 'HTML entity handling', function() {

@@ -683,7 +683,8 @@ export default class Autolinker {
 				if( skipTagNames.indexOf( tagName ) >= 0 ) {
 					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
-			}
+			},
+			onComment: ( offset: number ) => {}  // no need to process comment nodes at this time
 		} );
 
 

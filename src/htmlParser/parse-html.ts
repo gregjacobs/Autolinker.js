@@ -52,10 +52,11 @@ import CliTable from 'cli-table';
  *   not an HTML tag) is parsed. Called with the text (string) as its first 
  *   argument, and offset (number) into the string as its second.
  */
-export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
+export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComment }: {
 	onOpenTag: ( tagName: string, offset: number ) => void;
 	onCloseTag: ( tagName: string, offset: number ) => void;
 	onText: ( text: string, offset: number ) => void;
+	onComment: ( offset: number ) => void;
 } ) {
 	const letterRe = /[A-Za-z]/,
 	      digitRe = /[0-9]/,
@@ -66,23 +67,23 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 
 	let charIdx = 0,
 		len = html.length,
-		state: State = State.Data,
+		state = State.Data as State,
 
 		currentDataIdx = 0,  // where the current data start index is
 		currentTag = noCurrentTag;  // describes the current tag that is being read
 
 	const table = new CliTable( {
-		head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx' ]
+		head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx', 'tag.type' ]
 	} );
 
 	while( charIdx < len ) {
 		var char = html.charAt( charIdx );
 
 		table.push( 
-			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx ] 
+			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
 		);
 		
-		switch( +state ) {
+		switch( state ) {
 			case State.Data: stateData( char ); break;
 			case State.TagOpen: stateTagOpen( char ); break;
 			case State.EndTagOpen: stateEndTagOpen( char ); break;
@@ -96,14 +97,21 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 			case State.AttributeValueUnquoted: stateAttributeValueUnquoted( char ); break;
 			case State.AfterAttributeValueQuoted: stateAfterAttributeValueQuoted( char ); break;
 			case State.SelfClosingStartTag: stateSelfClosingStartTag( char ); break;
+			case State.MarkupDeclarationOpenState: stateMarkupDeclarationOpen( char ); break;
+			case State.CommentStart: stateCommentStart( char ); break;
+			case State.CommentStartDash: stateCommentStartDash( char ); break;
+			case State.Comment: stateComment( char ); break;
+			case State.CommentEndDash: stateCommentEndDash( char ); break;
+			case State.CommentEnd: stateCommentEnd( char ); break;
+			case State.CommentEndBang: stateCommentEndBang( char ); break;
 			case State.Doctype: stateDoctype( char ); break;
 
 			default: 
-				throw new Error( 'Unhandled State' );
+				throwUnhandledStateError( state );
 		}
 
 		table.push( 
-			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx ] 
+			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
 		);
 
 		charIdx++;
@@ -112,7 +120,16 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 	if( currentDataIdx < charIdx ) {
 		emitText();
 	}
-	console.log( table.toString() );
+	// console.log( '\n' + table.toString() );
+
+
+	/**
+	 * Function that should never be called but is used to check that every
+	 * enum value is handled using TypeScript's 'never' type.
+	 */
+	function throwUnhandledStateError( state: never ) {
+		throw new Error( 'Unhandled State' )
+	}
 
 
 	// Called when non-tags are being read (i.e. the text around HTML †ags)
@@ -127,7 +144,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 	// https://www.w3.org/TR/html51/syntax.html#tag-open-state
 	function stateTagOpen( char: string ) {
 		if( char === '!' ) {
-			// TODO
+			state = State.MarkupDeclarationOpenState;
 
 		} else if( char === '/' ) {
 			state = State.EndTagOpen;
@@ -392,23 +409,132 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 		}
 	}
 
-// 	// https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
-// 	// HTML Comments or !DOCTYPE
-// 	case STATE_MARKUP_DECLARATION_OPEN_STATE :
-// 		if( html.substr( charIdx, 2 ) === '--' ) {  // html comment
-// 			charIdx += 2;  // "consume" characters
-// 			state = STATE_COMMENT_START_STATE;
+	// https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
+	// (HTML Comments or !DOCTYPE)
+	function stateMarkupDeclarationOpen( char: string ) {
+		if( html.substr( charIdx, 2 ) === '--' ) {  // html comment
+			charIdx += 2;  // "consume" characters
+			currentTag = new CurrentTag( { ...currentTag, type: 'comment' } );
+			state = State.CommentStart;
 
-// 		} else if( html.substr( charIdx, 7 ).toUpperCase() === 'DOCTYPE' ) {
-// 			charIdx += 7;  // "consume" characters
-// 			state = STATE_DOCTYPE;
-// 		}
+		} else if( html.substr( charIdx, 7 ).toUpperCase() === 'DOCTYPE' ) {
+			charIdx += 7;  // "consume" characters
+			currentTag = new CurrentTag( { ...currentTag, type: 'doctype' } );
+			state = State.Doctype;
 
-// 		break;
+		} else {
+			// At this point, the spec specifies that the state machine should
+			// enter the "bogus comment" state, in which case any character(s) 
+			// after the '<!' that were read should become an HTML comment up
+			// until the first '>' that is read (or EOF). Instead, we'll assume
+			// that a user just typed '<!' as part of text data
+			resetToDataState();
+		}
+	}
 
-// 	// https://www.w3.org/TR/html51/syntax.html#comment-start-state
-// 	case STATE_COMMENT_START_STATE :
-// 		break;
+
+	// Handles after the sequence '<!--' has been read
+	// https://www.w3.org/TR/html51/syntax.html#comment-start-state
+	function stateCommentStart( char: string ) {
+		if( char === '-' ) {
+			// We've read the sequence '<!---' at this point (3 dashes)
+			state = State.CommentStartDash;
+
+		} else if( char === '>' ) {
+			// At this point, we'll assume the comment wasn't a real comment
+			// so we'll just emit it as data. We basically read the sequence 
+			// '<!-->'
+			resetToDataState();
+
+		} else {
+			// Any other char, take it as part of the comment
+			state = State.Comment;
+		}
+	}
+
+
+	// We've read the sequence '<!---' at this point (3 dashes)
+	// https://www.w3.org/TR/html51/syntax.html#comment-start-dash-state
+	function stateCommentStartDash( char: string ) {
+		if( char === '-' ) {
+			// We've read '<!----' (4 dashes) at this point
+			state = State.CommentEnd;
+		
+		} else if( char === '>' ) {
+			// At this point, we'll assume the comment wasn't a real comment
+			// so we'll just emit it as data. We basically read the sequence 
+			// '<!--->'
+			resetToDataState();
+
+		} else {
+			// Anything else, take it as a valid comment
+			state = State.Comment;
+		}
+	}
+
+	// Currently reading the comment's text (data)
+	// https://www.w3.org/TR/html51/syntax.html#comment-state
+	function stateComment( char: string ) {
+		if( char === '-' ) {
+			state = State.CommentEndDash;
+		} else {
+			// Any other character, stay in the Comment state
+		}
+	}
+
+	// When we we've read the first dash inside a comment, it may signal the
+	// end of the comment if we read another dash
+	// https://www.w3.org/TR/html51/syntax.html#comment-end-dash-state
+	function stateCommentEndDash( char: string ) {
+		if( char === '-' ) {
+			state = State.CommentEnd;
+		} else {
+			// Wasn't a dash, must still be part of the comment
+			state = State.Comment;
+		}
+	}
+
+
+	// After we've read two dashes inside a comment, it may signal the end of 
+	// the comment if we then read a '>' char
+	// https://www.w3.org/TR/html51/syntax.html#comment-end-state
+	function stateCommentEnd( char: string ) {
+		if( char === '>' ) {
+			emitTagAndPreviousTextNode();
+
+		} else if( char === '!' ) {
+			state = State.CommentEndBang;
+
+		} else if( char === '-' ) {
+			// A 3rd '-' has been read: stay in the CommentEnd state
+
+		} else {
+			// Anything else, switch back to the comment state since we didn't
+			// read the full "end comment" sequence (i.e. '-->')
+			state = State.Comment;
+		}
+	}
+
+	// We've read the sequence '--!' inside of a comment
+	// https://www.w3.org/TR/html51/syntax.html#comment-end-bang-state
+	function stateCommentEndBang( char: string ) {
+		if( char === '-' ) {
+			// We read the sequence '--!-' inside of a comment. The last dash
+			// could signify that the comment is going to close
+			state = State.CommentEndDash;
+
+		} else if( char === '>' ) {
+			// End of comment with the sequence '--!>'
+			emitTagAndPreviousTextNode();
+
+		} else {
+			// The '--!' was not followed by a '>', continue reading the 
+			// comment's text
+			state = State.Comment;
+		}
+	}
+
+
 
 	// https://www.w3.org/TR/html51/syntax.html#doctype-state
 	function stateDoctype( char: string ) {
@@ -459,11 +585,16 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 			onText( textBeforeTag, currentDataIdx );
 		}
 
-		if( currentTag.isOpening ) {
-			onOpenTag( currentTag.name, currentTag.idx );
-		}
-		if( currentTag.isClosing ) {  // note: self-closing tags will emit both opening and closing
-			onCloseTag( currentTag.name, currentTag.idx );
+		if( currentTag.type === 'comment' ) {
+			onComment( currentTag.idx );
+
+		} else {
+			if( currentTag.isOpening ) {
+				onOpenTag( currentTag.name, currentTag.idx );
+			}
+			if( currentTag.isClosing ) {  // note: self-closing tags will emit both opening and closing
+				onCloseTag( currentTag.name, currentTag.idx );
+			}
 		}
 
 		// Since we just emitted a tag, reset to the data state for the next 
@@ -503,12 +634,14 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText }: {
 
 class CurrentTag {
 	readonly idx: number;  // the index of the '<' in the html string
+	readonly type: 'tag' | 'comment' | 'doctype';
 	readonly name: string;
 	readonly isOpening: boolean;  // true if it's an opening tag, OR a self-closing open tag
 	readonly isClosing: boolean;  // true if it's a closing tag, OR a self-closing open tag
 
 	constructor( cfg: Partial<CurrentTag> = {} ) {
 		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+		this.type = cfg.type || 'tag';
 		this.name = cfg.name || '';
 		this.isOpening = !!cfg.isOpening;
 		this.isClosing = !!cfg.isClosing;

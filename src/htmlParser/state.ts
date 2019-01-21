@@ -16,5 +16,12 @@ export enum State {
 	AttributeValueUnquoted,
 	AfterAttributeValueQuoted,
 	SelfClosingStartTag,
+	MarkupDeclarationOpenState,  // When the sequence '<!' is read for an HTML comment or doctype
+	CommentStart,
+	CommentStartDash,
+	Comment,
+	CommentEndDash,
+	CommentEnd,
+	CommentEndBang,
 	Doctype
 }
