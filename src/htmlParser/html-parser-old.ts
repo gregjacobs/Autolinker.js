@@ -24,7 +24,7 @@ import { HtmlNode } from "./html-node";
 const htmlRegex = (function() {
 	let commentTagRegex = /!--([\s\S]+?)--/,
 		tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/,
-		attrNameRegex = /[^\s"'>\/=\x00-\x1F\x7F]+/,   // the unicode range accounts for excluding control chars, and the delete char
+		attrNameRegex = /[^\s"'>\/=\x00-\x1F\x7F]+/,   // the hex range accounts for excluding control chars, and the delete char
 		attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
 		optionalAttrValueRegex = '(?:\\s*?=\\s*?' + attrValueRegex.source + ')?'; // optional '=[value]'
 

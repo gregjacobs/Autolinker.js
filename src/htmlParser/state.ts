@@ -8,6 +8,13 @@ export enum State {
 	EndTagOpen,
 	TagName,
 	BeforeAttributeName,
+	AttributeName,
+	AfterAttributeName,
+	BeforeAttributeValue,
+	AttributeValueDoubleQuoted,
+	AttributeValueSingleQuoted,
+	AttributeValueUnquoted,
+	AfterAttributeValueQuoted,
 	SelfClosingStartTag,
 	Doctype
 }

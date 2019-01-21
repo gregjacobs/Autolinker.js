@@ -658,13 +658,11 @@ export default class Autolinker {
 		// already nested within <a>, <style> and <script> tags)
 		parseHtml( textOrHtml, {
 			onOpenTag: ( tagName: string ) => {
-				console.log( 'open tag: ', tagName );
 				if( skipTagNames.indexOf( tagName ) >= 0 ) {
 					skipTagsStackCount++;
 				}
 			},
 			onText: ( text: string, offset: number ) => {
-				console.log( 'text: ', text );
 				if( skipTagsStackCount === 0 ) {
 					// Process text nodes that are not within an <a>, <style> or <script> tag
 					const htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
@@ -682,7 +680,6 @@ export default class Autolinker {
 				}
 			},
 			onCloseTag: ( tagName: string ) => {
-				console.log( 'end tag: ', tagName );
 				if( skipTagNames.indexOf( tagName ) >= 0 ) {
 					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}

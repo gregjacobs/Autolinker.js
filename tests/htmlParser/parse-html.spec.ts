@@ -1,6 +1,6 @@
 import { parseHtml } from "../../src/htmlParser/parse-html";
 
-fdescribe( "Autolinker.htmlParser.HtmlParser", () => {
+describe( "Autolinker.htmlParser.HtmlParser", () => {
 
 	interface OpenTagNode {
 		type: 'openTag';
@@ -130,7 +130,6 @@ fdescribe( "Autolinker.htmlParser.HtmlParser", () => {
 			 open and close tag`, 
 		() => {
 			let nodes = parseHtmlAndCapture( "<div/>Test" );
-			console.log( nodes );
 			
 			expect( nodes ).toEqual( [
 				{ type: 'openTag', tagName: 'div', offset: 0 },
@@ -140,14 +139,13 @@ fdescribe( "Autolinker.htmlParser.HtmlParser", () => {
 		} );
 
 
-		fit( `should handle html tags with attributes`, () => {
-			let nodes = parseHtmlAndCapture( `<div id="hi">Test</div>` );
-			console.log( nodes );
+		it( `should handle html tags with attributes`, () => {
+			let nodes = parseHtmlAndCapture( `<div id="hi" class='some-class' align=center>Test</div>` );
 			
 			expect( nodes ).toEqual( [
 				{ type: 'openTag', tagName: 'div', offset: 0 },
-				{ type: 'text', text: 'Test', offset: 13 },
-				{ type: 'closeTag', tagName: 'div', offset: 17 }
+				{ type: 'text', text: 'Test', offset: 45 },
+				{ type: 'closeTag', tagName: 'div', offset: 49 }
 			] );
 		} );
 
@@ -155,61 +153,69 @@ fdescribe( "Autolinker.htmlParser.HtmlParser", () => {
 		it( `when there are two << characters, the first one should be ignored
 			 if the second one forms a tag`,
 		() => {
-			// TODO
+			let nodes = parseHtmlAndCapture( `<<div>Test</div>` );
+			
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: '<', offset: 0 },
+				{ type: 'openTag', tagName: 'div', offset: 1 },
+				{ type: 'text', text: 'Test', offset: 6 },
+				{ type: 'closeTag', tagName: 'div', offset: 10 }
+			] );
 		} );
 
 
 		it( `when we have text such as '<xyz<', the first '<' should be ignored
 		     if the second one forms a tag`,
 		() => {
-			// TODO
+			let nodes = parseHtmlAndCapture( `<xyz<div>Test</div>` );
+			
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: '<xyz', offset: 0 },
+				{ type: 'openTag', tagName: 'div', offset: 4 },
+				{ type: 'text', text: 'Test', offset: 9 },
+				{ type: 'closeTag', tagName: 'div', offset: 13 }
+			] );
 		} );
 
+		
 		it( `when we have text such as '<xyz<', and the second '<' does not form
 		     a tag, this sequence should be treated as text`,
 		() => {
-			// TODO
+			let nodes = parseHtmlAndCapture( `<xyz< Test <3<asdf` );
+			
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: '<xyz< Test <3<asdf', offset: 0 }
+			] );
 		} );
 
 
-		// it( "should be able to reproduce the input string based on the text that was provided to each returned `HtmlNode`", function() {
-		// 	let inputStr = 'Joe went to <a href="google.com">ebay.com</a> today,&nbsp;and bought <b>big</b> items',
-		// 		nodes = parseHtmlAndCapture( inputStr ),
-		// 		result = [];
+		it( "should handle some more complex HTML strings", function() {
+			let nodes = parseHtmlAndCapture( 'Joe went to <a href="google.com">ebay.com</a> today,&nbsp;and bought <b>big</b> items' );
 
-		// 	for( let i = 0, len = nodes.length; i < len; i++ ) {
-		// 		result.push( nodes[ i ].getText() );
-		// 	}
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: 'Joe went to ', offset: 0 },
+				{ type: 'openTag', tagName: 'a', offset: 12 },
+				{ type: 'text', text: 'ebay.com', offset: 33 },
+				{ type: 'closeTag', tagName: 'a', offset: 41 },
+				{ type: 'text', text: ' today,&nbsp;and bought ', offset: 45 },
+				{ type: 'openTag', tagName: 'b', offset: 69 },
+				{ type: 'text', text: 'big', offset: 72 },
+				{ type: 'closeTag', tagName: 'b', offset: 75 },
+				{ type: 'text', text: ' items', offset: 79 }
+			] );
+		} );
 
-		// 	expect( result.length ).toBe( 11 );
-		// 	expect( result.join( "" ) ).toBe( inputStr );
-		// } );
+		it( "should properly handle a tag where the attributes start on the " +
+			"next line",
+		function() {
+			let nodes = parseHtmlAndCapture( 'Test <div\nclass="myClass"\nstyle="color:red"> Test' );
 
-
-		// it( "should properly handle tags without attributes", function() {
-		// 	let nodes = parseHtmlAndCapture( 'Test1 <div><span>Test2</span> Test3</div>' );
-
-		// 	expect( nodes.length ).toBe( 7 );
-		// 	expectTextNode   ( nodes[ 0 ], 0, 'Test1 ' );
-		// 	expectElementNode( nodes[ 1 ], 6, '<div>', 'div', false );
-		// 	expectElementNode( nodes[ 2 ], 11, '<span>', 'span', false );
-		// 	expectTextNode   ( nodes[ 3 ], 17, 'Test2' );
-		// 	expectElementNode( nodes[ 4 ], 22, '</span>', 'span', true );
-		// 	expectTextNode   ( nodes[ 5 ], 29, ' Test3' );
-		// 	expectElementNode( nodes[ 6 ], 35, '</div>', 'div', true );
-		// } );
-
-
-		// it( "should properly handle a tag where the attributes start on the " +
-		// 	"next line",
-		// function() {
-		// 	let nodes = parseHtmlAndCapture( 'Test <div\nclass="myClass"\nstyle="color:red"> Test' );
-
-		// 	expect( nodes.length ).toBe( 3 );
-		// 	expectTextNode   ( nodes[ 0 ], 0, 'Test ' );
-		// 	expectElementNode( nodes[ 1 ], 5, '<div\nclass="myClass"\nstyle="color:red">', 'div', false );
-		// 	expectTextNode   ( nodes[ 2 ], 44, ' Test' );
-		// } );
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: 'Test ', offset: 0 },
+				{ type: 'openTag', tagName: 'div', offset: 5 },
+				{ type: 'text', text: ' Test', offset: 44 }
+			] );
+		} );
 
 	} );
 
