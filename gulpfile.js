@@ -5,7 +5,7 @@ const _                 = require( 'lodash' ),
       connect           = require( 'gulp-connect' ),
 	  download          = require( 'gulp-download' ),
 	  exec              = require( 'child-process-promise' ).exec,
-	  fs                = require( 'fs' ),
+	  fs                = require( 'fs-extra' ),
       gulp              = require( 'gulp' ),
 	  header            = require( 'gulp-header' ),
 	  HtmlWebpackPlugin = require( 'html-webpack-plugin' ),
@@ -22,6 +22,7 @@ const _                 = require( 'lodash' ),
 	  rollup            = require( 'rollup' ),
 	  rollupResolveNode = require( 'rollup-plugin-node-resolve' ),
 	  rollupCommonjs    = require( 'rollup-plugin-commonjs' ),
+	  size              = require( 'gulp-size' ),
 	  sourcemaps        = require( 'gulp-sourcemaps' ),
       transform         = require( 'gulp-transform' ),
       typescript        = require( 'gulp-typescript' ),
@@ -49,13 +50,15 @@ gulp.task( 'build-src-fix-commonjs-index', buildSrcFixCommonJsIndexTask );
 gulp.task( 'build-src-rollup', buildSrcRollupTask );
 gulp.task( 'build-src-add-header-to-umd', buildSrcAddHeaderToUmdTask );
 gulp.task( 'build-src-minify-umd', buildSrcMinifyUmdTask );
+gulp.task( 'build-src-check-minfied-size', buildSrcCheckMinifiedSizeTask );
 
 gulp.task( 'do-build-src', gulp.series( 
 	'build-src-typescript',
 	'build-src-fix-commonjs-index',
 	'build-src-rollup',
 	'build-src-add-header-to-umd', 
-	'build-src-minify-umd'
+	'build-src-minify-umd',
+	'build-src-check-minfied-size'
 ), )
 
 // Build example private tasks
@@ -277,8 +280,32 @@ function buildSrcMinifyUmdTask() {
 			}
 		} ) )
 		.pipe( rename( 'Autolinker.min.js' ) )
+		.pipe( size( { showFiles: true, showTotal: false } ) )
 		.pipe( sourcemaps.write( '.' ) )
 		.pipe( gulp.dest( './dist' ) );
+}
+
+
+/**
+ * Checks that we don't accidentally add an extra dependency that bloats the
+ * minified size of Autolinker
+ */
+async function buildSrcCheckMinifiedSizeTask() {
+	const stats = await fs.stat( './dist/Autolinker.min.js' );
+	const sizeInKb = stats.size / 1000;
+	const maxExpectedSizeInKb = 44;
+	
+	if( sizeInKb > maxExpectedSizeInKb ) {
+		throw new Error( `
+			Minified file size of ${sizeInKb.toFixed( 2 )}kb is greater than max 
+			expected minified size of ${maxExpectedSizeInKb}kb
+			
+			This check is to make sure that a dependency is not accidentally 
+			added which significantly inflates the size of Autolinker. If 
+			additions to the codebase have been made though and a higher size 
+			is expected, bump the 'maxExpectedSizeInKb' number in gulpfile.js
+		`.trim().replace( /^\t*/gm, '' ) );
+	}
 }
 
 

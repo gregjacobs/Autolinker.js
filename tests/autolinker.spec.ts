@@ -153,6 +153,12 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag that uses a capital letter for its tag name", function() {
+				let result = autolinker.link( '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.' );
+				expect( result ).toBe( '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.' );
+			} );
+
+
 			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others", function() {
 				let result = autolinker.link( '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.' );
 				expect( result ).toBe( '<p>Joe went to <a href="http://google.com">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com">weather.com</a></p> yesterday.' );
@@ -534,6 +540,39 @@ describe( "Autolinker", function() {
 				expect( result ).toBe( tobe );
 			} );
 
+		} );
+
+
+		describe( "HTML entity character handling", () => {
+
+			it( "should handle an HTML entity at the beginning of the string", function() {
+				let result = autolinker.link( '&amp;now go to google.com' );
+				expect( result ).toBe( '&amp;now go to <a href="http://google.com">google.com</a>' );
+			} );
+
+
+			it( "should handle an HTML entity at the end of the string", function() {
+				let result = autolinker.link( 'now go to google.com &amp;' );
+				expect( result ).toBe( 'now go to <a href="http://google.com">google.com</a> &amp;' );
+			} );
+
+
+			it( "should handle an HTML entity at the beginning and end of the string", function() {
+				let result = autolinker.link( '&amp;now go to google.com &amp;' );
+				expect( result ).toBe( '&amp;now go to <a href="http://google.com">google.com</a> &amp;' );
+			} );
+
+
+			it( "should handle an HTML entity in the middle of the string", function() {
+				let result = autolinker.link( 'now &amp;go to google.com' );
+				expect( result ).toBe( 'now &amp;go to <a href="http://google.com">google.com</a>' );
+			} );
+
+
+			it( "should handle a string with only an HTML entity", function() {
+				let result = autolinker.link( '&amp;' );
+				expect( result ).toBe( '&amp;' );
+			} );
 
 		} );
 
