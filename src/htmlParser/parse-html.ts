@@ -635,11 +635,11 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 
 	/**
 	 * Captures the tag name from the start of the tag to the current character 
-	 * index
+	 * index, and converts it to lower case
 	 */
 	function captureTagName() {
 		const startIdx = currentTag.idx + ( currentTag.isClosing ? 2 : 1 );
-		return html.slice( startIdx, charIdx );
+		return html.slice( startIdx, charIdx ).toLowerCase();
 	}
 
 

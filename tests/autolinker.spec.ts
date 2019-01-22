@@ -153,6 +153,12 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag that uses a capital letter for its tag name", function() {
+				let result = autolinker.link( '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.' );
+				expect( result ).toBe( '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.' );
+			} );
+
+
 			it( "should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others", function() {
 				let result = autolinker.link( '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.' );
 				expect( result ).toBe( '<p>Joe went to <a href="http://google.com">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com">weather.com</a></p> yesterday.' );

@@ -304,43 +304,44 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 			] );
 		} );
 
-		// it( 'should match tags of both upper and lower case', function() {
-		// 	let inputStr = [
-		// 		'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
-		// 		'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
-		// 		'<b>big</b> <B><!-- Comment 2 -->items</B>'
-		// 	].join( '' );
-		// 	let nodes = parseHtmlAndCapture( inputStr );
+	} );
 
-		// 	expect( nodes.length ).toBe( 24 );
+	
+	describe( 'combination examples', () => {
 
-		// 	let i = -1;
-		// 	expectTextNode   ( nodes[ ++i ], 0,   'Joe ' );
-		// 	expectElementNode( nodes[ ++i ], 4,   '<!DOCTYPE html>', '!doctype', false );
-		// 	expectCommentNode( nodes[ ++i ], 19,  '<!-- Comment -->', 'Comment' );
-		// 	expectTextNode   ( nodes[ ++i ], 35,  'went ' );
-		// 	expectElementNode( nodes[ ++i ], 40,  '<!doctype "blah" "blah blah">', '!doctype', false );
-		// 	expectTextNode   ( nodes[ ++i ], 69,  ' to ' );
-		// 	expectElementNode( nodes[ ++i ], 73,  '<a href="google.com">', 'a', false );
-		// 	expectTextNode   ( nodes[ ++i ], 94,  'ebay.com' );
-		// 	expectElementNode( nodes[ ++i ], 102, '</a>', 'a', true );
-		// 	expectTextNode   ( nodes[ ++i ], 106, ' today,' );
-		// 	expectEntityNode ( nodes[ ++i ], 113, '&nbsp;' );
-		// 	expectTextNode   ( nodes[ ++i ], 119, 'and ' );
-		// 	expectElementNode( nodes[ ++i ], 123, '<A href="purchase.com">', 'a', false );
-		// 	expectTextNode   ( nodes[ ++i ], 146, 'purchased' );
-		// 	expectElementNode( nodes[ ++i ], 155, '</A>', 'a', true );
-		// 	expectTextNode   ( nodes[ ++i ], 159, ' ' );
-		// 	expectElementNode( nodes[ ++i ], 160, '<b>', 'b', false );
-		// 	expectTextNode   ( nodes[ ++i ], 163, 'big' );
-		// 	expectElementNode( nodes[ ++i ], 166, '</b>', 'b', true );
-		// 	expectTextNode   ( nodes[ ++i ], 170, ' ' );
-		// 	expectElementNode( nodes[ ++i ], 171, '<B>', 'b', false );
-		// 	expectCommentNode( nodes[ ++i ], 174, '<!-- Comment 2 -->', 'Comment 2' );
-		// 	expectTextNode   ( nodes[ ++i ], 192, 'items' );
-		// 	expectElementNode( nodes[ ++i ], 197, '</B>', 'b', true );
-		// } );
+		it( 'should match tags of both upper and lower case', function() {
+			let inputStr = [
+				'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
+				'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
+				'<b>big</b> <B><!-- Comment 2 -->items</B>'
+			].join( '' );
+			let nodes = parseHtmlAndCapture( inputStr );
 
+			expect( nodes ).toEqual( [
+				{ type: 'text',     offset: 0,  text: 'Joe ' },
+				{ type: 'doctype',  offset: 4 },
+				{ type: 'comment',  offset: 19 },
+				{ type: 'text',     offset: 35, text: 'went ' },
+				{ type: 'doctype',  offset: 40 },
+				{ type: 'text',     offset: 69, text: ' to ' },
+				{ type: 'openTag',  offset: 73, tagName: 'a' },
+				{ type: 'text',     offset: 94, text: 'ebay.com' },
+				{ type: 'closeTag', offset: 102, tagName: 'a' },
+				{ type: 'text',     offset: 106, text: ' today,&nbsp;and ' },
+				{ type: 'openTag',  offset: 123, tagName: 'a' },
+				{ type: 'text',     offset: 146, text: 'purchased' },
+				{ type: 'closeTag', offset: 155, tagName: 'a' },
+				{ type: 'text',     offset: 159, text: ' ' },
+				{ type: 'openTag',  offset: 160, tagName: 'b' },
+				{ type: 'text',     offset: 163, text: 'big' },
+				{ type: 'closeTag', offset: 166, tagName: 'b' },
+				{ type: 'text',     offset: 170, text: ' ' },
+				{ type: 'openTag',  offset: 171, tagName: 'b' },
+				{ type: 'comment',  offset: 174 },
+				{ type: 'text',     offset: 192, text: 'items' },
+				{ type: 'closeTag', offset: 197, tagName: 'b' },
+			] );
+		} );
 	} );
 
 
@@ -500,32 +501,6 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 	// 	expectTextNode( nodes[ 0 ], 0, inputStr );
 	// } );
 
-	// function expectCommentNode( node: HtmlNode, offset: number, text: string, comment: string ) {
-	// 	expect( node ).toEqual( jasmine.any( CommentNode ) );
-	// 	expect( node.getOffset() ).toBe( offset );
-	// 	expect( node.getText() ).toBe( text );
-	// 	expect( ( node as CommentNode ).getComment() ).toBe( comment );
-	// }
-
-	// function expectElementNode( node: HtmlNode, offset: number, tagText: string, tagName: string, isClosingTag: boolean ) {
-	// 	expect( node ).toEqual( jasmine.any( ElementNode ) );
-	// 	expect( node.getOffset() ).toBe( offset );
-	// 	expect( node.getText() ).toBe( tagText );
-	// 	expect( ( node as ElementNode ).getTagName() ).toBe( tagName );
-	// 	expect( ( node as ElementNode ).isClosing() ).toBe( isClosingTag );
-	// }
-
-	// function expectEntityNode( node: HtmlNode, offset: number, text: string ) {
-	// 	expect( node ).toEqual( jasmine.any( EntityNode ) );
-	// 	expect( node.getOffset() ).toBe( offset );
-	// 	expect( node.getText() ).toBe( text );
-	// }
-
-	// function expectTextNode( node: HtmlNode, offset: number, text: string ) {
-	// 	expect( node ).toEqual( jasmine.any( TextNode ) );
-	// 	expect( node.getOffset() ).toBe( offset );
-	// 	expect( node.getText() ).toBe( text );
-	// }
 } );
 
 
