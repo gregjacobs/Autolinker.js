@@ -3607,14 +3607,19 @@
                     }
                 },
                 onText: function (text, offset) {
+                    // Only process text nodes that are not within an <a>, <style> or <script> tag
                     if (skipTagsStackCount === 0) {
-                        // Process text nodes that are not within an <a>, <style> or <script> tag
+                        // "Walk around" common HTML entities. An '&nbsp;' (for example)
+                        // could be at the end of a URL, but we don't want to 
+                        // include the trailing '&' in the URL. See issue #76
+                        // TODO: Handle HTML entities separately in parseHtml() and
+                        // don't emit them as "text" except for &amp; entities
                         var htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
                         var textSplit = splitAndCapture(text, htmlCharacterEntitiesRegex);
                         var currentOffset_1 = offset;
                         textSplit.forEach(function (splitText, i) {
-                            if (i % 2 === 0) { // even number matches are text, odd numbers are html entities
-                                // TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+                            // even number matches are text, odd numbers are html entities
+                            if (i % 2 === 0) {
                                 var textNodeMatches = _this.parseText(splitText, currentOffset_1);
                                 matches.push.apply(matches, textNodeMatches);
                             }

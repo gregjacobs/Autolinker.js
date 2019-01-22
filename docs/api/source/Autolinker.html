@@ -599,14 +599,19 @@ var Autolinker =  (function () {
                 }
             },
             onText: function (text, offset) {
+                // Only process text nodes that are not within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
                 if (skipTagsStackCount === 0) {
-                    // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
+                    // &quot;Walk around&quot; common HTML entities. An &#39;&amp;nbsp;&#39; (for example)
+                    // could be at the end of a URL, but we don&#39;t want to 
+                    // include the trailing &#39;&amp;&#39; in the URL. See issue #76
+                    // TODO: Handle HTML entities separately in parseHtml() and
+                    // don&#39;t emit them as &quot;text&quot; except for &amp;amp; entities
                     var htmlCharacterEntitiesRegex = /(&amp;nbsp;|&amp;#160;|&amp;lt;|&amp;#60;|&amp;gt;|&amp;#62;|&amp;quot;|&amp;#34;|&amp;#39;)/gi;
                     var textSplit = utils_1.splitAndCapture(text, htmlCharacterEntitiesRegex);
                     var currentOffset_1 = offset;
                     textSplit.forEach(function (splitText, i) {
-                        if (i % 2 === 0) { // even number matches are text, odd numbers are html entities
-                            // TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+                        // even number matches are text, odd numbers are html entities
+                        if (i % 2 === 0) {
                             var textNodeMatches = _this.parseText(splitText, currentOffset_1);
                             matches.push.apply(matches, textNodeMatches);
                         }
