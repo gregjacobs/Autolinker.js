@@ -309,7 +309,7 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 	
 	describe( 'combination examples', () => {
 
-		it( 'should match tags of both upper and lower case', function() {
+		it( 'should match multiple tags of both upper and lower case with comments and doctype', function() {
 			let inputStr = [
 				'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
 				'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
@@ -345,161 +345,53 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 	} );
 
 
-	// describe( 'HTML entity handling', function() {
+	describe( 'Time Complexity - ', () => {
 
-	// 	it( "should *not* match the &amp; HTML entity, as this may be part of a query string", function() {
-	// 		let nodes = parseHtmlAndCapture( 'Me&amp;You' );
+		it( `should not freeze up the regular expression engine when presented with
+			the input string in issue #54 
+			
+			(Note: this is an old test that came from the days before the HTML 
+			parser was converted from a RegExp to the current state machine parser)`, 
+		() => {
+			let inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! 'Gefallt mir' klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
+				nodes = parseHtmlAndCapture( inputStr );
 
-	// 		expect( nodes.length ).toBe( 1 );
-	// 		expectTextNode( nodes[ 0 ], 0, 'Me&amp;You' );
-	// 	} );
-
-
-	// 	it( "should properly parse a string that begins with an HTML entity node", function() {
-	// 		let nodes = parseHtmlAndCapture( '&quot;Test' );
-
-	// 		expect( nodes.length ).toBe( 2 );
-	// 		expectEntityNode( nodes[ 0 ], 0, '&quot;' );
-	// 		expectTextNode(   nodes[ 1 ], 6, 'Test' );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'text', offset: 0, text: inputStr }
+			] );
+		} );
 
 
-	// 	it( "should properly parse a string that ends with an HTML entity node", function() {
-	// 		let nodes = parseHtmlAndCapture( 'Test&quot;' );
+		it( `should not freeze up the regular expression engine when presented 
+			 with the input string in issue #172
+			 
+			 (Note: this is an old test that came from the days before the HTML 
+			 parser was converted from a RegExp to the current state machine parser)`, 
+		() => {
+			let inputStr = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017',//:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
+			    nodes = parseHtmlAndCapture( inputStr );
 
-	// 		expect( nodes.length ).toBe( 2 );
-	// 		expectTextNode(   nodes[ 0 ], 0, 'Test' );
-	// 		expectEntityNode( nodes[ 1 ], 4, '&quot;' );
-	// 	} );
-
-
-	// 	it( "should properly parse a string that begins and ends with an HTML entity node", function() {
-	// 		let nodes = parseHtmlAndCapture( '&quot;Test&quot;' );
-
-	// 		expect( nodes.length ).toBe( 3 );
-	// 		expectEntityNode( nodes[ 0 ], 0,  '&quot;' );
-	// 		expectTextNode(   nodes[ 1 ], 6,  'Test' );
-	// 		expectEntityNode( nodes[ 2 ], 10, '&quot;' );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'text', offset: 0, text: inputStr }
+			] );
+		} );
 
 
-	// 	it( "should properly parse a string that has an HTML entity node in the middle", function() {
-	// 		let nodes = parseHtmlAndCapture( 'Test&quot;Test' );
+		it( `should not freeze up the regular expression engine when presented 
+			 with the input string in issue #204
+			 
+			 (Note: this is an old test that came from the days before the HTML 
+			 parser was converted from a RegExp to the current state machine parser)`, 
+		() => {
+			var inputStr = '<img src="http://example.com/Foo" border-radius:2px;moz-border-radius:2px;khtml-border-radius:2px;o-border-radius:2px;webkit-border-radius:2px;ms-border-radius:="" 2px; "=" " class=" ">',
+			    nodes = parseHtmlAndCapture( inputStr );
 
-	// 		expect( nodes.length ).toBe( 3 );
-	// 		expectTextNode(   nodes[ 0 ], 0,  'Test' );
-	// 		expectEntityNode( nodes[ 1 ], 4,  '&quot;' );
-	// 		expectTextNode(   nodes[ 2 ], 10, 'Test' );
-	// 	} );
+			expect( nodes ).toEqual( [
+				{ type: 'text', offset: 0, text: inputStr }
+			] );
+		} );
 
-
-	// 	it( "should properly parse a string that only has an HTML entity node", function() {
-	// 		let nodes = parseHtmlAndCapture( '&quot;' );
-
-	// 		expect( nodes.length ).toBe( 1 );
-	// 		expectEntityNode( nodes[ 0 ], 0, '&quot;' );
-	// 	} );
-
-	// } );
-
-
-	// describe( 'combination examples', function() {
-
-	// 	it( "should properly create `HtmlNode` instances for each text/entity/comment/element node encountered, with the proper data filled in on each node", function() {
-	// 		let inputStr = [
-	// 			'&quot;Joe went to &quot;',
-	// 			'<a href="google.com">ebay.com</a>&quot; ',
-	// 			'today,&nbsp;and <!-- stuff -->bought <b>big</b> items&quot;'
-	// 		].join( "" );
-
-	// 		let nodes = parseHtmlAndCapture( inputStr );
-	// 		expect( nodes.length ).toBe( 17 );
-
-	// 		let i = -1;
-	// 		expectEntityNode ( nodes[ ++i ], 0,   '&quot;' );
-	// 		expectTextNode   ( nodes[ ++i ], 6,   'Joe went to ' );
-	// 		expectEntityNode ( nodes[ ++i ], 18,  '&quot;' );
-	// 		expectElementNode( nodes[ ++i ], 24,  '<a href="google.com">', 'a', false );
-	// 		expectTextNode   ( nodes[ ++i ], 45,  'ebay.com' );
-	// 		expectElementNode( nodes[ ++i ], 53,  '</a>', 'a', true );
-	// 		expectEntityNode ( nodes[ ++i ], 57,  '&quot;' );
-	// 		expectTextNode   ( nodes[ ++i ], 63,  ' today,' );
-	// 		expectEntityNode ( nodes[ ++i ], 70,  '&nbsp;' );
-	// 		expectTextNode   ( nodes[ ++i ], 76,  'and ' );
-	// 		expectCommentNode( nodes[ ++i ], 80,  '<!-- stuff -->', 'stuff' );
-	// 		expectTextNode   ( nodes[ ++i ], 94,  'bought ' );
-	// 		expectElementNode( nodes[ ++i ], 101, '<b>', 'b', false );
-	// 		expectTextNode   ( nodes[ ++i ], 104, 'big' );
-	// 		expectElementNode( nodes[ ++i ], 107, '</b>', 'b', true );
-	// 		expectTextNode   ( nodes[ ++i ], 111, ' items' );
-	// 		expectEntityNode ( nodes[ ++i ], 117, '&quot;' );
-	// 	} );
-
-
-	// 	it( 'should match tags of both upper and lower case', function() {
-	// 		let inputStr = [
-	// 			'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
-	// 			'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
-	// 			'<b>big</b> <B><!-- Comment 2 -->items</B>'
-	// 		].join( '' );
-	// 		let nodes = parseHtmlAndCapture( inputStr );
-
-	// 		expect( nodes.length ).toBe( 24 );
-
-	// 		let i = -1;
-	// 		expectTextNode   ( nodes[ ++i ], 0,   'Joe ' );
-	// 		expectElementNode( nodes[ ++i ], 4,   '<!DOCTYPE html>', '!doctype', false );
-	// 		expectCommentNode( nodes[ ++i ], 19,  '<!-- Comment -->', 'Comment' );
-	// 		expectTextNode   ( nodes[ ++i ], 35,  'went ' );
-	// 		expectElementNode( nodes[ ++i ], 40,  '<!doctype "blah" "blah blah">', '!doctype', false );
-	// 		expectTextNode   ( nodes[ ++i ], 69,  ' to ' );
-	// 		expectElementNode( nodes[ ++i ], 73,  '<a href="google.com">', 'a', false );
-	// 		expectTextNode   ( nodes[ ++i ], 94,  'ebay.com' );
-	// 		expectElementNode( nodes[ ++i ], 102, '</a>', 'a', true );
-	// 		expectTextNode   ( nodes[ ++i ], 106, ' today,' );
-	// 		expectEntityNode ( nodes[ ++i ], 113, '&nbsp;' );
-	// 		expectTextNode   ( nodes[ ++i ], 119, 'and ' );
-	// 		expectElementNode( nodes[ ++i ], 123, '<A href="purchase.com">', 'a', false );
-	// 		expectTextNode   ( nodes[ ++i ], 146, 'purchased' );
-	// 		expectElementNode( nodes[ ++i ], 155, '</A>', 'a', true );
-	// 		expectTextNode   ( nodes[ ++i ], 159, ' ' );
-	// 		expectElementNode( nodes[ ++i ], 160, '<b>', 'b', false );
-	// 		expectTextNode   ( nodes[ ++i ], 163, 'big' );
-	// 		expectElementNode( nodes[ ++i ], 166, '</b>', 'b', true );
-	// 		expectTextNode   ( nodes[ ++i ], 170, ' ' );
-	// 		expectElementNode( nodes[ ++i ], 171, '<B>', 'b', false );
-	// 		expectCommentNode( nodes[ ++i ], 174, '<!-- Comment 2 -->', 'Comment 2' );
-	// 		expectTextNode   ( nodes[ ++i ], 192, 'items' );
-	// 		expectElementNode( nodes[ ++i ], 197, '</B>', 'b', true );
-	// 	} );
-
-	// } );
-
-
-	// it( "should not freeze up the regular expression engine when presented with the input string in issue #54", function() {
-	// 	let inputStr = "Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! 'Gefallt mir' klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)",
-	// 	    nodes = parseHtmlAndCapture( inputStr );
-
-	// 	expect( nodes.length ).toBe( 1 );
-	// 	expectTextNode( nodes[ 0 ], 0, inputStr );
-	// } );
-
-
-	// it( "should not freeze up the regular expression engine when presented with the input string in issue #172", function() {
-	// 	let inputStr = '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017',//:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
-	// 	    nodes = parseHtmlAndCapture( inputStr );
-
-	// 	expect( nodes.length ).toBe( 1 );
-	// 	expectTextNode( nodes[ 0 ], 0, inputStr );
-	// } );
-
-	// it( "should not freeze up the regular expression engine when presented with the input string in issue #204", function() {
-	// 	var inputStr = '<img src="http://example.com/Foo" border-radius:2px;moz-border-radius:2px;khtml-border-radius:2px;o-border-radius:2px;webkit-border-radius:2px;ms-border-radius:="" 2px; "=" " class=" ">',
-	// 	    nodes = parseHtmlAndCapture( inputStr );
-
-	// 	expect( nodes.length ).toBe( 1 );
-	// 	expectTextNode( nodes[ 0 ], 0, inputStr );
-	// } );
+	} );
 
 } );
 

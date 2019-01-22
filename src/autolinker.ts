@@ -663,15 +663,20 @@ export default class Autolinker {
 				}
 			},
 			onText: ( text: string, offset: number ) => {
+				// Only process text nodes that are not within an <a>, <style> or <script> tag
 				if( skipTagsStackCount === 0 ) {
-					// Process text nodes that are not within an <a>, <style> or <script> tag
+					// "Walk around" common HTML entities. An '&nbsp;' (for example)
+					// could be at the end of a URL, but we don't want to 
+					// include the trailing '&' in the URL. See issue #76
+					// TODO: Handle HTML entities separately in parseHtml() and
+					// don't emit them as "text" except for &amp; entities
 					const htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
 					const textSplit = splitAndCapture( text, htmlCharacterEntitiesRegex );
 
 					let currentOffset = offset;
 					textSplit.forEach( ( splitText, i ) => {
-						if( i % 2 === 0 ) {  // even number matches are text, odd numbers are html entities
-							// TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+						// even number matches are text, odd numbers are html entities
+						if( i % 2 === 0 ) {
 							let textNodeMatches = this.parseText( splitText, currentOffset );
 							matches.push.apply( matches, textNodeMatches );
 						}
@@ -684,11 +689,9 @@ export default class Autolinker {
 					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
 			},
-			onComment: ( offset: number ) => {},  // no need to process comment nodes at this time
-			onDoctype: ( offset: number ) => {},  // no need to process doctype nodes at this time
+			onComment: ( offset: number ) => {},  // no need to process comment nodes
+			onDoctype: ( offset: number ) => {},  // no need to process doctype nodes
 		} );
-
-
 
 
 		// After we have found all matches, remove subsequent matches that
