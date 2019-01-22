@@ -805,509 +805,6 @@
         return AnchorTagBuilder;
     }());
 
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
-
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
-
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
-    /* global Reflect, Promise */
-
-    var extendStatics = function(d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-
-    function __extends(d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    }
-
-    /**
-     * @abstract
-     * @class Autolinker.htmlParser.HtmlNode
-     *
-     * Represents an HTML node found in an input string. An HTML node is one of the
-     * following:
-     *
-     * 1. An {@link Autolinker.htmlParser.ElementNode ElementNode}, which represents
-     *    HTML tags.
-     * 2. A {@link Autolinker.htmlParser.CommentNode CommentNode}, which represents
-     *    HTML comments.
-     * 3. A {@link Autolinker.htmlParser.TextNode TextNode}, which represents text
-     *    outside or within HTML tags.
-     * 4. A {@link Autolinker.htmlParser.EntityNode EntityNode}, which represents
-     *    one of the known HTML entities that Autolinker looks for. This includes
-     *    common ones such as &amp;quot; and &amp;nbsp;
-     */
-    var HtmlNode = /** @class */ (function () {
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match instance,
-         * specified in an Object (map).
-         */
-        function HtmlNode(cfg) {
-            /**
-             * @cfg {Number} offset (required)
-             *
-             * The offset of the HTML node in the original text that was parsed.
-             */
-            this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {String} text (required)
-             *
-             * The text that was matched for the HtmlNode.
-             *
-             * - In the case of an {@link Autolinker.htmlParser.ElementNode ElementNode},
-             *   this will be the tag's text.
-             * - In the case of an {@link Autolinker.htmlParser.CommentNode CommentNode},
-             *   this will be the comment's text.
-             * - In the case of a {@link Autolinker.htmlParser.TextNode TextNode}, this
-             *   will be the text itself.
-             * - In the case of a {@link Autolinker.htmlParser.EntityNode EntityNode},
-             *   this will be the text of the HTML entity.
-             */
-            this.text = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            this.offset = cfg.offset;
-            this.text = cfg.text;
-        }
-        /**
-         * Retrieves the {@link #offset} of the HtmlNode. This is the offset of the
-         * HTML node in the original string that was parsed.
-         *
-         * @return {Number}
-         */
-        HtmlNode.prototype.getOffset = function () {
-            return this.offset;
-        };
-        /**
-         * Retrieves the {@link #text} for the HtmlNode.
-         *
-         * @return {String}
-         */
-        HtmlNode.prototype.getText = function () {
-            return this.text;
-        };
-        return HtmlNode;
-    }());
-
-    /**
-     * @class Autolinker.htmlParser.CommentNode
-     * @extends Autolinker.htmlParser.HtmlNode
-     *
-     * Represents an HTML comment node that has been parsed by the
-     * {@link Autolinker.htmlParser.HtmlParser}.
-     *
-     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
-     * details.
-     */
-    var CommentNode = /** @class */ (function (_super) {
-        __extends(CommentNode, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration options for this class, specified
-         *   in an Object.
-         */
-        function CommentNode(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {String} comment (required)
-             *
-             * The text inside the comment tag. This text is stripped of any leading or
-             * trailing whitespace.
-             */
-            _this.comment = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            _this.comment = cfg.comment;
-            return _this;
-        }
-        /**
-         * Returns a string name for the type of node that this class represents.
-         *
-         * @return {String}
-         */
-        CommentNode.prototype.getType = function () {
-            return 'comment';
-        };
-        /**
-         * Returns the comment inside the comment tag.
-         *
-         * @return {String}
-         */
-        CommentNode.prototype.getComment = function () {
-            return this.comment;
-        };
-        return CommentNode;
-    }(HtmlNode));
-
-    /**
-     * @class Autolinker.htmlParser.ElementNode
-     * @extends Autolinker.htmlParser.HtmlNode
-     *
-     * Represents an HTML element node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
-     *
-     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
-     * details.
-     */
-    var ElementNode = /** @class */ (function (_super) {
-        __extends(ElementNode, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration options for this class, specified
-         *   in an Object.
-         */
-        function ElementNode(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {String} tagName (required)
-             *
-             * The name of the tag that was matched.
-             */
-            _this.tagName = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} closing (required)
-             *
-             * `true` if the element (tag) is a closing tag, `false` if its an opening
-             * tag.
-             */
-            _this.closing = false; // default value just to get the above doc comment in the ES5 output and documentation generator
-            _this.tagName = cfg.tagName;
-            _this.closing = cfg.closing;
-            return _this;
-        }
-        /**
-         * Returns a string name for the type of node that this class represents.
-         *
-         * @return {String}
-         */
-        ElementNode.prototype.getType = function () {
-            return 'element';
-        };
-        /**
-         * Returns the HTML element's (tag's) name. Ex: for an &lt;img&gt; tag,
-         * returns "img".
-         *
-         * @return {String}
-         */
-        ElementNode.prototype.getTagName = function () {
-            return this.tagName;
-        };
-        /**
-         * Determines if the HTML element (tag) is a closing tag. Ex: &lt;div&gt;
-         * returns `false`, while &lt;/div&gt; returns `true`.
-         *
-         * @return {Boolean}
-         */
-        ElementNode.prototype.isClosing = function () {
-            return this.closing;
-        };
-        return ElementNode;
-    }(HtmlNode));
-
-    /**
-     * @class Autolinker.htmlParser.EntityNode
-     * @extends Autolinker.htmlParser.HtmlNode
-     *
-     * Represents a known HTML entity node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
-     * Ex: '&amp;nbsp;', or '&amp#160;' (which will be retrievable from the {@link #getText}
-     * method.
-     *
-     * Note that this class will only be returned from the HtmlParser for the set of
-     * checked HTML entity nodes  defined by the {@link Autolinker.htmlParser.HtmlParser#htmlCharacterEntitiesRegex}.
-     *
-     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
-     * details.
-     */
-    var EntityNode = /** @class */ (function (_super) {
-        __extends(EntityNode, _super);
-        function EntityNode() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * Returns a string name for the type of node that this class represents.
-         *
-         * @return {String}
-         */
-        EntityNode.prototype.getType = function () {
-            return 'entity';
-        };
-        return EntityNode;
-    }(HtmlNode));
-
-    /**
-     * @class Autolinker.htmlParser.TextNode
-     * @extends Autolinker.htmlParser.HtmlNode
-     *
-     * Represents a text node that has been parsed by the {@link Autolinker.htmlParser.HtmlParser}.
-     *
-     * See this class's superclass ({@link Autolinker.htmlParser.HtmlNode}) for more
-     * details.
-     */
-    var TextNode = /** @class */ (function (_super) {
-        __extends(TextNode, _super);
-        function TextNode() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * Returns a string name for the type of node that this class represents.
-         *
-         * @return {String}
-         */
-        TextNode.prototype.getType = function () {
-            return 'text';
-        };
-        return TextNode;
-    }(HtmlNode));
-
-    /**
-     * @private
-     * @property {RegExp} htmlRegex
-     *
-     * The regular expression used to pull out HTML tags from a string. Handles namespaced HTML tags and
-     * attribute names, as specified by http://www.w3.org/TR/html-markup/syntax.html.
-     *
-     * Capturing groups:
-     *
-     * 1. The "!DOCTYPE" tag name, if a tag is a &lt;!DOCTYPE&gt; tag.
-     * 2. If it is an end tag, this group will have the '/'.
-     * 3. If it is a comment tag, this group will hold the comment text (i.e.
-     *    the text inside the `&lt;!--` and `--&gt;`.
-     * 4. The tag name for a tag without attributes (other than the &lt;!DOCTYPE&gt; tag)
-     * 5. The tag name for a tag with attributes (other than the &lt;!DOCTYPE&gt; tag)
-     */
-    var htmlRegex = (function () {
-        var commentTagRegex = /!--([\s\S]+?)--/, tagNameRegex = /[0-9a-zA-Z][0-9a-zA-Z:]*/, attrNameRegex = /[^\s"'>\/=\x00-\x1F\x7F]+/, // the unicode range accounts for excluding control chars, and the delete char
-        attrValueRegex = /(?:"[^"]*?"|'[^']*?'|[^'"=<>`\s]+)/, // double quoted, single quoted, or unquoted attribute values
-        optionalAttrValueRegex = '(?:\\s*?=\\s*?' + attrValueRegex.source + ')?'; // optional '=[value]'
-        var getNameEqualsValueRegex = function (group) {
-            return '(?=(' + attrNameRegex.source + '))\\' + group + optionalAttrValueRegex;
-        };
-        return new RegExp([
-            // for <!DOCTYPE> tag. Ex: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
-            '(?:',
-            '<(!DOCTYPE)',
-            // Zero or more attributes following the tag name
-            '(?:',
-            '\\s+',
-            // Either:
-            // A. attr="value", or
-            // B. "value" alone (To cover example doctype tag: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">)
-            // *** Capturing Group 2 - Pseudo-atomic group for attrNameRegex
-            '(?:', getNameEqualsValueRegex(2), '|', attrValueRegex.source + ')',
-            ')*',
-            '>',
-            ')',
-            '|',
-            // All other HTML tags (i.e. tags that are not <!DOCTYPE>)
-            '(?:',
-            '<(/)?',
-            // *** Capturing Group 3: The slash or an empty string. Slash ('/') for end tag, empty string for start or self-closing tag.
-            '(?:',
-            commentTagRegex.source,
-            '|',
-            // Handle tag without attributes.
-            // Doing this separately from a tag that has attributes
-            // to fix a regex time complexity issue seen with the
-            // example in https://github.com/gregjacobs/Autolinker.js/issues/172
-            '(?:',
-            // *** Capturing Group 5 - The tag name for a tag without attributes
-            '(' + tagNameRegex.source + ')',
-            '\\s*/?',
-            ')',
-            '|',
-            // Handle tag with attributes
-            // Doing this separately from a tag with no attributes
-            // to fix a regex time complexity issue seen with the
-            // example in https://github.com/gregjacobs/Autolinker.js/issues/172
-            '(?:',
-            // *** Capturing Group 6 - The tag name for a tag with attributes
-            '(' + tagNameRegex.source + ')',
-            '\\s+',
-            // Zero or more attributes following the tag name
-            '(?:',
-            '(?:\\s+|\\b)',
-            // *** Capturing Group 7 - Pseudo-atomic group for attrNameRegex
-            getNameEqualsValueRegex(7),
-            ')*',
-            '\\s*/?',
-            ')',
-            ')',
-            '>',
-            ')'
-        ].join(""), 'gi');
-    })();
-    /**
-     * @private
-     * @property {RegExp} htmlCharacterEntitiesRegex
-     *
-     * The regular expression that matches common HTML character entities.
-     *
-     * Ignoring &amp; as it could be part of a query string -- handling it separately.
-     */
-    var htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
-    /**
-     * @class Autolinker.htmlParser.HtmlParser
-     * @extends Object
-     *
-     * An HTML parser implementation which simply walks an HTML string and returns an array of
-     * {@link Autolinker.htmlParser.HtmlNode HtmlNodes} that represent the basic HTML structure of the input string.
-     *
-     * Autolinker uses this to only link URLs/emails/mentions within text nodes, effectively ignoring / "walking
-     * around" HTML tags.
-     */
-    var HtmlParser = /** @class */ (function () {
-        function HtmlParser() {
-        }
-        /**
-         * Parses an HTML string and returns a simple array of {@link Autolinker.htmlParser.HtmlNode HtmlNodes}
-         * to represent the HTML structure of the input string.
-         *
-         * @param {String} html The HTML to parse.
-         * @return {Autolinker.htmlParser.HtmlNode[]}
-         */
-        HtmlParser.prototype.parse = function (html) {
-            var currentResult, lastIndex = 0, textAndEntityNodes, nodes = []; // will be the result of the method
-            while ((currentResult = htmlRegex.exec(html)) !== null) {
-                var tagText = currentResult[0], commentText = currentResult[4], // if we've matched a comment
-                tagName = currentResult[1] || currentResult[5] || currentResult[6], // The <!DOCTYPE> tag (ex: "!DOCTYPE"), or another tag (ex: "a" or "img")
-                isClosingTag = !!currentResult[3], offset = currentResult.index, inBetweenTagsText = html.substring(lastIndex, offset);
-                // Push TextNodes and EntityNodes for any text found between tags
-                if (inBetweenTagsText) {
-                    textAndEntityNodes = this.parseTextAndEntityNodes(lastIndex, inBetweenTagsText);
-                    nodes.push.apply(nodes, textAndEntityNodes);
-                }
-                // Push the CommentNode or ElementNode
-                if (commentText) {
-                    nodes.push(this.createCommentNode(offset, tagText, commentText));
-                }
-                else {
-                    nodes.push(this.createElementNode(offset, tagText, tagName, isClosingTag));
-                }
-                lastIndex = offset + tagText.length;
-            }
-            // Process any remaining text after the last HTML element. Will process all of the text if there were no HTML elements.
-            if (lastIndex < html.length) {
-                var text = html.substring(lastIndex);
-                // Push TextNodes and EntityNodes for any text found between tags
-                if (text) {
-                    textAndEntityNodes = this.parseTextAndEntityNodes(lastIndex, text);
-                    // Note: the following 3 lines were previously:
-                    //   nodes.push.apply( nodes, textAndEntityNodes );
-                    // but this was causing a "Maximum Call Stack Size Exceeded"
-                    // error on inputs with a large number of html entities.
-                    textAndEntityNodes.forEach(function (node) { return nodes.push(node); });
-                }
-            }
-            return nodes;
-        };
-        /**
-         * Parses text and HTML entity nodes from a given string. The input string
-         * should not have any HTML tags (elements) within it.
-         *
-         * @private
-         * @param {Number} offset The offset of the text node match within the
-         *   original HTML string.
-         * @param {String} text The string of text to parse. This is from an HTML
-         *   text node.
-         * @return {Autolinker.htmlParser.HtmlNode[]} An array of HtmlNodes to
-         *   represent the {@link Autolinker.htmlParser.TextNode TextNodes} and
-         *   {@link Autolinker.htmlParser.EntityNode EntityNodes} found.
-         */
-        HtmlParser.prototype.parseTextAndEntityNodes = function (offset, text) {
-            var nodes = [], textAndEntityTokens = splitAndCapture(text, htmlCharacterEntitiesRegex); // split at HTML entities, but include the HTML entities in the results array
-            // Every even numbered token is a TextNode, and every odd numbered token is an EntityNode
-            // For example: an input `text` of "Test &quot;this&quot; today" would turn into the
-            //   `textAndEntityTokens`: [ 'Test ', '&quot;', 'this', '&quot;', ' today' ]
-            for (var i = 0, len = textAndEntityTokens.length; i < len; i += 2) {
-                var textToken = textAndEntityTokens[i], entityToken = textAndEntityTokens[i + 1];
-                if (textToken) {
-                    nodes.push(this.createTextNode(offset, textToken));
-                    offset += textToken.length;
-                }
-                if (entityToken) {
-                    nodes.push(this.createEntityNode(offset, entityToken));
-                    offset += entityToken.length;
-                }
-            }
-            return nodes;
-        };
-        /**
-         * Factory method to create an {@link Autolinker.htmlParser.CommentNode CommentNode}.
-         *
-         * @private
-         * @param {Number} offset The offset of the match within the original HTML
-         *   string.
-         * @param {String} tagText The full text of the tag (comment) that was
-         *   matched, including its &lt;!-- and --&gt;.
-         * @param {String} commentText The full text of the comment that was matched.
-         */
-        HtmlParser.prototype.createCommentNode = function (offset, tagText, commentText) {
-            return new CommentNode({
-                offset: offset,
-                text: tagText,
-                comment: commentText.trim()
-            });
-        };
-        /**
-         * Factory method to create an {@link Autolinker.htmlParser.ElementNode ElementNode}.
-         *
-         * @private
-         * @param {Number} offset The offset of the match within the original HTML
-         *   string.
-         * @param {String} tagText The full text of the tag (element) that was
-         *   matched, including its attributes.
-         * @param {String} tagName The name of the tag. Ex: An &lt;img&gt; tag would
-         *   be passed to this method as "img".
-         * @param {Boolean} isClosingTag `true` if it's a closing tag, false
-         *   otherwise.
-         * @return {Autolinker.htmlParser.ElementNode}
-         */
-        HtmlParser.prototype.createElementNode = function (offset, tagText, tagName, isClosingTag) {
-            return new ElementNode({
-                offset: offset,
-                text: tagText,
-                tagName: tagName.toLowerCase(),
-                closing: isClosingTag
-            });
-        };
-        /**
-         * Factory method to create a {@link Autolinker.htmlParser.EntityNode EntityNode}.
-         *
-         * @private
-         * @param {Number} offset The offset of the match within the original HTML
-         *   string.
-         * @param {String} text The text that was matched for the HTML entity (such
-         *   as '&amp;nbsp;').
-         * @return {Autolinker.htmlParser.EntityNode}
-         */
-        HtmlParser.prototype.createEntityNode = function (offset, text) {
-            return new EntityNode({ offset: offset, text: text });
-        };
-        /**
-         * Factory method to create a {@link Autolinker.htmlParser.TextNode TextNode}.
-         *
-         * @private
-         * @param {Number} offset The offset of the match within the original HTML
-         *   string.
-         * @param {String} text The text that was matched.
-         * @return {Autolinker.htmlParser.TextNode}
-         */
-        HtmlParser.prototype.createTextNode = function (offset, text) {
-            return new TextNode({ offset: offset, text: text });
-        };
-        return HtmlParser;
-    }());
-
     /**
      * @abstract
      * @class Autolinker.match.Match
@@ -1460,6 +957,46 @@
         };
         return Match;
     }());
+
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of the
+    License at http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+    MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing permissions
+    and limitations under the License.
+    ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
+    function __extends(d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
 
     /**
      * @class Autolinker.match.Email
@@ -2897,6 +2434,613 @@
         return MentionMatcher;
     }(Matcher));
 
+    // For debugging: search for other "For debugging" lines
+    // import CliTable from 'cli-table';
+    /**
+     * Parses an HTML string, calling the callbacks to notify of tags and text.
+     *
+     * ## History
+     *
+     * This file previously used a regular expression to find html tags in the input
+     * text. Unfortunately, we ran into a bunch of catastrophic backtracking issues
+     * with certain input text, causing Autolinker to either hang or just take a
+     * really long time to parse the string.
+     *
+     * The current code is intended to be a O(n) algorithm that walks through
+     * the string in one pass, and tries to be as cheap as possible. We don't need
+     * to implement the full HTML spec, but rather simply determine where the string
+     * looks like an HTML tag, and where it looks like text (so that we can autolink
+     * that).
+     *
+     * This state machine parser is intended just to be a simple but performant
+     * parser of HTML for the subset of requirements we have. We simply need to:
+     *
+     * 1. Determine where HTML tags are
+     * 2. Determine the tag name (Autolinker specifically only cares about <a>,
+     *    <script>, and <style> tags, so as not to link any text within them)
+     *
+     * We don't need to:
+     *
+     * 1. Create a parse tree
+     * 2. Auto-close tags with invalid markup
+     * 3. etc.
+     *
+     * The other intention behind this is that we didn't want to add external
+     * dependencies on the Autolinker utility which would increase its size. For
+     * instance, adding htmlparser2 adds 125kb to the minified output file,
+     * increasing its final size from 47kb to 172kb (at the time of writing). It
+     * also doesn't work exactly correctly, treating the string "<3 blah blah blah"
+     * as an HTML tag.
+     *
+     * Reference for HTML spec:
+     *
+     *     https://www.w3.org/TR/html51/syntax.html#sec-tokenization
+     *
+     * @param {String} html The HTML to parse
+     * @param {Object} callbacks
+     * @param {Function} callbacks.onOpenTag Callback function to call when an open
+     *   tag is parsed. Called with the tagName as its argument.
+     * @param {Function} callbacks.onCloseTag Callback function to call when a close
+     *   tag is parsed. Called with the tagName as its argument. If a self-closing
+     *   tag is found, `onCloseTag` is called immediately after `onOpenTag`.
+     * @param {Function} callbacks.onText Callback function to call when text (i.e
+     *   not an HTML tag) is parsed. Called with the text (string) as its first
+     *   argument, and offset (number) into the string as its second.
+     */
+    function parseHtml(html, _a) {
+        var onOpenTag = _a.onOpenTag, onCloseTag = _a.onCloseTag, onText = _a.onText, onComment = _a.onComment, onDoctype = _a.onDoctype;
+        var letterRe = /[A-Za-z]/, digitRe = /[0-9]/, whitespaceRe = /\s/, quoteRe = /['"]/, controlCharsRe = /[\x00-\x1F\x7F]/, // control chars (0-31), and the backspace char (127)
+        noCurrentTag = new CurrentTag();
+        var charIdx = 0, len = html.length, state = 0 /* Data */, currentDataIdx = 0, // where the current data start index is
+        currentTag = noCurrentTag; // describes the current tag that is being read
+        // For debugging: search for other "For debugging" lines
+        // const table = new CliTable( {
+        // 	head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx', 'tag.type' ]
+        // } );
+        while (charIdx < len) {
+            var char = html.charAt(charIdx);
+            // For debugging: search for other "For debugging" lines
+            // table.push( 
+            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+            // );
+            switch (state) {
+                case 0 /* Data */:
+                    stateData(char);
+                    break;
+                case 1 /* TagOpen */:
+                    stateTagOpen(char);
+                    break;
+                case 2 /* EndTagOpen */:
+                    stateEndTagOpen(char);
+                    break;
+                case 3 /* TagName */:
+                    stateTagName(char);
+                    break;
+                case 4 /* BeforeAttributeName */:
+                    stateBeforeAttributeName(char);
+                    break;
+                case 5 /* AttributeName */:
+                    stateAttributeName(char);
+                    break;
+                case 6 /* AfterAttributeName */:
+                    stateAfterAttributeName(char);
+                    break;
+                case 7 /* BeforeAttributeValue */:
+                    stateBeforeAttributeValue(char);
+                    break;
+                case 8 /* AttributeValueDoubleQuoted */:
+                    stateAttributeValueDoubleQuoted(char);
+                    break;
+                case 9 /* AttributeValueSingleQuoted */:
+                    stateAttributeValueSingleQuoted(char);
+                    break;
+                case 10 /* AttributeValueUnquoted */:
+                    stateAttributeValueUnquoted(char);
+                    break;
+                case 11 /* AfterAttributeValueQuoted */:
+                    stateAfterAttributeValueQuoted(char);
+                    break;
+                case 12 /* SelfClosingStartTag */:
+                    stateSelfClosingStartTag(char);
+                    break;
+                case 13 /* MarkupDeclarationOpenState */:
+                    stateMarkupDeclarationOpen(char);
+                    break;
+                case 14 /* CommentStart */:
+                    stateCommentStart(char);
+                    break;
+                case 15 /* CommentStartDash */:
+                    stateCommentStartDash(char);
+                    break;
+                case 16 /* Comment */:
+                    stateComment(char);
+                    break;
+                case 17 /* CommentEndDash */:
+                    stateCommentEndDash(char);
+                    break;
+                case 18 /* CommentEnd */:
+                    stateCommentEnd(char);
+                    break;
+                case 19 /* CommentEndBang */:
+                    stateCommentEndBang(char);
+                    break;
+                case 20 /* Doctype */:
+                    stateDoctype(char);
+                    break;
+                default:
+                    throwUnhandledStateError(state);
+            }
+            // For debugging: search for other "For debugging" lines
+            // table.push( 
+            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+            // );
+            charIdx++;
+        }
+        if (currentDataIdx < charIdx) {
+            emitText();
+        }
+        // For debugging: search for other "For debugging" lines
+        //console.log( '\n' + table.toString() );
+        /**
+         * Function that should never be called but is used to check that every
+         * enum value is handled using TypeScript's 'never' type.
+         */
+        function throwUnhandledStateError(state) {
+            throw new Error('Unhandled State');
+        }
+        // Called when non-tags are being read (i.e. the text around HTML †ags)
+        // https://www.w3.org/TR/html51/syntax.html#data-state
+        function stateData(char) {
+            if (char === '<') {
+                startNewTag();
+            }
+        }
+        // Called after a '<' is read from the Data state
+        // https://www.w3.org/TR/html51/syntax.html#tag-open-state
+        function stateTagOpen(char) {
+            if (char === '!') {
+                state = 13 /* MarkupDeclarationOpenState */;
+            }
+            else if (char === '/') {
+                state = 2 /* EndTagOpen */;
+                currentTag = new CurrentTag(__assign({}, currentTag, { isClosing: true }));
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (letterRe.test(char)) {
+                // tag name start (and no '/' read)
+                state = 3 /* TagName */;
+                currentTag = new CurrentTag(__assign({}, currentTag, { isOpening: true }));
+            }
+            else {
+                // Any other 
+                state = 0 /* Data */;
+                currentTag = noCurrentTag;
+            }
+        }
+        // After a '<x', '</x' sequence is read (where 'x' is a letter character), 
+        // this is to continue reading the tag name
+        // https://www.w3.org/TR/html51/syntax.html#tag-name-state
+        function stateTagName(char) {
+            if (whitespaceRe.test(char)) {
+                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                state = 4 /* BeforeAttributeName */;
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (char === '/') {
+                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                state = 12 /* SelfClosingStartTag */;
+            }
+            else if (char === '>') {
+                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                emitTagAndPreviousTextNode(); // resets to Data state as well
+            }
+            else if (!letterRe.test(char) && !digitRe.test(char)) {
+                // Anything else that does not form an html tag
+                resetToDataState();
+            }
+        }
+        // Called after the '/' is read from a '</' sequence
+        // https://www.w3.org/TR/html51/syntax.html#end-tag-open-state
+        function stateEndTagOpen(char) {
+            if (char === '>') { // parse error. Encountered "</>". Skip it without treating as a tag
+                resetToDataState();
+            }
+            else if (letterRe.test(char)) {
+                state = 3 /* TagName */;
+            }
+            else {
+                // some other non-tag-like character, don't treat this as a tag
+                resetToDataState();
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#before-attribute-name-state
+        function stateBeforeAttributeName(char) {
+            if (whitespaceRe.test(char)) ;
+            else if (char === '/') {
+                state = 12 /* SelfClosingStartTag */;
+            }
+            else if (char === '>') {
+                emitTagAndPreviousTextNode(); // resets to Data state as well
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (char === "=" || quoteRe.test(char) || controlCharsRe.test(char)) {
+                // "Parse error" characters that, according to the spec, should be
+                // appended to the attribute name, but we'll treat these characters
+                // as not forming a real HTML tag
+                resetToDataState();
+            }
+            else {
+                // Any other char, start of a new attribute name
+                state = 5 /* AttributeName */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
+        function stateAttributeName(char) {
+            if (whitespaceRe.test(char)) {
+                state = 6 /* AfterAttributeName */;
+            }
+            else if (char === '/') {
+                state = 12 /* SelfClosingStartTag */;
+            }
+            else if (char === '=') {
+                state = 7 /* BeforeAttributeValue */;
+            }
+            else if (char === '>') {
+                emitTagAndPreviousTextNode(); // resets to Data state as well
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (quoteRe.test(char)) {
+                // "Parse error" characters that, according to the spec, should be
+                // appended to the attribute name, but we'll treat these characters
+                // as not forming a real HTML tag
+                resetToDataState();
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#after-attribute-name-state
+        function stateAfterAttributeName(char) {
+            if (whitespaceRe.test(char)) ;
+            else if (char === '/') {
+                state = 12 /* SelfClosingStartTag */;
+            }
+            else if (char === '=') {
+                state = 7 /* BeforeAttributeValue */;
+            }
+            else if (char === '>') {
+                emitTagAndPreviousTextNode();
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (quoteRe.test(char)) {
+                // "Parse error" characters that, according to the spec, should be
+                // appended to the attribute name, but we'll treat these characters
+                // as not forming a real HTML tag
+                resetToDataState();
+            }
+            else {
+                // Any other character, start a new attribute in the current tag
+                state = 5 /* AttributeName */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
+        function stateBeforeAttributeValue(char) {
+            if (whitespaceRe.test(char)) ;
+            else if (char === "\"") {
+                state = 8 /* AttributeValueDoubleQuoted */;
+            }
+            else if (char === "'") {
+                state = 9 /* AttributeValueSingleQuoted */;
+            }
+            else if (/[>=`]/.test(char)) {
+                // Invalid chars after an '=' for an attribute value, don't count 
+                // the current tag as an HTML tag
+                resetToDataState();
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else {
+                // Any other character, consider it an unquoted attribute value
+                state = 10 /* AttributeValueUnquoted */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#attribute-value-double-quoted-state
+        function stateAttributeValueDoubleQuoted(char) {
+            if (char === "\"") { // end the current double-quoted attribute
+                state = 11 /* AfterAttributeValueQuoted */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#attribute-value-single-quoted-state
+        function stateAttributeValueSingleQuoted(char) {
+            if (char === "'") { // end the current single-quoted attribute
+                state = 11 /* AfterAttributeValueQuoted */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
+        function stateAttributeValueUnquoted(char) {
+            if (whitespaceRe.test(char)) {
+                state = 4 /* BeforeAttributeName */;
+            }
+            else if (char === '>') {
+                emitTagAndPreviousTextNode();
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else if (quoteRe.test(char) || /[=`]/.test(char)) {
+                // "Parse error" characters that, according to the spec, should be
+                // appended to the attribute value, but we'll treat these characters
+                // as not forming a real HTML tag
+                resetToDataState();
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
+        function stateAfterAttributeValueQuoted(char) {
+            if (whitespaceRe.test(char)) {
+                state = 4 /* BeforeAttributeName */;
+            }
+            else if (char === '/') {
+                state = 12 /* SelfClosingStartTag */;
+            }
+            else if (char === '>') {
+                emitTagAndPreviousTextNode();
+            }
+            else if (char === '<') {
+                // start of another tag (ignore the previous, incomplete one)
+                startNewTag();
+            }
+            else {
+                // Any other character, "parse error". Spec says to switch to the
+                // BeforeAttributeState and re-consume the character, as it may be
+                // the start of a new attribute name
+                state = 4 /* BeforeAttributeName */;
+                reconsumeCurrentCharacter();
+            }
+        }
+        // A '/' has just been read in the current tag (presumably for '/>'), and 
+        // this handles the next character
+        // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
+        function stateSelfClosingStartTag(char) {
+            if (char === '>') {
+                currentTag = new CurrentTag(__assign({}, currentTag, { isClosing: true }));
+                emitTagAndPreviousTextNode(); // resets to Data state as well
+            }
+            else {
+                state = 4 /* BeforeAttributeName */;
+            }
+        }
+        // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
+        // (HTML Comments or !DOCTYPE)
+        function stateMarkupDeclarationOpen(char) {
+            if (html.substr(charIdx, 2) === '--') { // html comment
+                charIdx += 2; // "consume" characters
+                currentTag = new CurrentTag(__assign({}, currentTag, { type: 'comment' }));
+                state = 14 /* CommentStart */;
+            }
+            else if (html.substr(charIdx, 7).toUpperCase() === 'DOCTYPE') {
+                charIdx += 7; // "consume" characters
+                currentTag = new CurrentTag(__assign({}, currentTag, { type: 'doctype' }));
+                state = 20 /* Doctype */;
+            }
+            else {
+                // At this point, the spec specifies that the state machine should
+                // enter the "bogus comment" state, in which case any character(s) 
+                // after the '<!' that were read should become an HTML comment up
+                // until the first '>' that is read (or EOF). Instead, we'll assume
+                // that a user just typed '<!' as part of text data
+                resetToDataState();
+            }
+        }
+        // Handles after the sequence '<!--' has been read
+        // https://www.w3.org/TR/html51/syntax.html#comment-start-state
+        function stateCommentStart(char) {
+            if (char === '-') {
+                // We've read the sequence '<!---' at this point (3 dashes)
+                state = 15 /* CommentStartDash */;
+            }
+            else if (char === '>') {
+                // At this point, we'll assume the comment wasn't a real comment
+                // so we'll just emit it as data. We basically read the sequence 
+                // '<!-->'
+                resetToDataState();
+            }
+            else {
+                // Any other char, take it as part of the comment
+                state = 16 /* Comment */;
+            }
+        }
+        // We've read the sequence '<!---' at this point (3 dashes)
+        // https://www.w3.org/TR/html51/syntax.html#comment-start-dash-state
+        function stateCommentStartDash(char) {
+            if (char === '-') {
+                // We've read '<!----' (4 dashes) at this point
+                state = 18 /* CommentEnd */;
+            }
+            else if (char === '>') {
+                // At this point, we'll assume the comment wasn't a real comment
+                // so we'll just emit it as data. We basically read the sequence 
+                // '<!--->'
+                resetToDataState();
+            }
+            else {
+                // Anything else, take it as a valid comment
+                state = 16 /* Comment */;
+            }
+        }
+        // Currently reading the comment's text (data)
+        // https://www.w3.org/TR/html51/syntax.html#comment-state
+        function stateComment(char) {
+            if (char === '-') {
+                state = 17 /* CommentEndDash */;
+            }
+        }
+        // When we we've read the first dash inside a comment, it may signal the
+        // end of the comment if we read another dash
+        // https://www.w3.org/TR/html51/syntax.html#comment-end-dash-state
+        function stateCommentEndDash(char) {
+            if (char === '-') {
+                state = 18 /* CommentEnd */;
+            }
+            else {
+                // Wasn't a dash, must still be part of the comment
+                state = 16 /* Comment */;
+            }
+        }
+        // After we've read two dashes inside a comment, it may signal the end of 
+        // the comment if we then read a '>' char
+        // https://www.w3.org/TR/html51/syntax.html#comment-end-state
+        function stateCommentEnd(char) {
+            if (char === '>') {
+                emitTagAndPreviousTextNode();
+            }
+            else if (char === '!') {
+                state = 19 /* CommentEndBang */;
+            }
+            else if (char === '-') ;
+            else {
+                // Anything else, switch back to the comment state since we didn't
+                // read the full "end comment" sequence (i.e. '-->')
+                state = 16 /* Comment */;
+            }
+        }
+        // We've read the sequence '--!' inside of a comment
+        // https://www.w3.org/TR/html51/syntax.html#comment-end-bang-state
+        function stateCommentEndBang(char) {
+            if (char === '-') {
+                // We read the sequence '--!-' inside of a comment. The last dash
+                // could signify that the comment is going to close
+                state = 17 /* CommentEndDash */;
+            }
+            else if (char === '>') {
+                // End of comment with the sequence '--!>'
+                emitTagAndPreviousTextNode();
+            }
+            else {
+                // The '--!' was not followed by a '>', continue reading the 
+                // comment's text
+                state = 16 /* Comment */;
+            }
+        }
+        /**
+         * For DOCTYPES in particular, we don't care about the attributes. Just
+         * advance to the '>' character and emit the tag, unless we find a '<'
+         * character in which case we'll start a new tag.
+         *
+         * Example doctype tag:
+         *    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+         *
+         * Actual spec: https://www.w3.org/TR/html51/syntax.html#doctype-state
+         */
+        function stateDoctype(char) {
+            if (char === '>') {
+                emitTagAndPreviousTextNode();
+            }
+            else if (char === '<') {
+                startNewTag();
+            }
+        }
+        /**
+         * Resets the state back to the Data state, and removes the current tag.
+         *
+         * We'll generally run this function whenever a "parse error" is
+         * encountered, where the current tag that is being read no longer looks
+         * like a real HTML tag.
+         */
+        function resetToDataState() {
+            state = 0 /* Data */;
+            currentTag = noCurrentTag;
+        }
+        /**
+         * Starts a new HTML tag at the current index, ignoring any previous HTML
+         * tag that was being read.
+         *
+         * We'll generally run this function whenever we read a new '<' character,
+         * including when we read a '<' character inside of an HTML tag that we were
+         * previously reading.
+         */
+        function startNewTag() {
+            state = 1 /* TagOpen */;
+            currentTag = new CurrentTag({ idx: charIdx });
+        }
+        /**
+         * Once we've decided to emit an open tag, that means we can also emit the
+         * text node before it.
+         */
+        function emitTagAndPreviousTextNode() {
+            var textBeforeTag = html.slice(currentDataIdx, currentTag.idx);
+            if (textBeforeTag) {
+                // the html tag was the first element in the html string, or two 
+                // tags next to each other, in which case we should not emit a text 
+                // node
+                onText(textBeforeTag, currentDataIdx);
+            }
+            if (currentTag.type === 'comment') {
+                onComment(currentTag.idx);
+            }
+            else if (currentTag.type === 'doctype') {
+                onDoctype(currentTag.idx);
+            }
+            else {
+                if (currentTag.isOpening) {
+                    onOpenTag(currentTag.name, currentTag.idx);
+                }
+                if (currentTag.isClosing) { // note: self-closing tags will emit both opening and closing
+                    onCloseTag(currentTag.name, currentTag.idx);
+                }
+            }
+            // Since we just emitted a tag, reset to the data state for the next char
+            resetToDataState();
+            currentDataIdx = charIdx + 1;
+        }
+        function emitText() {
+            var text = html.slice(currentDataIdx, charIdx);
+            onText(text, currentDataIdx);
+            currentDataIdx = charIdx + 1;
+        }
+        /**
+         * Captures the tag name from the start of the tag to the current character
+         * index, and converts it to lower case
+         */
+        function captureTagName() {
+            var startIdx = currentTag.idx + (currentTag.isClosing ? 2 : 1);
+            return html.slice(startIdx, charIdx).toLowerCase();
+        }
+        /**
+         * Causes the main loop to re-consume the current character, such as after
+         * encountering a "parse error" that changed state and needs to reconsume
+         * the same character in that new state.
+         */
+        function reconsumeCurrentCharacter() {
+            charIdx--;
+        }
+    }
+    var CurrentTag = /** @class */ (function () {
+        function CurrentTag(cfg) {
+            if (cfg === void 0) { cfg = {}; }
+            this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+            this.type = cfg.type || 'tag';
+            this.name = cfg.name || '';
+            this.isOpening = !!cfg.isOpening;
+            this.isClosing = !!cfg.isClosing;
+        }
+        return CurrentTag;
+    }());
+
     /**
      * @class Autolinker
      * @extends Object
@@ -3246,14 +3390,6 @@
             this.context = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @private
-             * @property {Autolinker.htmlParser.HtmlParser} htmlParser
-             *
-             * The HtmlParser instance used to skip over HTML tags, while finding text
-             * nodes to process.
-             */
-            this.htmlParser = new HtmlParser();
-            /**
-             * @private
              * @property {Autolinker.matcher.Matcher[]} matchers
              *
              * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
@@ -3459,25 +3595,41 @@
          *   given input `textOrHtml`.
          */
         Autolinker.prototype.parse = function (textOrHtml) {
-            var htmlNodes = this.htmlParser.parse(textOrHtml), skipTagNames = ['a', 'style', 'script'], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
+            var _this = this;
+            var skipTagNames = ['a', 'style', 'script'], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
             matches = [];
             // Find all matches within the `textOrHtml` (but not matches that are
             // already nested within <a>, <style> and <script> tags)
-            for (var i = 0, len = htmlNodes.length; i < len; i++) {
-                var node = htmlNodes[i], nodeType = node.getType();
-                if (nodeType === 'element' && skipTagNames.indexOf(node.getTagName()) !== -1) { // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we're within an <a>, <style> or <script> tag
-                    if (!node.isClosing()) { // it's the start <a>, <style> or <script> tag
+            parseHtml(textOrHtml, {
+                onOpenTag: function (tagName) {
+                    if (skipTagNames.indexOf(tagName) >= 0) {
                         skipTagsStackCount++;
                     }
-                    else { // it's the end </a>, </style> or </script> tag
+                },
+                onText: function (text, offset) {
+                    if (skipTagsStackCount === 0) {
+                        // Process text nodes that are not within an <a>, <style> or <script> tag
+                        var htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
+                        var textSplit = splitAndCapture(text, htmlCharacterEntitiesRegex);
+                        var currentOffset_1 = offset;
+                        textSplit.forEach(function (splitText, i) {
+                            if (i % 2 === 0) { // even number matches are text, odd numbers are html entities
+                                // TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+                                var textNodeMatches = _this.parseText(splitText, currentOffset_1);
+                                matches.push.apply(matches, textNodeMatches);
+                            }
+                            currentOffset_1 += splitText.length;
+                        });
+                    }
+                },
+                onCloseTag: function (tagName) {
+                    if (skipTagNames.indexOf(tagName) >= 0) {
                         skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                     }
-                }
-                else if (nodeType === 'text' && skipTagsStackCount === 0) { // Process text nodes that are not within an <a>, <style> and <script> tag
-                    var textNodeMatches = this.parseText(node.getText(), node.getOffset());
-                    matches.push.apply(matches, textNodeMatches);
-                }
-            }
+                },
+                onComment: function (offset) { },
+                onDoctype: function (offset) { },
+            });
             // After we have found all matches, remove subsequent matches that
             // overlap with a previous match. This can happen for instance with URLs,
             // where the url 'google.com/#link' would match '#link' as a hashtag.

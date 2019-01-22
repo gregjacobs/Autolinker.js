@@ -19,7 +19,6 @@
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 var utils_1 = require(&quot;./utils&quot;);
 var anchor_tag_builder_1 = require(&quot;./anchor-tag-builder&quot;);
-var html_parser_1 = require(&quot;./htmlParser/html-parser&quot;);
 var match_1 = require(&quot;./match/match&quot;);
 var email_match_1 = require(&quot;./match/email-match&quot;);
 var hashtag_match_1 = require(&quot;./match/hashtag-match&quot;);
@@ -33,6 +32,7 @@ var url_matcher_1 = require(&quot;./matcher/url-matcher&quot;);
 var hashtag_matcher_1 = require(&quot;./matcher/hashtag-matcher&quot;);
 var phone_matcher_1 = require(&quot;./matcher/phone-matcher&quot;);
 var mention_matcher_1 = require(&quot;./matcher/mention-matcher&quot;);
+var parse_html_1 = require(&quot;./htmlParser/parse-html&quot;);
 <span id='Autolinker'>/**
 </span> * @class Autolinker
  * @extends Object
@@ -380,14 +380,6 @@ var Autolinker =  (function () {
          * Defaults to this Autolinker instance.
          */
         this.context = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
-<span id='Autolinker-property-htmlParser'>        /**
-</span>         * @private
-         * @property {Autolinker.htmlParser.HtmlParser} htmlParser
-         *
-         * The HtmlParser instance used to skip over HTML tags, while finding text
-         * nodes to process.
-         */
-        this.htmlParser = new html_parser_1.HtmlParser();
 <span id='Autolinker-property-matchers'>        /**
 </span>         * @private
          * @property {Autolinker.matcher.Matcher[]} matchers
@@ -595,25 +587,41 @@ var Autolinker =  (function () {
      *   given input `textOrHtml`.
      */
     Autolinker.prototype.parse = function (textOrHtml) {
-        var htmlNodes = this.htmlParser.parse(textOrHtml), skipTagNames = [&#39;a&#39;, &#39;style&#39;, &#39;script&#39;], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don&#39;t want to autolink something that is already linked inside of an &lt;a&gt; tag, for instance
+        var _this = this;
+        var skipTagNames = [&#39;a&#39;, &#39;style&#39;, &#39;script&#39;], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don&#39;t want to autolink something that is already linked inside of an &lt;a&gt; tag, for instance
         matches = [];
         // Find all matches within the `textOrHtml` (but not matches that are
         // already nested within &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tags)
-        for (var i = 0, len = htmlNodes.length; i &lt; len; i++) {
-            var node = htmlNodes[i], nodeType = node.getType();
-            if (nodeType === &#39;element&#39; &amp;&amp; skipTagNames.indexOf(node.getTagName()) !== -1) { // Process HTML anchor, style and script element nodes in the input `textOrHtml` to find out when we&#39;re within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
-                if (!node.isClosing()) { // it&#39;s the start &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
+        parse_html_1.parseHtml(textOrHtml, {
+            onOpenTag: function (tagName) {
+                if (skipTagNames.indexOf(tagName) &gt;= 0) {
                     skipTagsStackCount++;
                 }
-                else { // it&#39;s the end &lt;/a&gt;, &lt;/style&gt; or &lt;/script&gt; tag
+            },
+            onText: function (text, offset) {
+                if (skipTagsStackCount === 0) {
+                    // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
+                    var htmlCharacterEntitiesRegex = /(&amp;nbsp;|&amp;#160;|&amp;lt;|&amp;#60;|&amp;gt;|&amp;#62;|&amp;quot;|&amp;#34;|&amp;#39;)/gi;
+                    var textSplit = utils_1.splitAndCapture(text, htmlCharacterEntitiesRegex);
+                    var currentOffset_1 = offset;
+                    textSplit.forEach(function (splitText, i) {
+                        if (i % 2 === 0) { // even number matches are text, odd numbers are html entities
+                            // TODO: ADD TEST THAT HAS AN HTML ENTITY AS ITS FIRST WORD
+                            var textNodeMatches = _this.parseText(splitText, currentOffset_1);
+                            matches.push.apply(matches, textNodeMatches);
+                        }
+                        currentOffset_1 += splitText.length;
+                    });
+                }
+            },
+            onCloseTag: function (tagName) {
+                if (skipTagNames.indexOf(tagName) &gt;= 0) {
                     skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous &lt;/a&gt; tags by making sure the stack count never goes below 0
                 }
-            }
-            else if (nodeType === &#39;text&#39; &amp;&amp; skipTagsStackCount === 0) { // Process text nodes that are not within an &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tag
-                var textNodeMatches = this.parseText(node.getText(), node.getOffset());
-                matches.push.apply(matches, textNodeMatches);
-            }
-        }
+            },
+            onComment: function (offset) { },
+            onDoctype: function (offset) { },
+        });
         // After we have found all matches, remove subsequent matches that
         // overlap with a previous match. This can happen for instance with URLs,
         // where the url &#39;google.com/#link&#39; would match &#39;#link&#39; as a hashtag.

@@ -19,7 +19,7 @@
 /*!
  * Modified version of htmlparser2 which has been stripped down to only provide
  * the functionality needed by Autolinker in order to make the final bundle as
- * small as possible. Original:
+ * small as possible. Original: https://github.com/fb55/htmlparser2
  *
  * Original copyright:
  *
@@ -98,10 +98,10 @@ var j = 0;
 var SPECIAL_NONE = j++;
 var SPECIAL_SCRIPT = j++;
 var SPECIAL_STYLE = j++;
-function parseHtml(html, ontext) {
+function tokenizeHtml(html, _a) {
+    var ontext = _a.ontext, onopentagname = _a.onopentagname, onopentagend = _a.onopentagend, onclosetag = _a.onclosetag, onselfclosingtag = _a.onselfclosingtag, oncomment = _a.oncomment, onerror = _a.onerror;
     var _state = TEXT, _buffer = html, _sectionStart = 0, _index = 0, _baseState = TEXT, _special = SPECIAL_NONE, _decodeEntities = true, _xmlMode = false;
     // TEMPORARY
-    var _cbs = {};
     var entityMap = {};
     var xmlMap = {};
     var legacyMap = {};
@@ -241,7 +241,7 @@ function parseHtml(html, ontext) {
     ;
     function _stateBeforeAttributeName(c) {
         if (c === &quot;&gt;&quot;) {
-            _cbs.onopentagend();
+            onopentagend();
             _state = TEXT;
             _sectionStart = _index + 1;
         }
@@ -256,7 +256,7 @@ function parseHtml(html, ontext) {
     ;
     function _stateInSelfClosingTag(c) {
         if (c === &quot;&gt;&quot;) {
-            _cbs.onselfclosingtag();
+            onselfclosingtag();
             _state = TEXT;
             _sectionStart = _index + 1;
         }
@@ -306,11 +306,9 @@ function parseHtml(html, ontext) {
     ;
     function _stateInAttributeValueDoubleQuotes(c) {
         if (c === &#39;&quot;&#39;) {
-            _emitToken(&quot;onattribdata&quot;);
             _state = BEFORE_ATTRIBUTE_NAME;
         }
         else if (_decodeEntities &amp;&amp; c === &quot;&amp;&quot;) {
-            _emitToken(&quot;onattribdata&quot;);
             _baseState = _state;
             _state = BEFORE_ENTITY;
             _sectionStart = _index;
@@ -319,11 +317,9 @@ function parseHtml(html, ontext) {
     ;
     function _stateInAttributeValueSingleQuotes(c) {
         if (c === &quot;&#39;&quot;) {
-            _emitToken(&quot;onattribdata&quot;);
             _state = BEFORE_ATTRIBUTE_NAME;
         }
         else if (_decodeEntities &amp;&amp; c === &quot;&amp;&quot;) {
-            _emitToken(&quot;onattribdata&quot;);
             _baseState = _state;
             _state = BEFORE_ENTITY;
             _sectionStart = _index;
@@ -332,12 +328,10 @@ function parseHtml(html, ontext) {
     ;
     function _stateInAttributeValueNoQuotes(c) {
         if (whitespace(c) || c === &quot;&gt;&quot;) {
-            _emitToken(&quot;onattribdata&quot;);
             _state = BEFORE_ATTRIBUTE_NAME;
             _index--;
         }
         else if (_decodeEntities &amp;&amp; c === &quot;&amp;&quot;) {
-            _emitToken(&quot;onattribdata&quot;);
             _baseState = _state;
             _state = BEFORE_ENTITY;
             _sectionStart = _index;
@@ -394,7 +388,7 @@ function parseHtml(html, ontext) {
     function _stateAfterComment2(c) {
         if (c === &quot;&gt;&quot;) {
             //remove 2 trailing chars
-            _cbs.oncomment(_buffer.substring(_sectionStart, _index - 2));
+            oncomment(_buffer.substring(_sectionStart, _index - 2));
             _state = TEXT;
             _sectionStart = _index + 1;
         }
@@ -851,7 +845,7 @@ function parseHtml(html, ontext) {
                 _stateInHexEntity(c);
             }
             else {
-                _cbs.onerror(Error(&quot;unknown _state&quot;), _state);
+                onerror(new Error(&quot;unknown _state&quot;), _state);
             }
             _index++;
         }
@@ -863,23 +857,28 @@ function parseHtml(html, ontext) {
     }
     ;
     function _emitToken(name) {
-        _cbs[name](_getSection());
+        if (name === &#39;onopentagname&#39;) {
+            onopentagname(_getSection());
+        }
+        else if (name === &#39;onclosetag&#39;) {
+            onclosetag(_getSection());
+        }
         _sectionStart = -1;
     }
     ;
     function _emitPartial(value) {
         if (_baseState !== TEXT) {
-            _cbs.onattribdata(value); //TODO implement the new event
+            //_cbs.onattribdata(value); //TODO implement the new event
         }
         else {
-            _cbs.ontext(value);
+            ontext(value);
         }
     }
     ;
 }
-exports.parseHtml = parseHtml;
+exports.tokenizeHtml = tokenizeHtml;
 
-//# sourceMappingURL=html-parser.js.map
+//# sourceMappingURL=tokenizer-old.js.map
 </pre>
 </body>
 </html>
