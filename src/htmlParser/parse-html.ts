@@ -1,5 +1,7 @@
 import { State } from './state';
-import CliTable from 'cli-table';
+
+// For debugging: search for other "For debugging" lines
+// import CliTable from 'cli-table';
 
 /**
  * Parses an HTML string, calling the callbacks to notify of tags and text.
@@ -52,11 +54,12 @@ import CliTable from 'cli-table';
  *   not an HTML tag) is parsed. Called with the text (string) as its first 
  *   argument, and offset (number) into the string as its second.
  */
-export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComment }: {
+export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComment, onDoctype }: {
 	onOpenTag: ( tagName: string, offset: number ) => void;
 	onCloseTag: ( tagName: string, offset: number ) => void;
 	onText: ( text: string, offset: number ) => void;
 	onComment: ( offset: number ) => void;
+	onDoctype: ( offset: number ) => void;
 } ) {
 	const letterRe = /[A-Za-z]/,
 	      digitRe = /[0-9]/,
@@ -72,16 +75,18 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		currentDataIdx = 0,  // where the current data start index is
 		currentTag = noCurrentTag;  // describes the current tag that is being read
 
-	const table = new CliTable( {
-		head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx', 'tag.type' ]
-	} );
+	// For debugging: search for other "For debugging" lines
+	// const table = new CliTable( {
+	// 	head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx', 'tag.type' ]
+	// } );
 
 	while( charIdx < len ) {
 		var char = html.charAt( charIdx );
 
-		table.push( 
-			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
-		);
+		// For debugging: search for other "For debugging" lines
+		// table.push( 
+		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+		// );
 		
 		switch( state ) {
 			case State.Data: stateData( char ); break;
@@ -110,9 +115,10 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 				throwUnhandledStateError( state );
 		}
 
-		table.push( 
-			[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
-		);
+		// For debugging: search for other "For debugging" lines
+		// table.push( 
+		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+		// );
 
 		charIdx++;
 	}
@@ -120,7 +126,9 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	if( currentDataIdx < charIdx ) {
 		emitText();
 	}
-	// console.log( '\n' + table.toString() );
+
+	// For debugging: search for other "For debugging" lines
+	//console.log( '\n' + table.toString() );
 
 
 	/**
@@ -535,14 +543,26 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	}
 
 
-
-	// https://www.w3.org/TR/html51/syntax.html#doctype-state
+	/**
+	 * For DOCTYPES in particular, we don't care about the attributes. Just 
+	 * advance to the '>' character and emit the tag, unless we find a '<' 
+	 * character in which case we'll start a new tag.
+	 * 
+	 * Example doctype tag:
+	 *    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> 
+	 * 
+	 * Actual spec: https://www.w3.org/TR/html51/syntax.html#doctype-state
+	 */
 	function stateDoctype( char: string ) {
-		// For DOCTYPES in particular, we don't care about the attributes.
-		// Just advance to the '>' character, and emit the tag.
-		// while( charIdx < len && html.charAt( charIdx ) !== '>' ) charIdx++;
+		if( char === '>' ) {
+			emitTagAndPreviousTextNode();
 
-		// Records !DOCTYPE tag
+		} else if( char === '<' ) {
+			startNewTag();
+
+		} else {
+			// stay in the Doctype state
+		}
 	}
 
 
@@ -588,6 +608,9 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		if( currentTag.type === 'comment' ) {
 			onComment( currentTag.idx );
 
+		} else if( currentTag.type === 'doctype' ) {
+			onDoctype( currentTag.idx );
+
 		} else {
 			if( currentTag.isOpening ) {
 				onOpenTag( currentTag.name, currentTag.idx );
@@ -597,8 +620,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 			}
 		}
 
-		// Since we just emitted a tag, reset to the data state for the next 
-		// char
+		// Since we just emitted a tag, reset to the data state for the next char
 		resetToDataState();
 		currentDataIdx = charIdx + 1;
 	}

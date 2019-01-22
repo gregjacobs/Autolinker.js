@@ -684,7 +684,8 @@ export default class Autolinker {
 					skipTagsStackCount = Math.max( skipTagsStackCount - 1, 0 );  // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
 				}
 			},
-			onComment: ( offset: number ) => {}  // no need to process comment nodes at this time
+			onComment: ( offset: number ) => {},  // no need to process comment nodes at this time
+			onDoctype: ( offset: number ) => {},  // no need to process doctype nodes at this time
 		} );
 
 

@@ -2,36 +2,12 @@ import { parseHtml } from "../../src/htmlParser/parse-html";
 
 describe( "Autolinker.htmlParser.HtmlParser", () => {
 
-	interface OpenTagNode {
-		type: 'openTag';
-		tagName: string;
-		offset: number;
-	}
-
-	interface CloseTagNode {
-		type: 'closeTag';
-		tagName: string;
-		offset: number;
-	}
-
-	interface TextNode {
-		type: 'text',
-		text: string;
-		offset: number;
-	}
-
-	interface CommentNode {
-		type: 'comment',
-		offset: number;
-	}
-
-	type Node = OpenTagNode | CloseTagNode | TextNode | CommentNode;
-
 	/**
-	 * Runs parseHtml() and captures the emitted openTag/closeTag/text nodes.
+	 * Helper function to run parseHtml() and capture the emitted 
+	 * openTag/closeTag/text/comment/doctype nodes.
 	 */
-	function parseHtmlAndCapture( html: string ): Node[] {
-		let parsedNodes: Node[] = [];
+	function parseHtmlAndCapture( html: string ): HtmlNode[] {
+		let parsedNodes: HtmlNode[] = [];
 
 		parseHtml( html, {
 			onOpenTag: ( tagName: string, offset: number ) => { 
@@ -45,6 +21,9 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 			},
 			onComment: ( offset: number ) => {
 				parsedNodes.push( { type: 'comment', offset } );
+			},
+			onDoctype: ( offset: number ) => {
+				parsedNodes.push( { type: 'doctype', offset } );
 			}
 		} );
 		return parsedNodes;
@@ -53,15 +32,14 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 
 	describe( 'text node handling', function() {
 
-		it( `when provided an empty string, should not emit any nodes`, 
-		() => {
+		it( `when provided an empty string, should not emit any nodes`, () => {
 			const nodes = parseHtmlAndCapture( '' );
 	
 			expect( nodes ).toEqual( [] );
 		} );
 
 
-		it( "should return a single text node if there are no HTML nodes in it", function() {
+		it( "should return a single text node if there are no HTML nodes in it", () => {
 			let nodes = parseHtmlAndCapture( "Testing 123" );
 
 			expect( nodes.length ).toBe( 1 );
@@ -73,7 +51,7 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 
 	describe( 'HTML element node handling', () => {
 
-		it( "should return a single element node if there is only an HTML element node in it", function() {
+		it( "should return a single element node if there is only an HTML element node in it", () => {
 			let nodes = parseHtmlAndCapture( "<div>" );
 
 			expect( nodes ).toEqual( [
@@ -244,7 +222,6 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 
 		it( "should return a single comment node if there is only an HTML comment node in it", function() {
 			let nodes = parseHtmlAndCapture( "<!-- Testing 123 -->" );
-			console.log( nodes );
 
 			expect( nodes ).toEqual( [
 				{ type: 'comment', offset: 0 }
@@ -293,6 +270,76 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 				{ type: 'comment', offset: 27 }
 			] );
 		} );
+
+	} );
+
+
+	describe( '<!DOCTYPE> handling', () => {
+
+		it( 'should parse a doctype tag', () => {
+			let nodes = parseHtmlAndCapture( `<!DOCTYPE html>` );
+
+			expect( nodes ).toEqual( [
+				{ type: 'doctype', offset: 0 }
+			] );
+		} );
+
+
+		it( 'should parse a doctype tag in both upper and lower case', () => {
+			let nodes = parseHtmlAndCapture( `<!DOCTYPE html> and <!doctype "blah" "blah blah">` );
+
+			expect( nodes ).toEqual( [
+				{ type: 'doctype', offset: 0 },
+				{ type: 'text', text: ' and ', offset: 15 },
+				{ type: 'doctype', offset: 20 }
+			] );
+		} );
+
+
+		it( 'if the tag is incomplete, should treat it as text', () => {
+			let nodes = parseHtmlAndCapture( `<!DOCTYPE html and blah blah blah` );
+
+			expect( nodes ).toEqual( [
+				{ type: 'text', text: '<!DOCTYPE html and blah blah blah', offset: 0 }
+			] );
+		} );
+
+		// it( 'should match tags of both upper and lower case', function() {
+		// 	let inputStr = [
+		// 		'Joe <!DOCTYPE html><!-- Comment -->went <!doctype "blah" "blah blah"> ',
+		// 		'to <a href="google.com">ebay.com</a> today,&nbsp;and <A href="purchase.com">purchased</A> ',
+		// 		'<b>big</b> <B><!-- Comment 2 -->items</B>'
+		// 	].join( '' );
+		// 	let nodes = parseHtmlAndCapture( inputStr );
+
+		// 	expect( nodes.length ).toBe( 24 );
+
+		// 	let i = -1;
+		// 	expectTextNode   ( nodes[ ++i ], 0,   'Joe ' );
+		// 	expectElementNode( nodes[ ++i ], 4,   '<!DOCTYPE html>', '!doctype', false );
+		// 	expectCommentNode( nodes[ ++i ], 19,  '<!-- Comment -->', 'Comment' );
+		// 	expectTextNode   ( nodes[ ++i ], 35,  'went ' );
+		// 	expectElementNode( nodes[ ++i ], 40,  '<!doctype "blah" "blah blah">', '!doctype', false );
+		// 	expectTextNode   ( nodes[ ++i ], 69,  ' to ' );
+		// 	expectElementNode( nodes[ ++i ], 73,  '<a href="google.com">', 'a', false );
+		// 	expectTextNode   ( nodes[ ++i ], 94,  'ebay.com' );
+		// 	expectElementNode( nodes[ ++i ], 102, '</a>', 'a', true );
+		// 	expectTextNode   ( nodes[ ++i ], 106, ' today,' );
+		// 	expectEntityNode ( nodes[ ++i ], 113, '&nbsp;' );
+		// 	expectTextNode   ( nodes[ ++i ], 119, 'and ' );
+		// 	expectElementNode( nodes[ ++i ], 123, '<A href="purchase.com">', 'a', false );
+		// 	expectTextNode   ( nodes[ ++i ], 146, 'purchased' );
+		// 	expectElementNode( nodes[ ++i ], 155, '</A>', 'a', true );
+		// 	expectTextNode   ( nodes[ ++i ], 159, ' ' );
+		// 	expectElementNode( nodes[ ++i ], 160, '<b>', 'b', false );
+		// 	expectTextNode   ( nodes[ ++i ], 163, 'big' );
+		// 	expectElementNode( nodes[ ++i ], 166, '</b>', 'b', true );
+		// 	expectTextNode   ( nodes[ ++i ], 170, ' ' );
+		// 	expectElementNode( nodes[ ++i ], 171, '<B>', 'b', false );
+		// 	expectCommentNode( nodes[ ++i ], 174, '<!-- Comment 2 -->', 'Comment 2' );
+		// 	expectTextNode   ( nodes[ ++i ], 192, 'items' );
+		// 	expectElementNode( nodes[ ++i ], 197, '</B>', 'b', true );
+		// } );
 
 	} );
 
@@ -480,3 +527,36 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 	// 	expect( node.getText() ).toBe( text );
 	// }
 } );
+
+
+
+
+interface OpenTagNode {
+	type: 'openTag';
+	tagName: string;
+	offset: number;
+}
+
+interface CloseTagNode {
+	type: 'closeTag';
+	tagName: string;
+	offset: number;
+}
+
+interface TextNode {
+	type: 'text',
+	text: string;
+	offset: number;
+}
+
+interface CommentNode {
+	type: 'comment',
+	offset: number;
+}
+
+interface DoctypeNode {
+	type: 'doctype',
+	offset: number;
+}
+
+type HtmlNode = OpenTagNode | CloseTagNode | TextNode | CommentNode | DoctypeNode;
