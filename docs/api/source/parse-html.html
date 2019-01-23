@@ -18,6 +18,8 @@
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 var tslib_1 = require(&quot;tslib&quot;);
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+var utils_1 = require(&quot;../utils&quot;);
 // For debugging: search for other &quot;For debugging&quot; lines
 // import CliTable from &#39;cli-table&#39;;
 <span id='global-method-parseHtml'>/**
@@ -73,8 +75,7 @@ var tslib_1 = require(&quot;tslib&quot;);
  */
 function parseHtml(html, _a) {
     var onOpenTag = _a.onOpenTag, onCloseTag = _a.onCloseTag, onText = _a.onText, onComment = _a.onComment, onDoctype = _a.onDoctype;
-    var letterRe = /[A-Za-z]/, digitRe = /[0-9]/, whitespaceRe = /\s/, quoteRe = /[&#39;&quot;]/, controlCharsRe = /[\x00-\x1F\x7F]/, // control chars (0-31), and the backspace char (127)
-    noCurrentTag = new CurrentTag();
+    var noCurrentTag = new CurrentTag();
     var charIdx = 0, len = html.length, state = 0 /* Data */, currentDataIdx = 0, // where the current data start index is
     currentTag = noCurrentTag; // describes the current tag that is being read
     // For debugging: search for other &quot;For debugging&quot; lines
@@ -152,7 +153,7 @@ function parseHtml(html, _a) {
                 stateDoctype(char);
                 break;
             default:
-                throwUnhandledStateError(state);
+                utils_1.throwUnhandledCaseError(state);
         }
         // For debugging: search for other &quot;For debugging&quot; lines
         // table.push( 
@@ -165,13 +166,6 @@ function parseHtml(html, _a) {
     }
     // For debugging: search for other &quot;For debugging&quot; lines
     //console.log( &#39;\n&#39; + table.toString() );
-<span id='global-method-throwUnhandledStateError'>    /**
-</span>     * Function that should never be called but is used to check that every
-     * enum value is handled using TypeScript&#39;s &#39;never&#39; type.
-     */
-    function throwUnhandledStateError(state) {
-        throw new Error(&#39;Unhandled State&#39;);
-    }
     // Called when non-tags are being read (i.e. the text around HTML †ags)
     // https://www.w3.org/TR/html51/syntax.html#data-state
     function stateData(char) {
@@ -193,7 +187,7 @@ function parseHtml(html, _a) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
         }
-        else if (letterRe.test(char)) {
+        else if (regex_lib_1.letterRe.test(char)) {
             // tag name start (and no &#39;/&#39; read)
             state = 3 /* TagName */;
             currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { isOpening: true }));
@@ -208,7 +202,7 @@ function parseHtml(html, _a) {
     // this is to continue reading the tag name
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
     function stateTagName(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { name: captureTagName() }));
             state = 4 /* BeforeAttributeName */;
         }
@@ -224,7 +218,7 @@ function parseHtml(html, _a) {
             currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { name: captureTagName() }));
             emitTagAndPreviousTextNode(); // resets to Data state as well
         }
-        else if (!letterRe.test(char) &amp;&amp; !digitRe.test(char)) {
+        else if (!regex_lib_1.letterRe.test(char) &amp;&amp; !regex_lib_1.digitRe.test(char)) {
             // Anything else that does not form an html tag
             resetToDataState();
         }
@@ -238,7 +232,7 @@ function parseHtml(html, _a) {
         if (char === &#39;&gt;&#39;) { // parse error. Encountered &quot;&lt;/&gt;&quot;. Skip it without treating as a tag
             resetToDataState();
         }
-        else if (letterRe.test(char)) {
+        else if (regex_lib_1.letterRe.test(char)) {
             state = 3 /* TagName */;
         }
         else {
@@ -248,7 +242,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-name-state
     function stateBeforeAttributeName(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             // stay in BeforeAttributeName state - continue reading chars
         }
         else if (char === &#39;/&#39;) {
@@ -261,7 +255,7 @@ function parseHtml(html, _a) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
         }
-        else if (char === &quot;=&quot; || quoteRe.test(char) || controlCharsRe.test(char)) {
+        else if (char === &quot;=&quot; || regex_lib_1.quoteRe.test(char) || regex_lib_1.controlCharsRe.test(char)) {
             // &quot;Parse error&quot; characters that, according to the spec, should be
             // appended to the attribute name, but we&#39;ll treat these characters
             // as not forming a real HTML tag
@@ -274,7 +268,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
     function stateAttributeName(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             state = 6 /* AfterAttributeName */;
         }
         else if (char === &#39;/&#39;) {
@@ -290,7 +284,7 @@ function parseHtml(html, _a) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
         }
-        else if (quoteRe.test(char)) {
+        else if (regex_lib_1.quoteRe.test(char)) {
             // &quot;Parse error&quot; characters that, according to the spec, should be
             // appended to the attribute name, but we&#39;ll treat these characters
             // as not forming a real HTML tag
@@ -302,7 +296,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-name-state
     function stateAfterAttributeName(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             // ignore the character - continue reading
         }
         else if (char === &#39;/&#39;) {
@@ -318,7 +312,7 @@ function parseHtml(html, _a) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
         }
-        else if (quoteRe.test(char)) {
+        else if (regex_lib_1.quoteRe.test(char)) {
             // &quot;Parse error&quot; characters that, according to the spec, should be
             // appended to the attribute name, but we&#39;ll treat these characters
             // as not forming a real HTML tag
@@ -331,7 +325,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
     function stateBeforeAttributeValue(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             // ignore the character - continue reading
         }
         else if (char === &quot;\&quot;&quot;) {
@@ -374,7 +368,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
     function stateAttributeValueUnquoted(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             state = 4 /* BeforeAttributeName */;
         }
         else if (char === &#39;&gt;&#39;) {
@@ -384,7 +378,7 @@ function parseHtml(html, _a) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
         }
-        else if (quoteRe.test(char) || /[=`]/.test(char)) {
+        else if (regex_lib_1.quoteRe.test(char) || /[=`]/.test(char)) {
             // &quot;Parse error&quot; characters that, according to the spec, should be
             // appended to the attribute value, but we&#39;ll treat these characters
             // as not forming a real HTML tag
@@ -396,7 +390,7 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
     function stateAfterAttributeValueQuoted(char) {
-        if (whitespaceRe.test(char)) {
+        if (regex_lib_1.whitespaceRe.test(char)) {
             state = 4 /* BeforeAttributeName */;
         }
         else if (char === &#39;/&#39;) {

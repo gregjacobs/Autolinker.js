@@ -24,6 +24,27 @@
  * regular expressions that are shared between source files.
  */
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+<span id='global-property-letterRe'>/**
+</span> * Regular expression to match upper and lowercase ASCII letters
+ */
+exports.letterRe = /[A-Za-z]/;
+<span id='global-property-digitRe'>/**
+</span> * Regular expression to match ASCII digits
+ */
+exports.digitRe = /[0-9]/;
+<span id='global-property-whitespaceRe'>/**
+</span> * Regular expression to match whitespace
+ */
+exports.whitespaceRe = /\s/;
+<span id='global-property-quoteRe'>/**
+</span> * Regular expression to match quote characters
+ */
+exports.quoteRe = /[&#39;&quot;]/;
+<span id='global-property-controlCharsRe'>/**
+</span> * Regular expression to match the range of ASCII control characters (0-31), and
+ * the backspace char (127)
+ */
+exports.controlCharsRe = /[\x00-\x1F\x7F]/;
 <span id='global-property-alphaCharsStr'>/**
 </span> * The string form of a regular expression that would match all of the
  * alphabetic (&quot;letter&quot;) chars in the unicode character set when placed in a
@@ -148,6 +169,11 @@ exports.getDomainNameStr = function (group) {
  * Ex: &#39;google&#39;, &#39;yahoo&#39;, &#39;some-other-company&#39;, etc.
  */
 exports.domainNameRegex = new RegExp(&#39;[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;.\\-]*[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;\\-]&#39;);
+<span id='global-property-domainNameCharRegex'>/**
+</span> * A regular expression that is simply the character class of the characters
+ * that may be used in a domain name, minus the &#39;-&#39; or &#39;.&#39;
+ */
+exports.domainNameCharRegex = new RegExp(&quot;[&quot; + exports.alphaNumericAndMarksCharsStr + &quot;]&quot;);
 
 //# sourceMappingURL=regex-lib.js.map
 </pre>

@@ -137,6 +137,14 @@ function splitAndCapture(str, splitRegex) {
     return result;
 }
 exports.splitAndCapture = splitAndCapture;
+<span id='global-method-throwUnhandledCaseError'>/**
+</span> * Function that should never be called but is used to check that every
+ * enum value is handled using TypeScript&#39;s &#39;never&#39; type.
+ */
+function throwUnhandledCaseError(theValue) {
+    throw new Error(&quot;Unhandled case for value: &#39;&quot; + theValue + &quot;&#39;&quot;);
+}
+exports.throwUnhandledCaseError = throwUnhandledCaseError;
 
 //# sourceMappingURL=utils.js.map
 </pre>

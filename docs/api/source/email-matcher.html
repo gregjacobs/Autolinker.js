@@ -20,8 +20,10 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 var tslib_1 = require(&quot;tslib&quot;);
 var matcher_1 = require(&quot;./matcher&quot;);
 var regex_lib_1 = require(&quot;../regex-lib&quot;);
-var tld_regex_1 = require(&quot;./tld-regex&quot;);
 var email_match_1 = require(&quot;../match/email-match&quot;);
+var utils_1 = require(&quot;../utils&quot;);
+// For debugging: search for other &quot;For debugging&quot; lines
+// import CliTable from &#39;cli-table&#39;;
 <span id='Autolinker-matcher-Email'>/**
 </span> * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
@@ -34,43 +36,210 @@ var EmailMatcher =  (function (_super) {
     tslib_1.__extends(EmailMatcher, _super);
     function EmailMatcher() {
         var _this = _super !== null &amp;&amp; _super.apply(this, arguments) || this;
-<span id='Autolinker-matcher-Email-property-matcherRegex'>        /**
-</span>         * The regular expression to match email addresses. Example match:
-         *
-         *     person@place.com
-         *
-         * @protected
-         * @property {RegExp} matcherRegex
+<span id='Autolinker-matcher-Email-property-localPartCharRegex'>        /**
+</span>         * Valid characters that can be used in the &quot;local&quot; part of an email address,
+         * i.e. the &quot;name&quot; part of &quot;name@site.com&quot;
          */
-        _this.matcherRegex = (function () {
-            var specialCharacters = &#39;!#$%&amp;\&#39;*+\\-\\/=?^_`{|}~&#39;, restrictedSpecialCharacters = &#39;\\s&quot;(),:;&lt;&gt;@\\[\\]&#39;, validCharacters = regex_lib_1.alphaNumericAndMarksCharsStr + specialCharacters, validRestrictedCharacters = validCharacters + restrictedSpecialCharacters, emailRegex = new RegExp(&#39;(?:[&#39; + validCharacters + &#39;](?:[&#39; + validCharacters + &#39;]|\\.(?!\\.|@))*|\\&quot;[&#39; + validRestrictedCharacters + &#39;.]+\\&quot;)@&#39;);
-            return new RegExp([
-                emailRegex.source,
-                regex_lib_1.getDomainNameStr(1),
-                &#39;\\.&#39;, tld_regex_1.tldRegex.source // &#39;.com&#39;, &#39;.net&#39;, etc
-            ].join(&quot;&quot;), &#39;gi&#39;);
-        })();
+        _this.localPartCharRegex = new RegExp(&quot;[&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;);
         return _this;
     }
 <span id='Autolinker-matcher-Email-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
     EmailMatcher.prototype.parseMatches = function (text) {
-        var matcherRegex = this.matcherRegex, tagBuilder = this.tagBuilder, matches = [], match;
-        while ((match = matcherRegex.exec(text)) !== null) {
-            var matchedText = match[0];
-            matches.push(new email_match_1.EmailMatch({
-                tagBuilder: tagBuilder,
-                matchedText: matchedText,
-                offset: match.index,
-                email: matchedText
-            }));
+        var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
+        var charIdx = 0, state = 0 /* NonEmailAddress */, currentEmailAddress = noCurrentEmailAddress;
+        // For debugging: search for other &quot;For debugging&quot; lines
+        // const table = new CliTable( {
+        // 	head: [ &#39;charIdx&#39;, &#39;char&#39;, &#39;state&#39;, &#39;charIdx&#39;, &#39;currentEmailAddress.idx&#39;, &#39;hasDomainDot&#39; ]
+        // } );
+        while (charIdx &lt; len) {
+            var char = text.charAt(charIdx);
+            // For debugging: search for other &quot;For debugging&quot; lines
+            // table.push( 
+            // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
+            // );
+            switch (state) {
+                case 0 /* NonEmailAddress */:
+                    stateNonEmailAddress(char);
+                    break;
+                case 1 /* LocalPart */:
+                    stateLocalPart(char);
+                    break;
+                case 2 /* LocalPartDot */:
+                    stateLocalPartDot(char);
+                    break;
+                case 3 /* AtSign */:
+                    stateAtSign(char);
+                    break;
+                case 4 /* DomainChar */:
+                    stateDomainChar(char);
+                    break;
+                case 5 /* DomainHyphen */:
+                    stateDomainHyphen(char);
+                    break;
+                case 6 /* DomainDot */:
+                    stateDomainDot(char);
+                    break;
+                default:
+                    utils_1.throwUnhandledCaseError(state);
+            }
+            // For debugging: search for other &quot;For debugging&quot; lines
+            // table.push( 
+            // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
+            // );
+            charIdx++;
         }
+        // Capture any valid match at the end of the string
+        captureMatchIfValidAndReset();
+        // For debugging: search for other &quot;For debugging&quot; lines
+        //console.log( &#39;\n&#39; + table.toString() );
         return matches;
+        // Handles the state when we&#39;re not in an email address
+        function stateNonEmailAddress(char) {
+            if (localPartCharRegex.test(char)) {
+                beginEmailAddress();
+            }
+            else {
+                // not an email address character, continue
+            }
+        }
+        // Handles the state when we&#39;re currently in the &quot;local part&quot; of an 
+        // email address (as opposed to the &quot;domain part&quot;)
+        function stateLocalPart(char) {
+            if (char === &#39;.&#39;) {
+                state = 2 /* LocalPartDot */;
+            }
+            else if (char === &#39;@&#39;) {
+                state = 3 /* AtSign */;
+            }
+            else if (localPartCharRegex.test(char)) {
+                // stay in the &quot;local part&quot; of the email address
+            }
+            else {
+                // not an email address character, return to &quot;NonEmailAddress&quot; state
+                resetToNonEmailAddressState();
+            }
+        }
+        // Handles the state where we&#39;ve read 
+        function stateLocalPartDot(char) {
+            if (char === &#39;.&#39;) {
+                // We read a second &#39;.&#39; in a row, not a valid email address 
+                // local part
+                resetToNonEmailAddressState();
+            }
+            else if (char === &#39;@&#39;) {
+                // We read the &#39;@&#39; character immediately after a dot (&#39;.&#39;), not 
+                // an email address
+                resetToNonEmailAddressState();
+            }
+            else if (localPartCharRegex.test(char)) {
+                state = 1 /* LocalPart */;
+            }
+            else {
+                // Anything else, not an email address
+                resetToNonEmailAddressState();
+            }
+        }
+        function stateAtSign(char) {
+            if (regex_lib_1.domainNameCharRegex.test(char)) {
+                state = 4 /* DomainChar */;
+            }
+            else {
+                // Anything else, not an email address
+                resetToNonEmailAddressState();
+            }
+        }
+        function stateDomainChar(char) {
+            if (char === &#39;.&#39;) {
+                state = 6 /* DomainDot */;
+            }
+            else if (char === &#39;-&#39;) {
+                state = 5 /* DomainHyphen */;
+            }
+            else if (regex_lib_1.domainNameCharRegex.test(char)) {
+                // Stay in the DomainChar state
+            }
+            else {
+                // Anything else, we potentially matched if the criteria has
+                // been met
+                captureMatchIfValidAndReset();
+            }
+        }
+        function stateDomainHyphen(char) {
+            if (char === &#39;-&#39; || char === &#39;.&#39;) {
+                // Not valid to have two hyphens (&quot;--&quot;) or hypen+dot (&quot;-.&quot;)
+                captureMatchIfValidAndReset();
+            }
+            else if (regex_lib_1.domainNameCharRegex.test(char)) {
+                state = 4 /* DomainChar */;
+            }
+            else {
+                // Anything else
+                captureMatchIfValidAndReset();
+            }
+        }
+        function stateDomainDot(char) {
+            if (char === &#39;.&#39; || char === &#39;-&#39;) {
+                // not valid to have two dots (&quot;..&quot;) or dot+hypen (&quot;.-&quot;)
+                captureMatchIfValidAndReset();
+            }
+            else if (regex_lib_1.domainNameCharRegex.test(char)) {
+                state = 4 /* DomainChar */;
+                // After having read a &#39;.&#39; and then a valid domain character,
+                // we now know that the domain part of the email is valid, and
+                // we have found at least a partial EmailMatch (however, the
+                // email address may have additional characters from this point)
+                currentEmailAddress = new CurrentEmailAddress(tslib_1.__assign({}, currentEmailAddress, { hasDomainDot: true }));
+            }
+            else {
+                // Anything else
+                captureMatchIfValidAndReset();
+            }
+        }
+        function beginEmailAddress() {
+            state = 1 /* LocalPart */;
+            currentEmailAddress = new CurrentEmailAddress({ idx: charIdx });
+        }
+        function resetToNonEmailAddressState() {
+            state = 0 /* NonEmailAddress */;
+            currentEmailAddress = noCurrentEmailAddress;
+        }
+        /*
+         * Captures the current email address as an EmailMatch if it&#39;s valid,
+         * and resets the state to read another email address.
+         */
+        function captureMatchIfValidAndReset() {
+            if (currentEmailAddress.hasDomainDot) { // we need at least one dot in the domain to be considered a valid email address
+                var emailAddress = text.slice(currentEmailAddress.idx, charIdx);
+                // If we read a &#39;.&#39; or &#39;-&#39; char that ended the email address
+                // (valid domain name characters, but only valid email address
+                // characters if they are followed by something else), strip 
+                // it off now
+                if (/[-.]$/.test(emailAddress)) {
+                    emailAddress = emailAddress.slice(0, -1);
+                }
+                matches.push(new email_match_1.EmailMatch({
+                    tagBuilder: tagBuilder,
+                    matchedText: emailAddress,
+                    offset: currentEmailAddress.idx,
+                    email: emailAddress
+                }));
+            }
+            resetToNonEmailAddressState();
+        }
     };
     return EmailMatcher;
 }(matcher_1.Matcher));
 exports.EmailMatcher = EmailMatcher;
+var CurrentEmailAddress =  (function () {
+    function CurrentEmailAddress(cfg) {
+        if (cfg === void 0) { cfg = {}; }
+        this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+        this.hasDomainDot = !!cfg.hasDomainDot;
+    }
+    return CurrentEmailAddress;
+}());
 
 //# sourceMappingURL=email-matcher.js.map
 </pre>
