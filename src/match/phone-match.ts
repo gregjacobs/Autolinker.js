@@ -49,6 +49,7 @@ export class PhoneMatch extends Match {
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
+	 * For the case of PhoneMatch, returns 'phone'.
 	 *
 	 * @return {String}
 	 */

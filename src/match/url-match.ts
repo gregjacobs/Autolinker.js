@@ -120,6 +120,7 @@ export class UrlMatch extends Match {
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
+	 * For the case of UrlMatch, returns 'url'.
 	 *
 	 * @return {String}
 	 */

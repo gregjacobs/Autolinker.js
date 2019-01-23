@@ -100,7 +100,7 @@ export class AnchorTagBuilder {
 		}
 		if( this.newWindow ) {
 			attrs[ 'target' ] = "_blank";
-			attrs[ 'rel' ] = "noopener noreferrer";
+			attrs[ 'rel' ] = "noopener noreferrer";  // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
 		}
 
 		if( this.truncate ) {

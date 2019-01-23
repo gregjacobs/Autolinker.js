@@ -32,6 +32,7 @@ export class EmailMatch extends Match {
 
 	/**
 	 * Returns a string name for the type of match that this class represents.
+	 * For the case of EmailMatch, returns 'email'.
 	 *
 	 * @return {String}
 	 */

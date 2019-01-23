@@ -42,7 +42,8 @@ export class HashtagMatch extends Match {
 
 
 	/**
-	 * Returns the type of match that this class represents.
+	 * Returns a string name for the type of match that this class represents.
+	 * For the case of HashtagMatch, returns 'hashtag'.
 	 *
 	 * @return {String}
 	 */
