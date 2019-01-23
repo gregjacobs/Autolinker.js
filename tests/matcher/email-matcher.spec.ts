@@ -87,6 +87,14 @@ describe( "Autolinker.matcher.Email", () => {
 		} );
 
 
+		it( 'should match correctly when the email address is uppercase', () => {
+			let matches = matcher.parseMatches( 'Hello ASDF@ASDF.COM' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'ASDF@ASDF.COM', 6 );
+		} );
+
+
 		it( 'a match with underscores should be parsed correctly', () => {
 			let matches = matcher.parseMatches( 'Hello asdf_fdsa_asdf@asdf.com' );
 
