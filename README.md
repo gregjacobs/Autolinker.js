@@ -27,9 +27,9 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/api/](http://gregjacob
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
-## v2.0 released Dec 2018
+## v3.0 released Jan 2019
 
-See [Upgrading from v1.x -> v2.x (Breaking Changes)](#upgrading-from-v1x---v2x-breaking-changes) at the bottom of this readme
+See [Upgrading from v2.x -> v3.x (Breaking Changes)](#upgrading-from-v2x---v3x-breaking-changes) at the bottom of this readme
 
 
 ## Installation
@@ -451,11 +451,23 @@ if( typeof Object.assign !== 'function' ) {
 }
 ```
 
+## Upgrading from v2.x -> v3.x (Breaking Changes)
+
+1. If you are still on v1.x, first follow the instructions in the 
+   [Upgrading from v1.x -> v2.x](#upgrading-from-v1x---v2x-breaking-changes) 
+   section below.
+2. The `HtmlParser` class has been removed in favor of an internal `parseHtml()`
+   function which replaces the old regexp-based implementation with a state 
+   machine parser that is guaranteed to run in linear time. If you were using 
+   the `HtmlParser` class directly, I recommend switching to [htmlparser2](https://github.com/fb55/htmlparser2), which implements the HTML semantics 
+   better. The internal `parseHtml()` function that Autolinker now uses is 
+   fairly geared towards Autolinker's purposes, and may not be useful in a 
+   general HTML parsing sense.
 
 ## Upgrading from v1.x -> v2.x (Breaking Changes)
 
 1. If you are still on v0.x, first follow the instructions in the 
-   [Upgrading from 0.x -> 1.x](#upgrading-from-v0x---v1x-breaking-changes) 
+   [Upgrading from v0.x -> v1.x](#upgrading-from-v0x---v1x-breaking-changes) 
    section below.
 2. The codebase has been converted to TypeScript, and uses ES6 exports. You can
    now use the `import` statement to pull in the `Autolinker` class and related 
