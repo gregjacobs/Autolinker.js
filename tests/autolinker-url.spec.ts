@@ -78,19 +78,19 @@ describe( "Autolinker Url Matching -", () => {
 			let result = autolinker.link( "Joe went to https://www.yahoo.com" );
 			expect( result ).toBe( 'Joe went to <a href="https://www.yahoo.com">yahoo.com</a>' );
 		} );
-
-
+		
+		
 		it( 'should automatically link URLs with IP addresses', function() {
 			let result = autolinker.link( 'http://66.102.7.147' );
 			expect( result ).toBe( '<a href="http://66.102.7.147">66.102.7.147</a>' );
 		} );
-
+		
 
 		it( 'should automatically link URLs with IP addresses and a port number', function() {
 			let result = autolinker.link( 'http://10.0.0.108:9000/' );
 			expect( result ).toBe( '<a href="http://10.0.0.108:9000/">10.0.0.108:9000</a>' );
 		} );
-
+		
 
 		it( "should automatically link capitalized URLs", function() {
 			let result = autolinker.link( "Joe went to HTTP://WWW.YAHOO.COM" );
@@ -114,7 +114,7 @@ describe( "Autolinker Url Matching -", () => {
 			let result = autolinker.link( "Joe went to http://yahoo.com." );
 			expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a>.' );
 		} );
-
+		
 
 		it( "should automatically link URLs with a port number", function() {
 			let result = autolinker.link( "Joe went to http://yahoo.com:8000 today." );
@@ -138,13 +138,13 @@ describe( "Autolinker Url Matching -", () => {
 			let result = autolinker.link( "Joe went to http://localhost:8000/my-page today." );
 			expect( result ).toBe( 'Joe went to <a href="http://localhost:8000/my-page">localhost:8000/my-page</a> today.' );
 		} );
-
+		
 
 		it( "should automatically link URLs with a port number and a query string", function() {
 			let result = autolinker.link( "Joe went to http://yahoo.com:8000?page=index today." );
 			expect( result ).toBe( 'Joe went to <a href="http://yahoo.com:8000?page=index">yahoo.com:8000?page=index</a> today.' );
 		} );
-
+		
 
 		it( "should automatically link a localhost URL with a port number and a query string", function() {
 			let result = autolinker.link( "Joe went to http://localhost:8000?page=index today." );
@@ -163,30 +163,36 @@ describe( "Autolinker Url Matching -", () => {
 			expect( result ).toBe( 'Joe went to <a href="http://localhost:8000#page=index">localhost:8000#page=index</a> today.' );
 		} );
 
+
 		it( "should automatically link domain names, paths, query strings, and hashes with numbers in them", function() {
 			let result = autolinker.link( "Joe went to https://abc123def.org/path1/2path?param1=value1#hash123z" );
 			expect( result ).toBe( 'Joe went to <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>' );
 		} );
+
 
 		it( "should automatically link domain names, paths, query strings, and hashes with dashes in them", function() {
 			let result = autolinker.link( "Joe went to https://abc-def.org/his-path/?the-param=the-value#the-hash" );
 			expect( result ).toBe( 'Joe went to <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>' );
 		} );
 
+
 		it( "should automatically link domain names, paths, query strings, and hashes with the set of allowed special characters in them", function() {
 			let result = autolinker.link( "Link: https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z" );
 			expect( result ).toBe( 'Link: <a href="https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z</a>' );
 		} );
+		
 
 		it( "should automatically link a URL with accented characters", function() {
 			let result = autolinker.link( "Joe went to http://mañana.com/mañana?mañana=1#mañana today." );
 			expect( result ).toBe( 'Joe went to <a href="http://mañana.com/mañana?mañana=1#mañana">mañana.com/mañana?mañana=1#mañana</a> today.' );
 		} );
 
+
 		it( "should automatically link cyrillic URLs", function() {
 			let result = autolinker.link( "Joe went to https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица" );
 			expect( result ).toBe( 'Joe went to <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>' );
 		} );
+
 
 		it( "should automatically link international domain names", function() {
 			let result1 = autolinker.link( "Русским гораздо проще набрать россия.рф на клавиатуре." );
@@ -199,6 +205,7 @@ describe( "Autolinker Url Matching -", () => {
 			expect( result3 ).toBe( 'Русским гораздо проще набрать <a href="//россия.рф">россия.рф</a> на клавиатуре.' );
 		} );
 
+
 		it( "should automatically link domain names represented in punicode", function() {
 			let result1 = autolinker.link( "For compatibility reasons, xn--d1acufc.xn--p1ai is an acceptable form of an international domain." );
 			expect( result1 ).toBe( 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.' );
@@ -206,6 +213,7 @@ describe( "Autolinker Url Matching -", () => {
 			let result2 = autolinker.link( "For compatibility reasons, http://xn--d1acufc.xn--p1ai is an acceptable form of an international domain." );
 			expect( result2 ).toBe( 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.' );
 		} );
+
 
 		it( 'should match local urls with numbers when prefixed with http://', function() {
 			let result1 = autolinker.link( 'http://localhost.local001/test' );
@@ -229,6 +237,7 @@ describe( "Autolinker Url Matching -", () => {
 			expect( autolinker.link( 'hello:...world' ) ).toBe( 'hello:...world' );
 			expect( autolinker.link( 'hello:wo.....rld' ) ).toBe( 'hello:wo.....rld' );
 		});
+
 
 		describe( "protocol linking", function() {
 
@@ -806,6 +815,60 @@ describe( "Autolinker Url Matching -", () => {
 	it( "should automatically link multiple URLs in the same input string", function() {
 		let result = autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
 		expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://google.com">google.com</a>' );
+	} );
+
+
+	describe( 'combination example', () => {
+
+		it( `should automatically link all of the URLs of many different forms`, () => {
+			let inputStr = `
+				Joe went to http://yahoo.com and http://localhost today along with http://localhost:8000.
+				He also had a path on localhost: http://localhost:8000/abc, and a query string: http://localhost:8000?abc
+				But who could forget about hashes like http://localhost:8000#abc
+				It seems http://www.google.com is a good site, but might want to be secure with https://www.google.com
+				Sometimes people just need an IP http://66.102.7.147, and a port like http://10.0.0.108:9000
+				Capitalized URLs are interesting: HTTP://WWW.YAHOO.COM
+				We all like known TLDs like yahoo.com, but shouldn't go to unknown TLDs like sencha.etc
+				And definitely shouldn't go to abc.123
+				Don't want to include periods at the end of sentences like http://yahoo.com.
+				Sometimes you need to go to a path like yahoo.com/my-page
+				And hit query strings like yahoo.com?page=index
+				Port numbers on known TLDs are important too like yahoo.com:8000.
+				Hashes too yahoo.com:8000/#some-link. 
+				Sometimes you need a lot of things in the URL like https://abc123def.org/path1/2path?param1=value1#hash123z
+				Do you see the need for dashes in these things too https://abc-def.org/his-path/?the-param=the-value#the-hash?
+				There's a time for lots and lots of special characters like in https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z
+				Don't forget about good times with unicode https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица 
+				and this unicode http://россия.рф
+				along with punycode http://xn--d1acufc.xn--p1ai
+				Oh good old www links like www.yahoo.com
+			`;
+
+			let result = autolinker.link( inputStr );
+			expect( result ).toBe( `
+				Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://localhost">localhost</a> today along with <a href="http://localhost:8000">localhost:8000</a>.
+				He also had a path on localhost: <a href="http://localhost:8000/abc">localhost:8000/abc</a>, and a query string: <a href="http://localhost:8000?abc">localhost:8000?abc</a>
+				But who could forget about hashes like <a href="http://localhost:8000#abc">localhost:8000#abc</a>
+				It seems <a href="http://www.google.com">google.com</a> is a good site, but might want to be secure with <a href="https://www.google.com">google.com</a>
+				Sometimes people just need an IP <a href="http://66.102.7.147">66.102.7.147</a>, and a port like <a href="http://10.0.0.108:9000">10.0.0.108:9000</a>
+				Capitalized URLs are interesting: <a href="HTTP://WWW.YAHOO.COM">YAHOO.COM</a>
+				We all like known TLDs like <a href="http://yahoo.com">yahoo.com</a>, but shouldn't go to unknown TLDs like sencha.etc
+				And definitely shouldn't go to abc.123
+				Don't want to include periods at the end of sentences like <a href="http://yahoo.com">yahoo.com</a>.
+				Sometimes you need to go to a path like <a href="http://yahoo.com/my-page">yahoo.com/my-page</a>
+				And hit query strings like <a href="http://yahoo.com?page=index">yahoo.com?page=index</a>
+				Port numbers on known TLDs are important too like <a href="http://yahoo.com:8000">yahoo.com:8000</a>.
+				Hashes too <a href="http://yahoo.com:8000/#some-link">yahoo.com:8000/#some-link</a>. 
+				Sometimes you need a lot of things in the URL like <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>
+				Do you see the need for dashes in these things too <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>?
+				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z</a>
+				Don't forget about good times with unicode <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a> 
+				and this unicode <a href="http://россия.рф">россия.рф</a>
+				along with punycode <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a>
+				Oh good old www links like <a href="http://www.yahoo.com">yahoo.com</a>
+			` );
+		} );
+
 	} );
 
 } );
