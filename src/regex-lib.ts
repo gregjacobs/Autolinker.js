@@ -168,3 +168,10 @@ export const getDomainNameStr = ( group: number ) => {
  * Ex: 'google', 'yahoo', 'some-other-company', etc.
  */
 export const domainNameRegex = new RegExp( '[' + alphaNumericAndMarksCharsStr + '.\\-]*[' + alphaNumericAndMarksCharsStr + '\\-]' );
+
+
+/**
+ * A regular expression that is simply the character class of the characters
+ * that may be used in a domain name, minus the '-' or '.'
+ */
+export const domainNameCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}]` );

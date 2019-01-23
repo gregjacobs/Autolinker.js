@@ -1,5 +1,6 @@
 import { State } from './state';
 import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
+import { throwUnhandledCaseError } from '../utils';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -108,7 +109,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 			case State.Doctype: stateDoctype( char ); break;
 
 			default: 
-				throwUnhandledStateError( state );
+				throwUnhandledCaseError( state );
 		}
 
 		// For debugging: search for other "For debugging" lines
@@ -126,14 +127,6 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	// For debugging: search for other "For debugging" lines
 	//console.log( '\n' + table.toString() );
 
-
-	/**
-	 * Function that should never be called but is used to check that every
-	 * enum value is handled using TypeScript's 'never' type.
-	 */
-	function throwUnhandledStateError( state: never ) {
-		throw new Error( 'Unhandled State' )
-	}
 
 
 	// Called when non-tags are being read (i.e. the text around HTML †ags)
