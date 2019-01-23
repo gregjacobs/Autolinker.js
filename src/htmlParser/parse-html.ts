@@ -1,4 +1,5 @@
 import { State } from './state';
+import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -61,12 +62,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	onComment: ( offset: number ) => void;
 	onDoctype: ( offset: number ) => void;
 } ) {
-	const letterRe = /[A-Za-z]/,
-	      digitRe = /[0-9]/,
-		  whitespaceRe = /\s/,
-		  quoteRe = /['"]/,
-		  controlCharsRe = /[\x00-\x1F\x7F]/,  // control chars (0-31), and the backspace char (127)
-		  noCurrentTag = new CurrentTag();
+	const noCurrentTag = new CurrentTag();
 
 	let charIdx = 0,
 		len = html.length,
