@@ -7,6 +7,32 @@
  */
 
 /**
+ * Regular expression to match upper and lowercase ASCII letters
+ */
+export const letterRe = /[A-Za-z]/;
+
+/**
+ * Regular expression to match ASCII digits
+ */
+export const digitRe = /[0-9]/;
+
+/**
+ * Regular expression to match whitespace
+ */
+export const whitespaceRe = /\s/;
+
+/**
+ * Regular expression to match quote characters
+ */
+export const quoteRe = /['"]/;
+
+/**
+ * Regular expression to match the range of ASCII control characters (0-31), and 
+ * the backspace char (127)
+ */
+export const controlCharsRe = /[\x00-\x1F\x7F]/; 
+
+/**
  * The string form of a regular expression that would match all of the
  * alphabetic ("letter") chars in the unicode character set when placed in a
  * RegExp character class (`[]`). This includes all international alphabetic
@@ -142,3 +168,10 @@ export const getDomainNameStr = ( group: number ) => {
  * Ex: 'google', 'yahoo', 'some-other-company', etc.
  */
 export const domainNameRegex = new RegExp( '[' + alphaNumericAndMarksCharsStr + '.\\-]*[' + alphaNumericAndMarksCharsStr + '\\-]' );
+
+
+/**
+ * A regular expression that is simply the character class of the characters
+ * that may be used in a domain name, minus the '-' or '.'
+ */
+export const domainNameCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}]` );

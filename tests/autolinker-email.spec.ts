@@ -33,6 +33,13 @@ describe( "Autolinker Email Matching -", () => {
 	} );
 
 
+	it( "should automatically link email addresses with a period at the end of a sentence (but not include the period)", function() {
+		let result = autolinker.link( "Joe's email is joe@joe.com. Try emailing him" );
+
+		expect( result ).toBe( 'Joe\'s email is <a href="mailto:joe@joe.com">joe@joe.com</a>. Try emailing him' );
+	} );
+
+
 	it( "should automatically link email addresses with a period in the 'local part'", function() {
 		let result = autolinker.link( "Joe's email is joe.smith@joe.com" );
 
@@ -87,6 +94,7 @@ describe( "Autolinker Email Matching -", () => {
 
 		expect( result ).toBe( 'Hi there@stuff' );
 	} );
+
 
 	it( "should automatically link an email address with tld matched localpart", function () {
 		let result = autolinker.link( "My email is busueng.kim@aaa.com" );

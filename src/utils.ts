@@ -127,3 +127,12 @@ export function splitAndCapture( str: string, splitRegex: RegExp ) {
 
 	return result;
 }
+
+
+/**
+ * Function that should never be called but is used to check that every
+ * enum value is handled using TypeScript's 'never' type.
+ */
+export function throwUnhandledCaseError( theValue: never ) {
+	throw new Error( `Unhandled case for value: '${theValue}'` );
+}
