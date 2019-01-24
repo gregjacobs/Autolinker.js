@@ -133,6 +133,12 @@ export const decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u09
 export const alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
 
 /**
+ * The character class regular expression to match a single character against
+ * alpha characters (including unicode) and decimal chars
+ */
+export const alphaNumericCharsRe = new RegExp( '[' + alphaNumericCharsStr + ']' );
+
+/**
  * The string form of a regular expression that would match all of the
  * letters, combining marks, and decimal number chars in the unicode character 
  * set when placed in a RegExp character class (`[]`).
@@ -142,6 +148,13 @@ export const alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
  * numbers")
  */
 export const alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
+
+/**
+ * The character class regular expression to match a single character against
+ * alpha characters (including unicode), decimal chars, and unicode combining 
+ * marks
+ */
+export const alphaNumericAndMarksRe = new RegExp( '[' + alphaNumericAndMarksCharsStr + ']' );
 
 
 // Simplified IP regular expression
