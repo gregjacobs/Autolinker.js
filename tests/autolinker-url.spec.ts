@@ -206,7 +206,7 @@ describe( "Autolinker Url Matching -", () => {
 		} );
 
 
-		it( "should automatically link domain names represented in punicode", function() {
+		it( "should automatically link domain names represented in punycode", function() {
 			let result1 = autolinker.link( "For compatibility reasons, xn--d1acufc.xn--p1ai is an acceptable form of an international domain." );
 			expect( result1 ).toBe( 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.' );
 

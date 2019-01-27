@@ -1,8 +1,8 @@
-import { UrlMatcher } from "../../src/matcher/url-matcher";
+import { UrlMatcher } from "../../src/matcher/scheme-url-matcher";
 import { MatchChecker } from "../match/match-checker";
 import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 
-describe( "Autolinker.matcher.Url", function() {
+describe( "Autolinker.matcher.SchemeUrl", function() {
 	let matcher: UrlMatcher;
 
 	beforeEach( function() {
@@ -36,122 +36,6 @@ describe( "Autolinker.matcher.Url", function() {
 			     if they are the first character`, 
 			() => {
 
-			} );
-
-		} );
-
-
-		describe( 'domain matching', () => {
-
-			it( `should not match a string that is just '.com'`, () => {
-				let matches = matcher.parseMatches( '.com' );
-
-				expect( matches.length ).toBe( 0 );
-			} );
-
-
-			fit( 'should return a single url match when the string is the url itself', function() {
-				let matches = matcher.parseMatches( 'asdf.com' );
-	
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
-			} );
-	
-	
-			it( 'should return a single url match when the url is in the middle of the string', function() {
-				let matches = matcher.parseMatches( 'Hello asdf.com my good friend' );
-	
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
-			} );
-	
-	
-			it( 'should return a single url match when the url is at the end of the string', function() {
-				let matches = matcher.parseMatches( 'Hello asdf.com' );
-	
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
-			} );
-	
-	
-			it( 'should return multiple urls when there are more than one within the string', function() {
-				let matches = matcher.parseMatches( 'Go to asdf.com or fdsa.com' );
-	
-				expect( matches.length ).toBe( 2 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 6 );
-				MatchChecker.expectUrlMatch( matches[ 1 ], 'http://fdsa.com', 18 );
-			} );
-	
-	
-			it( 'a match within parenthesis should be parsed correctly', function() {
-				let matches = matcher.parseMatches( 'Hello (asdf.com)' );
-	
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 7 );
-			} );
-
-
-			it( `should match a domain with '-' or '.' characters`, () => {
-				let matches = matcher.parseMatches( 'asdf---asdf.com' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf--asdf.com', 0 );
-			} );
-
-
-			it( `should NOT match a domain with subsequent '.' characters`, () => {
-				let matches = matcher.parseMatches( 'asdf..com' );
-
-				expect( matches.length ).toBe( 0 );
-			} );
-
-
-			it( `should match a domain with multiple subsequent hyphens`, () => {
-				let matches = matcher.parseMatches( 'asdf---asdf.com' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf--asdf.com', 0 );
-			} );
-
-
-			it( `should match a domain starting with a hyphen but not include 
-				 the prefixed hypen in the match`, 
-			() => {
-				let matches = matcher.parseMatches( '-asdf.com' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 1 );
-			} );
-
-
-			it( `when the domain label has a '-.' sequence, should not match
-			     that domain`, 
-			() => {
-				expect( matcher.parseMatches( 'asdf-.com' ) ).toEqual( [] );
-			} );
-
-
-			it( `when the domain label has a '-.' sequence at the very end, and
-				 the domain read before the '-' char is a valid domain, should 
-				 match that domain`, 
-			() => {
-				let matches = matcher.parseMatches( 'asdf.com-. Stuff' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
-			} );
-
-
-			it( `when there are two separate domains separated by a '+', they 
-				 should both be matched (this was the original behavior in
-				 Autolinker.js v2.x, before the conversion from RegExp to state
-				 machine)`,
-			() => {
-				let matches = matcher.parseMatches( 'google.com+yahoo.com' );
-
-				expect( matches.length ).toBe( 2 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
-				MatchChecker.expectUrlMatch( matches[ 1 ], 'http://yahoo.com', 11 );
 			} );
 
 		} );

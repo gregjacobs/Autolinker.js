@@ -9,10 +9,12 @@ import { UrlMatch } from "./match/url-match";
 import { Matcher } from "./matcher/matcher";
 import { HtmlTag } from "./html-tag";
 import { EmailMatcher } from "./matcher/email-matcher";
-import { UrlMatcher } from "./matcher/url-matcher";
 import { HashtagMatcher } from "./matcher/hashtag-matcher";
 import { PhoneMatcher } from "./matcher/phone-matcher";
 import { MentionMatcher } from "./matcher/mention-matcher";
+import { UrlMatcher } from "./matcher/url-matcher";
+import { SchemeUrlMatcher } from './matcher/scheme-url-matcher';
+import { TldUrlMatcher } from './matcher/tld-url-matcher';
 import { parseHtml } from './htmlParser/parse-html';
 
 /**
@@ -155,7 +157,9 @@ export default class Autolinker {
 		Matcher: Matcher,
 		Mention: MentionMatcher,
 		Phone: PhoneMatcher,
-		Url: UrlMatcher
+		Url: UrlMatcher,              // turned into abstract class in v4.0.0
+		SchemeUrl: SchemeUrlMatcher,  // added in v4.0.0
+		TldUrl: TldUrlMatcher         // added in v4.0.0
 	};
 
 	/**
@@ -726,8 +730,8 @@ export default class Autolinker {
 
 		for( let i = 0; i < matches.length - 1; i++ ) {
 			let match = matches[ i ],
-					offset = match.getOffset(),
-					matchedTextLength = match.getMatchedText().length,
+			    offset = match.getOffset(),
+			    matchedTextLength = match.getMatchedText().length,
 			    endIdx = offset + matchedTextLength;
 
 			if( i + 1 < matches.length ) {
@@ -921,7 +925,8 @@ export default class Autolinker {
 				new EmailMatcher( { tagBuilder } ),
 				new PhoneMatcher( { tagBuilder } ),
 				new MentionMatcher( { tagBuilder, serviceName: this.mention as MentionServices } ),
-				new UrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
+				new SchemeUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } ),
+				new TldUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
 			];
 
 			return ( this.matchers = matchers );
