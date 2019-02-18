@@ -145,7 +145,7 @@ export class TldUrlMatcher extends UrlMatcher {
 
 				// TODO: Will need to handle the case that a colon ends the URL
 				// entirely, such as with the string "google.com: great stuff"
-				
+
 			} else if( alphaNumericAndMarksRe.test( char ) ) {
 				// Stay in the DomainLabelChar state
 
@@ -496,6 +496,13 @@ enum State {
 
 	// Remainder of URL
 	PortNumberColon,
+	PortNumber,
+	
+	PathSlash,
+	QuestionMark,
+	HashSymbol
+
+	urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?' );
 }
 
 
