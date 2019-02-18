@@ -180,6 +180,15 @@ describe( "Autolinker Url Matching -", () => {
 			let result = autolinker.link( "Link: https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z" );
 			expect( result ).toBe( 'Link: <a href="https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z</a>' );
 		} );
+
+
+		it( "should automatically link URLs with periods in the path", () => {
+			const result1 = autolinker.link( 'https://images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg' );
+			expect( result1 ).toBe( '<a href="https://images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg">images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg</a>' );
+			
+			const result2 = autolinker.link( 'My image is at: https://images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg - check it out' );
+			expect( result2 ).toBe( 'My image is at: <a href="https://images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg">images-na.ssl-images-amazon.com/images/I/912ozjp0ytL._SY450_.jpg</a> - check it out' );
+		} );
 		
 
 		it( "should automatically link a URL with accented characters", function() {
