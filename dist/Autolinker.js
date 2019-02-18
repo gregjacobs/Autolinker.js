@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 3.0.0
+ * 3.0.1
  *
  * Copyright(c) 2019 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -728,7 +728,7 @@
             }
             if (this.newWindow) {
                 attrs['target'] = "_blank";
-                attrs['rel'] = "noopener noreferrer";
+                attrs['rel'] = "noopener noreferrer"; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
             }
             if (this.truncate) {
                 if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
@@ -1033,6 +1033,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of EmailMatch, returns 'email'.
          *
          * @return {String}
          */
@@ -1103,7 +1104,8 @@
             return _this;
         }
         /**
-         * Returns the type of match that this class represents.
+         * Returns a string name for the type of match that this class represents.
+         * For the case of HashtagMatch, returns 'hashtag'.
          *
          * @return {String}
          */
@@ -1191,7 +1193,8 @@
             return _this;
         }
         /**
-         * Returns the type of match that this class represents.
+         * Returns a string name for the type of match that this class represents.
+         * For the case of MentionMatch, returns 'mention'.
          *
          * @return {String}
          */
@@ -1301,6 +1304,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of PhoneMatch, returns 'phone'.
          *
          * @return {String}
          */
@@ -1453,6 +1457,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of UrlMatch, returns 'url'.
          *
          * @return {String}
          */
@@ -2694,6 +2699,7 @@
         while (charIdx < len) {
             var char = html.charAt(charIdx);
             // For debugging: search for other "For debugging" lines
+            // ALSO: Temporarily remove the 'const' keyword on the State enum
             // table.push( 
             // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
             // );
@@ -2765,6 +2771,7 @@
                     throwUnhandledCaseError(state);
             }
             // For debugging: search for other "For debugging" lines
+            // ALSO: Temporarily remove the 'const' keyword on the State enum
             // table.push( 
             // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
             // );
@@ -2774,7 +2781,7 @@
             emitText();
         }
         // For debugging: search for other "For debugging" lines
-        //console.log( '\n' + table.toString() );
+        // console.log( '\n' + table.toString() );
         // Called when non-tags are being read (i.e. the text around HTML †ags)
         // https://www.w3.org/TR/html51/syntax.html#data-state
         function stateData(char) {
@@ -2968,12 +2975,6 @@
             else if (char === '<') {
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
-            }
-            else if (quoteRe.test(char) || /[=`]/.test(char)) {
-                // "Parse error" characters that, according to the spec, should be
-                // appended to the attribute value, but we'll treat these characters
-                // as not forming a real HTML tag
-                resetToDataState();
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
@@ -4054,7 +4055,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.0.0';
+        Autolinker.version = '3.0.1';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

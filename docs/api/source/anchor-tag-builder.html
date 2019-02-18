@@ -107,7 +107,7 @@ var AnchorTagBuilder =  (function () {
         }
         if (this.newWindow) {
             attrs[&#39;target&#39;] = &quot;_blank&quot;;
-            attrs[&#39;rel&#39;] = &quot;noopener noreferrer&quot;;
+            attrs[&#39;rel&#39;] = &quot;noopener noreferrer&quot;; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
         }
         if (this.truncate) {
             if (this.truncate.length &amp;&amp; this.truncate.length &lt; match.getAnchorText().length) {

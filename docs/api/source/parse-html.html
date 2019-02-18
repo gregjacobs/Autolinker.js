@@ -85,6 +85,7 @@ function parseHtml(html, _a) {
     while (charIdx &lt; len) {
         var char = html.charAt(charIdx);
         // For debugging: search for other &quot;For debugging&quot; lines
+        // ALSO: Temporarily remove the &#39;const&#39; keyword on the State enum
         // table.push( 
         // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ] 
         // );
@@ -156,6 +157,7 @@ function parseHtml(html, _a) {
                 utils_1.throwUnhandledCaseError(state);
         }
         // For debugging: search for other &quot;For debugging&quot; lines
+        // ALSO: Temporarily remove the &#39;const&#39; keyword on the State enum
         // table.push( 
         // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ] 
         // );
@@ -165,7 +167,7 @@ function parseHtml(html, _a) {
         emitText();
     }
     // For debugging: search for other &quot;For debugging&quot; lines
-    //console.log( &#39;\n&#39; + table.toString() );
+    // console.log( &#39;\n&#39; + table.toString() );
     // Called when non-tags are being read (i.e. the text around HTML †ags)
     // https://www.w3.org/TR/html51/syntax.html#data-state
     function stateData(char) {
@@ -377,12 +379,6 @@ function parseHtml(html, _a) {
         else if (char === &#39;&lt;&#39;) {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        }
-        else if (regex_lib_1.quoteRe.test(char) || /[=`]/.test(char)) {
-            // &quot;Parse error&quot; characters that, according to the spec, should be
-            // appended to the attribute value, but we&#39;ll treat these characters
-            // as not forming a real HTML tag
-            resetToDataState();
         }
         else {
             // Any other character, treat it as part of the attribute value
