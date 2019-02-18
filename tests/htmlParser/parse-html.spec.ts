@@ -136,6 +136,28 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 		} );
 
 
+		it( `should handle html tags with unqouted attributes`, () => {
+			let nodes = parseHtmlAndCapture( `<div id=hi class=some-class align=center>Test</div>` );
+			
+			expect( nodes ).toEqual( [
+				{ type: 'openTag', tagName: 'div', offset: 0 },
+				{ type: 'text', text: 'Test', offset: 41 },
+				{ type: 'closeTag', tagName: 'div', offset: 45 }
+			] );
+		} );
+
+
+		it( `should handle anchor tags with unqouted href's and query strings (Issue #263)`, () => {
+			let nodes = parseHtmlAndCapture( `<a href=https://www.facebook.com/hashtag/muntcentrum?epa=HASHTAG>#Muntcentrum</a>` );
+			
+			expect( nodes ).toEqual( [
+				{ type: 'openTag', tagName: 'a', offset: 0 },
+				{ type: 'text', text: '#Muntcentrum', offset: 65 },
+				{ type: 'closeTag', tagName: 'a', offset: 77 }
+			] );
+		} );
+
+
 		it( `when there are two << characters, the first one should be ignored
 			 if the second one forms a tag`,
 		() => {

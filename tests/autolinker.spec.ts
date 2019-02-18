@@ -141,6 +141,15 @@ describe( "Autolinker", function() {
 			} );
 
 
+			it( "when unquoted anchor href's exist, should NOT automatically link the text inside", function() {
+				let result = autolinker.link( '<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>' );
+				expect( result ).toBe( '<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>' );
+
+				let result2 = autolinker.link( '<p>Joe went to <a href=http://www.yahoo.com?query=1>yahoo</a></p>' );
+				expect( result2 ).toBe( '<p>Joe went to <a href=http://www.yahoo.com?query=1>yahoo</a></p>' );
+			} );
+
+
 			it( "should NOT automatically link URLs within self-closing tags", function() {
 				let result = autolinker.link( 'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />' );
 				expect( result ).toBe( 'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />' );
