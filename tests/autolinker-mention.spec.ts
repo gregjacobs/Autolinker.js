@@ -86,7 +86,7 @@ describe( "Autolinker Mention Matching -", () => {
 	
 	
 			it( `should automatically link ${serviceName} handles surrounded by 
-				 braces`, 
+			     curly brackets`, 
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is {@joe_the_man12}` );
 
@@ -95,7 +95,7 @@ describe( "Autolinker Mention Matching -", () => {
 	
 	
 			it( `should automatically link ${serviceName} handles surrounded by 
-				 brackets`, 
+				 square brackets`, 
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is [@joe_the_man12]` );
 

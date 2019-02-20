@@ -679,6 +679,77 @@ describe( "Autolinker Url Matching -", () => {
 	} );
 
 
+	describe( "square bracket handling", () => {
+
+		it( `when the url is surrounded by square brackets, it should not include 
+			 should not include the final closing bracket in the URL`,
+		() => {
+			let result = autolinker.link( "Click here [google.com] for more details" );
+			expect( result ).toBe( 'Click here [<a href="http://google.com">google.com</a>] for more details' );
+		} );
+
+		
+		it( `when the URL starts with a scheme, and is surrounded by square
+			  brackets, should not include the final closing bracket in the URL
+			  (Issue #228)`,
+		() => {
+			let result = autolinker.link( "Click here [http://example.com] for more details" );
+			expect( result ).toBe( 'Click here [<a href="http://example.com">example.com</a>] for more details' );
+		} );
+
+		
+		it( `when the URL ends with a closing square bracket, but there is no 
+			  matching open square bracket, should not include the final closing 
+			  bracket in the URL (Issue #228)`,
+		() => {
+			let result = autolinker.link( "Click here [cat http://example.com] for more details" );
+			expect( result ).toBe( 'Click here [cat <a href="http://example.com">example.com</a>] for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a path exists", function() {
+			let result = autolinker.link( "Click here [google.com/abc] for more details" );
+			expect( result ).toBe( 'Click here [<a href="http://google.com/abc">google.com/abc</a>] for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a query string exists", function() {
+			let result = autolinker.link( "Click here [google.com?abc=1] for more details" );
+			expect( result ).toBe( 'Click here [<a href="http://google.com?abc=1">google.com?abc=1</a>] for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a hash anchor exists", function() {
+			let result = autolinker.link( "Click here [google.com#abc] for more details" );
+			expect( result ).toBe( 'Click here [<a href="http://google.com#abc">google.com#abc</a>] for more details' );
+		} );
+
+
+		it( "should include escaped brackets in the URL", function() {
+			let result = autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%5BCentral_Point_Software%5D" );
+			expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%5BCentral_Point_Software%5D">en.wikipedia.org/wiki/PC_Tools_[Central_Point_Software]</a>' );
+		} );
+
+
+		it( `should correctly accept square brackets such as PHP array 
+		     representation in query strings`,
+		() => {
+			let result = autolinker.link( "Here's an example: http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3" );
+			expect( result ).toBe( `Here's an example: <a href="http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>` );
+		} );
+
+
+		it( `should correctly accept square brackets such as PHP array 
+			 representation in query strings, when the entire URL is surrounded
+			 by square brackets`,
+		() => {
+			let result = autolinker.link( "Here's an example: [http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]" );
+			expect( result ).toBe( `Here's an example: [<a href="http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>]` );
+		} );
+
+	} );
+
+
 	describe( "Special character handling", function() {
 
 		it( "should include $ in URLs", function() {
