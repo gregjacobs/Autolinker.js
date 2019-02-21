@@ -134,6 +134,29 @@ var UrlMatcher =  (function (_super) {
          * @type {RegExp} wordCharRegExp
          */
         _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
+<span id='Autolinker-matcher-Url-property-openParensRe'>        /**
+</span>         * The regular expression to match opening parenthesis in a URL match.
+         *
+         * This is to determine if we have unbalanced parenthesis in the URL, and to
+         * drop the final parenthesis that was matched if so.
+         *
+         * Ex: The text &quot;(check out: wikipedia.com/something_(disambiguation))&quot;
+         * should only autolink the inner &quot;wikipedia.com/something_(disambiguation)&quot;
+         * part, so if we find that we have unbalanced parenthesis, we will drop the
+         * last one for the match.
+         *
+         * @protected
+         * @property {RegExp}
+         */
+        _this.openParensRe = /\(/g;
+<span id='Autolinker-matcher-Url-property-closeParensRe'>        /**
+</span>         * The regular expression to match closing parenthesis in a URL match. See
+         * {@link #openParensRe} for more information.
+         *
+         * @protected
+         * @property {RegExp}
+         */
+        _this.closeParensRe = /\)/g;
         _this.stripPrefix = cfg.stripPrefix;
         _this.stripTrailingSlash = cfg.stripTrailingSlash;
         _this.decodePercentEncoding = cfg.decodePercentEncoding;
@@ -144,6 +167,7 @@ var UrlMatcher =  (function (_super) {
      */
     UrlMatcher.prototype.parseMatches = function (text) {
         var matcherRegex = this.matcherRegex, stripPrefix = this.stripPrefix, stripTrailingSlash = this.stripTrailingSlash, decodePercentEncoding = this.decodePercentEncoding, tagBuilder = this.tagBuilder, matches = [], match;
+        console.log(matcherRegex);
         while ((match = matcherRegex.exec(text)) !== null) {
             var matchStr = match[0], schemeUrlMatch = match[1], wwwUrlMatch = match[4], wwwProtocolRelativeMatch = match[5], 
             //tldUrlMatch = match[ 8 ],  -- not needed at the moment
@@ -163,15 +187,12 @@ var UrlMatcher =  (function (_super) {
             if (offset &gt; 0 &amp;&amp; protocolRelativeMatch &amp;&amp; this.wordCharRegExp.test(prevChar)) {
                 continue;
             }
-            // If the URL ends with a question mark, don&#39;t include the question
-            // mark as part of the URL. We&#39;ll assume the question mark was the
-            // end of a sentence, such as: &quot;Going to google.com?&quot;
             if (/\?$/.test(matchStr)) {
                 matchStr = matchStr.substr(0, matchStr.length - 1);
             }
-            // Handle a closing parenthesis or square bracket at the end of the 
-            // match, and exclude it if there is not a matching open parenthesis 
-            // or square bracket in the match itself.
+            // Handle a closing parenthesis at the end of the match, and exclude
+            // it if there is not a matching open parenthesis in the match
+            // itself.
             if (this.matchHasUnbalancedClosingParen(matchStr)) {
                 matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing &quot;)&quot;
             }
@@ -199,63 +220,31 @@ var UrlMatcher =  (function (_super) {
         return matches;
     };
 <span id='Autolinker-matcher-Url-method-matchHasUnbalancedClosingParen'>    /**
-</span>     * Determines if a match found has an unmatched closing parenthesis or
-     * square bracket. If so, the parenthesis or square bracket will be removed
-     * from the match itself, and appended after the generated anchor tag.
+</span>     * Determines if a match found has an unmatched closing parenthesis. If so,
+     * this parenthesis will be removed from the match itself, and appended
+     * after the generated anchor tag.
      *
      * A match may have an extra closing parenthesis at the end of the match
      * because the regular expression must include parenthesis for URLs such as
      * &quot;wikipedia.com/something_(disambiguation)&quot;, which should be auto-linked.
      *
      * However, an extra parenthesis *will* be included when the URL itself is
-     * wrapped in parenthesis, such as in the case of:
-     *     &quot;(wikipedia.com/something_(disambiguation))&quot;
+     * wrapped in parenthesis, such as in the case of &quot;(wikipedia.com/something_(disambiguation))&quot;.
      * In this case, the last closing parenthesis should *not* be part of the
      * URL itself, and this method will return `true`.
      *
-     * For square brackets in URLs such as in PHP arrays, the same behavior as
-     * parenthesis discussed above should happen:
-     *     &quot;[http://www.example.com/foo.php?bar[]=1&amp;bar[]=2&amp;bar[]=3]&quot;
-     * The closing square bracket should not be part of the URL itself, and this
-     * method will return `true`.
-     *
      * @protected
      * @param {String} matchStr The full match string from the {@link #matcherRegex}.
-     * @return {Boolean} `true` if there is an unbalanced closing parenthesis or
-     *   square bracket at the end of the `matchStr`, `false` otherwise.
+     * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
+     *   the end of the `matchStr`, `false` otherwise.
      */
     UrlMatcher.prototype.matchHasUnbalancedClosingParen = function (matchStr) {
-        var endChar = matchStr.charAt(matchStr.length - 1);
-        var startChar;
-        if (endChar === &#39;)&#39;) {
-            startChar = &#39;(&#39;;
-        }
-        else if (endChar === &#39;]&#39;) {
-            startChar = &#39;[&#39;;
-        }
-        else {
-            return false; // not a close parenthesis or square bracket
-        }
-        // Find if there are the same number of open braces as close braces in
-        // the URL string, minus the last character (which we have already 
-        // determined to be either &#39;)&#39; or &#39;]&#39;
-        var numOpenBraces = 0;
-        for (var i = 0, len = matchStr.length - 1; i &lt; len; i++) {
-            var char = matchStr.charAt(i);
-            if (char === startChar) {
-                numOpenBraces++;
+        var lastChar = matchStr.charAt(matchStr.length - 1);
+        if (lastChar === &#39;)&#39;) {
+            var openParensMatch = matchStr.match(this.openParensRe), closeParensMatch = matchStr.match(this.closeParensRe), numOpenParens = (openParensMatch &amp;&amp; openParensMatch.length) || 0, numCloseParens = (closeParensMatch &amp;&amp; closeParensMatch.length) || 0;
+            if (numOpenParens &lt; numCloseParens) {
+                return true;
             }
-            else if (char === endChar) {
-                numOpenBraces = Math.max(numOpenBraces - 1, 0);
-            }
-        }
-        // If the number of open braces matches the number of close braces in
-        // the URL minus the last character, then the match has *unbalanced*
-        // braces because of the last character. Example of unbalanced braces
-        // from the regex match:
-        //     &quot;http://example.com?a[]=1]&quot;
-        if (numOpenBraces === 0) {
-            return true;
         }
         return false;
     };
@@ -299,7 +288,7 @@ var UrlMatcher =  (function (_super) {
 }(matcher_1.Matcher));
 exports.UrlMatcher = UrlMatcher;
 
-//# sourceMappingURL=url-matcher.js.map
+//# sourceMappingURL=url-matcher-old.js.map
 </pre>
 </body>
 </html>

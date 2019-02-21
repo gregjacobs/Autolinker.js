@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 3.0.0
+ * 3.0.3
  *
  * Copyright(c) 2019 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -728,7 +728,7 @@
             }
             if (this.newWindow) {
                 attrs['target'] = "_blank";
-                attrs['rel'] = "noopener noreferrer";
+                attrs['rel'] = "noopener noreferrer"; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
             }
             if (this.truncate) {
                 if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
@@ -1033,6 +1033,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of EmailMatch, returns 'email'.
          *
          * @return {String}
          */
@@ -1103,7 +1104,8 @@
             return _this;
         }
         /**
-         * Returns the type of match that this class represents.
+         * Returns a string name for the type of match that this class represents.
+         * For the case of HashtagMatch, returns 'hashtag'.
          *
          * @return {String}
          */
@@ -1191,7 +1193,8 @@
             return _this;
         }
         /**
-         * Returns the type of match that this class represents.
+         * Returns a string name for the type of match that this class represents.
+         * For the case of MentionMatch, returns 'mention'.
          *
          * @return {String}
          */
@@ -1301,6 +1304,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of PhoneMatch, returns 'phone'.
          *
          * @return {String}
          */
@@ -1453,6 +1457,7 @@
         }
         /**
          * Returns a string name for the type of match that this class represents.
+         * For the case of UrlMatch, returns 'url'.
          *
          * @return {String}
          */
@@ -2270,29 +2275,6 @@
              * @type {RegExp} wordCharRegExp
              */
             _this.wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
-            /**
-             * The regular expression to match opening parenthesis in a URL match.
-             *
-             * This is to determine if we have unbalanced parenthesis in the URL, and to
-             * drop the final parenthesis that was matched if so.
-             *
-             * Ex: The text "(check out: wikipedia.com/something_(disambiguation))"
-             * should only autolink the inner "wikipedia.com/something_(disambiguation)"
-             * part, so if we find that we have unbalanced parenthesis, we will drop the
-             * last one for the match.
-             *
-             * @protected
-             * @property {RegExp}
-             */
-            _this.openParensRe = /\(/g;
-            /**
-             * The regular expression to match closing parenthesis in a URL match. See
-             * {@link #openParensRe} for more information.
-             *
-             * @protected
-             * @property {RegExp}
-             */
-            _this.closeParensRe = /\)/g;
             _this.stripPrefix = cfg.stripPrefix;
             _this.stripTrailingSlash = cfg.stripTrailingSlash;
             _this.decodePercentEncoding = cfg.decodePercentEncoding;
@@ -2322,12 +2304,15 @@
                 if (offset > 0 && protocolRelativeMatch && this.wordCharRegExp.test(prevChar)) {
                     continue;
                 }
+                // If the URL ends with a question mark, don't include the question
+                // mark as part of the URL. We'll assume the question mark was the
+                // end of a sentence, such as: "Going to google.com?"
                 if (/\?$/.test(matchStr)) {
                     matchStr = matchStr.substr(0, matchStr.length - 1);
                 }
-                // Handle a closing parenthesis at the end of the match, and exclude
-                // it if there is not a matching open parenthesis in the match
-                // itself.
+                // Handle a closing parenthesis or square bracket at the end of the 
+                // match, and exclude it if there is not a matching open parenthesis 
+                // or square bracket in the match itself.
                 if (this.matchHasUnbalancedClosingParen(matchStr)) {
                     matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing ")"
                 }
@@ -2355,31 +2340,63 @@
             return matches;
         };
         /**
-         * Determines if a match found has an unmatched closing parenthesis. If so,
-         * this parenthesis will be removed from the match itself, and appended
-         * after the generated anchor tag.
+         * Determines if a match found has an unmatched closing parenthesis or
+         * square bracket. If so, the parenthesis or square bracket will be removed
+         * from the match itself, and appended after the generated anchor tag.
          *
          * A match may have an extra closing parenthesis at the end of the match
          * because the regular expression must include parenthesis for URLs such as
          * "wikipedia.com/something_(disambiguation)", which should be auto-linked.
          *
          * However, an extra parenthesis *will* be included when the URL itself is
-         * wrapped in parenthesis, such as in the case of "(wikipedia.com/something_(disambiguation))".
+         * wrapped in parenthesis, such as in the case of:
+         *     "(wikipedia.com/something_(disambiguation))"
          * In this case, the last closing parenthesis should *not* be part of the
          * URL itself, and this method will return `true`.
          *
+         * For square brackets in URLs such as in PHP arrays, the same behavior as
+         * parenthesis discussed above should happen:
+         *     "[http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
+         * The closing square bracket should not be part of the URL itself, and this
+         * method will return `true`.
+         *
          * @protected
          * @param {String} matchStr The full match string from the {@link #matcherRegex}.
-         * @return {Boolean} `true` if there is an unbalanced closing parenthesis at
-         *   the end of the `matchStr`, `false` otherwise.
+         * @return {Boolean} `true` if there is an unbalanced closing parenthesis or
+         *   square bracket at the end of the `matchStr`, `false` otherwise.
          */
         UrlMatcher.prototype.matchHasUnbalancedClosingParen = function (matchStr) {
-            var lastChar = matchStr.charAt(matchStr.length - 1);
-            if (lastChar === ')') {
-                var openParensMatch = matchStr.match(this.openParensRe), closeParensMatch = matchStr.match(this.closeParensRe), numOpenParens = (openParensMatch && openParensMatch.length) || 0, numCloseParens = (closeParensMatch && closeParensMatch.length) || 0;
-                if (numOpenParens < numCloseParens) {
-                    return true;
+            var endChar = matchStr.charAt(matchStr.length - 1);
+            var startChar;
+            if (endChar === ')') {
+                startChar = '(';
+            }
+            else if (endChar === ']') {
+                startChar = '[';
+            }
+            else {
+                return false; // not a close parenthesis or square bracket
+            }
+            // Find if there are the same number of open braces as close braces in
+            // the URL string, minus the last character (which we have already 
+            // determined to be either ')' or ']'
+            var numOpenBraces = 0;
+            for (var i = 0, len = matchStr.length - 1; i < len; i++) {
+                var char = matchStr.charAt(i);
+                if (char === startChar) {
+                    numOpenBraces++;
                 }
+                else if (char === endChar) {
+                    numOpenBraces = Math.max(numOpenBraces - 1, 0);
+                }
+            }
+            // If the number of open braces matches the number of close braces in
+            // the URL minus the last character, then the match has *unbalanced*
+            // braces because of the last character. Example of unbalanced braces
+            // from the regex match:
+            //     "http://example.com?a[]=1]"
+            if (numOpenBraces === 0) {
+                return true;
             }
             return false;
         };
@@ -2694,6 +2711,7 @@
         while (charIdx < len) {
             var char = html.charAt(charIdx);
             // For debugging: search for other "For debugging" lines
+            // ALSO: Temporarily remove the 'const' keyword on the State enum
             // table.push( 
             // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
             // );
@@ -2765,6 +2783,7 @@
                     throwUnhandledCaseError(state);
             }
             // For debugging: search for other "For debugging" lines
+            // ALSO: Temporarily remove the 'const' keyword on the State enum
             // table.push( 
             // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
             // );
@@ -2774,7 +2793,7 @@
             emitText();
         }
         // For debugging: search for other "For debugging" lines
-        //console.log( '\n' + table.toString() );
+        // console.log( '\n' + table.toString() );
         // Called when non-tags are being read (i.e. the text around HTML †ags)
         // https://www.w3.org/TR/html51/syntax.html#data-state
         function stateData(char) {
@@ -2968,12 +2987,6 @@
             else if (char === '<') {
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
-            }
-            else if (quoteRe.test(char) || /[=`]/.test(char)) {
-                // "Parse error" characters that, according to the spec, should be
-                // appended to the attribute value, but we'll treat these characters
-                // as not forming a real HTML tag
-                resetToDataState();
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
@@ -4054,7 +4067,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.0.0';
+        Autolinker.version = '3.0.3';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

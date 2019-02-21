@@ -81,6 +81,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		var char = html.charAt( charIdx );
 
 		// For debugging: search for other "For debugging" lines
+		// ALSO: Temporarily remove the 'const' keyword on the State enum
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
 		// );
@@ -113,6 +114,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		}
 
 		// For debugging: search for other "For debugging" lines
+		// ALSO: Temporarily remove the 'const' keyword on the State enum
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
 		// );
@@ -125,7 +127,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	}
 
 	// For debugging: search for other "For debugging" lines
-	//console.log( '\n' + table.toString() );
+	// console.log( '\n' + table.toString() );
 
 
 
@@ -355,12 +357,6 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		} else if( char === '<' ) {
 			// start of another tag (ignore the previous, incomplete one)
 			startNewTag();
-
-		} else if( quoteRe.test( char ) || /[=`]/.test( char ) ) {
-			// "Parse error" characters that, according to the spec, should be
-			// appended to the attribute value, but we'll treat these characters
-			// as not forming a real HTML tag
-			resetToDataState();
 
 		} else {
 			// Any other character, treat it as part of the attribute value

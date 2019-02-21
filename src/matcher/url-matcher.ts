@@ -10,7 +10,7 @@ import { StripPrefixConfig } from "../autolinker";
  * Base class for the {@link Autolinker.matcher.SchemeUrl SchemeUrl} and 
  * {@link Autolinker.matcher.TldUrl TldUrl} matchers, which are responsible for
  * finding links in source text such as `http://google.com` or just `google.com`.
- * 
+ *
  * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more 
  * details on Matchers.
  * 
@@ -120,7 +120,7 @@ export abstract class UrlMatcher extends Matcher {
 	 * Determine if there's an invalid character after the TLD in a URL. Valid
 	 * characters after TLD are ':/?#'. Exclude scheme matched URLs from this
 	 * check.
-	 * 
+	 *
 	 * See issue #200
 	 *
 	 * @protected
