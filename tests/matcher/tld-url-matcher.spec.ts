@@ -15,7 +15,7 @@ describe( "Autolinker.matcher.TldUrl", function() {
 	} );
 
 
-	fdescribe( 'parseMatches()', function() {
+	describe( 'parseMatches()', function() {
 
 		it( 'should return an empty array if there are no matches for urls', function() {
 			expect( matcher.parseMatches( '' ) ).toEqual( [] );
@@ -85,7 +85,7 @@ describe( "Autolinker.matcher.TldUrl", function() {
 			let matches = matcher.parseMatches( 'asdf---asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf--asdf.com', 0 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf---asdf.com', 0 );
 		} );
 
 
@@ -158,134 +158,184 @@ describe( "Autolinker.matcher.TldUrl", function() {
 		} );
 
 
+		it( `when there is a short port number, should parse that as part of the match`, () => {
+			let matches = matcher.parseMatches( 'google.com:80 is great stuff' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com:80', 0 );
+		} );
+
+
+		it( `when there is a long port number, should parse that as part of the match`, () => {
+			let matches = matcher.parseMatches( 'google.com:8000 is great stuff' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com:8000', 0 );
+		} );
+
+
+		it( `when there is a port number followed by a period, should parse up
+			 to the port number as part of the match`, 
+		() => {
+			let matches = matcher.parseMatches( 'google.com:8000.' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com:8000', 0 );
+		} );
+
+
 		it( `when a domain name is followed by a colon, and then some other text
 			 other than a port number follows the colon, the domain name should
 			 be matched`,
 		() => {
 			let matches = matcher.parseMatches( 'google.com: great stuff' );
 
-			expect( matches.length ).toBe( 2 );
+			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
 		} );
 
 
-		// it( 'should match an IP address', function() {
-		// 	let matches = matcher.parseMatches( 'http://127.0.0.1');
+		it( 'should match the entire URL with a path directly after the domain name', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com/path/to/file' );
 
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
-		// });
-
-		// it( 'should not match an invalid IP address', function() {
-		// 	let matches = matcher.parseMatches( 'http://127.0.0.');
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-		// it( 'should not match an URL which does not respect the IP protocol', function() {
-		// 	let matches = matcher.parseMatches( 'git:1.0');
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-		// it( 'should not match an IP address with too many numbers', function() {
-		// 	let matches = matcher.parseMatches( 'http://1.2.3.4.5' );
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/path/to/file', 0 );
+		});
 
 
-		// it( 'should match the entire URL with a check character', function() {
-		// 	let matches = matcher.parseMatches( 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
+		it( 'should match the entire URL with a query directly after the domain name', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch' );
 
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
-		// });
-
-
-		// it( 'should match any local URL with numbers with http:// before', function() {
-		// 	let matches = matcher.parseMatches( 'http://localhost.local001/test' );
-		// 	let othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	expect( othermatches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'http://localhost.local001/test', 0 );
-		// 	MatchChecker.expectUrlMatch( othermatches[ 0 ], 'http://suus111.w10:8090/display/test/AI', 0 );
-		// });
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch', 0 );
+		});
 
 
-		// it( 'should not match a local URL with numbers that does not have the http:// before', function() {
-		// 	let matches = matcher.parseMatches( 'localhost.local001/test' );
+		it( 'should match the entire URL with a hash directly after the domain name', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com#search=mysearch' );
 
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-
-		// it( 'should not match an address with multiple dots in domain name', function() {
-		// 	let matches = matcher.parseMatches( 'hello:...world' );
-		// 	let othermatches = matcher.parseMatches( 'hello:wo.....rld' );
-
-		// 	expect( matches.length ).toBe( 0 );
-		// 	expect( othermatches.length ).toBe( 0 );
-		// });
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com#search=mysearch', 0 );
+		});
 
 
-		// it( 'should match an address with multiple dots in path string', function() {
-		// 	var matches = matcher.parseMatches( 'https://gitlab.example.com/space/repo/compare/master...develop' );
-		// 	var othermatches = matcher.parseMatches( 'https://www.google.it/search?q=autolink.js&oq=autolink.js&aqs=chrome..69i57j0l4.5161j0j7&sourceid=chrome&ie=UTF-8' );
+		it( 'should match the entire URL with a path and a hash directly after the domain name', function() {
+			const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file#somewhere' );
 
-		// 	expect( matches.length ).toBe( 1 );
-		// 	expect( othermatches.length ).toBe( 1 );
-		// });
-
-
-		// it( 'should match katakana with dakuten characters (symbol with combining mark - two unicode characters)', function() {
-		// 	var matches = matcher.parseMatches( 'https://website.com/files/name-ボ.pdf' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'https://website.com/files/name-ボ.pdf', 0 );
-		// } );
+			expect( matches1.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file#somewhere', 0 );
+		} );
 
 
-		// describe( 'protocol-relative URLs', function() {
+		it( 'should match the entire URL with a path and a hash directly after ' +
+		    'the domain name, with a slash ending the path', function() {
+			const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file/#somewhere' );
 
-		// 	it( 'should match a protocol-relative URL at the beginning of the string', function() {
-		// 		let matches = matcher.parseMatches( '//asdf.com' );
-
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 0 );
-		// 	} );
-
-
-		// 	it( 'should match a protocol-relative URL in the middle of the string', function() {
-		// 		let matches = matcher.parseMatches( 'Hello //asdf.com today' );
-
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-		// 	} );
+			expect( matches1.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file/#somewhere', 0 );
+		} );
 
 
-		// 	it( 'should match a protocol-relative URL at the end of the string', function() {
-		// 		let matches = matcher.parseMatches( 'Hello //asdf.com' );
+		it( 'should match the entire URL with a query and a hash directly after the domain name', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch#somewhere' );
 
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-		// 	} );
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch#somewhere', 0 );
+		});
 
 
-		// 	it( 'should *not* match a protocol-relative URL if the "//" was in the middle of a word', function() {
-		// 		let matches = matcher.parseMatches( 'asdf//asdf.com' );
+		it( 'should match the entire URL with a path, query, and hash', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
 
-		// 		expect( matches.length ).toBe( 0 );
-		// 	} );
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
+		});
 
-		// 	it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
-		// 		const start = Date.now();
-		// 		matcher.parseMatches( new Array(10000).join('a') );
-		// 		expect( Date.now() - start ).toBeLessThan( 100 );
-		// 	} );
 
-		// } );
+		it( 'should match the entire URL with a check character', function() {
+			let matches = matcher.parseMatches( 'gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
+		});
+
+
+		it( 'should not match a hostname that does not have a valid TLD', function() {
+			const matches1 = matcher.parseMatches( 'localhost.c/test' );
+			expect( matches1.length ).toBe( 0 );
+
+			const matches2 = matcher.parseMatches( 'localhost.co/test' );
+			expect( matches2.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches2[ 0 ], 'http://localhost.co/test', 0 );
+		});
+
+
+		it( 'should not match a local URL with numbers that does not have the http:// before', function() {
+			let matches = matcher.parseMatches( 'localhost.local001/test' );
+
+			expect( matches.length ).toBe( 0 );
+		});
+
+
+		it( 'should match an address with multiple dots in path string', function() {
+			var matches = matcher.parseMatches( 'gitlab.example.com/space/repo/compare/master...develop' );
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/space/repo/compare/master...develop', 0 );
+
+			var otherMatches = matcher.parseMatches( 'www.google.it/search?q=autolink.js&oq=autolink.js&aqs=chrome..69i57j0l4.5161j0j7&sourceid=chrome&ie=UTF-8' );
+			expect( otherMatches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( otherMatches[ 0 ], 'http://www.google.it/search?q=autolink.js&oq=autolink.js&aqs=chrome..69i57j0l4.5161j0j7&sourceid=chrome&ie=UTF-8', 0 );
+		});
+
+
+		it( 'should match katakana with dakuten characters (symbol with combining mark - two unicode characters)', function() {
+			var matches = matcher.parseMatches( 'website.com/files/name-ボ.pdf' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://website.com/files/name-ボ.pdf', 0 );
+		} );
+
+
+		describe( 'protocol-relative URLs', function() {
+
+			it( 'should match a protocol-relative URL at the beginning of the string', function() {
+				let matches = matcher.parseMatches( '//asdf.com' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 0 );
+			} );
+
+
+			it( 'should match a protocol-relative URL in the middle of the string', function() {
+				let matches = matcher.parseMatches( 'Hello //asdf.com today' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
+			} );
+
+
+			it( 'should match a protocol-relative URL at the end of the string', function() {
+				let matches = matcher.parseMatches( 'Hello //asdf.com' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
+			} );
+
+
+			it( 'should *not* match a protocol-relative URL if the "//" was in the middle of a word', function() {
+				let matches = matcher.parseMatches( 'asdf//asdf.com' );
+
+				expect( matches.length ).toBe( 0 );
+			} );
+
+
+			it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
+				const start = Date.now();
+				matcher.parseMatches( new Array( 10000 ).join( 'a' ) );
+				expect( Date.now() - start ).toBeLessThan( 100 );
+			} );
+
+		} );
 
 	} );
 

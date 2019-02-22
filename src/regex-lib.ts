@@ -175,16 +175,29 @@ export const getDomainNameStr = ( group: number ) => {
 	return '(?:' + getDomainLabelStr( group ) + '(?:\\.' + getDomainLabelStr( group + 1 ) + '){0,126}|' + ipStr + ')';
 };
 
-
-/**
- * A regular expression to match domain names of a URL or email address.
- * Ex: 'google', 'yahoo', 'some-other-company', etc.
- */
-export const domainNameRegex = new RegExp( '[' + alphaNumericAndMarksCharsStr + '.\\-]*[' + alphaNumericAndMarksCharsStr + '\\-]' );
-
-
 /**
  * A regular expression that is simply the character class of the characters
  * that may be used in a domain name, minus the '-' or '.'
  */
 export const domainNameCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}]` );
+
+
+/**
+ * The set of characters that are allowed in the URL suffix (i.e. the path,
+ * query, and hash part of the URL) which may also form the ending character of
+ * the URL. 
+ * 
+ * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL 
+ * suffix characters, but (generally) should not be the last character of a URL.
+ */
+export const urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*\[\]\u2713]/;
+
+/**
+ * URL suffix characters (i.e. path, query, and has part of the URL) that are 
+ * not allowed as the *last character* in the URL suffix as they would normally
+ * form the end of a sentence.
+ * 
+ * The {@link #urlSuffixAllowedSpecialCharsRe} contains additional allowed URL
+ * suffix characters which are allowed as the last character.
+ */
+export const urlSuffixNotAllowedAsLastCharRe = /[?!:,.;]/;
