@@ -125,8 +125,10 @@ export class TldUrlMatcher extends UrlMatcher {
 				switchToState( State.ProtocolRelativeSlash2 );
 
 			} else {
-				// Anything else, cannot be the start of a protocol-relative URL
+				// Anything else, cannot be the start of a protocol-relative 
+				// URL. Reconsume the current character in the non-URL state.
 				resetToNonUrlState();
+				reconsumeCurrentCharacter();
 			}
 		}
 
@@ -281,6 +283,15 @@ export class TldUrlMatcher extends UrlMatcher {
 		function captureCharAndSwitchToState( newState: State ) {
 			switchToState( newState );
 			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx: charIdx } );
+		}
+
+
+		/**
+		 * Causes the state machine to reconsume the current input character 
+		 * (usually in a different state)
+		 */
+		function reconsumeCurrentCharacter() {
+			charIdx--;
 		}
 
 

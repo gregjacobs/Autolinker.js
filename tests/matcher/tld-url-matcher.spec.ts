@@ -104,6 +104,16 @@ describe( "Autolinker.matcher.TldUrl", function() {
 		} );
 
 
+		it( `should match a domain starting with a slash but not include 
+			 the prefixed slash in the match`, 
+		() => {
+			let matches = matcher.parseMatches( '/asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 1 );
+		} );
+
+
 		it( `should match a domain starting with a hyphen but not include 
 				the prefixed hypen in the match`, 
 		() => {
