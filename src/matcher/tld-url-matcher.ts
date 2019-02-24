@@ -1,15 +1,13 @@
-import { Matcher, MatcherConfig } from "./matcher";
-import { letterRe, alphaNumericAndMarksRe, alphaNumericCharsRe, digitRe, urlSuffixAllowedSpecialCharsRe, urlSuffixNotAllowedAsLastCharRe } from "../regex-lib";
-import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
+import { alphaNumericAndMarksRe, alphaNumericCharsRe, digitRe } from "../regex-lib";
 import { tldRegex } from "./tld-regex";
 import { UrlMatch } from "../match/url-match";
-import { UrlMatchValidator } from "./url-match-validator";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
+import { UrlMatcher } from './url-matcher';
+import { parseUrlSuffix as doParseUrlSuffix } from './parse-url-suffix';
 
 // For debugging: search for other "For debugging" lines
-import CliTable from 'cli-table';
-import { UrlMatcher } from './url-matcher-old';
+// import CliTable from 'cli-table';
 
 /**
  * @class Autolinker.matcher.TldUrl
@@ -54,17 +52,17 @@ export class TldUrlMatcher extends UrlMatcher {
 			currentUrl = noCurrentUrl;
 
 		// For debugging: search for other "For debugging" lines
-		const table = new CliTable( {
-			head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentUrl.idx', 'lastConfirmedCharIdx', 'tldStartIdx', 'tldEndIdx' ]
-		} );
+		// const table = new CliTable( {
+		// 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentUrl.idx', 'lastConfirmedCharIdx', 'tldStartIdx', 'tldEndIdx' ]
+		// } );
 
 		while( charIdx < len ) {
 			const char = text.charAt( charIdx );
 
 			// For debugging: search for other "For debugging" lines
-			table.push( 
-				[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
-			);
+			// table.push( 
+			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
+			// );
 
 			switch( state ) {
 				case State.NonUrl: stateNonUrl( char ); break;
@@ -82,19 +80,16 @@ export class TldUrlMatcher extends UrlMatcher {
 				case State.PortNumberColon: statePortNumberColon( char ); break;
 				case State.PortNumber: statePortNumber( char ); break;
 
-				// URL Suffix (path, query, and hash)
-				case State.Path: statePath( char ); break;
-				case State.Query: stateQuery( char ); break;
-				case State.Hash: stateHash( char ); break;
+				// Note: URL Suffix (path, query, and hash) handled by parseUrlSuffix() function
 
 				default: 
 					throwUnhandledCaseError( state );
 			}
 
 			// For debugging: search for other "For debugging" lines
-			table.push( 
-				[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
-			);
+			// table.push( 
+			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
+			// );
 
 			charIdx++;
 		}
@@ -159,14 +154,8 @@ export class TldUrlMatcher extends UrlMatcher {
 			} else if( char === ':' ) {
 				switchToState( State.PortNumberColon );
 
-			} else if( char === '/' ) {
-				switchToState( State.Path );
-
-			} else if( char === '?' ) {
-				switchToState( State.Query );
-
-			} else if( char === '#' ) {
-				switchToState( State.Hash );
+			} else if( char === '/' || char === '?' || char === '#' ) {
+				parseUrlSuffix();
 
 			} else if( alphaNumericAndMarksRe.test( char ) ) {
 				// Stay in the DomainLabelChar state (but update the last 
@@ -249,102 +238,8 @@ export class TldUrlMatcher extends UrlMatcher {
 				// capture the latest char as a "confirmed URL character")
 				captureCharAndSwitchToState( State.PortNumber );
 
-			} else if( char === '/' ) {
-				captureCharAndSwitchToState( State.Path );
-				
-			} else if( char === '?' ) {
-				switchToState( State.Query );
-
-			} else if( char === '#' ) {
-				captureCharAndSwitchToState( State.Hash );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-		function statePath( char: string ) {
-			if( char === '?' ) {
-				switchToState( State.Query );
-
-			} else if( char === '#' ) {
-				captureCharAndSwitchToState( State.Hash )
-				
-			} else if( 
-				alphaNumericAndMarksRe.test( char ) || 
-				urlSuffixAllowedSpecialCharsRe.test( char ) 
-			) {
-				captureCharAndSwitchToState( State.Path );
-				
-			} else if( urlSuffixNotAllowedAsLastCharRe.test( char ) ) {
-				// Switch to the Path state, but don't necessarily capture
-				// the character unless more URL characters come afterwards
-				switchToState( State.Path );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-
-		/**
-		 * Handles the "query" part of a URL, i.e. "?a=1&b=2"
-		 */
-		function stateQuery( char: string ) {
-			if( char === '?' ) {
-				// Stay in Query state
-
-			} else if( char === '/' ) {
-				// Stay in the Query state, and capture the character as a
-				// "confirmed" URL character
-				captureCharAndSwitchToState( State.Query );
-
-			} else if( char === '#' ) {
-				captureCharAndSwitchToState( State.Hash )
-				
-			} else if( 
-				alphaNumericAndMarksRe.test( char ) || 
-				urlSuffixAllowedSpecialCharsRe.test( char ) 
-			) {
-				// Stay in the Query state, and capture the character as a
-				// "confirmed" URL character
-				captureCharAndSwitchToState( State.Query );
-				
-			} else if( urlSuffixNotAllowedAsLastCharRe.test( char ) ) {
-				// Stay in the Query state, but don't necessarily capture
-				// the character unless more URL characters come afterwards
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-		function stateHash( char: string ) {
-			if( char === '?' ) {
-				// Stay in Hash state
-
-			} else if( char === '/' || char === '#' ) {
-				// Stay in the Hash state, and capture the character as a
-				// "confirmed" URL character
-				captureCharAndSwitchToState( State.Hash );
-
-			} else if( 
-				alphaNumericAndMarksRe.test( char ) || 
-				urlSuffixAllowedSpecialCharsRe.test( char ) 
-			) {
-				// Stay in the Hash state, and capture the character as a
-				// "confirmed" URL character
-				captureCharAndSwitchToState( State.Hash );
-				
-			} else if( urlSuffixNotAllowedAsLastCharRe.test( char ) ) {
-				// Stay in the Hash state, but don't necessarily capture
-				// the character unless more URL characters come afterwards
+			} else if( char === '/' || char === '?' || char === '#' ) {
+				parseUrlSuffix();
 
 			} else {
 				// Anything else, may either be the end of the URL or it wasn't 
@@ -386,6 +281,30 @@ export class TldUrlMatcher extends UrlMatcher {
 		function captureCharAndSwitchToState( newState: State ) {
 			switchToState( newState );
 			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx: charIdx } );
+		}
+
+
+		/**
+		 * When a '/', '?', or '#' character is encountered, this begins the URL
+		 * suffix (path, query, or hash part of the URL). 
+		 * 
+		 * We'll run a shared subroutine for this part, and extract the 
+		 * information about it.
+		 */
+		function parseUrlSuffix() {
+			const { 
+				endIdx, 
+				lastConfirmedUrlCharIdx 
+			} = doParseUrlSuffix( text, charIdx );
+
+			// Update the lastConfirmedUrlCharIdx
+			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx } );
+
+			// Advance the character index to the last read character by the
+			// doParseUrlSuffix() routine
+			charIdx = endIdx;
+			
+			captureMatchIfValidAndReset();
 		}
 
 
@@ -445,10 +364,9 @@ export class TldUrlMatcher extends UrlMatcher {
 				} ) );
 
 				return true;   // valid match was captured
-
-			} else {
-				return false;  // no match captured
 			}
+			
+			return false;  // no match captured
 		}
 
 
@@ -468,8 +386,7 @@ export class TldUrlMatcher extends UrlMatcher {
 }
 
 
-// TODO: const enum
-enum State {
+const enum State {
 	NonUrl = 0,
 
 	// Protocol-relative URL states
@@ -483,12 +400,7 @@ enum State {
 
 	// Port
 	PortNumberColon,
-	PortNumber,
-	
-	// URL Suffix (path, query, and hash)
-	Path,
-	Query,
-	Hash
+	PortNumber
 }
 
 

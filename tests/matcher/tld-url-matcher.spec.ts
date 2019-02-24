@@ -195,61 +195,125 @@ describe( "Autolinker.matcher.TldUrl", function() {
 		} );
 
 
-		it( 'should match the entire URL with a path directly after the domain name', function() {
-			let matches = matcher.parseMatches( 'gitlab.example.com/path/to/file' );
+		describe( 'path, query, and hash matching', () => {
 
-			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/path/to/file', 0 );
-		});
+			it( `should return a url match with a trailing slash as part of the 
+				 url itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com/' );
 
-
-		it( 'should match the entire URL with a query directly after the domain name', function() {
-			let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch' );
-
-			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch', 0 );
-		});
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com/', 0 );
+			} );
 
 
-		it( 'should match the entire URL with a hash directly after the domain name', function() {
-			let matches = matcher.parseMatches( 'gitlab.example.com#search=mysearch' );
+			it( `should return a url match with a trailing question mark *not* as 
+				part of the URL itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com?' );
 
-			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com#search=mysearch', 0 );
-		});
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
+			} );
 
 
-		it( 'should match the entire URL with a path and a hash directly after the domain name', function() {
-			const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file#somewhere' );
+			it( `should return a url match with a trailing hash as part of the 
+				 url itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com#' );
 
-			expect( matches1.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file#somewhere', 0 );
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com#', 0 );
+			} );
+
+
+			it( `should return a url match with a trailing slash after the port 
+			     as part of the url itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com:8080/' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com:8080/', 0 );
+			} );
+
+
+			it( `should return a url match with a trailing question mark after
+			     the port *not* as part of the URL itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com:8080?' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com:8080', 0 );
+			} );
+
+
+			it( `should return a url match with a trailing hash after the port 
+			     as part of the url itself`, 
+			() => {
+				let matches = matcher.parseMatches( 'asdf.com:8080#' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com:8080#', 0 );
+			} );
+
+
+			it( 'should match the entire URL with a path directly after the domain name', function() {
+				let matches = matcher.parseMatches( 'gitlab.example.com/path/to/file' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/path/to/file', 0 );
+			});
+
+
+			it( 'should match the entire URL with a query directly after the domain name', function() {
+				let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch', 0 );
+			});
+
+
+			it( 'should match the entire URL with a hash directly after the domain name', function() {
+				let matches = matcher.parseMatches( 'gitlab.example.com#search=mysearch' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com#search=mysearch', 0 );
+			});
+
+
+			it( 'should match the entire URL with a path and a hash directly after the domain name', function() {
+				const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file#somewhere' );
+
+				expect( matches1.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file#somewhere', 0 );
+			} );
+
+
+			it( 'should match the entire URL with a path and a hash directly after ' +
+				'the domain name, with a slash ending the path', function() {
+				const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file/#somewhere' );
+
+				expect( matches1.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file/#somewhere', 0 );
+			} );
+
+
+			it( 'should match the entire URL with a query and a hash directly after the domain name', function() {
+				let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch#somewhere' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch#somewhere', 0 );
+			});
+
+
+			it( 'should match the entire URL with a path, query, and hash', function() {
+				let matches = matcher.parseMatches( 'gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
+			});
+
 		} );
-
-
-		it( 'should match the entire URL with a path and a hash directly after ' +
-		    'the domain name, with a slash ending the path', function() {
-			const matches1 = matcher.parseMatches( 'gitlab.example.com/path/to/file/#somewhere' );
-
-			expect( matches1.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://gitlab.example.com/path/to/file/#somewhere', 0 );
-		} );
-
-
-		it( 'should match the entire URL with a query and a hash directly after the domain name', function() {
-			let matches = matcher.parseMatches( 'gitlab.example.com?search=mysearch#somewhere' );
-
-			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com?search=mysearch#somewhere', 0 );
-		});
-
-
-		it( 'should match the entire URL with a path, query, and hash', function() {
-			let matches = matcher.parseMatches( 'gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
-
-			expect( matches.length ).toBe( 1 );
-			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
-		});
 
 
 		it( 'should match the entire URL with a check character', function() {
@@ -267,6 +331,9 @@ describe( "Autolinker.matcher.TldUrl", function() {
 			const matches2 = matcher.parseMatches( 'localhost.co/test' );
 			expect( matches2.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches2[ 0 ], 'http://localhost.co/test', 0 );
+
+			const matches3 = matcher.parseMatches( 'localhost.comerific/test' );
+			expect( matches3.length ).toBe( 0 );
 		});
 
 
