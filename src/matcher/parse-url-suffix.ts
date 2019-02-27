@@ -9,10 +9,6 @@ import { alphaNumericAndMarksRe, urlSuffixAllowedSpecialCharsRe, urlSuffixNotAll
  * @param text The text to parse the URL suffix in
  * @param startIdx The starting index of the URL suffix. This should be the 
  *   index of a '/', '?', or '#' character that begins the URL suffix
- * @param captureCharAtStartIdx If the character at the `startIdx` is a 
- *   confirmed URL character (such as a slash immediately after a port number),
- *   set this to ParseUrlSuffixCaptureMode.Capture. Otherwise should be set to
- *   ParseUrlSuffixCaptureMode.DontCapture
  */
 export function parseUrlSuffix( 
 	text: string, 
@@ -169,6 +165,10 @@ export interface ParseUrlSuffixResult {
 }
 
 
+/**
+ * Determines the initial state for the `parseUrlSuffix()` state machine based
+ * on the first character being a '/', '?', or '#'
+ */
 function determineInitialState( char: string ): State {
 	if( char === '/' ) { 
 		return State.Path;
@@ -182,36 +182,8 @@ function determineInitialState( char: string ): State {
 }
 
 
-// TODO: const enum
-enum State {
+const enum State {
 	Path = 0,
 	Query,
 	Hash
-}
-
-
-export const enum ParseUrlSuffixCaptureMode {
-	Capture = 0,  // We want to capture the character passed to the parseUrlSuffix() method
-	DontCapture   // The capture passed to the parseUrlSuffix() method may or may not be part of the URL, depending on subsequent characters read
-}
-
-
-class CurrentUrlSuffix {
-	readonly idx: number;  // the index of the first character in the URL
-	readonly lastConfirmedUrlCharIdx: number;  // the index of the last character that was read that was a URL character for sure. For example, while reading "asdf.com-", the last confirmed char will be the 'm', and the current char would be '-' which *may* form an additional part of the URL
-	readonly isProtocolRelative: boolean;
-	readonly tldStartIdx: number;  // the index of the first character in the TLD of the hostname, so we can read the TLD. Ex: in 'sub.google.com/something', the index would be 10
-	readonly tldEndIdx: number;    // the index of the last host character, so we can read the TLD. Ex: in 'sub.google.com/something', the index would be 13
-
-	constructor( cfg: Partial<CurrentUrlSuffix> = {} ) {
-		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-		this.lastConfirmedUrlCharIdx = cfg.lastConfirmedUrlCharIdx !== undefined ? cfg.lastConfirmedUrlCharIdx : this.idx;
-		this.isProtocolRelative = !!cfg.isProtocolRelative;
-		this.tldStartIdx = cfg.tldStartIdx !== undefined ? cfg.tldStartIdx : -1;
-		this.tldEndIdx = cfg.tldEndIdx !== undefined ? cfg.tldEndIdx : -1;
-	}
-
-	isValid() { 
-		return this.tldStartIdx > -1;  // we found a '.' in the hostname
-	}
 }
