@@ -73,6 +73,16 @@ describe( "Autolinker.matcher.TldUrl", function() {
 		} );
 
 
+		it( `should return multiple urls when there are more than one within the 
+		     string that are directly next to each other`, function() {
+			let matches = matcher.parseMatches( 'asdf.com fdsa.com' );
+
+			expect( matches.length ).toBe( 2 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
+			MatchChecker.expectUrlMatch( matches[ 1 ], 'http://fdsa.com', 9 );
+		} );
+
+
 		it( 'a match within parenthesis should be parsed correctly', function() {
 			let matches = matcher.parseMatches( 'Hello (asdf.com)' );
 
@@ -136,6 +146,16 @@ describe( "Autolinker.matcher.TldUrl", function() {
 				match that domain`, 
 		() => {
 			let matches = matcher.parseMatches( 'asdf.com-. Stuff' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
+		} );
+
+
+		it( `when the domain label has a '..' sequence at the very end, should 
+			 match the domain without the '..'`, 
+		() => {
+			let matches = matcher.parseMatches( 'asdf.com.. Stuff' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com', 0 );
@@ -322,6 +342,16 @@ describe( "Autolinker.matcher.TldUrl", function() {
 				expect( matches.length ).toBe( 1 );
 				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://gitlab.example.com/search?search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
 			});
+
+
+			it( `should return multiple urls when there are more than one within 
+			     the string that are directly next to each other`, function() {
+				let matches = matcher.parseMatches( 'asdf.com/abc fdsa.com/def' );
+	
+				expect( matches.length ).toBe( 2 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://asdf.com/abc', 0 );
+				MatchChecker.expectUrlMatch( matches[ 1 ], 'http://fdsa.com/def', 13 );
+			} );
 
 		} );
 

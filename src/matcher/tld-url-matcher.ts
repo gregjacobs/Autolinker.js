@@ -1,10 +1,11 @@
-import { alphaNumericAndMarksRe, alphaNumericCharsRe, digitRe } from "../regex-lib";
+import { alphaNumericCharsRe } from "../regex-lib";
 import { tldRegex } from "./tld-regex";
 import { UrlMatch } from "../match/url-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
-import { parseUrlSuffix as doParseUrlSuffix } from './parse-url-suffix';
+import { readUrlSuffix as doParseUrlSuffix } from './read-url-suffix';
+import { readHostAndPort as doReadHostAndPort } from './read-host-and-port';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -53,7 +54,7 @@ export class TldUrlMatcher extends UrlMatcher {
 
 		// For debugging: search for other "For debugging" lines
 		// const table = new CliTable( {
-		// 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentUrl.idx', 'lastConfirmedCharIdx', 'tldStartIdx', 'tldEndIdx' ]
+		// 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentUrl.idx', 'lastConfirmedCharIdx', 'tld' ]
 		// } );
 
 		while( charIdx < len ) {
@@ -61,7 +62,7 @@ export class TldUrlMatcher extends UrlMatcher {
 
 			// For debugging: search for other "For debugging" lines
 			// table.push( 
-			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
+			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tld || '' ] 
 			// );
 
 			switch( state ) {
@@ -71,16 +72,7 @@ export class TldUrlMatcher extends UrlMatcher {
 				case State.ProtocolRelativeSlash1: stateProtocolRelativeSlash1( char ); break;
 				case State.ProtocolRelativeSlash2: stateProtocolRelativeSlash2( char ); break;
 
-				// Domain name
-				case State.DomainLabelChar: stateDomainLabelChar( char ); break;
-				case State.DomainHyphen: stateDomainHyphen( char ); break;
-				case State.DomainDot: stateDomainDot( char ); break;
-
-				// Port
-				case State.PortNumberColon: statePortNumberColon( char ); break;
-				case State.PortNumber: statePortNumber( char ); break;
-
-				// Note: URL Suffix (path, query, and hash) handled by parseUrlSuffix() function
+				case State.HostAndPort: stateHostAndPort( char ); break;
 
 				default: 
 					throwUnhandledCaseError( state );
@@ -88,7 +80,7 @@ export class TldUrlMatcher extends UrlMatcher {
 
 			// For debugging: search for other "For debugging" lines
 			// table.push( 
-			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tldStartIdx, currentUrl.tldEndIdx ] 
+			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tld || '' ] 
 			// );
 
 			charIdx++;
@@ -98,7 +90,8 @@ export class TldUrlMatcher extends UrlMatcher {
 		captureMatchIfValidAndReset();
 
 		// For debugging: search for other "For debugging" lines
-		//console.log( '\n' + table.toString() );
+		// console.log( `\nRead string:\n  ${text}` );
+		// console.log( table.toString() );
 		
 		return matches;
 
@@ -111,7 +104,8 @@ export class TldUrlMatcher extends UrlMatcher {
 
 			} else if( alphaNumericCharsRe.test( char ) ) {
 				// A unicode alpha character or digit could start a domain name label
-				beginUrl( State.DomainLabelChar );
+				beginUrl( State.HostAndPort );
+				readHostAndPort();
 
 			} else {
 				// Anything else, remain in the non-url state
@@ -126,7 +120,9 @@ export class TldUrlMatcher extends UrlMatcher {
 
 			} else {
 				// Anything else, cannot be the start of a protocol-relative 
-				// URL. Reconsume the current character in the non-URL state.
+				// URL. Reconsume the current character in the non-URL state in
+				// order to process the current character again, which may begin
+				// a new URL.
 				resetToNonUrlState();
 				reconsumeCurrentCharacter();
 			}
@@ -136,7 +132,8 @@ export class TldUrlMatcher extends UrlMatcher {
 		function stateProtocolRelativeSlash2( char: string ) {
 			if( alphaNumericCharsRe.test( char ) ) {
 				// A digit or unicode alpha character would start a domain name label
-				captureCharAndSwitchToState( State.DomainLabelChar );
+				state = State.HostAndPort;
+				readHostAndPort();
 
 			} else {
 				// Anything else, not a URL
@@ -145,119 +142,33 @@ export class TldUrlMatcher extends UrlMatcher {
 		}
 
 
-		// Handles when we have read a domain label character
-		function stateDomainLabelChar( char: string ) {
-			if( char === '.' ) {
-				switchToState( State.DomainDot );
-
-			} else if( char === '-' ) {
-				switchToState( State.DomainHyphen );
-
-			} else if( char === ':' ) {
-				switchToState( State.PortNumberColon );
-
-			} else if( char === '/' || char === '?' || char === '#' ) {
-				parseUrlSuffix();
-
-			} else if( alphaNumericAndMarksRe.test( char ) ) {
-				// Stay in the DomainLabelChar state (but update the last 
-				// confirmed URL char)
-				captureCharAndSwitchToState( State.DomainLabelChar );
-
-				// an alphanumeric character may be the last character in the 
-				// TLD. Thus, we'll mark it as possibly so, and if we read more
-				// alphanumeric characters, we'll update this value
-				currentUrl = new CurrentUrl( { ...currentUrl, tldEndIdx: charIdx } );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-
-		function stateDomainHyphen( char: string ) {
-			if( char === '-' ) {
-				// Remain in the DomainHyphen state
-
-			} else if( char === '.' ) {
-				// Not valid to have a '-.' in a domain label
-				captureMatchIfValidAndReset();
-
-			} else if( alphaNumericAndMarksRe.test( char ) ) {
-				captureCharAndSwitchToState( State.DomainLabelChar );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-
-		function stateDomainDot( char: string ) {
-			if( char === '.' ) {
-				// domain names cannot have multiple '.'s next to each other.
-				// It's possible we've already read a valid domain name though,
-				// and that the '..' sequence just forms an ellipsis at the end
-				// of a sentence
-				captureMatchIfValidAndReset();
-
-			} else if( alphaNumericAndMarksRe.test( char ) ) {
-				captureCharAndSwitchToState( State.DomainLabelChar );
-
-				// Now that we've read a dot and a new character that would form
-				// the next domain label, we know that we have a valid hostname,
-				// and we can mark the location of the start of the TLD. Note:
-				// if more dots are read for the hostname, this location will
-				// change as we continue down the string
-				currentUrl = new CurrentUrl( { ...currentUrl, tldStartIdx: charIdx } );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-
-		function statePortNumberColon( char: string ) {
-			if( digitRe.test( char ) ) {
-				captureCharAndSwitchToState( State.PortNumber );
-
-			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
-				captureMatchIfValidAndReset();
-			}
-		}
-
-
-		function statePortNumber( char: string ) {
-			if( digitRe.test( char ) ) {
-				// Still a digit, stay in the port number state (and also
-				// capture the latest char as a "confirmed URL character")
-				captureCharAndSwitchToState( State.PortNumber );
-
-			} else if( char === '/' || char === '?' || char === '#' ) {
+		function stateHostAndPort( char: string ) {
+			if( char === '/' || char === '?' || char === '#' ) {
 				parseUrlSuffix();
 
 			} else {
-				// Anything else, may either be the end of the URL or it wasn't 
-				// a valid URL
+				// Anything else, may be a host/port with a valid TLD. Capture
+				// that, or otherwise reset
 				captureMatchIfValidAndReset();
 			}
 		}
 		
 
+		/**
+		 * Begins a new URL match. The current match may or may not be completed 
+		 * depending on the subsequent characters read in.
+		 * 
+		 * @param newState 
+		 * @param currentUrlOptions 
+		 */
 		function beginUrl(
-			newState: State.ProtocolRelativeSlash1 | State.DomainLabelChar,
+			newState: State.ProtocolRelativeSlash1 | State.HostAndPort,
 			currentUrlOptions: Partial<CurrentUrl> = {}
 		) {
 			state = newState;
 			currentUrl = new CurrentUrl( { ...currentUrlOptions, idx: charIdx } );
 		}
+
 
 		function resetToNonUrlState() {
 			switchToState( State.NonUrl );
@@ -277,16 +188,6 @@ export class TldUrlMatcher extends UrlMatcher {
 
 
 		/**
-		 * Switches to the given `state` and also captures the current character
-		 * as a "confirmed URL character"
-		 */
-		function captureCharAndSwitchToState( newState: State ) {
-			switchToState( newState );
-			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx: charIdx } );
-		}
-
-
-		/**
 		 * Causes the state machine to reconsume the current input character 
 		 * (usually in a different state)
 		 */
@@ -296,8 +197,31 @@ export class TldUrlMatcher extends UrlMatcher {
 
 
 		/**
-		 * When a '/', '?', or '#' character is encountered, this begins the URL
-		 * suffix (path, query, or hash part of the URL). 
+		 * When a domain label character is encountered (basically any alpha
+		 * char), we attempt to read it as a host and (optionally) port.
+		 */
+		function readHostAndPort() {
+			const { 
+				endIdx, 
+				lastConfirmedUrlCharIdx,
+				tld
+			} = doReadHostAndPort( text, charIdx );
+
+			// Update the lastConfirmedUrlCharIdx and the TLD
+			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx, tld } );
+
+			// Advance the character index to the last character read by the
+			// doParseHostAndPort() routine
+			charIdx = endIdx;
+
+			state = State.HostAndPort;
+		}
+
+
+		/**
+		 * When a '/', '?', or '#' character is encountered after the domain and
+		 * port, this begins the URL suffix (path, query, or hash part of the 
+		 * URL). 
 		 * 
 		 * We'll run a shared subroutine for this part, and extract the 
 		 * information about it.
@@ -315,6 +239,8 @@ export class TldUrlMatcher extends UrlMatcher {
 			// doParseUrlSuffix() routine
 			charIdx = endIdx;
 			
+			// Note: no need for another state change here. After reading the
+			// URL suffix (path, query, and hash), we are done reading the URL
 			captureMatchIfValidAndReset();
 		}
 
@@ -343,13 +269,13 @@ export class TldUrlMatcher extends UrlMatcher {
 		 * @return `true` if a match was valid and captured, `false` otherwise.
 		 */
 		function captureMatchIfValid(): boolean {
-			// we need at least one dot in the domain to be considered a valid 
-			// URL. We also don't want to match a URL that is preceded by an
-			// '@' character which would be an email address
+			// we need a TLD (Top-Level Domain) in the parsed host to be 
+			// considered a valid URL. We also don't want to match a URL that is 
+			// preceded by an '@' character which would be an email address
 			if( 
-				currentUrl.isValid() && 
 				text.charAt( currentUrl.idx - 1 ) !== '@' &&
-				isKnownTld( currentUrl.tldStartIdx, currentUrl.tldEndIdx )
+				currentUrl.tld &&  // The current URL must have a TLD (Top-Level Domain) for us to consider this match
+				isKnownTld( currentUrl.tld )  // And the TLD must be a known TLD, so we can skip matches like "hello.world"
 			) {
 				let url = text.slice( currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx + 1 );
 
@@ -382,14 +308,13 @@ export class TldUrlMatcher extends UrlMatcher {
 
 
 		/**
-		 * Determines if the characters between the startIdx and endIdx 
-		 * (inclusive) form a known TLD (Top-Level Domain).
+		 * Determines if the TLD read in the host is a known TLD 
+		 * (Top-Level Domain).
 		 * 
-		 * Example: 'co' or 'com' would be a known TLD
+		 * Example: 'com' would be a known TLD (for a host of 'google.com'), but 
+		 * 'local' would not (for a host of 'my-computer.local').
 		 */
-		function isKnownTld( startIdx: number, endIdx: number ) {
-			const tld = text.slice( startIdx, endIdx + 1 );
-
+		function isKnownTld( tld: string ) {
 			return tldRegex.test( tld );
 		}
 	}
@@ -397,21 +322,14 @@ export class TldUrlMatcher extends UrlMatcher {
 }
 
 
-const enum State {
+enum State {
 	NonUrl = 0,
 
 	// Protocol-relative URL states
 	ProtocolRelativeSlash1,
 	ProtocolRelativeSlash2,
 
-	// Domain name specific states
-	DomainLabelChar,          // Note: Domain labels must begin with a letter or number (no hyphens), and can include unicode letters
-	DomainHyphen,
-	DomainDot,
-
-	// Port
-	PortNumberColon,
-	PortNumber
+	HostAndPort
 }
 
 
@@ -419,18 +337,12 @@ class CurrentUrl {
 	readonly idx: number;  // the index of the first character in the URL
 	readonly lastConfirmedUrlCharIdx: number;  // the index of the last character that was read that was a URL character for sure. For example, while reading "asdf.com-", the last confirmed char will be the 'm', and the current char would be '-' which *may* form an additional part of the URL
 	readonly isProtocolRelative: boolean;
-	readonly tldStartIdx: number;  // the index of the first character in the TLD of the hostname, so we can read the TLD. Ex: in 'sub.google.com/something', the index would be 10
-	readonly tldEndIdx: number;    // the index of the last host character, so we can read the TLD. Ex: in 'sub.google.com/something', the index would be 13
+	readonly tld: string | undefined;  // the TLD (Top-Level Domain) that was found in the host, if any. Ex: 'com' for a host of 'google.com'
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
 		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
 		this.lastConfirmedUrlCharIdx = cfg.lastConfirmedUrlCharIdx !== undefined ? cfg.lastConfirmedUrlCharIdx : this.idx;
 		this.isProtocolRelative = !!cfg.isProtocolRelative;
-		this.tldStartIdx = cfg.tldStartIdx !== undefined ? cfg.tldStartIdx : -1;
-		this.tldEndIdx = cfg.tldEndIdx !== undefined ? cfg.tldEndIdx : -1;
-	}
-
-	isValid() { 
-		return this.tldStartIdx > -1;  // we found a '.' in the hostname
+		this.tld = cfg.tld;
 	}
 }

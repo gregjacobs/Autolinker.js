@@ -2,18 +2,24 @@ import { throwUnhandledCaseError } from '../utils';
 import { alphaNumericAndMarksRe, urlSuffixAllowedSpecialCharsRe, urlSuffixNotAllowedAsLastCharRe } from '../regex-lib';
 
 /**
- * Parses a URL suffix, which includes path, query, and hash parts. Returns 
+ * Reads a URL suffix, which includes path, query, and hash parts. Returns 
  * information about the end of the suffix and the last matching "confirmed"
  * URL suffix character.
+ * 
+ * The character pointed to by the `startIdx` must be a '/', '?', or '#' 
+ * character, and this function will read to the end of the URL suffix.
  * 
  * @param text The text to parse the URL suffix in
  * @param startIdx The starting index of the URL suffix. This should be the 
  *   index of a '/', '?', or '#' character that begins the URL suffix
+ * @return The result of reading the URL suffix. The `endIdx` property is the
+ *   index of the last character read before a non-URL-suffix character was 
+ *   read.
  */
-export function parseUrlSuffix( 
+export function readUrlSuffix( 
 	text: string, 
 	startIdx: number
-): ParseUrlSuffixResult {
+): ReadUrlSuffixResult {
 	const len = text.length;
 
 	let charIdx = startIdx,
@@ -40,7 +46,10 @@ export function parseUrlSuffix(
 		charIdx++;
 	}
 
-	return { endIdx: charIdx, lastConfirmedUrlCharIdx };
+	return { 
+		endIdx: charIdx - 1,   // -1 because we want to return the last character that was read before the character that ended the host/port. This makes the other parsing routines which leverage this function integrate it seamlessly
+		lastConfirmedUrlCharIdx 
+	};
 	
 
 	function statePath( char: string ) {
@@ -159,9 +168,9 @@ export function parseUrlSuffix(
 }
 
 
-export interface ParseUrlSuffixResult {
-	endIdx: number;
-	lastConfirmedUrlCharIdx: number;
+export interface ReadUrlSuffixResult {
+	endIdx: number;  // the index of the last character *before* the character that ended the URL suffix. So if a space is encountered which ends the URL suffix, the endIdx will point to the character before the space
+	lastConfirmedUrlCharIdx: number;  // the index of the last character that we can confirm is part of the URL suffix. Ex: a letter would be included, but a '.' may not be as it might end a natural language sentence. 
 }
 
 
@@ -177,7 +186,7 @@ function determineInitialState( char: string ): State {
 	} else if( char === '#' ) {
 		return State.Hash;
 	} else {
-		throw new Error( `Invalid character for determineInitialState(): '${char}'` );
+		throw new Error( `The input character '${char}' was not a valid URL suffix start character` );
 	}
 }
 
