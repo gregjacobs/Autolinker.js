@@ -1,5 +1,5 @@
-import { throwUnhandledCaseError } from '../utils';
-import { alphaNumericAndMarksRe, urlSuffixAllowedSpecialCharsRe, urlSuffixNotAllowedAsLastCharRe } from '../regex-lib';
+import { throwUnhandledCaseError } from '../../utils';
+import { alphaNumericAndMarksRe, urlSuffixAllowedSpecialCharsRe, urlSuffixNotAllowedAsLastCharRe } from '../../regex-lib';
 
 /**
  * Reads a URL suffix, which includes path, query, and hash parts. Returns 

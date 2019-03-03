@@ -1,11 +1,11 @@
-import { alphaNumericCharsRe } from "../regex-lib";
+import { alphaNumericCharsRe, urlSuffixStartCharsRe } from "../regex-lib";
 import { tldRegex } from "./tld-regex";
 import { UrlMatch } from "../match/url-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
-import { readUrlSuffix as doParseUrlSuffix } from './read-url-suffix';
-import { readHostAndPort as doReadHostAndPort } from './read-host-and-port';
+import { readUrlSuffix as doReadUrlSuffix } from './reader/read-url-suffix';
+import { readHostAndPort as doReadHostAndPort } from './reader/read-host-and-port';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -72,7 +72,8 @@ export class TldUrlMatcher extends UrlMatcher {
 				case State.ProtocolRelativeSlash1: stateProtocolRelativeSlash1( char ); break;
 				case State.ProtocolRelativeSlash2: stateProtocolRelativeSlash2( char ); break;
 
-				case State.HostAndPort: stateHostAndPort( char ); break;
+				case State.EndOfHostAndPort: stateEndOfHostAndPort( char ); break;
+				case State.EndOfUrlSuffix: stateEndOfUrlSuffix( char ); break;
 
 				default: 
 					throwUnhandledCaseError( state );
@@ -104,7 +105,7 @@ export class TldUrlMatcher extends UrlMatcher {
 
 			} else if( alphaNumericCharsRe.test( char ) ) {
 				// A unicode alpha character or digit could start a domain name label
-				beginUrl( State.HostAndPort );
+				beginUrl( State.EndOfHostAndPort );
 				readHostAndPort();
 
 			} else {
@@ -128,11 +129,12 @@ export class TldUrlMatcher extends UrlMatcher {
 			}
 		}
 
+		
 		// Handles reading a second '/', which could start a protocol-relative URL
 		function stateProtocolRelativeSlash2( char: string ) {
 			if( alphaNumericCharsRe.test( char ) ) {
 				// A digit or unicode alpha character would start a domain name label
-				state = State.HostAndPort;
+				state = State.EndOfHostAndPort;
 				readHostAndPort();
 
 			} else {
@@ -142,15 +144,25 @@ export class TldUrlMatcher extends UrlMatcher {
 		}
 
 
-		function stateHostAndPort( char: string ) {
-			if( char === '/' || char === '?' || char === '#' ) {
-				parseUrlSuffix();
+		function stateEndOfHostAndPort( char: string ) {
+			if( urlSuffixStartCharsRe.test( char ) ) {
+				readUrlSuffix();
 
 			} else {
 				// Anything else, may be a host/port with a valid TLD. Capture
 				// that, or otherwise reset
 				captureMatchIfValidAndReset();
 			}
+		}
+
+
+		/**
+		 * Handles the end of the "URL Suffix" state. We have already read the
+		 * URL suffix at this point from the {@link #readUrlSuffix} function.
+		 */
+		function stateEndOfUrlSuffix( char: string ) {
+			// At this point, there is nothing left to read from the URL
+			captureMatchIfValidAndReset();
 		}
 		
 
@@ -162,7 +174,7 @@ export class TldUrlMatcher extends UrlMatcher {
 		 * @param currentUrlOptions 
 		 */
 		function beginUrl(
-			newState: State.ProtocolRelativeSlash1 | State.HostAndPort,
+			newState: State.ProtocolRelativeSlash1 | State.EndOfHostAndPort,
 			currentUrlOptions: Partial<CurrentUrl> = {}
 		) {
 			state = newState;
@@ -214,7 +226,7 @@ export class TldUrlMatcher extends UrlMatcher {
 			// doParseHostAndPort() routine
 			charIdx = endIdx;
 
-			state = State.HostAndPort;
+			switchToState( State.EndOfHostAndPort );
 		}
 
 
@@ -226,11 +238,11 @@ export class TldUrlMatcher extends UrlMatcher {
 		 * We'll run a shared subroutine for this part, and extract the 
 		 * information about it.
 		 */
-		function parseUrlSuffix() {
+		function readUrlSuffix() {
 			const { 
 				endIdx, 
 				lastConfirmedUrlCharIdx 
-			} = doParseUrlSuffix( text, charIdx );
+			} = doReadUrlSuffix( text, charIdx );
 
 			// Update the lastConfirmedUrlCharIdx
 			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx } );
@@ -238,10 +250,8 @@ export class TldUrlMatcher extends UrlMatcher {
 			// Advance the character index to the last read character by the
 			// doParseUrlSuffix() routine
 			charIdx = endIdx;
-			
-			// Note: no need for another state change here. After reading the
-			// URL suffix (path, query, and hash), we are done reading the URL
-			captureMatchIfValidAndReset();
+
+			switchToState( State.EndOfUrlSuffix );
 		}
 
 
@@ -265,10 +275,8 @@ export class TldUrlMatcher extends UrlMatcher {
 		 * Captures a match if it is valid (i.e. has a full domain name for a
 		 * TLD match). If a match is not valid, it is possible that we want to 
 		 * keep reading characters in order to make a full match.
-		 * 
-		 * @return `true` if a match was valid and captured, `false` otherwise.
 		 */
-		function captureMatchIfValid(): boolean {
+		function captureMatchIfValid() {
 			// we need a TLD (Top-Level Domain) in the parsed host to be 
 			// considered a valid URL. We also don't want to match a URL that is 
 			// preceded by an '@' character which would be an email address
@@ -299,11 +307,7 @@ export class TldUrlMatcher extends UrlMatcher {
 					stripTrailingSlash    : stripTrailingSlash,
 					decodePercentEncoding : decodePercentEncoding,
 				} ) );
-
-				return true;   // valid match was captured
 			}
-			
-			return false;  // no match captured
 		}
 
 
@@ -322,14 +326,15 @@ export class TldUrlMatcher extends UrlMatcher {
 }
 
 
-enum State {
+const enum State {
 	NonUrl = 0,
 
 	// Protocol-relative URL states
 	ProtocolRelativeSlash1,
 	ProtocolRelativeSlash2,
 
-	HostAndPort
+	EndOfHostAndPort,  // After reading the host and port, we are in this state
+	EndOfUrlSuffix     // After reading a '/', '?', or '#' after the domain name, we read the "URL Suffix" of the URI, and then we are in this state
 }
 
 

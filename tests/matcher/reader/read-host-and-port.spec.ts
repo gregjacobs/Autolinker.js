@@ -1,6 +1,6 @@
-import { readHostAndPort, ReadHostAndPortResult } from "../../src/matcher/read-host-and-port";
+import { readHostAndPort, ReadHostAndPortResult } from "../../../src/matcher/reader/read-host-and-port";
 
-fdescribe( 'readHostAndPort()', () => {
+describe( 'readHostAndPort()', () => {
 
 	function expectResult( 
 		result: ReadHostAndPortResult,

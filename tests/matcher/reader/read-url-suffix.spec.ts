@@ -1,4 +1,4 @@
-import { readUrlSuffix, ReadUrlSuffixResult } from "../../src/matcher/read-url-suffix";
+import { readUrlSuffix, ReadUrlSuffixResult } from "../../../src/matcher/reader/read-url-suffix";
 
 describe( 'readUrlSuffix()', () => {
 

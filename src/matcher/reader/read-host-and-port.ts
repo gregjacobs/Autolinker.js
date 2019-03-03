@@ -1,5 +1,5 @@
-import { throwUnhandledCaseError } from '../utils';
-import { alphaNumericAndMarksRe, digitRe, alphaNumericCharsRe } from '../regex-lib';
+import { throwUnhandledCaseError } from '../../utils';
+import { alphaNumericAndMarksRe, digitRe, alphaNumericCharsRe } from '../../regex-lib';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';

@@ -22,6 +22,7 @@ describe( "Autolinker.matcher.TldUrl", function() {
 			expect( matcher.parseMatches( 'asdf' ) ).toEqual( [] );
 			expect( matcher.parseMatches( '@asdf.com' ) ).toEqual( [] );      // a username should not match
 			expect( matcher.parseMatches( 'asdf@asdf.com' ) ).toEqual( [] );  // an email address should not match
+			expect( matcher.parseMatches( 'Hello, world?' ) ).toEqual( [] );  // no URLs here
 		} );
 
 
@@ -176,15 +177,26 @@ describe( "Autolinker.matcher.TldUrl", function() {
 
 
 		it( `when there is a string such as "asdf-+asdf.com", should match
-				the "asdf.com" part (this was the original behavior in
-				Autolinker.js v2.x, before the conversion from RegExp to state
-				machine)`,
+			the "asdf.com" part (this was the original behavior in
+			Autolinker.js v2.x, before the conversion from RegExp to state
+			machine)`,
 		() => {
-			let matches = matcher.parseMatches( 'google.com+yahoo.com' );
+			const matches = matcher.parseMatches( 'google.com+yahoo.com' );
 
 			expect( matches.length ).toBe( 2 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
 			MatchChecker.expectUrlMatch( matches[ 1 ], 'http://yahoo.com', 11 );
+		} );
+
+
+		it( `when the URL ends with a question mark, but that question mark is
+			 the end of the sentence, the question mark should not be included
+			 in the URL`,
+		() => {
+			const matches = matcher.parseMatches( 'Go to google.com?' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 6);
 		} );
 
 

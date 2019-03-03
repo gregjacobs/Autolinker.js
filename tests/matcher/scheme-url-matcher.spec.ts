@@ -2,7 +2,7 @@ import { SchemeUrlMatcher } from "../../src/matcher/scheme-url-matcher";
 import { MatchChecker } from "../match/match-checker";
 import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 
-describe( "Autolinker.matcher.SchemeUrl", function() {
+fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 	let matcher: SchemeUrlMatcher;
 
 	beforeEach( function() {
@@ -25,6 +25,22 @@ describe( "Autolinker.matcher.SchemeUrl", function() {
 		} );
 
 
+		it( `should match a simple http:// URL`, () => {
+			let matches = matcher.parseMatches( 'Hello to http://google.com!');
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 9 );
+		} );
+
+
+		it( `should match a simple https:// URL`, () => {
+			let matches = matcher.parseMatches( 'Hello to https://google.com!');
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://google.com', 9 );
+		} );
+
+
 		describe( 'scheme matching', () => {
 
 			it( `should match a scheme with '+', '-', or '.' characters`, () => {
@@ -40,6 +56,64 @@ describe( "Autolinker.matcher.SchemeUrl", function() {
 
 		} );
 
+
+		it( 'should match a windows file URL', () => {
+			// file:///c:/windows/system32
+		} );
+
+		it( 'should match a unix-like file URL', () => {
+			// file:///var/something
+		} );
+
+
+		it( `when the authority part of the URI ends with a '-.' sequence, 
+			 should not include the '-.' part in the URL`,
+		() => {
+			let matches = matcher.parseMatches( 'http://google.com-.');
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
+		} );
+
+		it( `when a username is given, should parse the URL with the hostname
+			 afterwards`, 
+		() => {
+
+		} );
+
+
+		it( `should match a host name that starts with a percent-encoded character`, () => {
+
+		} );
+
+
+		it( `should match a hostname that ends with a percent-encoded character`, () => {
+
+		} );
+
+
+		it( `should match a hostname that has multiple percent-encoded characters`, () => {
+
+		} );
+
+
+		it( `when a username and password is given, should parse the URL with
+			 the hostname afterwards`,
+		() => {
+
+		} );
+
+
+
+		it( `when the URL ends with a question mark, but that question mark is
+			 the end of the sentence, the question mark should not be included
+			 in the URL`,
+		() => {
+			const matches = matcher.parseMatches( 'http://google.com?' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
+		} );
 
 		it( 'should match an IP address', function() {
 			let matches = matcher.parseMatches( 'http://127.0.0.1');
