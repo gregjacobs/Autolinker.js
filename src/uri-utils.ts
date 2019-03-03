@@ -1,4 +1,5 @@
 import { uriUnreservedRe, uriSubDelimsRe, urlSuffixStartCharsRe } from './regex-lib';
+import { tldRegex } from './matcher/tld-regex';
 
 /**
  * Determines if the character given may begin the "authority" section of a URI.
@@ -62,4 +63,15 @@ export function isAuthorityStartChar( char: string ): boolean {
  */
 export function isUrlSuffixStartChar( char: string ) {
 	return urlSuffixStartCharsRe.test( char );
+}
+
+
+/**
+ * Determines if the TLD read in the host is a known TLD (Top-Level Domain).
+ * 
+ * Example: 'com' would be a known TLD (for a host of 'google.com'), but 
+ * 'local' would not (for a domain name of 'my-computer.local').
+ */
+export function isKnownTld( tld: string ) {
+	return tldRegex.test( tld );
 }

@@ -237,6 +237,53 @@ describe( "Autolinker.matcher.TldUrl", function() {
 		} );
 
 
+		it( `when the full domain name is 255 characters or less (including
+			 separators), should match it`,
+		() => {
+			const label1 = new Array( 64 ).join( 'a' );  // 63 chars
+			const label2 = new Array( 64 ).join( 'b' );  // 126 chars
+			const label3 = new Array( 64 ).join( 'c' );  // 189 chars
+			const label4 = new Array( 60 ).join( 'd' );  // 248 chars
+
+			const domainName = `${label1}.${label2}.${label3}.${label4}.com`;
+			expect( domainName.length ).toBe( 255 );
+
+			let matches = matcher.parseMatches( `Hello ${domainName}` );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], `http://${domainName}`, 6 );
+		} );
+
+
+		it( `when the full domain name is greater than 255 characters (including
+			 separators), should not match it`,
+		() => {
+			const label1 = new Array( 64 ).join( 'a' );  // 63 chars
+			const label2 = new Array( 64 ).join( 'b' );  // 126 chars
+			const label3 = new Array( 64 ).join( 'c' );  // 189 chars
+			const label4 = new Array( 61 ).join( 'd' );  // 249 chars (one too many with the dots that need to separate them, and the '.com' at the end)
+
+			const domainName = `${label1}.${label2}.${label3}.${label4}.com`;
+			expect( domainName.length ).toBe( 256 );
+
+			let matches = matcher.parseMatches( `Hello ${domainName}` );
+			expect( matches.length ).toBe( 0 );
+		} );
+
+
+		it( `when any given label of the domain name is greater than 63 
+		     characters, should not match it`,
+		() => {
+			const longLabel = new Array( 65 ).join( 'a' );  // 64 chars - one char too long for a domain label
+
+			const domainName = `abc.${longLabel}.com`;
+			expect( domainName.length ).toBe( 'abc.'.length + 64 + '.com'.length );
+
+			let matches = matcher.parseMatches( `Hello ${domainName}` );
+			expect( matches.length ).toBe( 0 );
+		} );
+
+
 		describe( 'path, query, and hash matching', () => {
 
 			it( `should return a url match with a trailing slash as part of the 
