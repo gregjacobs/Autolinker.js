@@ -83,7 +83,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		captureMatchAndReset();
 
 		// For debugging: search for other "For debugging" lines
-		console.log( '\n' + table.toString() );
+		//console.log( '\n' + table.toString() );
 		
 		return matches;
 

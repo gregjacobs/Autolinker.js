@@ -41,6 +41,14 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 		} );
 
 
+		it( `should match a simple ftp:// URL`, () => {
+			let matches = matcher.parseMatches( 'Hello to ftp://google.com!');
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'ftp://google.com', 9 );
+		} );
+
+
 		describe( 'scheme matching', () => {
 
 			it( `should match a scheme with '+', '-', or '.' characters`, () => {
@@ -63,6 +71,11 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 
 		it( 'should match a unix-like file URL', () => {
 			// file:///var/something
+		} );
+
+
+		it( `should match an "IP Literal"`, () => {
+
 		} );
 
 
@@ -104,7 +117,6 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 		} );
 
 
-
 		it( `when the URL ends with a question mark, but that question mark is
 			 the end of the sentence, the question mark should not be included
 			 in the URL`,
@@ -115,6 +127,7 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://google.com', 0 );
 		} );
 
+
 		it( 'should match an IP address', function() {
 			let matches = matcher.parseMatches( 'http://127.0.0.1');
 
@@ -122,7 +135,8 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
 		});
 
-		it( 'should not match an invalid IP address', function() {
+
+		it( 'should not match an invalid IP address (an IP with not enough numbers)', function() {
 			let matches = matcher.parseMatches( 'http://127.0.0.');
 
 			expect( matches.length ).toBe( 0 );
@@ -133,6 +147,7 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 
 			expect( matches.length ).toBe( 0 );
 		});
+
 
 		it( 'should not match an IP address with too many numbers', function() {
 			let matches = matcher.parseMatches( 'http://1.2.3.4.5' );
@@ -192,164 +207,11 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://website.com/files/name-ボ.pdf', 0 );
 		} );
 
-
-		describe( 'protocol-relative URLs', function() {
-
-			it( 'should match a protocol-relative URL at the beginning of the string', function() {
-				let matches = matcher.parseMatches( '//asdf.com' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 0 );
-			} );
-
-
-			it( 'should match a protocol-relative URL in the middle of the string', function() {
-				let matches = matcher.parseMatches( 'Hello //asdf.com today' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-			} );
-
-
-			it( 'should match a protocol-relative URL at the end of the string', function() {
-				let matches = matcher.parseMatches( 'Hello //asdf.com' );
-
-				expect( matches.length ).toBe( 1 );
-				MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-			} );
-
-
-			it( 'should *not* match a protocol-relative URL if the "//" was in the middle of a word', function() {
-				let matches = matcher.parseMatches( 'asdf//asdf.com' );
-
-				expect( matches.length ).toBe( 0 );
-			} );
-
-			it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
-				const start = Date.now();
-				matcher.parseMatches( new Array(10000).join('a') );
-				expect( Date.now() - start ).toBeLessThan( 100 );
-			} );
-
+		it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
+			const start = Date.now();
+			matcher.parseMatches( new Array(10000).join('a') );
+			expect( Date.now() - start ).toBeLessThan( 100 );
 		} );
-
-		// it( 'should match an IP address', function() {
-		// 	let matches = matcher.parseMatches( 'http://127.0.0.1');
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
-		// } );
-
-		// it( 'should not match an invalid IP address', function() {
-		// 	let matches = matcher.parseMatches( 'http://127.0.0.');
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-		// it( 'should not match an URL which does not respect the IP protocol', function() {
-		// 	let matches = matcher.parseMatches( 'git:1.0');
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-		// it( 'should not match an IP address with too many numbers', function() {
-		// 	let matches = matcher.parseMatches( 'http://1.2.3.4.5' );
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-
-		// it( 'should match the entire URL with a check character', function() {
-		// 	let matches = matcher.parseMatches( 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master', 0 );
-		// });
-
-
-		// it( 'should match any local URL with numbers with http:// before', function() {
-		// 	let matches = matcher.parseMatches( 'http://localhost.local001/test' );
-		// 	let othermatches = matcher.parseMatches( 'http://suus111.w10:8090/display/test/AI' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	expect( othermatches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'http://localhost.local001/test', 0 );
-		// 	MatchChecker.expectUrlMatch( othermatches[ 0 ], 'http://suus111.w10:8090/display/test/AI', 0 );
-		// });
-
-
-		// it( 'should not match a local URL with numbers that does not have the http:// before', function() {
-		// 	let matches = matcher.parseMatches( 'localhost.local001/test' );
-
-		// 	expect( matches.length ).toBe( 0 );
-		// });
-
-
-		// it( 'should not match an address with multiple dots in domain name', function() {
-		// 	let matches = matcher.parseMatches( 'hello:...world' );
-		// 	let othermatches = matcher.parseMatches( 'hello:wo.....rld' );
-
-		// 	expect( matches.length ).toBe( 0 );
-		// 	expect( othermatches.length ).toBe( 0 );
-		// });
-
-
-		// it( 'should match an address with multiple dots in path string', function() {
-		// 	var matches = matcher.parseMatches( 'https://gitlab.example.com/space/repo/compare/master...develop' );
-		// 	var othermatches = matcher.parseMatches( 'https://www.google.it/search?q=autolink.js&oq=autolink.js&aqs=chrome..69i57j0l4.5161j0j7&sourceid=chrome&ie=UTF-8' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	expect( othermatches.length ).toBe( 1 );
-		// });
-
-
-		// it( 'should match katakana with dakuten characters (symbol with combining mark - two unicode characters)', function() {
-		// 	var matches = matcher.parseMatches( 'https://website.com/files/name-ボ.pdf' );
-
-		// 	expect( matches.length ).toBe( 1 );
-		// 	MatchChecker.expectUrlMatch( matches[ 0 ], 'https://website.com/files/name-ボ.pdf', 0 );
-		// } );
-
-
-		// describe( 'protocol-relative URLs', function() {
-
-		// 	it( 'should match a protocol-relative URL at the beginning of the string', function() {
-		// 		let matches = matcher.parseMatches( '//asdf.com' );
-
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 0 );
-		// 	} );
-
-
-		// 	it( 'should match a protocol-relative URL in the middle of the string', function() {
-		// 		let matches = matcher.parseMatches( 'Hello //asdf.com today' );
-
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-		// 	} );
-
-
-		// 	it( 'should match a protocol-relative URL at the end of the string', function() {
-		// 		let matches = matcher.parseMatches( 'Hello //asdf.com' );
-
-		// 		expect( matches.length ).toBe( 1 );
-		// 		MatchChecker.expectUrlMatch( matches[ 0 ], '//asdf.com', 6 );
-		// 	} );
-
-
-		// 	it( 'should *not* match a protocol-relative URL if the "//" was in the middle of a word', function() {
-		// 		let matches = matcher.parseMatches( 'asdf//asdf.com' );
-
-		// 		expect( matches.length ).toBe( 0 );
-		// 	} );
-
-		// 	it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
-		// 		const start = Date.now();
-		// 		matcher.parseMatches( new Array(10000).join('a') );
-		// 		expect( Date.now() - start ).toBeLessThan( 100 );
-		// 	} );
-
-		// } );
 
 	} );
 	
