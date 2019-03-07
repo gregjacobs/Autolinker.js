@@ -21,6 +21,7 @@
     "serve": "gulp serve",
     "test": "gulp test",
     "test-unit": "gulp test-unit",
+    "test-integration": "gulp test-integration",
     "update-tld-regex": "gulp update-tld-regex"
   },
   "repository": {

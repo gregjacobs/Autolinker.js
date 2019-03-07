@@ -59,7 +59,7 @@ gulp.task( 'do-build-src', gulp.series(
 	'build-src-add-header-to-umd', 
 	'build-src-minify-umd',
 	'build-src-check-minfied-size'
-), )
+) );
 
 // Build example private tasks
 gulp.task( 'clean-example-output', cleanExampleOutputTask );
@@ -99,6 +99,7 @@ gulp.task( 'do-test', gulp.series(
 	'run-integration-tests'
 ) );
 gulp.task( 'do-unit-tests', gulp.series( 'build-unit-tests', 'run-unit-tests' ) );  // just runs the unit tests without the integration tests
+gulp.task( 'do-integration-tests', gulp.series( 'build-integration-tests', 'run-integration-tests' ) );  // just runs the integration tests without the unit tests
 
 
 // Main Tasks
@@ -123,6 +124,7 @@ gulp.task( 'doc', gulp.series( 'build-src', 'do-doc' ) );
 gulp.task( 'serve', gulp.series( 'build-src', 'build-example', serveTask ) );
 gulp.task( 'test', gulp.series( 'build-src', 'build-example', 'clean-tests', 'do-test' ) );
 gulp.task( 'test-unit', gulp.series( 'clean-unit-tests', 'do-unit-tests' ) );  // just runs the unit tests without the integration tests
+gulp.task( 'test-integration', gulp.series( 'build-src', 'clean-integration-tests', 'do-integration-tests' ) );  // just runs the integration tests without the unit tests
 gulp.task( 'update-tld-regex', updateTldRegex );
 
 gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );
