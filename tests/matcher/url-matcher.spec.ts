@@ -133,6 +133,29 @@ describe( "Autolinker.matcher.Url", function() {
 			expect( othermatches.length ).toBe( 1 );
 		});
 
+		it( 'should match the entire URL with a single ^ in a parameter', function() {
+			let matches = matcher.parseMatches( 'https://google.fr/path?parameter=^value12345' );
+			let othermatches = matcher.parseMatches( 'https://google.fr/path?parameter=value^12345' );
+
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://google.fr/path?parameter=^value12345', 0 );
+
+
+			expect( othermatches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( othermatches[ 0 ], 'https://google.fr/path?parameter=value^12345', 0 );
+		});
+
+		it( 'should match the entire URL with multiple ^ in a parameter', function() {
+			let matches = matcher.parseMatches( 'https://google.fr/path?parameter=^value1&parameter2=value^2' );
+
+
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://google.fr/path?parameter=^value1&parameter2=value^2' , 0 );
+		});
+
+
 
 		it( 'should match katakana with dakuten characters (symbol with combining mark - two unicode characters)', function() {
 			var matches = matcher.parseMatches( 'https://website.com/files/name-ボ.pdf' );
