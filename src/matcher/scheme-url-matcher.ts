@@ -4,7 +4,7 @@ import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
 import { readAuthority as doReadAuthority } from './reader/read-authority';
-import { isAuthorityStartChar, isUrlSuffixStartChar } from '../uri-utils';
+import { isAuthorityStartChar, isUrlSuffixStartChar, isPChar } from '../uri-utils';
 import { readUrlSuffix as doReadUrlSuffix } from './reader/read-url-suffix';
 
 
@@ -64,6 +64,9 @@ export class SchemeUrlMatcher extends UrlMatcher {
 				case State.SchemeSlash1: stateSchemeSlash1( char ); break;
 				case State.SchemeSlash2: stateSchemeSlash2( char ); break;
 
+				case State.PathRootless: statePathRootless( char ); break;
+				case State.PathRootlessDot: statePathRootlessDot( char ); break;
+
 				case State.EndOfAuthority: stateEndOfAuthority( char ); break;
 				case State.EndOfUrlSuffix: stateEndOfUrlSuffix( char ); break;
 
@@ -80,10 +83,10 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		}
 
 		// Capture any valid match at the end of the string
-		captureMatchAndReset();
+		captureMatchIfValidAndReset();
 
 		// For debugging: search for other "For debugging" lines
-		//console.log( '\n' + table.toString() );
+		console.log( '\n' + table.toString() );
 		
 		return matches;
 
@@ -126,10 +129,23 @@ export class SchemeUrlMatcher extends UrlMatcher {
 
 		function stateSchemeColon( char: string ) {
 			if( char === '/' ) {
+				currentUrl = new CurrentUrl( { ...currentUrl, hasCharAfterColon: true } );
 				switchToState( State.SchemeSlash1 );
 
+			} else if( char === '.' ) {
+				// We've read something like 'hello:.' - don't capture
+				resetToNonUrlState();
+
+			} else if( isUrlSuffixStartChar( char ) ) {
+				currentUrl = new CurrentUrl( { ...currentUrl, hasCharAfterColon: true } );
+				readUrlSuffix();
+
+			} else if( isPChar( char ) ) {
+				currentUrl = new CurrentUrl( { ...currentUrl, hasCharAfterColon: true } );
+				captureCharAndSwitchToState( State.PathRootless );
+
 			} else {
-				// TODO:
+				resetToNonUrlState();
 			}
 		}
 
@@ -138,8 +154,14 @@ export class SchemeUrlMatcher extends UrlMatcher {
 			if( char === '/' ) {
 				switchToState( State.SchemeSlash2 );
 
+			} else if( isPChar( char ) ) {
+				// Back up and read the character as a URL suffix (path+query+hash)
+				// starting with the previous '/'
+				charIdx--;
+				readUrlSuffix();
+
 			} else {
-				// TODO:
+				captureMatchIfValidAndReset();
 			}
 		}
 
@@ -149,12 +171,49 @@ export class SchemeUrlMatcher extends UrlMatcher {
 				// 3rd slash, must be an absolute path (path-absolute in the
 				// ABNF), such as in a file:///c:/windows/etc. See
 				// https://tools.ietf.org/html/rfc3986#appendix-A
-
-				// TODO
+				readUrlSuffix();
 
 			} else if( isAuthorityStartChar( char ) ) {
 				// start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
 				readAuthority();
+
+			} else {
+				resetToNonUrlState();
+			}
+		}
+
+
+		function statePathRootless( char: string ) {
+			if( char === '.' ) {
+				switchToState( State.PathRootlessDot );
+
+			} else if( isUrlSuffixStartChar( char ) ) {
+				readUrlSuffix();
+
+			} else if( isPChar( char ) ) {
+				captureCharAndSwitchToState( State.PathRootless );
+
+			} else {
+				captureMatchIfValidAndReset();
+			}
+		}
+
+
+		function statePathRootlessDot( char: string ) {
+			if( char === '.' ) {
+				// We've read two dots in a rootless path such as 'hello:wor..ld'
+				// Generally don't want to accept this kind of match.
+				resetToNonUrlState();
+
+			} else if( isPChar( char ) ) {
+				captureCharAndSwitchToState( State.PathRootless );
+
+			// TODO: Do we want to accept a URL suffix after a '.'?
+			// } else if( isUrlSuffixStartChar( char ) ) {
+			// 	readUrlSuffix();
+
+			} else {
+				captureMatchIfValidAndReset();
 			}
 		}
 
@@ -169,7 +228,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 				readUrlSuffix();
 
 			} else {
-				captureMatchAndReset();
+				captureMatchIfValidAndReset();
 			}
 		}
 
@@ -180,7 +239,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		 */
 		function stateEndOfUrlSuffix( char: string ) {
 			// At this point, there is nothing left to read from the URL
-			captureMatchAndReset();
+			captureMatchIfValidAndReset();
 		}
 
 
@@ -279,33 +338,40 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		 * current match if it is valid, but if it's not, we want to reset back
 		 * to the "NonUrl" state either way.
 		 */
-		function captureMatchAndReset() {
-			captureMatch();
+		function captureMatchIfValidAndReset() {
+			captureMatchIfValid();
 
 			resetToNonUrlState();
 		}
 
 
 		/*
-		 * Captures a match if it is valid (i.e. has a full domain name for a
-		 * TLD match). If a match is not valid, it is possible that we want to 
+		 * Captures a match if it is valid (i.e. has a colon and a character 
+		 * after it). If a match is not valid, it is possible that we want to 
 		 * keep reading characters in order to make a full match.
 		 */
-		function captureMatch() {
-			let url = text.slice( currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx + 1 );
+		function captureMatchIfValid() {
+			if( currentUrl.hasCharAfterColon ) {
+				let url = text.slice( currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx + 1 );
 
-			matches.push( new UrlMatch( {
-				tagBuilder            : tagBuilder,
-				matchedText           : url,
-				offset                : currentUrl.idx,
-				urlMatchType          : 'scheme',
-				url                   : url,
-				protocolUrlMatch      : true,   // in this Matcher, we only match TLDs with protocols (schemes)
-				protocolRelativeMatch : false,  // in this Matcher, we only match valid schemes. Protocol-relative matches are handled by the TldUrlMatcher
-				stripPrefix           : stripPrefix,
-				stripTrailingSlash    : stripTrailingSlash,
-				decodePercentEncoding : decodePercentEncoding,
-			} ) );
+				// For debugging: search for other "For debugging" lines
+				table.push( 
+					[ charIdx, 'capturing', url ] 
+				);
+
+				matches.push( new UrlMatch( {
+					tagBuilder            : tagBuilder,
+					matchedText           : url,
+					offset                : currentUrl.idx,
+					urlMatchType          : 'scheme',
+					url                   : url,
+					protocolUrlMatch      : true,   // in this Matcher, we only match TLDs with protocols (schemes)
+					protocolRelativeMatch : false,  // in this Matcher, we only match valid schemes. Protocol-relative matches are handled by the TldUrlMatcher
+					stripPrefix           : stripPrefix,
+					stripTrailingSlash    : stripTrailingSlash,
+					decodePercentEncoding : decodePercentEncoding,
+				} ) );
+			}
 		}
 	}
 
@@ -316,10 +382,13 @@ enum State {
 	NonUrl = 0,
 
 	// Scheme states
-	SchemeChar,       // First char must be an ASCII letter. Subsequent characters can be: ALPHA / DIGIT / "+" / "-" / "."
-	SchemeColon,      // Once we've reached the colon character after a scheme name
+	SchemeChar,      // First char must be an ASCII letter. Subsequent characters can be: ALPHA / DIGIT / "+" / "-" / "."
+	SchemeColon,     // Once we've reached the colon character after a scheme name
 	SchemeSlash1,             
 	SchemeSlash2,
+
+	PathRootless,    // In a URI such as 'my-scheme:hello', the 'h' will be the beginning of a "rootless" path
+	PathRootlessDot, // In a URI such as 'my-scheme:hello..world', the first '.' will put the machine in this state. However, when we read the second '.', we will drop the match (we don't want two dots in this part of a rootless path)
 
 	EndOfAuthority,  // After reading two //'s after the scheme colon, we read the "authority" component of the URI, and then we are in this state
 	EndOfUrlSuffix   // After reading a '/', '?', or '#', we read the "URL Suffix" of the URI, and then we are in this state
@@ -329,11 +398,11 @@ enum State {
 class CurrentUrl {
 	readonly idx: number;  // the index of the first character in the URL
 	readonly lastConfirmedUrlCharIdx: number;  // the index of the last character that was read that was a URL character for sure. For example, while reading "asdf.com-", the last confirmed char will be the 'm', and the current char would be '-' which *may* form an additional part of the URL
-	readonly hasHostDot: boolean;
+	readonly hasCharAfterColon: boolean;  // we've read a character after the scheme colon character, which will determine if it is a valid match
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
 		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
 		this.lastConfirmedUrlCharIdx = cfg.lastConfirmedUrlCharIdx !== undefined ? cfg.lastConfirmedUrlCharIdx : this.idx;
-		this.hasHostDot = !!cfg.hasHostDot;
+		this.hasCharAfterColon = !!cfg.hasCharAfterColon;
 	}
 }

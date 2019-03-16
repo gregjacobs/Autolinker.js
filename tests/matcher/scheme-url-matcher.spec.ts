@@ -128,6 +128,13 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 		} );
 
 
+		it( `should match a scheme with an absolute path`, () => {
+			let matches = matcher.parseMatches( 'my-scheme:/path/to/file and things' );
+
+			MatchChecker.expectUrlMatch( matches[ 0 ], 'my-scheme:/path/to/file', 0 );
+		} );
+
+
 		it( 'should match an IP address', function() {
 			let matches = matcher.parseMatches( 'http://127.0.0.1');
 
@@ -206,6 +213,7 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'https://website.com/files/name-ボ.pdf', 0 );
 		} );
+
 
 		it( 'should parse long contiguous characters with no spaces in a timely manner', function() {
 			const start = Date.now();

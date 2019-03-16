@@ -1,4 +1,4 @@
-import { uriUnreservedRe, uriSubDelimsRe, urlSuffixStartCharsRe } from './regex-lib';
+import { uriUnreservedRe, uriSubDelimsRe, urlSuffixStartCharsRe, alphaNumericAndMarksRe } from './regex-lib';
 import { tldRegex } from './matcher/tld-regex';
 
 /**
@@ -53,6 +53,36 @@ export function isAuthorityStartChar( char: string ): boolean {
 	);
 }
 
+
+/**
+ * Determines if the character is a "pchar" (path character) as defined by 
+ * https://tools.ietf.org/html/rfc3986#appendix-A
+ * 
+ *     pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+ * 
+ *     unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+ *     pct-encoded   = "%" HEXDIG HEXDIG
+ *     sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+ *                   / "*" / "+" / "," / ";" / "="
+ */
+export function isPChar( char: string ): boolean {
+	return (
+		isUnreservedChar( char ) ||
+		char === '%' ||  // we won't test `"%" HEXDIG HEXDIG` exactly, but % is okay and HEXDIG is covered by 'unreserved'
+		uriSubDelimsRe.test( char )
+	);
+}
+
+
+/**
+ * Determines if the character is an "unreserved" char as defined by
+ * https://tools.ietf.org/html/rfc3986#appendix-A
+ * 
+ *     unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+ */
+export function isUnreservedChar( char: string ): boolean {
+	return uriUnreservedRe.test( char );
+}
 
 
 /**
