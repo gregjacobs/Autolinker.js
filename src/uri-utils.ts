@@ -103,5 +103,5 @@ export function isUrlSuffixStartChar( char: string ) {
  * 'local' would not (for a domain name of 'my-computer.local').
  */
 export function isKnownTld( tld: string ) {
-	return tldRegex.test( tld );
+	return tldRegex.test( tld.toLowerCase() );  // make sure the tld is lowercase for the regex
 }
