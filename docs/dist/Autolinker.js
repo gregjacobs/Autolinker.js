@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 3.0.4
+ * 3.0.5
  *
  * Copyright(c) 2019 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -2846,8 +2846,9 @@
                 currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
-            else if (!letterRe.test(char) && !digitRe.test(char)) {
-                // Anything else that does not form an html tag
+            else if (!letterRe.test(char) && !digitRe.test(char) && char !== ':') {
+                // Anything else that does not form an html tag. Note: the colon 
+                // character is accepted for XML namespaced tags
                 resetToDataState();
             }
         }
@@ -4067,7 +4068,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.0.4';
+        Autolinker.version = '3.0.5';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

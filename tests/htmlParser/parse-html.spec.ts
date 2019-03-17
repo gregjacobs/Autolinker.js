@@ -226,6 +226,21 @@ describe( "Autolinker.htmlParser.HtmlParser", () => {
 			] );
 		} );
 
+
+		it( `should properly handle xml namespaced elements`, () => {
+			let nodes = parseHtmlAndCapture( '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com">Bar</a> Baz</ns:p>' );
+
+			expect( nodes ).toEqual( [
+				{ type: 'openTag', tagName: 'ns:p', offset: 0 },
+				{ type: 'text', text: 'Go to google.com or ', offset: 6 },
+				{ type: 'openTag', tagName: 'a', offset: 26 },
+				{ type: 'text', text: 'Bar', offset: 76 },
+				{ type: 'closeTag', tagName: 'a', offset: 79 },
+				{ type: 'text', text: ' Baz', offset: 83 },
+				{ type: 'closeTag', tagName: 'ns:p', offset: 87 }
+			] );
+		} );
+
 	} );
 
 
