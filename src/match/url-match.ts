@@ -1,5 +1,5 @@
 import { Match, MatchConfig } from "./match";
-import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
+import { StripPrefixConfigObj, UrlMatchTypeOptions } from "../autolinker";
 
 /**
  * @class Autolinker.match.Url
@@ -50,7 +50,7 @@ export class UrlMatch extends Match {
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	private readonly stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly stripPrefix: Required<StripPrefixConfigObj> = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
@@ -302,7 +302,7 @@ export interface UrlMatchConfig extends MatchConfig {
 	urlMatchType: UrlMatchTypeOptions;
 	protocolUrlMatch: boolean;
 	protocolRelativeMatch: boolean;
-	stripPrefix: StripPrefixConfig;
+	stripPrefix: Required<StripPrefixConfigObj>;
 	stripTrailingSlash: boolean;
 	decodePercentEncoding: boolean;
 }

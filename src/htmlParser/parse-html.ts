@@ -185,8 +185,9 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 			currentTag = new CurrentTag( { ...currentTag, name: captureTagName() } );
 			emitTagAndPreviousTextNode();  // resets to Data state as well
 
-		} else if( !letterRe.test( char ) && !digitRe.test( char ) ) {
-			// Anything else that does not form an html tag
+		} else if( !letterRe.test( char ) && !digitRe.test( char ) && char !== ':' ) {
+			// Anything else that does not form an html tag. Note: the colon 
+			// character is accepted for XML namespaced tags
 			resetToDataState();
 
 		} else {

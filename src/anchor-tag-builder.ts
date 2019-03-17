@@ -1,6 +1,6 @@
 import { Match } from "./match/match";
 import { HtmlTag } from "./html-tag";
-import { TruncateConfig } from "./autolinker";
+import { TruncateConfigObj } from "./autolinker";
 import { truncateSmart } from "./truncate/truncate-smart";
 import { truncateMiddle } from "./truncate/truncate-middle";
 import { truncateEnd } from "./truncate/truncate-end";
@@ -43,7 +43,7 @@ export class AnchorTagBuilder {
 	 * @cfg {Object} truncate
 	 * @inheritdoc Autolinker#truncate
 	 */
-	private readonly truncate: TruncateConfig = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly truncate: TruncateConfigObj = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} className
@@ -200,6 +200,6 @@ export class AnchorTagBuilder {
 
 export interface AnchorTagBuilderCfg {
 	newWindow?: boolean;
-	truncate?: TruncateConfig;
+	truncate?: TruncateConfigObj;
 	className?: string
 }

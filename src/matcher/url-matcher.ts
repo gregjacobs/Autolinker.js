@@ -1,5 +1,5 @@
 import { Matcher, MatcherConfig } from "./matcher";
-import { StripPrefixConfig } from "../autolinker";
+import { StripPrefixConfigObj } from "../autolinker";
 
 
 /**
@@ -136,7 +136,7 @@ export abstract class UrlMatcher extends Matcher {
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	protected stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected stripPrefix: Required<StripPrefixConfigObj> = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
@@ -248,7 +248,7 @@ export abstract class UrlMatcher extends Matcher {
 }
 
 export interface UrlMatcherConfig extends MatcherConfig {
-	stripPrefix: StripPrefixConfig;
+	stripPrefix: Required<StripPrefixConfigObj>;
 	stripTrailingSlash: boolean;
 	decodePercentEncoding: boolean;
 }

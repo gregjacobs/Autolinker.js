@@ -284,7 +284,7 @@ export default class Autolinker {
 	 *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
 	 *   to prevent these types of matches.
 	 */
-	private readonly urls: UrlsConfig = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly urls: UrlsConfigObj = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [email=true]
@@ -314,7 +314,7 @@ export default class Autolinker {
 	 *
 	 * Pass `false` to skip auto-linking of hashtags.
 	 */
-	private readonly hashtag: false | HashtagServices = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly hashtag: HashtagConfig = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String/Boolean} [mention=false]
@@ -328,7 +328,7 @@ export default class Autolinker {
 	 *
 	 * Defaults to `false` to skip auto-linking of mentions.
 	 */
-	private readonly mention: false | MentionServices = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly mention: MentionConfig = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [newWindow=true]
@@ -370,7 +370,7 @@ export default class Autolinker {
 	 *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
 	 *   strip the `'www'`.
 	 */
-	private readonly stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly stripPrefix: Required<StripPrefixConfigObj> = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} [stripTrailingSlash=true]
@@ -441,7 +441,7 @@ export default class Autolinker {
 	 *   'yahoo.com/some..to/a/file'. For more details, see
 	 *   {@link Autolinker.truncate.TruncateSmart}.
 	 */
-	private readonly truncate: TruncateConfig = { length: 0, location : 'end' };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly truncate: Required<TruncateConfigObj> = { length: 0, location : 'end' };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {String} className
@@ -478,7 +478,7 @@ export default class Autolinker {
 	 *   is currently processing. See {@link Autolinker.match.Match} subclasses
 	 *   for details.
 	 */
-	private readonly replaceFn: null | ( ( match: Match ) => ReplaceFnReturn ) = null;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	private readonly replaceFn: ReplaceFn | null = null;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Object} context
@@ -558,7 +558,9 @@ export default class Autolinker {
 	 * @param {Boolean/Object} urls
 	 * @return {Object}
 	 */
-	private normalizeUrlsCfg( urls: boolean | UrlsConfig | undefined ): UrlsConfig {
+	private normalizeUrlsCfg( 
+		urls: UrlsConfig | undefined 
+	): Required<UrlsConfigObj> {
 		if( urls == null ) urls = true;  // default to `true`
 
 		if( typeof urls === 'boolean' ) {
@@ -584,7 +586,9 @@ export default class Autolinker {
 	 * @param {Boolean/Object} stripPrefix
 	 * @return {Object}
 	 */
-	private normalizeStripPrefixCfg( stripPrefix: boolean | StripPrefixConfig | undefined ) {
+	private normalizeStripPrefixCfg( 
+		stripPrefix: StripPrefixConfig | undefined 
+	): Required<StripPrefixConfigObj> {
 		if( stripPrefix == null ) stripPrefix = true;  // default to `true`
 
 		if( typeof stripPrefix === 'boolean' ) {
@@ -609,7 +613,9 @@ export default class Autolinker {
 	 * @param {Number/Object} truncate
 	 * @return {Object}
 	 */
-	private normalizeTruncateCfg( truncate: number | TruncateConfig | undefined ): TruncateConfig {
+	private normalizeTruncateCfg( 
+		truncate: TruncateConfig | undefined 
+	): Required<TruncateConfigObj> {
 		if( typeof truncate === 'number' ) {
 			return { length: truncate, location: 'end' };
 
@@ -963,22 +969,23 @@ export default class Autolinker {
 
 
 export interface AutolinkerConfig {
-	urls?: boolean | UrlsConfig;
+	urls?: UrlsConfig;
 	email?: boolean;
 	phone?: boolean;
-	hashtag?: false | HashtagServices;
-	mention?: false | MentionServices;
+	hashtag?: HashtagConfig;
+	mention?: MentionConfig;
 	newWindow?: boolean;
-	stripPrefix?: boolean | StripPrefixConfig;
+	stripPrefix?: StripPrefixConfig;
 	stripTrailingSlash?: boolean;
-	truncate?: number | TruncateConfig;
+	truncate?: TruncateConfig;
 	className?: string;
-	replaceFn?: ( match: Match ) => ReplaceFnReturn | null;
+	replaceFn?: ReplaceFn | null;
 	context?: any;
 	decodePercentEncoding?: boolean;
 }
 
-export interface UrlsConfig {
+export type UrlsConfig = boolean | UrlsConfigObj;
+export interface UrlsConfigObj {
 	schemeMatches?: boolean;
 	wwwMatches?: boolean;
 	tldMatches?: boolean;
@@ -986,17 +993,23 @@ export interface UrlsConfig {
 
 export type UrlMatchTypeOptions = 'scheme' | 'www' | 'tld';
 
-export interface StripPrefixConfig {
-	scheme : boolean;
-	www    : boolean;
+export type StripPrefixConfig = boolean | StripPrefixConfigObj;
+export interface StripPrefixConfigObj {
+	scheme? : boolean;
+	www?    : boolean;
 }
 
-export interface TruncateConfig {
+export type TruncateConfig = number | TruncateConfigObj;
+export interface TruncateConfigObj {
 	length?: number;
 	location?: "end" | "middle" | "smart";
 }
 
+export type HashtagConfig = false | HashtagServices;
 export type HashtagServices = 'twitter' | 'facebook' | 'instagram';
+
+export type MentionConfig = false | MentionServices;
 export type MentionServices = 'twitter' | 'instagram' | 'soundcloud';
 
+export type ReplaceFn = ( match: Match ) => ReplaceFnReturn;
 export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;
