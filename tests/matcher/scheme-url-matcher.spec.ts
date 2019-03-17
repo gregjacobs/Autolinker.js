@@ -2,7 +2,7 @@ import { SchemeUrlMatcher } from "../../src/matcher/scheme-url-matcher";
 import { MatchChecker } from "../match/match-checker";
 import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 
-fdescribe( "Autolinker.matcher.SchemeUrl", function() {
+describe( "Autolinker.matcher.SchemeUrl", function() {
 	let matcher: SchemeUrlMatcher;
 
 	beforeEach( function() {
@@ -136,7 +136,7 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 
 
 		it( 'should match an IP address', function() {
-			let matches = matcher.parseMatches( 'http://127.0.0.1');
+			let matches = matcher.parseMatches( 'http://127.0.0.1 and things');
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
@@ -144,10 +144,24 @@ fdescribe( "Autolinker.matcher.SchemeUrl", function() {
 
 
 		it( 'should not match an invalid IP address (an IP with not enough numbers)', function() {
-			let matches = matcher.parseMatches( 'http://127.0.0.');
+			const matches1 = matcher.parseMatches( 'http://127.0.0.');
+			const matches2 = matcher.parseMatches( 'http://127.0.0. and stuff');
 
-			expect( matches.length ).toBe( 0 );
+			expect( matches1.length ).toBe( 0 );
+			expect( matches2.length ).toBe( 0 );
 		});
+
+
+		it( `should not match an invalid IP address (an IP with not enough numbers),
+			 even if it has a valid path after it`, 
+		() => {
+			const matches1 = matcher.parseMatches( 'http://127.0.0/path/and/such');
+			const matches2 = matcher.parseMatches( 'http://127.0.0/path/and/such and stuff');
+
+			expect( matches1.length ).toBe( 0 );
+			expect( matches2.length ).toBe( 0 );
+		});
+
 
 		it( 'should not match an URL which does not respect the IP protocol', function() {
 			let matches = matcher.parseMatches( 'git:1.0');

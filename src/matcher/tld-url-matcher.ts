@@ -8,7 +8,7 @@ import { readDomainName as doReadDomainName } from './reader/read-domain-name';
 import { readPort as doReadPort } from './reader/read-port';
 import { isKnownTld } from '../uri-utils';
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
 
 /**
@@ -53,7 +53,7 @@ export class TldUrlMatcher extends UrlMatcher {
 			state = State.NonUrl as State,  // use switchToState() to modify
 			currentUrl = noCurrentUrl;
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// const table = new CliTable( {
 		// 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentUrl.idx', 'lastConfirmedCharIdx', 'tld' ]
 		// } );
@@ -61,7 +61,7 @@ export class TldUrlMatcher extends UrlMatcher {
 		while( charIdx < len ) {
 			const char = text.charAt( charIdx );
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			// table.push( 
 			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tld || '' ] 
 			// );
@@ -81,7 +81,7 @@ export class TldUrlMatcher extends UrlMatcher {
 					throwUnhandledCaseError( state );
 			}
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			// table.push( 
 			// 	[ charIdx, char, State[ state ], charIdx, currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx, currentUrl.tld || '' ] 
 			// );
@@ -92,7 +92,7 @@ export class TldUrlMatcher extends UrlMatcher {
 		// Capture any valid match at the end of the string
 		captureMatchIfValidAndReset();
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// console.log( `\nRead string:\n  ${text}` );
 		// console.log( table.toString() );
 		
@@ -339,7 +339,7 @@ export class TldUrlMatcher extends UrlMatcher {
 				// matches. As such, we need to correct for that now if the
 				// URL begins with 'www.'
 				let urlMatchType: 'www' | 'tld' = /^www\./.test( url ) ? 'www' : 'tld';
-
+				
 				matches.push( new UrlMatch( {
 					tagBuilder            : tagBuilder,
 					matchedText           : url,

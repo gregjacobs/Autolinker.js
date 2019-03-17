@@ -1,6 +1,6 @@
 import { digitRe } from '../../regex-lib';
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
 
 /**
@@ -57,7 +57,7 @@ export function readPort(
 		// );
 	}
 
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// console.log( '\n' + table.toString() );
 
 	return { 

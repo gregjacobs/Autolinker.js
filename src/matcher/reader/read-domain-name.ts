@@ -1,7 +1,7 @@
 import { throwUnhandledCaseError, isUndefined } from '../../utils';
 import { alphaNumericAndMarksRe, digitRe, alphaNumericCharsRe } from '../../regex-lib';
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
 
 /**
@@ -43,7 +43,7 @@ export function readDomainName(
 		state = State.DomainLabelChar as State,
 		domainNameEnded = false;
 		
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// const table = new CliTable( {
 	// 	head: [ 'charIdx', 'char', 'state', 'lastConfirmedCharIdx', 'lastDomainDotIdx', 'longestDomainLabelLength' ]
 	// } );
@@ -51,7 +51,7 @@ export function readDomainName(
 	while( charIdx < len ) {
 		const char = text.charAt( charIdx );
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], lastConfirmedUrlCharIdx, lastConfirmedDomainDotIdx || '', longestDomainLabelLength ] 
 		// );
@@ -65,7 +65,7 @@ export function readDomainName(
 				throwUnhandledCaseError( state );
 		}
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], lastConfirmedUrlCharIdx, lastConfirmedDomainDotIdx || '', longestDomainLabelLength ]
 		// );
@@ -80,7 +80,7 @@ export function readDomainName(
 	// last character of the domain name which forms the last domain label
 	updateLongestDomainLabelLength();
 
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// console.log( '\n' + table.toString() );
 
 	return { 

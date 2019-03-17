@@ -2,7 +2,7 @@ import { State } from './state';
 import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
 import { isUndefined, throwUnhandledCaseError } from '../utils';
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
 
 /**
@@ -72,7 +72,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		currentDataIdx = 0,  // where the current data start index is
 		currentTag = noCurrentTag;  // describes the current tag that is being read
 
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// const table = new CliTable( {
 	// 	head: [ 'charIdx', 'char', 'state', 'currentDataIdx', 'currentOpenTagIdx', 'tag.type' ]
 	// } );
@@ -80,7 +80,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 	while( charIdx < len ) {
 		var char = html.charAt( charIdx );
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// ALSO: Temporarily remove the 'const' keyword on the State enum
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
@@ -113,7 +113,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 				throwUnhandledCaseError( state );
 		}
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// ALSO: Temporarily remove the 'const' keyword on the State enum
 		// table.push( 
 		// 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
@@ -126,7 +126,7 @@ export function parseHtml( html: string, { onOpenTag, onCloseTag, onText, onComm
 		emitText();
 	}
 
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// console.log( '\n' + table.toString() );
 
 

@@ -13,7 +13,7 @@ import { HashtagMatcher } from "./matcher/hashtag-matcher";
 import { PhoneMatcher } from "./matcher/phone-matcher";
 import { MentionMatcher } from "./matcher/mention-matcher";
 import { UrlMatcher } from "./matcher/url-matcher";
-//import { SchemeUrlMatcher } from './matcher/scheme-url-matcher';
+import { SchemeUrlMatcher } from './matcher/scheme-url-matcher';
 import { TldUrlMatcher } from './matcher/tld-url-matcher';
 import { parseHtml } from './htmlParser/parse-html';
 
@@ -925,9 +925,9 @@ export default class Autolinker {
 				new EmailMatcher( { tagBuilder } ),
 				new PhoneMatcher( { tagBuilder } ),
 				new MentionMatcher( { tagBuilder, serviceName: this.mention as MentionServices } ),
-				// new UrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
-				// new SchemeUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } ),
-				new TldUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
+				// NOTE: TldUrlMatcher MUST be before SchemeUrlMatcher or else the SchemeUrlMatcher could interpret something like google.com:8080 as a scheme rather than a TLD
+				new TldUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } ),
+				new SchemeUrlMatcher( { tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding } )
 			];
 
 			return ( this.matchers = matchers );

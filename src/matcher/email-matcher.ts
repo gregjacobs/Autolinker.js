@@ -4,7 +4,7 @@ import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError, isUndefined } from '../utils';
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
 
 /**
@@ -38,7 +38,7 @@ export class EmailMatcher extends Matcher {
 			state = State.NonEmailAddress as State,
 			currentEmailAddress = noCurrentEmailAddress;
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		// const table = new CliTable( {
 		// 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentEmailAddress.idx', 'hasDomainDot' ]
 		// } );
@@ -46,7 +46,7 @@ export class EmailMatcher extends Matcher {
 		while( charIdx < len ) {
 			const char = text.charAt( charIdx );
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			// table.push( 
 			// 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
 			// );
@@ -64,7 +64,7 @@ export class EmailMatcher extends Matcher {
 					throwUnhandledCaseError( state );
 			}
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			// table.push( 
 			// 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
 			// );
@@ -75,7 +75,7 @@ export class EmailMatcher extends Matcher {
 		// Capture any valid match at the end of the string
 		captureMatchIfValidAndReset();
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		//console.log( '\n' + table.toString() );
 		
 		return matches;

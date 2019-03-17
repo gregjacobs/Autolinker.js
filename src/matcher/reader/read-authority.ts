@@ -1,7 +1,9 @@
-import { alphaNumericAndMarksRe, whitespaceRe, urlSuffixStartCharsRe } from '../../regex-lib';
+import { alphaNumericAndMarksRe, whitespaceRe, urlSuffixStartCharsRe, digitRe } from '../../regex-lib';
+import { isAuthorityStartChar } from '../../uri-utils';
+import { throwUnhandledCaseError, isUndefined } from '../../utils';
 
-// For debugging: search for other "For debugging" lines
-// import CliTable from 'cli-table';
+// For debugging: search for and uncomment other "For debugging" lines
+//import CliTable from 'cli-table';
 
 /**
  * Reads the "authority" segment of a URI, which includes optional username, 
@@ -87,18 +89,22 @@ export function readAuthority(
 	const len = text.length,
 	      startChar = text.charAt( startIdx );
 
-	// Check that the first input character is actually a hostname start
+	// Check that the first input character is actually an authority start
 	// character
-	if( whitespaceRe.test( startChar ) || urlSuffixStartCharsRe.test( startChar ) ) {
+	if( !isAuthorityStartChar( startChar ) ) {
 		throw new Error( `The input character '${startChar}' was not a valid URI authority start character` );
 	}
 
 	let charIdx = startIdx,
-	    lastConfirmedUrlCharIdx = charIdx;
+		lastConfirmedUrlCharIdx = charIdx,
+		state = ( digitRe.test( startChar ) ? State.IPv4AddressOctet : State.RegName ) as State,
+		ipV4Address: number[] = [],  // if we're reading an IPv4 address, we'll add the 4 octets to this array
+		lastIpV4AddressDotIdx: number | undefined = undefined,  // the index of the last dot in an IPv4 address
+		authorityEnded = false;
 		
-	// For debugging: search for other "For debugging" lines
+	// For debugging: search for and uncomment other "For debugging" lines
 	// const table = new CliTable( {
-	// 	head: [ 'charIdx', 'char', 'lastConfirmedCharIdx' ]
+	// 	head: [ 'charIdx', 'char', 'state', 'lastConfirmedCharIdx', 'IPv4 Address' ]
 	// } );
 
 	for( ; charIdx < len; charIdx++ ) {
@@ -106,13 +112,100 @@ export function readAuthority(
 
 		// For debugging: search for and uncomment other "For debugging" lines
 		// table.push( 
-		// 	[ charIdx, char, lastConfirmedUrlCharIdx ] 
+		// 	[ charIdx, char, State[ state ], lastConfirmedUrlCharIdx, ipV4Address.join( '.' ) ]
 		// );
 
-		if( urlSuffixStartCharsRe.test( char ) || whitespaceRe.test( char ) ) {
+		switch( state ) {
+			case State.IPv4AddressOctet: stateIPv4AddressNumber( char ); break;
+			case State.IPV4AddressDot: stateIPv4AddressDot( char ); break;
+
+			case State.RegName: stateRegName( char ); break;
+			
+			default: 
+				throwUnhandledCaseError( state );
+		}
+
+		// For debugging: search for and uncomment other "For debugging" lines
+		// table.push( 
+		// 	[ charIdx, char, State[ state ], lastConfirmedUrlCharIdx, ipV4Address.join( '.' ) ] 
+		// );
+
+		if( authorityEnded ) {
+			break;
+		}
+	}
+
+	// For debugging: search for and uncomment other "For debugging" lines
+	// console.log( '\n' + table.toString() );
+
+	// Capture the last octet if we ran out of characters while reading an IPv4
+	// Address octet
+	if( state === State.IPv4AddressOctet ) {
+		captureIPv4Octet();
+	}
+
+	// For debugging: search for and uncomment other "For debugging" lines
+	// console.log( 'IPv4 address: ', ipV4Address );
+
+	return { 
+		isValidAuthority: isIPv4Address() ? isValidIPv4Address() : true,
+		endIdx: charIdx - 1,   // -1 because we want to return the last character that was read before the character that ended the host/port. This makes the other parsing routines which leverage this function integrate it seamlessly
+		lastConfirmedUrlCharIdx: ( !isIPv4Address() || isValidIPv4Address() ) ? lastConfirmedUrlCharIdx : startIdx - 1
+	};
+
+
+	function stateIPv4AddressNumber( char: string ) {
+		if( isAuthorityEndChar( char ) ) {
 			// '/', '?', '#', or whitespace encountered, must be the end of the
 			// authority component of the URI
-			break;
+			authorityEnded = true;
+
+		} else if( char === '.' ) {
+			// Grab the current IPv4 address octet
+			captureIPv4Octet();
+
+			state = State.IPV4AddressDot;
+			lastIpV4AddressDotIdx = charIdx;
+
+		} else if( digitRe.test( char ) ) {
+			// Stay in the IPv4AddressNumber state
+			lastConfirmedUrlCharIdx = charIdx;
+
+		} else if( alphaNumericAndMarksRe.test( char ) ) {
+			state = State.RegName;
+			lastConfirmedUrlCharIdx = charIdx;
+
+		} else {
+			authorityEnded = true;
+		}
+	}
+
+
+	function stateIPv4AddressDot( char: string ) {
+		if( isAuthorityEndChar( char ) ) {
+			// '/', '?', '#', or whitespace encountered, must be the end of the
+			// authority component of the URI
+			authorityEnded = true;
+
+		} else if( digitRe.test( char ) ) {
+			state = State.IPv4AddressOctet;
+			lastConfirmedUrlCharIdx = charIdx;
+
+		} else if( alphaNumericAndMarksRe.test( char ) ) {
+			state = State.RegName;
+			lastConfirmedUrlCharIdx = charIdx;
+
+		} else {
+			authorityEnded = true;
+		}
+	}
+
+
+	function stateRegName( char: string ) {
+		if( isAuthorityEndChar( char ) ) {
+			// '/', '?', '#', or whitespace encountered, must be the end of the
+			// authority component of the URI
+			authorityEnded = true;
 
 		} else if( alphaNumericAndMarksRe.test( char ) ) {
 			// A letter or digit is a "confirmed" URL character, whereas say, a
@@ -121,26 +214,59 @@ export function readAuthority(
 			// will we include the '.' as a "confirmed" character (along with 
 			// the subsequent alphanumeric)
 			lastConfirmedUrlCharIdx = charIdx;
-		}
 
-		// For debugging: search for and uncomment other "For debugging" lines
-		// table.push( 
-		// 	[ charIdx, char, lastConfirmedUrlCharIdx ] 
-		// );
+		} else {
+			// stay in the RegName state, but don't necessarily capture the
+			// character. For instance, it could be a '.', but we'll only
+			// capture it as a "confirmed" character if an alphanumeric comes
+			// after it
+		}
 	}
 
-	// For debugging: search for other "For debugging" lines
-	// console.log( '\n' + table.toString() );
 
-	return { 
-		endIdx: charIdx - 1,   // -1 because we want to return the last character that was read before the character that ended the host/port. This makes the other parsing routines which leverage this function integrate it seamlessly
-		lastConfirmedUrlCharIdx
-	};
-	
+	function captureIPv4Octet() {
+		const octetStartIdx = isUndefined( lastIpV4AddressDotIdx ) ? startIdx : lastIpV4AddressDotIdx + 1,
+		      octet = text.slice( octetStartIdx, charIdx );
+
+		ipV4Address.push( +octet );
+	}
+
+
+	// Determines if the state machine ended in one of the IPv4 states
+	function isIPv4Address() {
+		return state === State.IPv4AddressOctet || state === State.IPV4AddressDot;
+	}
+
+
+	function isValidIPv4Address() {
+		return (
+			ipV4Address.length === 4 &&
+			ipV4Address.every( octet => octet >= 0 && octet <= 255 )
+		);
+	}
+
+
+	function isAuthorityEndChar( char: string ) {
+		// '/', '?', '#', or whitespace encountered, must be the end of the
+		// authority component of the URI
+		return urlSuffixStartCharsRe.test( char ) || whitespaceRe.test( char );
+	}
 }
 
 
 export interface ReadAuthorityResult {
+	isValidAuthority: boolean;  // will be false if an IPv4 address was being read, but it did not form a valid IPv4 address. Ex: 1.2.3 (no 4th octet, and ending in a number)
 	endIdx: number;  // the index of the last character *before* the character that ended the authority component of the URI. So if a space is encountered which ends the authority component, the endIdx will point to the character before the space
 	lastConfirmedUrlCharIdx: number;  // the index of the last character that we can confirm is part of the authority component. Ex: a letter would be included, but a '.' may not be as it might end a natural language sentence. 
 }
+
+
+// TODO: const enum
+enum State {
+	IPv4AddressOctet = 0,  // state while reading a single octet (of the 4) of an IPv4 address
+	IPV4AddressDot,
+
+	RegName  // The "regname" BNF from the function's description
+}
+
+

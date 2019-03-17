@@ -8,7 +8,7 @@ import { isAuthorityStartChar, isUrlSuffixStartChar, isPChar } from '../uri-util
 import { readUrlSuffix as doReadUrlSuffix } from './reader/read-url-suffix';
 
 
-// For debugging: search for other "For debugging" lines
+// For debugging: search for and uncomment other "For debugging" lines
 import CliTable from 'cli-table';
 
 /**
@@ -43,7 +43,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 			state = State.NonUrl as State,  // use switchToState() to modify
 			currentUrl = noCurrentUrl;
 
-		// For debugging: search for other "For debugging" lines
+		// For debugging: search for and uncomment other "For debugging" lines
 		const table = new CliTable( {
 			head: [ 'charIdx', 'char', 'state', 'currentUrl.idx', 'lastConfirmedCharIdx' ]
 		} );
@@ -51,7 +51,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		while( charIdx < len ) {
 			const char = text.charAt( charIdx );
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			table.push( 
 				[ charIdx, char, State[ state ], currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx ] 
 			);
@@ -74,7 +74,7 @@ export class SchemeUrlMatcher extends UrlMatcher {
 					throwUnhandledCaseError( state );
 			}
 
-			// For debugging: search for other "For debugging" lines
+			// For debugging: search for and uncomment other "For debugging" lines
 			table.push( 
 				[ charIdx, char, State[ state ], currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx ] 
 			);
@@ -85,8 +85,8 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		// Capture any valid match at the end of the string
 		captureMatchIfValidAndReset();
 
-		// For debugging: search for other "For debugging" lines
-		console.log( '\n' + table.toString() );
+		// For debugging: search for and uncomment other "For debugging" lines
+		//console.log( '\n' + table.toString() );
 		
 		return matches;
 
@@ -289,12 +289,18 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		 */
 		function readAuthority() {
 			const { 
+				isValidAuthority,
 				endIdx, 
 				lastConfirmedUrlCharIdx
 			} = doReadAuthority( text, charIdx );
 
 			// Update the lastConfirmedUrlCharIdx
-			currentUrl = new CurrentUrl( { ...currentUrl, lastConfirmedUrlCharIdx } );
+			currentUrl = new CurrentUrl( { 
+				...currentUrl, 
+				lastConfirmedUrlCharIdx,
+				isAuthorityMatch: true,
+				hasValidAuthority: isValidAuthority
+			 } );
 
 			// Advance the character index to the last character read by the
 			// doReadAuthority() routine
@@ -351,10 +357,10 @@ export class SchemeUrlMatcher extends UrlMatcher {
 		 * keep reading characters in order to make a full match.
 		 */
 		function captureMatchIfValid() {
-			if( currentUrl.hasCharAfterColon ) {
+			if( currentUrl.isValid() ) {
 				let url = text.slice( currentUrl.idx, currentUrl.lastConfirmedUrlCharIdx + 1 );
 
-				// For debugging: search for other "For debugging" lines
+				// For debugging: search for and uncomment other "For debugging" lines
 				table.push( 
 					[ charIdx, 'capturing', url ] 
 				);
@@ -399,10 +405,27 @@ class CurrentUrl {
 	readonly idx: number;  // the index of the first character in the URL
 	readonly lastConfirmedUrlCharIdx: number;  // the index of the last character that was read that was a URL character for sure. For example, while reading "asdf.com-", the last confirmed char will be the 'm', and the current char would be '-' which *may* form an additional part of the URL
 	readonly hasCharAfterColon: boolean;  // we've read a character after the scheme colon character, which will determine if it is a valid match
+	readonly isAuthorityMatch: boolean;   // if the scheme matches an "authority" URI (i.e. has two slashes after the colon, such as 'http://')
+	readonly hasValidAuthority: boolean;  // if it is an "authority" URI (see isAuthorityMatch), then we want to make sure it is a valid authority. An invalidly formatted IP address would be an invalid authority, for instance
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
 		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
 		this.lastConfirmedUrlCharIdx = isUndefined( cfg.lastConfirmedUrlCharIdx ) ? this.idx : cfg.lastConfirmedUrlCharIdx;
 		this.hasCharAfterColon = !!cfg.hasCharAfterColon;
+		this.isAuthorityMatch = !!cfg.isAuthorityMatch;
+		this.hasValidAuthority = !!cfg.hasValidAuthority;
+	}
+
+	/*
+	 * Determines if the current URL that is being read is a valid URL.
+	 * 
+	 * We want to make sure there is a character after the scheme's colon 
+	 * character, and if it is an authority match, we want to make sure that it
+	 * has a valid authority. An invalid authority could be if an IP address is
+	 * specified but it is invalidly formatted.
+	 */
+	isValid() {
+		return this.hasCharAfterColon && 
+		     ( !this.isAuthorityMatch || ( this.isAuthorityMatch && this.hasValidAuthority ) );
 	}
 }
