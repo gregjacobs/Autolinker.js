@@ -558,7 +558,7 @@ function domainsToRegex(contents){
 	contents = contents.filter( s => !!s );  // remove empty elements
 	contents.sort( compareLengthLongestFirst );
 	contents = contents.join('|');
-	contents = 'export const tldRegex = /^(?:' + contents + ')$/;\n';
+	contents = 'export const tldRegex = /^(?:' + contents + ')$/i;\n';
 
 	return contents;
 }
