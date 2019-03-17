@@ -1,6 +1,6 @@
 import { State } from './state';
 import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
-import { throwUnhandledCaseError } from '../utils';
+import { isUndefined, throwUnhandledCaseError } from '../utils';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -647,7 +647,7 @@ class CurrentTag {
 	readonly isClosing: boolean;  // true if it's a closing tag, OR a self-closing open tag
 
 	constructor( cfg: Partial<CurrentTag> = {} ) {
-		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
 		this.type = cfg.type || 'tag';
 		this.name = cfg.name || '';
 		this.isOpening = !!cfg.isOpening;

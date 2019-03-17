@@ -1,7 +1,7 @@
 import { alphaNumericCharsRe, urlSuffixStartCharsRe } from "../regex-lib";
 import { UrlMatch } from "../match/url-match";
 import { Match } from "../match/match";
-import { throwUnhandledCaseError } from '../utils';
+import { isUndefined, throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
 import { readUrlSuffix as doReadUrlSuffix } from './reader/read-url-suffix';
 import { readDomainName as doReadDomainName } from './reader/read-domain-name';
@@ -381,8 +381,8 @@ class CurrentUrl {
 	readonly tld: string | undefined;  // the TLD (Top-Level Domain) that was found in the host, if any. Ex: 'com' for a host of 'google.com'
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
-		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-		this.lastConfirmedUrlCharIdx = cfg.lastConfirmedUrlCharIdx !== undefined ? cfg.lastConfirmedUrlCharIdx : this.idx;
+		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
+		this.lastConfirmedUrlCharIdx = isUndefined( cfg.lastConfirmedUrlCharIdx ) ? this.idx : cfg.lastConfirmedUrlCharIdx;
 		this.isProtocolRelative = !!cfg.isProtocolRelative;
 		this.longestDomainLabelLength = cfg.longestDomainLabelLength || 0;
 		this.domainNameLength = cfg.domainNameLength || 0;

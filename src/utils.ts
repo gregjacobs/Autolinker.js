@@ -1,4 +1,14 @@
 /**
+ * Simpler helper method to check for undefined simply for the benefit of 
+ * gaining better compression when minified by not needing to have multiple 
+ * comparisons to the `undefined` keyword in the codebase.
+ */
+export function isUndefined( value: any ): value is undefined {
+	return value === undefined;
+}
+
+
+/**
  * Assigns (shallow copies) the properties of `src` onto `dest`, if the
  * corresponding property on `dest` === `undefined`.
  *
@@ -8,7 +18,7 @@
  */
 export function defaults( dest: any, src: any ) {
 	for( let prop in src ) {
-		if( src.hasOwnProperty( prop ) && dest[ prop ] === undefined ) {
+		if( src.hasOwnProperty( prop ) && isUndefined( dest[ prop ] ) ) {
 			dest[ prop ] = src[ prop ];
 		}
 	}

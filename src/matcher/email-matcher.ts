@@ -2,7 +2,7 @@ import { Matcher } from "./matcher";
 import { alphaNumericAndMarksCharsStr, domainNameCharRegex } from "../regex-lib";
 import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
-import { throwUnhandledCaseError } from '../utils';
+import { throwUnhandledCaseError, isUndefined } from '../utils';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -256,7 +256,7 @@ class CurrentEmailAddress {
 	readonly hasDomainDot: boolean;
 
 	constructor( cfg: Partial<CurrentEmailAddress> = {} ) {
-		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
 		this.hasDomainDot = !!cfg.hasDomainDot;
 	}
 }

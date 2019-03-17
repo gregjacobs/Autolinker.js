@@ -1,4 +1,4 @@
-import { throwUnhandledCaseError } from '../../utils';
+import { throwUnhandledCaseError, isUndefined } from '../../utils';
 import { alphaNumericAndMarksRe, digitRe, alphaNumericCharsRe } from '../../regex-lib';
 
 // For debugging: search for other "For debugging" lines
@@ -185,7 +185,7 @@ export function readDomainName(
 	function updateLongestDomainLabelLength() {
 		let currentDomainLabelLength: number;
 
-		if( lastConfirmedDomainDotIdx === undefined ) {  
+		if( isUndefined( lastConfirmedDomainDotIdx ) ) {  
 			// no '.' has been found yet in the domain name, use the startIdx
 			currentDomainLabelLength = lastConfirmedUrlCharIdx - startIdx + 1;
 		} else {

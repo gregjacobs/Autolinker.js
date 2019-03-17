@@ -1,7 +1,7 @@
 import { letterRe, alphaNumericCharsRe } from "../regex-lib";
 import { UrlMatch } from "../match/url-match";
 import { Match } from "../match/match";
-import { throwUnhandledCaseError } from '../utils';
+import { isUndefined, throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
 import { readAuthority as doReadAuthority } from './reader/read-authority';
 import { isAuthorityStartChar, isUrlSuffixStartChar, isPChar } from '../uri-utils';
@@ -401,8 +401,8 @@ class CurrentUrl {
 	readonly hasCharAfterColon: boolean;  // we've read a character after the scheme colon character, which will determine if it is a valid match
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
-		this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-		this.lastConfirmedUrlCharIdx = cfg.lastConfirmedUrlCharIdx !== undefined ? cfg.lastConfirmedUrlCharIdx : this.idx;
+		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
+		this.lastConfirmedUrlCharIdx = isUndefined( cfg.lastConfirmedUrlCharIdx ) ? this.idx : cfg.lastConfirmedUrlCharIdx;
 		this.hasCharAfterColon = !!cfg.hasCharAfterColon;
 	}
 }

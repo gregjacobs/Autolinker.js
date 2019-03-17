@@ -7,6 +7,7 @@ import { UrlMatchValidator } from "./url-match-validator";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
 import { UrlMatcher } from './url-matcher';
+import { isUndefined } from 'util';
 
 // For debugging: search for other "For debugging" lines
 import CliTable from 'cli-table';
@@ -558,7 +559,7 @@ class CurrentUrl {
 	readonly hasHostDot: boolean;
 
 	constructor( cfg: Partial<CurrentUrl> = {} ) {
-		this.endIdx = cfg.endIdx !== undefined ? cfg.endIdx : -1;
+		this.endIdx = isUndefined( cfg.endIdx ) ? -1: cfg.endIdx;
 		this.isProtocolRelative = !!cfg.isProtocolRelative;
 		this.hasHostDot = !!cfg.hasHostDot;
 	}
