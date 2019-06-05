@@ -242,14 +242,88 @@ describe( "Autolinker.matcher.Email", () => {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
 		} );
 
-		it( 'should match mailto: scheme prefix', () => {
-			var matches = matcher.parseMatches( 'hello mailto:asdf@asdf.com there' );
+
+		it( 'when a match is prefixed with `mailto:`, should include that in the match (via the offset)', () => {
+			let matches = matcher.parseMatches( 'Hello mailto:asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
+			expect( matches[ 0 ].getMatchedText() ).toBe( 'mailto:asdf@asdf.com' );
+		} );
+
+
+		it( 'when a match is prefixed with `mailto` *without* a colon and it ' +
+			'is a valid email address, should match it', 
+		() => {
+			let matches = matcher.parseMatches( 'Hello mailtoasdf@asdf.com' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'mailtoasdf@asdf.com', 6 );
+		} );
+
+
+		it( 'when a match is simply the string `mailto:` *without* any characters ' +
+		    'after it, should not match it', 
+		() => {
+			let matches = matcher.parseMatches( 'Hello mailto: other stuff' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+
+		it( 'when a match is the string `mailto:@something.com`, should not ' +
+		    'match it as it is invalid', 
+		() => {
+			let matches = matcher.parseMatches( 'Hello mailto:@asdf.com' );
+
+			expect( matches.length ).toBe( 0 );
+		} );
+
+
+		'mailto'.split( '' ).forEach( ( char, idx ) => {
+			const partialMailto = 'mailto'.substring( 0, idx + 1 );
+
+			it( `when a match is prefixed with a partial of 'mailto:' ('${partialMailto}') ` + 
+			    `and it is a valid email address, should match it`, 
+			() => {
+				let matches = matcher.parseMatches( `Hello ${partialMailto}@asdf.com` );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectEmailMatch( matches[ 0 ], `${partialMailto}@asdf.com`, 6 );
+			} );
+
+
+			it( `when a match is prefixed with a partial of 'mailto:' ('${partialMailto}') ` + 
+				`with other valid email address characters after it, and it is a valid ` +
+				`email address, should match it`, 
+			() => {
+				let matches = matcher.parseMatches( `Hello ${partialMailto}asdf@asdf.com` );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectEmailMatch( matches[ 0 ], `${partialMailto}asdf@asdf.com`, 6 );
+			} );
+
+
+			it( `when a match is prefixed with a partial of 'mailto:' ('${partialMailto}') ` + 
+				`with a dot after it (a valid email address character), and it is a valid ` +
+				`email address, should match it`, 
+			() => {
+				let matches = matcher.parseMatches( `Hello ${partialMailto}.asdf@asdf.com` );
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectEmailMatch( matches[ 0 ], `${partialMailto}.asdf@asdf.com`, 6 );
+			} );
+
+
+			it( `when a match is prefixed with a partial of 'mailto:' ('${partialMailto}') ` + 
+			    `but then a space is encountered to end the email address, should not match it`, 
+			() => {
+				let matches = matcher.parseMatches( `Hello ${partialMailto} asdf.com` );
+
+				expect( matches.length ).toBe( 0 );
+			} );
 		} );
 
 	} );
-
 
 } );

@@ -102,4 +102,11 @@ describe( "Autolinker Email Matching -", () => {
 		expect( result ).toBe( 'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>');
 	} );
 
+
+	it( "should automatically link an email address with a 'mailto:' prefix", function () {
+		let result = autolinker.link( "My email is mailto:asdf@asdf.com" );
+		
+		expect( result ).toBe( 'My email is <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>');
+	} );
+
 } );
