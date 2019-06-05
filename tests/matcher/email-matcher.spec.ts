@@ -242,6 +242,13 @@ describe( "Autolinker.matcher.Email", () => {
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
 		} );
 
+		it( 'should match mailto: scheme prefix', () => {
+			var matches = matcher.parseMatches( 'hello mailto:asdf@asdf.com there' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 6 );
+		} );
+
 	} );
 
 
