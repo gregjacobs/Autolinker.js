@@ -1,6 +1,6 @@
 import { Matcher, MatcherConfig } from "./matcher";
 import { alphaNumericCharsStr, alphaNumericAndMarksCharsStr, getDomainNameStr } from "../regex-lib";
-import { StripPrefixConfig, UrlMatchTypeOptions } from "../autolinker";
+import { StripPrefixConfigObj, UrlMatchTypeOptions } from "../autolinker";
 import { tldRegex } from "./tld-regex";
 import { UrlMatch } from "../match/url-match";
 import { UrlMatchValidator } from "./url-match-validator";
@@ -21,7 +21,7 @@ export class UrlMatcher extends Matcher {
 	 *
 	 * The Object form of {@link Autolinker#cfg-stripPrefix}.
 	 */
-	protected stripPrefix: StripPrefixConfig = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
+	protected stripPrefix: Required<StripPrefixConfigObj> = { scheme: true, www: true };  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @cfg {Boolean} stripTrailingSlash (required)
@@ -326,7 +326,7 @@ export class UrlMatcher extends Matcher {
 }
 
 export interface UrlMatcherConfig extends MatcherConfig {
-	stripPrefix: StripPrefixConfig;
+	stripPrefix: Required<StripPrefixConfigObj>;
 	stripTrailingSlash: boolean;
 	decodePercentEncoding: boolean;
 }

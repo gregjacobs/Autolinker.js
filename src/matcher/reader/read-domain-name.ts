@@ -1,5 +1,5 @@
 import { throwUnhandledCaseError, isUndefined } from '../../utils';
-import { alphaNumericAndMarksRe, digitRe, alphaNumericCharsRe } from '../../regex-lib';
+import { alphaNumericAndMarksRe, alphaNumericCharsRe } from '../../regex-lib';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';

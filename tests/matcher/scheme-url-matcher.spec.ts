@@ -17,6 +17,23 @@ describe( "Autolinker.matcher.SchemeUrl", function() {
 
 	describe( 'parseMatches()', function() {
 
+		it( 'TODO:', () => {
+			expect( 'true' ).toBe( `
+				So apparently a host can have a number of special characters
+				such as '!', "'", etc. Not sure why that's possible, but seems 
+				in the old version of autolinker, we required a valid domain
+				name after a scheme for an authority. Maybe we should do the 
+				same now? 
+				- Hmm, so basically the change would be from reg-name -> domain
+				  name. 
+				- Also, there are some interesting implementation ideas in the
+				  linkify project's codebase. Should look into that there to see
+				  if we can walk the string only once for all matchers somehow.
+			` );
+		} );
+
+
+
 		it( 'should return an empty array if there are no matches for urls', function() {
 			expect( matcher.parseMatches( '' ) ).toEqual( [] );
 			expect( matcher.parseMatches( 'asdf' ) ).toEqual( [] );

@@ -58,13 +58,13 @@ describe( "Autolinker Url Matching -", () => {
 		} );
 
 
-		it( "should exclude invalid chars after TLD", function() {
-			let result1 = autolinker.link( "Joe went to http://www.yahoo.com's today" );
-			expect( result1 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s today' );
+		fit( "should exclude invalid chars after TLD", function() {
+			let result1 = autolinker.link( `Joe went to http://www.yahoo.com's today` );
+			expect( result1 ).toBe( `Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'s today` );
 			let result2 = autolinker.link( "Joe went to https://www.yahoo.com/foo's today" );
-			expect( result2 ).toBe( 'Joe went to <a href="https://www.yahoo.com/foo\'s">yahoo.com/foo\'s</a> today' );
+			expect( result2 ).toBe( `Joe went to <a href="https://www.yahoo.com/foo's">yahoo.com/foo's</a> today` );
 			let result3 = autolinker.link( "Joe went to http://www.yahoo.com's/foo today" );
-			expect( result3 ).toBe( 'Joe went to <a href="http://www.yahoo.com">yahoo.com</a>\'s/foo today' );
+			expect( result3 ).toBe( `Joe went to <a href="http://www.yahoo.com">yahoo.com</a>'s/foo today` );
 		} );
 
 
