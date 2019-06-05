@@ -23,6 +23,11 @@ export class EmailMatcher extends Matcher {
 	 */
 	protected localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
 
+	/**
+	 * Valid URI scheme for email address URLs
+	 */
+	protected mailToScheme : string = 'mailto:';
+
 
 	/**
 	 * @inheritdoc
@@ -30,6 +35,7 @@ export class EmailMatcher extends Matcher {
 	parseMatches( text: string ) {
 		const tagBuilder = this.tagBuilder,
 			  localPartCharRegex = this.localPartCharRegex,
+			  mailToScheme = this.mailToScheme,
 			  matches: Match[] = [],
 			  len = text.length,
 			  noCurrentEmailAddress = new CurrentEmailAddress();
@@ -215,7 +221,8 @@ export class EmailMatcher extends Matcher {
 		 */
 		function captureMatchIfValidAndReset() {
 			if( currentEmailAddress.hasDomainDot ) {  // we need at least one dot in the domain to be considered a valid email address
-				let emailAddress = text.slice( currentEmailAddress.idx, charIdx );
+				let offset = currentEmailAddress.idx;
+				let emailAddress = text.slice( offset, charIdx );
 
 				// If we read a '.' or '-' char that ended the email address
 				// (valid domain name characters, but only valid email address
@@ -225,10 +232,22 @@ export class EmailMatcher extends Matcher {
 					emailAddress = emailAddress.slice( 0, -1 );
 				}
 
+				let matchedText = emailAddress;
+
+				// get the characters immediately preceding the email match
+				const potentialMailToSchemeOffset = offset - mailToScheme.length
+				const potentialMailToScheme = text.slice( potentialMailToSchemeOffset, offset );
+				if ( potentialMailToScheme === mailToScheme ) {
+					// if the email match is preceded by the 'mailTo:' scheme, 
+					// include those characters in the matched text
+					offset = potentialMailToSchemeOffset;
+					matchedText = text.slice( offset, charIdx );
+				}
+
 				matches.push( new EmailMatch( {
 					tagBuilder  : tagBuilder,
-					matchedText : emailAddress,
-					offset      : currentEmailAddress.idx,
+					matchedText : matchedText,
+					offset      : offset,
 					email       : emailAddress
 				} ) );
 			}
