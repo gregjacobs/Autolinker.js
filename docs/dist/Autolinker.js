@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 3.0.5
+ * 3.1.0
  *
  * Copyright(c) 2019 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -1815,8 +1815,17 @@
          * @inheritdoc
          */
         EmailMatcher.prototype.parseMatches = function (text) {
-            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
-            var charIdx = 0, state = 0 /* NonEmailAddress */, currentEmailAddress = noCurrentEmailAddress;
+            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, matches = [], len = text.length, noCurrentEmailMatch = new CurrentEmailMatch();
+            // for matching a 'mailto:' prefix
+            var mailtoTransitions = {
+                'm': 'a',
+                'a': 'i',
+                'i': 'l',
+                'l': 't',
+                't': 'o',
+                'o': ':',
+            };
+            var charIdx = 0, state = 0 /* NonEmailMatch */, currentEmailMatch = noCurrentEmailMatch;
             // For debugging: search for other "For debugging" lines
             // const table = new CliTable( {
             // 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentEmailAddress.idx', 'hasDomainDot' ]
@@ -1828,25 +1837,28 @@
                 // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
                 // );
                 switch (state) {
-                    case 0 /* NonEmailAddress */:
+                    case 0 /* NonEmailMatch */:
                         stateNonEmailAddress(char);
                         break;
-                    case 1 /* LocalPart */:
+                    case 1 /* Mailto */:
+                        stateMailTo(text.charAt(charIdx - 1), char);
+                        break;
+                    case 2 /* LocalPart */:
                         stateLocalPart(char);
                         break;
-                    case 2 /* LocalPartDot */:
+                    case 3 /* LocalPartDot */:
                         stateLocalPartDot(char);
                         break;
-                    case 3 /* AtSign */:
+                    case 4 /* AtSign */:
                         stateAtSign(char);
                         break;
-                    case 4 /* DomainChar */:
+                    case 5 /* DomainChar */:
                         stateDomainChar(char);
                         break;
-                    case 5 /* DomainHyphen */:
+                    case 6 /* DomainHyphen */:
                         stateDomainHyphen(char);
                         break;
-                    case 6 /* DomainDot */:
+                    case 7 /* DomainDot */:
                         stateDomainDot(char);
                         break;
                     default:
@@ -1865,23 +1877,62 @@
             return matches;
             // Handles the state when we're not in an email address
             function stateNonEmailAddress(char) {
-                if (localPartCharRegex.test(char)) {
-                    beginEmailAddress();
+                if (char === 'm') {
+                    beginEmailMatch(1 /* Mailto */);
+                }
+                else if (localPartCharRegex.test(char)) {
+                    beginEmailMatch();
+                }
+            }
+            // Handles if we're reading a 'mailto:' prefix on the string
+            function stateMailTo(prevChar, char) {
+                if (prevChar === ':') {
+                    // We've reached the end of the 'mailto:' prefix
+                    if (localPartCharRegex.test(char)) {
+                        state = 2 /* LocalPart */;
+                        currentEmailMatch = new CurrentEmailMatch(__assign({}, currentEmailMatch, { hasMailtoPrefix: true }));
+                    }
+                    else {
+                        // we've matched 'mailto:' but didn't get anything meaningful
+                        // immediately afterwards (for example, we encountered a 
+                        // space character, or an '@' character which formed 'mailto:@'
+                        resetToNonEmailMatchState();
+                    }
+                }
+                else if (mailtoTransitions[prevChar] === char) ;
+                else if (localPartCharRegex.test(char)) {
+                    // We we're reading a prefix of 'mailto:', but encountered a
+                    // different character that didn't continue the prefix
+                    state = 2 /* LocalPart */;
+                }
+                else if (char === '.') {
+                    // We we're reading a prefix of 'mailto:', but encountered a
+                    // dot character
+                    state = 3 /* LocalPartDot */;
+                }
+                else if (char === '@') {
+                    // We we're reading a prefix of 'mailto:', but encountered a
+                    // an @ character
+                    state = 4 /* AtSign */;
+                }
+                else {
+                    // not an email address character, return to "NonEmailAddress" state
+                    resetToNonEmailMatchState();
                 }
             }
             // Handles the state when we're currently in the "local part" of an 
             // email address (as opposed to the "domain part")
             function stateLocalPart(char) {
                 if (char === '.') {
-                    state = 2 /* LocalPartDot */;
+                    state = 3 /* LocalPartDot */;
                 }
                 else if (char === '@') {
-                    state = 3 /* AtSign */;
+                    state = 4 /* AtSign */;
                 }
                 else if (localPartCharRegex.test(char)) ;
                 else {
                     // not an email address character, return to "NonEmailAddress" state
-                    resetToNonEmailAddressState();
+                    resetToNonEmailMatchState();
                 }
             }
             // Handles the state where we've read 
@@ -1889,36 +1940,36 @@
                 if (char === '.') {
                     // We read a second '.' in a row, not a valid email address 
                     // local part
-                    resetToNonEmailAddressState();
+                    resetToNonEmailMatchState();
                 }
                 else if (char === '@') {
                     // We read the '@' character immediately after a dot ('.'), not 
                     // an email address
-                    resetToNonEmailAddressState();
+                    resetToNonEmailMatchState();
                 }
                 else if (localPartCharRegex.test(char)) {
-                    state = 1 /* LocalPart */;
+                    state = 2 /* LocalPart */;
                 }
                 else {
                     // Anything else, not an email address
-                    resetToNonEmailAddressState();
+                    resetToNonEmailMatchState();
                 }
             }
             function stateAtSign(char) {
                 if (domainNameCharRegex.test(char)) {
-                    state = 4 /* DomainChar */;
+                    state = 5 /* DomainChar */;
                 }
                 else {
                     // Anything else, not an email address
-                    resetToNonEmailAddressState();
+                    resetToNonEmailMatchState();
                 }
             }
             function stateDomainChar(char) {
                 if (char === '.') {
-                    state = 6 /* DomainDot */;
+                    state = 7 /* DomainDot */;
                 }
                 else if (char === '-') {
-                    state = 5 /* DomainHyphen */;
+                    state = 6 /* DomainHyphen */;
                 }
                 else if (domainNameCharRegex.test(char)) ;
                 else {
@@ -1933,7 +1984,7 @@
                     captureMatchIfValidAndReset();
                 }
                 else if (domainNameCharRegex.test(char)) {
-                    state = 4 /* DomainChar */;
+                    state = 5 /* DomainChar */;
                 }
                 else {
                     // Anything else
@@ -1946,59 +1997,64 @@
                     captureMatchIfValidAndReset();
                 }
                 else if (domainNameCharRegex.test(char)) {
-                    state = 4 /* DomainChar */;
+                    state = 5 /* DomainChar */;
                     // After having read a '.' and then a valid domain character,
                     // we now know that the domain part of the email is valid, and
                     // we have found at least a partial EmailMatch (however, the
                     // email address may have additional characters from this point)
-                    currentEmailAddress = new CurrentEmailAddress(__assign({}, currentEmailAddress, { hasDomainDot: true }));
+                    currentEmailMatch = new CurrentEmailMatch(__assign({}, currentEmailMatch, { hasDomainDot: true }));
                 }
                 else {
                     // Anything else
                     captureMatchIfValidAndReset();
                 }
             }
-            function beginEmailAddress() {
-                state = 1 /* LocalPart */;
-                currentEmailAddress = new CurrentEmailAddress({ idx: charIdx });
+            function beginEmailMatch(newState) {
+                if (newState === void 0) { newState = 2 /* LocalPart */; }
+                state = newState;
+                currentEmailMatch = new CurrentEmailMatch({ idx: charIdx });
             }
-            function resetToNonEmailAddressState() {
-                state = 0 /* NonEmailAddress */;
-                currentEmailAddress = noCurrentEmailAddress;
+            function resetToNonEmailMatchState() {
+                state = 0 /* NonEmailMatch */;
+                currentEmailMatch = noCurrentEmailMatch;
             }
             /*
              * Captures the current email address as an EmailMatch if it's valid,
              * and resets the state to read another email address.
              */
             function captureMatchIfValidAndReset() {
-                if (currentEmailAddress.hasDomainDot) { // we need at least one dot in the domain to be considered a valid email address
-                    var emailAddress = text.slice(currentEmailAddress.idx, charIdx);
+                if (currentEmailMatch.hasDomainDot) { // we need at least one dot in the domain to be considered a valid email address
+                    var matchedText = text.slice(currentEmailMatch.idx, charIdx);
                     // If we read a '.' or '-' char that ended the email address
                     // (valid domain name characters, but only valid email address
                     // characters if they are followed by something else), strip 
                     // it off now
-                    if (/[-.]$/.test(emailAddress)) {
-                        emailAddress = emailAddress.slice(0, -1);
+                    if (/[-.]$/.test(matchedText)) {
+                        matchedText = matchedText.slice(0, -1);
                     }
+                    var emailAddress = currentEmailMatch.hasMailtoPrefix
+                        ? matchedText.slice('mailto:'.length)
+                        : matchedText;
                     matches.push(new EmailMatch({
                         tagBuilder: tagBuilder,
-                        matchedText: emailAddress,
-                        offset: currentEmailAddress.idx,
+                        matchedText: matchedText,
+                        offset: currentEmailMatch.idx,
                         email: emailAddress
                     }));
                 }
-                resetToNonEmailAddressState();
+                resetToNonEmailMatchState();
             }
         };
         return EmailMatcher;
     }(Matcher));
-    var CurrentEmailAddress = /** @class */ (function () {
-        function CurrentEmailAddress(cfg) {
+    var CurrentEmailMatch = /** @class */ (function () {
+        function CurrentEmailMatch(cfg) {
             if (cfg === void 0) { cfg = {}; }
             this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+            this.hasMailtoPrefix = !!cfg.hasMailtoPrefix;
             this.hasDomainDot = !!cfg.hasDomainDot;
         }
-        return CurrentEmailAddress;
+        return CurrentEmailMatch;
     }());
 
     // NOTE: THIS IS A GENERATED FILE
@@ -4068,7 +4124,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.0.5';
+        Autolinker.version = '3.1.0';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
