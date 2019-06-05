@@ -1809,13 +1809,17 @@
              * i.e. the "name" part of "name@site.com"
              */
             _this.localPartCharRegex = new RegExp("[" + alphaNumericAndMarksCharsStr + "!#$%&'*+/=?^_`{|}~-]");
+            /**
+             * Valid URI scheme for email address URLs
+             */
+            _this.mailToScheme = 'mailto:';
             return _this;
         }
         /**
          * @inheritdoc
          */
         EmailMatcher.prototype.parseMatches = function (text) {
-            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
+            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, mailToScheme = this.mailToScheme, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
             var charIdx = 0, state = 0 /* NonEmailAddress */, currentEmailAddress = noCurrentEmailAddress;
             // For debugging: search for other "For debugging" lines
             // const table = new CliTable( {
@@ -1972,7 +1976,8 @@
              */
             function captureMatchIfValidAndReset() {
                 if (currentEmailAddress.hasDomainDot) { // we need at least one dot in the domain to be considered a valid email address
-                    var emailAddress = text.slice(currentEmailAddress.idx, charIdx);
+                    var offset = currentEmailAddress.idx;
+                    var emailAddress = text.slice(offset, charIdx);
                     // If we read a '.' or '-' char that ended the email address
                     // (valid domain name characters, but only valid email address
                     // characters if they are followed by something else), strip 
@@ -1980,10 +1985,20 @@
                     if (/[-.]$/.test(emailAddress)) {
                         emailAddress = emailAddress.slice(0, -1);
                     }
+                    var matchedText = emailAddress;
+                    // get the characters immediately preceding the email match
+                    var potentialMailToSchemeOffset = offset - mailToScheme.length;
+                    var potentialMailToScheme = text.slice(potentialMailToSchemeOffset, offset);
+                    if (potentialMailToScheme === mailToScheme) {
+                        // if the email match is preceded by the 'mailTo:' scheme, 
+                        // include those characters in the matched text
+                        offset = potentialMailToSchemeOffset;
+                        matchedText = text.slice(offset, charIdx);
+                    }
                     matches.push(new EmailMatch({
                         tagBuilder: tagBuilder,
-                        matchedText: emailAddress,
-                        offset: currentEmailAddress.idx,
+                        matchedText: matchedText,
+                        offset: offset,
                         email: emailAddress
                     }));
                 }
