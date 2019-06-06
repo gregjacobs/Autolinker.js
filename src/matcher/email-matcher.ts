@@ -3,9 +3,16 @@ import { alphaNumericAndMarksCharsStr, domainNameCharRegex } from "../regex-lib"
 import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
+import { tldRegex } from "./tld-regex";
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
+
+/**
+ * Stricter TLD regex which adds a beginning and end check to ensure
+ * the string is a valid TLD.
+ */
+const strictTldRegex = new RegExp(`^${tldRegex.source}$`);
 
 /**
  * @class Autolinker.matcher.Email
@@ -214,6 +221,19 @@ export class EmailMatcher extends Matcher {
 			currentEmailAddress = noCurrentEmailAddress
 		}
 
+		/**
+		 * Determines if the given email address has a valid TLD or not
+		 * @param {string} emailAddress - email address
+		 * @return {Boolean} - true is email have valid TLD, false
+		 */
+		function doesEmailHaveValidTld(emailAddress: string) {
+			const emailAddressTld : string = emailAddress.split('.').pop() || '';
+			const emailAddressNormalized = emailAddressTld.toLowerCase();
+			const isValidTld = strictTldRegex.test(emailAddressNormalized);
+
+			return isValidTld;
+		}
+
 
 		/*
 		 * Captures the current email address as an EmailMatch if it's valid,
@@ -244,12 +264,15 @@ export class EmailMatcher extends Matcher {
 					matchedText = text.slice( offset, charIdx );
 				}
 
-				matches.push( new EmailMatch( {
-					tagBuilder  : tagBuilder,
-					matchedText : matchedText,
-					offset      : offset,
-					email       : emailAddress
-				} ) );
+				// if the email address has a valid TLD, add it to the list of matches
+				if (doesEmailHaveValidTld(emailAddress)) {
+					matches.push( new EmailMatch( {
+						tagBuilder  : tagBuilder,
+						matchedText : matchedText,
+						offset      : offset,
+						email       : emailAddress
+					} ) );
+				}
 			}
 
 			resetToNonEmailAddressState();
