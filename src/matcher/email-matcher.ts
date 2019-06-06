@@ -9,12 +9,6 @@ import { tldRegex } from "./tld-regex";
 // import CliTable from 'cli-table';
 
 /**
- * Stricter TLD regex which adds a beginning and end check to ensure
- * the string is a valid TLD.
- */
-const strictTldRegex = new RegExp(`^${tldRegex.source}$`);
-
-/**
  * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
  *
@@ -31,6 +25,12 @@ export class EmailMatcher extends Matcher {
 	protected localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
 
 	/**
+	 * Stricter TLD regex which adds a beginning and end check to ensure
+	 * the string is a valid TLD
+	 */
+	protected strictTldRegex = new RegExp( `^${tldRegex.source}$` );
+
+	/**
 	 * Valid URI scheme for email address URLs
 	 */
 	protected mailToScheme : string = 'mailto:';
@@ -42,6 +42,7 @@ export class EmailMatcher extends Matcher {
 	parseMatches( text: string ) {
 		const tagBuilder = this.tagBuilder,
 			  localPartCharRegex = this.localPartCharRegex,
+			  strictTldRegex = this.strictTldRegex,
 			  mailToScheme = this.mailToScheme,
 			  matches: Match[] = [],
 			  len = text.length,
@@ -226,10 +227,10 @@ export class EmailMatcher extends Matcher {
 		 * @param {string} emailAddress - email address
 		 * @return {Boolean} - true is email have valid TLD, false otherwise
 		 */
-		function doesEmailHaveValidTld(emailAddress: string) {
-			const emailAddressTld : string = emailAddress.split('.').pop() || '';
+		function doesEmailHaveValidTld( emailAddress: string ) {
+			const emailAddressTld : string = emailAddress.split( '.' ).pop() || '';
 			const emailAddressNormalized = emailAddressTld.toLowerCase();
-			const isValidTld = strictTldRegex.test(emailAddressNormalized);
+			const isValidTld = strictTldRegex.test( emailAddressNormalized );
 
 			return isValidTld;
 		}
@@ -265,7 +266,7 @@ export class EmailMatcher extends Matcher {
 				}
 
 				// if the email address has a valid TLD, add it to the list of matches
-				if (doesEmailHaveValidTld(emailAddress)) {
+				if ( doesEmailHaveValidTld( emailAddress ) ) {
 					matches.push( new EmailMatch( {
 						tagBuilder  : tagBuilder,
 						matchedText : matchedText,

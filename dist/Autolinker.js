@@ -1797,11 +1797,6 @@
     // For debugging: search for other "For debugging" lines
     // import CliTable from 'cli-table';
     /**
-     * Stricter TLD regex which adds a beginning and end check to ensure
-     * the string is a valid TLD.
-     */
-    var strictTldRegex = new RegExp("^" + tldRegex.source + "$");
-    /**
      * @class Autolinker.matcher.Email
      * @extends Autolinker.matcher.Matcher
      *
@@ -1819,6 +1814,11 @@
              */
             _this.localPartCharRegex = new RegExp("[" + alphaNumericAndMarksCharsStr + "!#$%&'*+/=?^_`{|}~-]");
             /**
+             * Stricter TLD regex which adds a beginning and end check to ensure
+             * the string is a valid TLD
+             */
+            _this.strictTldRegex = new RegExp("^" + tldRegex.source + "$");
+            /**
              * Valid URI scheme for email address URLs
              */
             _this.mailToScheme = 'mailto:';
@@ -1828,7 +1828,7 @@
          * @inheritdoc
          */
         EmailMatcher.prototype.parseMatches = function (text) {
-            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, mailToScheme = this.mailToScheme, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
+            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, strictTldRegex = this.strictTldRegex, mailToScheme = this.mailToScheme, matches = [], len = text.length, noCurrentEmailAddress = new CurrentEmailAddress();
             var charIdx = 0, state = 0 /* NonEmailAddress */, currentEmailAddress = noCurrentEmailAddress;
             // For debugging: search for other "For debugging" lines
             // const table = new CliTable( {
