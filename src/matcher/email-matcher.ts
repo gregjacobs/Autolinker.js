@@ -224,7 +224,7 @@ export class EmailMatcher extends Matcher {
 		/**
 		 * Determines if the given email address has a valid TLD or not
 		 * @param {string} emailAddress - email address
-		 * @return {Boolean} - true is email have valid TLD, false
+		 * @return {Boolean} - true is email have valid TLD, false otherwise
 		 */
 		function doesEmailHaveValidTld(emailAddress: string) {
 			const emailAddressTld : string = emailAddress.split('.').pop() || '';
