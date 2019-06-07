@@ -180,6 +180,13 @@ describe( "Autolinker.matcher.Url", function() {
 				expect( Date.now() - start ).toBeLessThan( 100 );
 			} );
 
+			it( 'should match urls containing emoji', function() {
+				var matches = matcher.parseMatches( 'emoji url http://📙.la/🧛🏻‍♂️ mid-sentance');
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://📙.la/🧛🏻‍♂️', 10 );
+			} );
+
 		} );
 
 	} );

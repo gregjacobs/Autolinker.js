@@ -60,6 +60,13 @@ export const alphaCharsStr = /A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u0
 	.source;  // see note in above variable description
 
 /**
+ * The string form of a regular expression that would match all emoji characters
+ * Source: https://www.regextester.com/106421
+ */
+export const  emojiStr = /\u00a9\u00ae\u2000-\u3300\ud83c\ud000-\udfff\ud83d\ud000-\udfff\ud83e\ud000-\udfff/
+	.source;
+
+/**
  * The string form of a regular expression that would match all of the
  * combining mark characters in the unicode character set when placed in a
  * RegExp character class (`[]`). 
@@ -87,14 +94,14 @@ export const marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05
 
 /**
  * The string form of a regular expression that would match all of the
- * alphabetic ("letter") chars and combining marks in the unicode character set 
+ * alphabetic ("letter") chars, emoji, and combining marks in the unicode character set 
  * when placed in a RegExp character class (`[]`). This includes all 
  * international alphabetic characters.
  *
  * These would be the characters matched by unicode regex engines `\p{L}\p{M}`
- * escapes.
+ * escapes and emoji characters.
  */
-export const alphaCharsAndMarksStr = alphaCharsStr + marksStr;
+export const alphaCharsAndMarksStr = alphaCharsStr + emojiStr + marksStr ;
 
 /**
  * The string form of a regular expression that would match all of the
