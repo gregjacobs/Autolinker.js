@@ -2300,24 +2300,24 @@
          */
         UrlMatcher.prototype.parseMatches = function (text) {
             var matcherRegex = this.matcherRegex, stripPrefix = this.stripPrefix, stripTrailingSlash = this.stripTrailingSlash, decodePercentEncoding = this.decodePercentEncoding, tagBuilder = this.tagBuilder, matches = [], match;
-            while ((match = matcherRegex.exec(text)) !== null) {
+            var _loop_1 = function () {
                 var matchStr = match[0], schemeUrlMatch = match[1], wwwUrlMatch = match[4], wwwProtocolRelativeMatch = match[5], 
                 //tldUrlMatch = match[ 8 ],  -- not needed at the moment
                 tldProtocolRelativeMatch = match[9], offset = match.index, protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch, prevChar = text.charAt(offset - 1);
                 if (!UrlMatchValidator.isValid(matchStr, schemeUrlMatch)) {
-                    continue;
+                    return "continue";
                 }
                 // If the match is preceded by an '@' character, then it is either
                 // an email address or a username. Skip these types of matches.
                 if (offset > 0 && prevChar === '@') {
-                    continue;
+                    return "continue";
                 }
                 // If it's a protocol-relative '//' match, but the character before the '//'
                 // was a word character (i.e. a letter/number), then we found the '//' in the
                 // middle of another word (such as "asdf//asdf.com"). In this case, skip the
                 // match.
-                if (offset > 0 && protocolRelativeMatch && this.wordCharRegExp.test(prevChar)) {
-                    continue;
+                if (offset > 0 && protocolRelativeMatch && this_1.wordCharRegExp.test(prevChar)) {
+                    return "continue";
                 }
                 // If the URL ends with a question mark, don't include the question
                 // mark as part of the URL. We'll assume the question mark was the
@@ -2328,15 +2328,30 @@
                 // Handle a closing parenthesis or square bracket at the end of the 
                 // match, and exclude it if there is not a matching open parenthesis 
                 // or square bracket in the match itself.
-                if (this.matchHasUnbalancedClosingParen(matchStr)) {
+                if (this_1.matchHasUnbalancedClosingParen(matchStr)) {
                     matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing ")"
                 }
                 else {
                     // Handle an invalid character after the TLD
-                    var pos = this.matchHasInvalidCharAfterTld(matchStr, schemeUrlMatch);
+                    var pos = this_1.matchHasInvalidCharAfterTld(matchStr, schemeUrlMatch);
                     if (pos > -1) {
                         matchStr = matchStr.substr(0, pos); // remove the trailing invalid chars
                     }
+                }
+                // The autolinker accepts many characters in a url's scheme (like `fake://test.com`).
+                // However, in cases where a URL is missing whitespace before an obvious link,
+                // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
+                // at the http:// part. We will check if the match contains a common scheme and then 
+                // shift the match to start from there. 		
+                var foundCommonScheme = ['http://', 'https://'].find(function (commonScheme) { return !!schemeUrlMatch && schemeUrlMatch.indexOf(commonScheme) !== -1; });
+                if (foundCommonScheme) {
+                    // If we found an overmatched URL, we want to find the index
+                    // of where the match should start and shift the match to
+                    // start from the beginning of the common scheme
+                    var indexOfSchemeStart = matchStr.indexOf(foundCommonScheme);
+                    matchStr = matchStr.substr(indexOfSchemeStart);
+                    schemeUrlMatch = schemeUrlMatch.substr(indexOfSchemeStart);
+                    offset = offset + indexOfSchemeStart;
                 }
                 var urlMatchType = schemeUrlMatch ? 'scheme' : (wwwUrlMatch ? 'www' : 'tld'), protocolUrlMatch = !!schemeUrlMatch;
                 matches.push(new UrlMatch({
@@ -2351,6 +2366,10 @@
                     stripTrailingSlash: stripTrailingSlash,
                     decodePercentEncoding: decodePercentEncoding,
                 }));
+            };
+            var this_1 = this;
+            while ((match = matcherRegex.exec(text)) !== null) {
+                _loop_1();
             }
             return matches;
         };
