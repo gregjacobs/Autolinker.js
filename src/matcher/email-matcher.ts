@@ -3,6 +3,7 @@ import { alphaNumericAndMarksCharsStr, domainNameCharRegex } from "../regex-lib"
 import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError } from '../utils';
+import { tldRegex } from "./tld-regex";
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -23,6 +24,12 @@ export class EmailMatcher extends Matcher {
 	 */
 	protected localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
 
+	/**
+	 * Stricter TLD regex which adds a beginning and end check to ensure
+	 * the string is a valid TLD
+	 */
+	protected strictTldRegex = new RegExp( `^${tldRegex.source}$` );
+
 
 	/**
 	 * @inheritdoc
@@ -30,6 +37,7 @@ export class EmailMatcher extends Matcher {
 	parseMatches( text: string ) {
 		const tagBuilder = this.tagBuilder,
 			  localPartCharRegex = this.localPartCharRegex,
+			  strictTldRegex = this.strictTldRegex,
 			  matches: Match[] = [],
 			  len = text.length,
 			  noCurrentEmailMatch = new CurrentEmailMatch();
@@ -270,6 +278,7 @@ export class EmailMatcher extends Matcher {
 		}
 
 
+
 		/*
 		 * Captures the current email address as an EmailMatch if it's valid,
 		 * and resets the state to read another email address.
@@ -290,16 +299,32 @@ export class EmailMatcher extends Matcher {
 					? matchedText.slice( 'mailto:'.length ) 
 					: matchedText;
 
-				matches.push( new EmailMatch( {
-					tagBuilder  : tagBuilder,
-					matchedText : matchedText,
-					offset      : currentEmailMatch.idx,
-					email       : emailAddress
-				} ) );
+				// if the email address has a valid TLD, add it to the list of matches
+				if ( doesEmailHaveValidTld( emailAddress ) ) {
+					matches.push( new EmailMatch( {
+						tagBuilder  : tagBuilder,
+						matchedText : matchedText,
+						offset      : currentEmailMatch.idx,
+						email       : emailAddress
+					} ) );
+				}
 			}
 
 			resetToNonEmailMatchState();
-		}
+		
+
+		/**
+		 * Determines if the given email address has a valid TLD or not
+		 * @param {string} emailAddress - email address
+		 * @return {Boolean} - true is email have valid TLD, false otherwise
+		 */
+		function doesEmailHaveValidTld( emailAddress: string ) {
+			const emailAddressTld : string = emailAddress.split( '.' ).pop() || '';
+			const emailAddressNormalized = emailAddressTld.toLowerCase();
+			const isValidTld = strictTldRegex.test( emailAddressNormalized );
+
+			return isValidTld;
+		}}
 	}
 
 }
