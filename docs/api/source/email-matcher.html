@@ -22,6 +22,7 @@ var matcher_1 = require(&quot;./matcher&quot;);
 var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var email_match_1 = require(&quot;../match/email-match&quot;);
 var utils_1 = require(&quot;../utils&quot;);
+var tld_regex_1 = require(&quot;./tld-regex&quot;);
 // For debugging: search for other &quot;For debugging&quot; lines
 // import CliTable from &#39;cli-table&#39;;
 <span id='Autolinker-matcher-Email'>/**
@@ -41,13 +42,18 @@ var EmailMatcher =  (function (_super) {
          * i.e. the &quot;name&quot; part of &quot;name@site.com&quot;
          */
         _this.localPartCharRegex = new RegExp(&quot;[&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;);
+<span id='Autolinker-matcher-Email-property-strictTldRegex'>        /**
+</span>         * Stricter TLD regex which adds a beginning and end check to ensure
+         * the string is a valid TLD
+         */
+        _this.strictTldRegex = new RegExp(&quot;^&quot; + tld_regex_1.tldRegex.source + &quot;$&quot;);
         return _this;
     }
 <span id='Autolinker-matcher-Email-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
     EmailMatcher.prototype.parseMatches = function (text) {
-        var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, matches = [], len = text.length, noCurrentEmailMatch = new CurrentEmailMatch();
+        var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, strictTldRegex = this.strictTldRegex, matches = [], len = text.length, noCurrentEmailMatch = new CurrentEmailMatch();
         // for matching a &#39;mailto:&#39; prefix
         var mailtoTransitions = {
             &#39;m&#39;: &#39;a&#39;,
@@ -277,14 +283,28 @@ var EmailMatcher =  (function (_super) {
                 var emailAddress = currentEmailMatch.hasMailtoPrefix
                     ? matchedText.slice(&#39;mailto:&#39;.length)
                     : matchedText;
-                matches.push(new email_match_1.EmailMatch({
-                    tagBuilder: tagBuilder,
-                    matchedText: matchedText,
-                    offset: currentEmailMatch.idx,
-                    email: emailAddress
-                }));
+                // if the email address has a valid TLD, add it to the list of matches
+                if (doesEmailHaveValidTld(emailAddress)) {
+                    matches.push(new email_match_1.EmailMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: currentEmailMatch.idx,
+                        email: emailAddress
+                    }));
+                }
             }
             resetToNonEmailMatchState();
+<span id='Autolinker-matcher-Email-method-doesEmailHaveValidTld'>            /**
+</span>             * Determines if the given email address has a valid TLD or not
+             * @param {string} emailAddress - email address
+             * @return {Boolean} - true is email have valid TLD, false otherwise
+             */
+            function doesEmailHaveValidTld(emailAddress) {
+                var emailAddressTld = emailAddress.split(&#39;.&#39;).pop() || &#39;&#39;;
+                var emailAddressNormalized = emailAddressTld.toLowerCase();
+                var isValidTld = strictTldRegex.test(emailAddressNormalized);
+                return isValidTld;
+            }
         }
     };
     return EmailMatcher;
