@@ -807,6 +807,10 @@ describe( "Autolinker Url Matching -", () => {
 			expect( result ).toBe( '<a href="http://google.no/maps/place/Gary\'s+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no">google.no/maps/place/Gary\'s+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no</a>' );
 		} );
 
+		it( "should handle emoji", function() {
+			let result = autolinker.link( 'Joe went to http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀' );
+			expect( result ).toBe( 'Joe went to <a href="http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀">emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀</a>' );
+		} );
 
 		it( "should decode emojis", function() {
 			var result = autolinker.link( "Danish flag emoji: https://emojipedia.org/%F0%9F%87%A9%F0%9F%87%B0" );
