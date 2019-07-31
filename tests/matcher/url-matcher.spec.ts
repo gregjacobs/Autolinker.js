@@ -180,6 +180,25 @@ describe( "Autolinker.matcher.Url", function() {
 				expect( Date.now() - start ).toBeLessThan( 100 );
 			} );
 
+			it( 'if scheme contains a common protocol, should only begin match from start of common protocol', function() {
+				let matches1 = matcher.parseMatches( 'text with a typohttp://www.example.com mid-sentence' );
+
+				expect( matches1.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches1[ 0 ], 'http://www.example.com', 16 );
+
+				let matches2 = matcher.parseMatches( 'text with a typohttps://www.example.com mid-sentence' );
+
+				expect( matches2.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches2[ 0 ], 'https://www.example.com', 16 );
+      } );
+      
+			it( 'should match urls containing emoji', function() {
+				var matches = matcher.parseMatches( 'emoji url http://📙.la/🧛🏻‍♂️ mid-sentance');
+
+				expect( matches.length ).toBe( 1 );
+				MatchChecker.expectUrlMatch( matches[ 0 ], 'http://📙.la/🧛🏻‍♂️', 10 );
+			} );
+
 		} );
 
 	} );

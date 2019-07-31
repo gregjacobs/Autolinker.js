@@ -201,6 +201,25 @@ export class UrlMatcher extends Matcher {
 				}
 			}
 
+			// The autolinker accepts many characters in a url's scheme (like `fake://test.com`).
+			// However, in cases where a URL is missing whitespace before an obvious link,
+			// (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
+			// at the http:// part. We will check if the match contains a common scheme and then 
+			// shift the match to start from there. 		
+			const foundCommonScheme = [ 'http://', 'https://' ].find(
+				(commonScheme) => !!schemeUrlMatch && schemeUrlMatch.indexOf( commonScheme ) !== -1
+			);
+			if ( foundCommonScheme  ) {
+				// If we found an overmatched URL, we want to find the index
+				// of where the match should start and shift the match to
+				// start from the beginning of the common scheme
+				const indexOfSchemeStart = matchStr.indexOf( foundCommonScheme );
+
+				matchStr = matchStr.substr( indexOfSchemeStart );
+				schemeUrlMatch = schemeUrlMatch.substr( indexOfSchemeStart );
+				offset = offset + indexOfSchemeStart;
+			}
+
 			let urlMatchType: UrlMatchTypeOptions = schemeUrlMatch ? 'scheme' : ( wwwUrlMatch ? 'www' : 'tld' ),
 			    protocolUrlMatch = !!schemeUrlMatch;
 
