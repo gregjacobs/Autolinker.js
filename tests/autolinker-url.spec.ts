@@ -304,6 +304,13 @@ describe( "Autolinker Url Matching -", () => {
 				expect( result5 ).toBe( 'do not link first char: .<a href="aa://example">aa://example</a>' );
 			} );
 
+			it( "should autolink protocol starting at http:// or http:// if URL is preceded with text", function() {
+				let result1 = autolinker.link( 'link this: xxxhttp://example.com' );
+				expect( result1 ).toBe( 'link this: xxx<a href="http://example.com">example.com</a>' );
+
+				let result2 = autolinker.link( 'link this: abchttps://www.example.com' );
+				expect( result2 ).toBe( 'link this: abc<a href="https://www.example.com">example.com</a>' );
+			} );
 
 			it( "should NOT autolink possible URLs with the 'javascript:' URI scheme", function() {
 				let result = autolinker.link( "do not link javascript:window.alert('hi') please" );
