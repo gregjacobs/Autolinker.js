@@ -902,6 +902,27 @@ describe( "Autolinker Url Matching -", () => {
 
 	} );
 
+	describe( "curly quotes handling", function() {
+
+		it( "should autolink a url surrounded by curly quotes", function() {
+			var result = autolinker.link( "“link.com/foo”" );
+
+			expect( result ).toBe( '“<a href="http://link.com/foo">link.com/foo</a>”' );
+		} );
+
+		it( "should autolink a url with www. prefix surrounded by curly quotes", function() {
+			var result = autolinker.link( "“www.link.com/foo”" );
+
+			expect( result ).toBe( '“<a href="http://www.link.com/foo">link.com/foo</a>”' );
+		} );
+
+		it( "should autolink a url with protocol prefix surrounded by curly quotes", function() {
+			var result = autolinker.link( "“http://link.com/foo”" );
+
+			expect( result ).toBe( '“<a href="http://link.com/foo">link.com/foo</a>”' );
+		} );
+
+	} );
 
 	it( "should automatically link multiple URLs in the same input string", function() {
 		let result = autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
