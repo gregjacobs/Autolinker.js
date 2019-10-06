@@ -295,7 +295,7 @@ function buildSrcMinifyUmdTask() {
 async function buildSrcCheckMinifiedSizeTask() {
 	const stats = await fs.stat( './dist/Autolinker.min.js' );
 	const sizeInKb = stats.size / 1000;
-	const maxExpectedSizeInKb = 46;
+	const maxExpectedSizeInKb = 46.5;
 	
 	if( sizeInKb > maxExpectedSizeInKb ) {
 		throw new Error( `
