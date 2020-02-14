@@ -856,6 +856,10 @@ describe( "Autolinker Url Matching -", () => {
 			expect( result ).toBe( 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>' );
 		} );
 
+		it( "should include ^ in URLs with query strings", function() {
+			let result = autolinker.link( "Test caret url: https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal" );
+			expect( result ).toBe( 'Test caret url: <a href="https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal">sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal</a>' );
+		} );
 
 		it( "should include ' in URLs", function() {
 			let result = autolinker.link( "You are a star http://en.wikipedia.org/wiki/You're_a_Star/" );
