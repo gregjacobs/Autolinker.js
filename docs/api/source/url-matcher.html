@@ -95,7 +95,7 @@ var UrlMatcher =  (function (_super) {
             wwwRegex = /(?:www\.)/, // starting with &#39;www.&#39;
             // Allow optional path, query string, and hash anchor, not ending in the following characters: &quot;?!:,.;&quot;
             // http://blog.codinghorror.com/the-problem-with-urls/
-            urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]?!:,.;\u2713]*[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]\u2713])?&#39;);
+            urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}?!:,.;^\u2713]*[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}\u2713])?&#39;);
             return new RegExp([
                 &#39;(?:&#39;,
                 &#39;(&#39;,
@@ -218,8 +218,8 @@ var UrlMatcher =  (function (_super) {
         return matches;
     };
 <span id='Autolinker-matcher-Url-method-matchHasUnbalancedClosingParen'>    /**
-</span>     * Determines if a match found has an unmatched closing parenthesis or
-     * square bracket. If so, the parenthesis or square bracket will be removed
+</span>     * Determines if a match found has an unmatched closing parenthesis,
+     * square bracket or curly bracket. If so, the symbol will be removed
      * from the match itself, and appended after the generated anchor tag.
      *
      * A match may have an extra closing parenthesis at the end of the match
@@ -252,12 +252,15 @@ var UrlMatcher =  (function (_super) {
         else if (endChar === &#39;]&#39;) {
             startChar = &#39;[&#39;;
         }
+        else if (endChar === &#39;}&#39;) {
+            startChar = &#39;{&#39;;
+        }
         else {
             return false; // not a close parenthesis or square bracket
         }
         // Find if there are the same number of open braces as close braces in
         // the URL string, minus the last character (which we have already 
-        // determined to be either &#39;)&#39; or &#39;]&#39;
+        // determined to be either &#39;)&#39;, &#39;]&#39; or &#39;}&#39;
         var numOpenBraces = 0;
         for (var i = 0, len = matchStr.length - 1; i &lt; len; i++) {
             var char = matchStr.charAt(i);
