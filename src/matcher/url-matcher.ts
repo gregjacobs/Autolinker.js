@@ -76,7 +76,7 @@ export class UrlMatcher extends Matcher {
 
 		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
 		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]?!:,.;\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]\u2713])?' );
+		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?' );
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -242,8 +242,8 @@ export class UrlMatcher extends Matcher {
 
 
 	/**
-	 * Determines if a match found has an unmatched closing parenthesis or 
-	 * square bracket. If so, the parenthesis or square bracket will be removed 
+	 * Determines if a match found has an unmatched closing parenthesis,
+	 * square bracket or curly bracket. If so, the symbol will be removed
 	 * from the match itself, and appended after the generated anchor tag.
 	 *
 	 * A match may have an extra closing parenthesis at the end of the match
@@ -275,13 +275,15 @@ export class UrlMatcher extends Matcher {
 			startChar = '(';
 		} else if( endChar === ']' ) {
 			startChar = '[';
+		} else if ( endChar === '}' ) {
+			startChar = '{';
 		} else {
 			return false;  // not a close parenthesis or square bracket
 		}
 
 		// Find if there are the same number of open braces as close braces in
 		// the URL string, minus the last character (which we have already 
-		// determined to be either ')' or ']'
+		// determined to be either ')', ']' or '}'
 		let numOpenBraces = 0;
 		for( let i = 0, len = matchStr.length - 1; i < len; i++ ) {
 			const char = matchStr.charAt( i );

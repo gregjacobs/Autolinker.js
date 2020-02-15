@@ -756,6 +756,80 @@ describe( "Autolinker Url Matching -", () => {
 
 	} );
 
+	describe( "curly bracket handling", () => {
+
+		it( `when the url is surrounded by curly brackets,
+			 it should not include the final closing bracket in the URL`,
+		() => {
+			let result = autolinker.link( "Click here {google.com} for more details" );
+			expect( result ).toBe( 'Click here {<a href="http://google.com">google.com</a>} for more details' );
+		} );
+
+		
+		it( `when the URL starts with a scheme, and is surrounded by curly
+			  brackets, should not include the final closing bracket in the URL`,
+		() => {
+			let result = autolinker.link( "Click here {http://example.com} for more details" );
+			expect( result ).toBe( 'Click here {<a href="http://example.com">example.com</a>} for more details' );
+		} );
+
+		
+		it( `when the URL ends with a closing curly bracket, but there is no 
+			  matching open curly bracket, should not include the final closing 
+			  bracket in the URL`,
+		() => {
+			let result = autolinker.link( "Click here {cat http://example.com} for more details" );
+			expect( result ).toBe( 'Click here {cat <a href="http://example.com">example.com</a>} for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a path exists", function() {
+			let result = autolinker.link( "Click here {google.com/abc} for more details" );
+			expect( result ).toBe( 'Click here {<a href="http://google.com/abc">google.com/abc</a>} for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a query string exists", function() {
+			let result = autolinker.link( "Click here {google.com?abc=1} for more details" );
+			expect( result ).toBe( 'Click here {<a href="http://google.com?abc=1">google.com?abc=1</a>} for more details' );
+		} );
+
+
+		it( "should not include a final closing bracket in the URL when a hash anchor exists", function() {
+			let result = autolinker.link( "Click here {google.com#abc} for more details" );
+			expect( result ).toBe( 'Click here {<a href="http://google.com#abc">google.com#abc</a>} for more details' );
+		} );
+
+
+		it( "should include escaped brackets in the URL", function() {
+			let result = autolinker.link( "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%7BCentral_Point_Software%7D" );
+			expect( result ).toBe( 'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%7BCentral_Point_Software%7D">en.wikipedia.org/wiki/PC_Tools_{Central_Point_Software}</a>' );
+		} );
+
+
+		it( `should correctly accept curly brackets such as a sharepoint url`,
+		() => {
+			let result = autolinker.link( "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit" );
+			expect( result ).toBe( `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>` );
+		} );
+
+
+		it( `should correctly accept curly brackets such as a sharepoint url,
+			 when the entire URL is surrounded by square brackets`,
+		() => {
+			let result = autolinker.link( "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit" );
+			expect( result ).toBe( `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>` );
+		} );
+
+		it( `should handle accepting nested curly brackets at end of URL`,
+		() => {
+			let result = autolinker.link( "Here's an example: http://gohub.sharepoint/example/make-payment?props={%22params%22:{%22loanId%22:%220349494%22}}" );
+			expect( result ).toBe( `Here's an example: <a href="http://gohub.sharepoint/example/make-payment?props={%22params%22:{%22loanId%22:%220349494%22}}">gohub.sharepoint/example/make-payment?props={&quot;params&quot;:{&quot;loanId&quot;:&quot;0349494&quot;}}</a>` );
+		} );
+
+
+	} );
+
 
 	describe( "Special character handling", function() {
 
@@ -782,6 +856,10 @@ describe( "Autolinker Url Matching -", () => {
 			expect( result ).toBe( 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>' );
 		} );
 
+		it( "should include ^ in URLs with query strings", function() {
+			let result = autolinker.link( "Test caret url: https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal" );
+			expect( result ).toBe( 'Test caret url: <a href="https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal">sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal</a>' );
+		} );
 
 		it( "should include ' in URLs", function() {
 			let result = autolinker.link( "You are a star http://en.wikipedia.org/wiki/You're_a_Star/" );
