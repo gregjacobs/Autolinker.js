@@ -59,6 +59,7 @@ export class UrlMatchValidator {
 	 *    However, URL matches with a protocol will be allowed (ex: 'http://localhost')
 	 * 2) URL matches which do not have at least one word character in the
 	 *    domain name (effectively skipping over matches like "git:1.0").
+	 *    However, URL matches with a protocol will be allowed (ex: 'intra-net://271219.76')
 	 * 3) A protocol-relative url match (a URL beginning with '//') whose
 	 *    previous character is a word character (effectively skipping over
 	 *    strings like "abc//google.com")
@@ -149,8 +150,10 @@ export class UrlMatchValidator {
 
 
 	/**
-	 * Determines if a URL match does not have at least one word character after
-	 * the protocol (i.e. in the domain name).
+	 * Determines if a URL match does not have either:
+	 *
+	 * a) a full protocol (i.e. 'http://'), or
+	 * b) at least one word character after the protocol (i.e. in the domain name)
 	 *
 	 * At least one letter character must exist in the domain name after a
 	 * protocol match. Ex: skip over something like "git:1.0"
@@ -162,12 +165,12 @@ export class UrlMatchValidator {
 	 *   match. Ex: 'http://yahoo.com'. This is used to know whether or not we
 	 *   have a protocol in the URL string, in order to check for a word
 	 *   character after the protocol separator (':').
-	 * @return {Boolean} `true` if the URL match does not have at least one word
-	 *   character in it after the protocol, `false` otherwise.
+	 * @return {Boolean} `true` if the URL match does not have a full protocol, or
+	 * at least one word character in, `false` otherwise.
 	 */
 	static urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch: string, protocolUrlMatch: string ) {
 		if( urlMatch && protocolUrlMatch ) {
-			return !this.hasWordCharAfterProtocolRegex.test( urlMatch );
+			return !this.hasFullProtocolRegex.test( protocolUrlMatch ) && !this.hasWordCharAfterProtocolRegex.test( urlMatch );
 		} else {
 			return false;
 		}
