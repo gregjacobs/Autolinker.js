@@ -166,7 +166,7 @@ export class UrlMatchValidator {
 	 *   have a protocol in the URL string, in order to check for a word
 	 *   character after the protocol separator (':').
 	 * @return {Boolean} `true` if the URL match does not have a full protocol, or
-	 * at least one word character in, `false` otherwise.
+	 * at least one word character in it, `false` otherwise.
 	 */
 	static urlMatchDoesNotHaveAtLeastOneWordChar( urlMatch: string, protocolUrlMatch: string ) {
 		if( urlMatch && protocolUrlMatch ) {
