@@ -1002,6 +1002,52 @@ describe( "Autolinker Url Matching -", () => {
 
 	} );
 
+	describe( 'Japanese URL handling', () => {
+		it( 'should autolink URL with Japanese domain', () => {
+			var result = autolinker.link( "http://はじめよう.jp" );
+
+			expect( result ).toBe( '<a href="http://はじめよう.jp">はじめよう.jp</a>' );
+		} );
+
+		it( 'should autolink URL with Japanese domain and TLD', () => {
+			var result = autolinker.link( "http://はじめよう.みんな" );
+
+			expect( result ).toBe( '<a href="http://はじめよう.みんな">はじめよう.みんな</a>' );
+		} );
+
+		it( 'should autolink URL with Japanese in path name', () => {
+			var result = autolinker.link( "http://ja.wikipedia.org/wiki/日本語" );
+
+			expect( result ).toBe( '<a href="http://ja.wikipedia.org/wiki/日本語">ja.wikipedia.org/wiki/日本語</a>' );
+		} );
+
+		it( 'should autolink URL with Japanese punctuation in path name', () => {
+			var result = autolinker.link( "https://scrapbox.io/heartbeats/Googleスプレッドシートで、セルの内容に応じて行全体に自動的に背景色をつける" );
+
+			expect( result ).toBe( '<a href="https://scrapbox.io/heartbeats/Googleスプレッドシートで、セルの内容に応じて行全体に自動的に背景色をつける">scrapbox.io/heartbeats/Googleスプレッドシートで、セルの内容に応じて行全体に自動的に背景色をつける</a>' );
+		} );
+
+		it( 'should autolink URL with Japanese punctuation in path name, excluding final full width period', () => {
+			var result = autolinker.link( "ハート　http://ja.wikipedia.org/wiki/日・本、語日本語。　ハート" );
+
+			expect( result ).toBe( 'ハート　<a href="http://ja.wikipedia.org/wiki/日・本、語日本語">ja.wikipedia.org/wiki/日・本、語日本語</a>。　ハート' );
+		} );
+
+		it( 'should autolink URL with Japanese parentheses as final character in URL', () => {
+			var result = autolinker.link( "https://ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル（2000年_-_2001年）" );
+
+			expect( result ).toBe( '<a href="https://ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル（2000年_-_2001年）">ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル（2000年_-_2001年）</a>' );
+
+		} );
+
+		it( 'should exclude concluding Japanese parenthesis if URL is wrapped in parens', () => {
+			var result = autolinker.link( "（https://ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル2000年_-_2001年）" );
+
+			expect( result ).toBe( '（<a href="https://ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル2000年_-_2001年">ja.wikipedia.org/wiki/Yahoo!#ドットコムバブル2000年_-_2001年</a>）' );
+		} );
+
+	} )
+
 	it( "should automatically link multiple URLs in the same input string", function() {
 		let result = autolinker.link( 'Joe went to http://yahoo.com and http://google.com' );
 		expect( result ).toBe( 'Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://google.com">google.com</a>' );

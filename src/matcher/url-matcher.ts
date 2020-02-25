@@ -74,9 +74,19 @@ export class UrlMatcher extends Matcher {
 		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		    wwwRegex = /(?:www\.)/,  // starting with 'www.'
 
-		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
-		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?' );
+			// special characters that are permitted within the URL suffix, but not as the final character
+			latinIntraSuffixChars = /\-\+&@#\/%=~_\(\)\|\'\$\*\[\]{}\?!:,\.;\^\u2713/.source,
+			// Japanese special characters based on common punctuation defined here: https://en.wikipedia.org/wiki/Japanese_punctuation
+			// in addition to the full width variants of the latin special chars
+			japaneseIntraSuffixChars = /ー＋＆＠＃％＝〜＿｜＄￥＊｛｝（）［］【】「」『』〝〟？！：、，…	‥。・＾｡･､/.source,
+
+			// special characters that are permitted at end of URL suffix
+			latinEndOfSuffixChars = /\-\+&@#\/%=~_\(\)\|\'\$\*\[\]{}\u2713/.source,
+			japaneseEndOfSuffixChars = /ー＋＆＠＃％＝〜＿｜＄￥｛｝（）［］【】「」『』〝〟/.source,
+
+			// Allow optional path, query string, and hash anchor, not ending in certain punctuation such as "?!:,.;"
+			// http://blog.codinghorror.com/the-problem-with-urls/
+			urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + latinIntraSuffixChars + japaneseIntraSuffixChars + ']*[' + alphaNumericAndMarksCharsStr + latinEndOfSuffixChars + japaneseEndOfSuffixChars + '])?' );
 
 		return new RegExp( [
 			'(?:', // parens to cover match for scheme (optional), and domain
@@ -243,7 +253,7 @@ export class UrlMatcher extends Matcher {
 
 	/**
 	 * Determines if a match found has an unmatched closing parenthesis,
-	 * square bracket or curly bracket. If so, the symbol will be removed
+	 * square bracket, curly bracket, etc.. If so, the symbol will be removed
 	 * from the match itself, and appended after the generated anchor tag.
 	 *
 	 * A match may have an extra closing parenthesis at the end of the match
@@ -262,6 +272,8 @@ export class UrlMatcher extends Matcher {
 	 * The closing square bracket should not be part of the URL itself, and this
 	 * method will return `true`.
 	 *
+	 * The same applies for all paren like characters in Latin and Japanese scripts.
+	 *
 	 * @protected
 	 * @param {String} matchStr The full match string from the {@link #matcherRegex}.
 	 * @return {Boolean} `true` if there is an unbalanced closing parenthesis or
@@ -269,17 +281,36 @@ export class UrlMatcher extends Matcher {
 	 */
 	protected matchHasUnbalancedClosingParen( matchStr: string ): boolean {
 		let endChar = matchStr.charAt( matchStr.length - 1 );
-		let startChar: string;
 
-		if( endChar === ')' ) {
-			startChar = '(';
-		} else if( endChar === ']' ) {
-			startChar = '[';
-		} else if ( endChar === '}' ) {
-			startChar = '{';
-		} else {
-			return false;  // not a close parenthesis or square bracket
+		function getMatchingParen(closingParen: string): string {
+			switch (closingParen) {
+				case ')':
+					return '('
+				case ']':
+					return '['
+				case '}':
+					return '{'
+				case '｝':
+					return '｛'
+				case '）':
+					return '（'
+				case '］':
+					return '［'
+				case '】':
+					return '【'
+				case '」':
+					return '「'
+				case '』':
+					return '『'
+				case '〟':
+					return '〝'
+				default:
+					return ''
+			}
 		}
+
+		let startChar: string = getMatchingParen(endChar);
+		if ( !startChar ) return false;
 
 		// Find if there are the same number of open braces as close braces in
 		// the URL string, minus the last character (which we have already 
