@@ -90,7 +90,19 @@ describe( "Autolinker Url Matching -", () => {
 			let result = autolinker.link( 'http://10.0.0.108:9000/' );
 			expect( result ).toBe( '<a href="http://10.0.0.108:9000/">10.0.0.108:9000</a>' );
 		} );
-		
+
+
+		it( 'should link URLs with IP addresses but exclude trailing periods', function() {
+			let result = autolinker.link( 'Joe went to http://66.102.7.147.' );
+			expect( result ).toBe( 'Joe went to <a href="http://66.102.7.147">66.102.7.147</a>.' );
+		} );
+
+
+		it( 'should link protocol URLs that are only numbers', function() {
+			let result = autolinker.link( 'Joe went to bugtracker://20012909' );
+			expect( result ).toBe( 'Joe went to <a href="bugtracker://20012909">bugtracker://20012909</a>' );
+		} );
+
 
 		it( "should automatically link capitalized URLs", function() {
 			let result = autolinker.link( "Joe went to HTTP://WWW.YAHOO.COM" );

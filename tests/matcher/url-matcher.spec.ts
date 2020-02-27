@@ -72,20 +72,20 @@ describe( "Autolinker.matcher.Url", function() {
 			MatchChecker.expectUrlMatch( matches[ 0 ], 'http://127.0.0.1', 0 );
 		});
 
-		it( 'should not match an invalid IP address', function() {
-			let matches = matcher.parseMatches( 'http://127.0.0.');
+		it( 'should not match an IP address with no protocol', function() {
+			let matches = matcher.parseMatches( '127.0.0.1');
 
 			expect( matches.length ).toBe( 0 );
+		});
+
+		it( 'should match URLs with only numbers and a protocol', function() {
+			let matches = matcher.parseMatches( 'jira://1234');
+
+			expect( matches.length ).toBe( 1 );
 		});
 
 		it( 'should not match an URL which does not respect the IP protocol', function() {
 			let matches = matcher.parseMatches( 'git:1.0');
-
-			expect( matches.length ).toBe( 0 );
-		});
-
-		it( 'should not match an IP address with too much numbers', function() {
-			let matches = matcher.parseMatches( 'http://1.2.3.4.5' );
 
 			expect( matches.length ).toBe( 0 );
 		});
