@@ -485,6 +485,13 @@ export default class Autolinker {
 	 */
 	private readonly context: any = undefined;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
+	/**
+	 * @cfg {Boolean} [sanitizeHtml=true]
+	 *
+	 * `true` if starting and ending brackets of an html tags should be escaped
+	 * `false` if they should not be.
+	 */
+	private readonly sanitizeHtml: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
 	/**
 	 * @private
@@ -855,6 +862,15 @@ export default class Autolinker {
 	 */
 	link( textOrHtml: string ) {
 		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
+		
+		/* We would want to sanitize the start and end characters of a tag 
+		 * before processing the string in order to avoid an XSS scenario.
+		 * This behaviour can be changed by toggling the sanitizeHtml option.
+		 */
+		if (this.sanitizeHtml)
+		{
+			textOrHtml = textOrHtml.replace(/\</gi, '&lt;').replace(/\>/gi, '&gt;');
+		}
 
 		let matches = this.parse( textOrHtml ),
 			newHtml: string[] = [],
@@ -975,6 +991,7 @@ export interface AutolinkerConfig {
 	className?: string;
 	replaceFn?: ReplaceFn | null;
 	context?: any;
+	sanitizeHtml?: boolean;
 	decodePercentEncoding?: boolean;
 }
 
