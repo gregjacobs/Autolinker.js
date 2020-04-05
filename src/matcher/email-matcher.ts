@@ -3,6 +3,7 @@ import { alphaNumericAndMarksCharsStr, domainNameCharRegex } from "../regex-lib"
 import { EmailMatch } from "../match/email-match";
 import { Match } from "../match/match";
 import { throwUnhandledCaseError, isUndefined } from '../utils';
+import { tldRegex } from "./tld-regex";
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -23,6 +24,12 @@ export class EmailMatcher extends Matcher {
 	 */
 	protected localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
 
+	/**
+	 * Stricter TLD regex which adds a beginning and end check to ensure
+	 * the string is a valid TLD
+	 */
+	protected strictTldRegex = new RegExp( `^${tldRegex.source}$` );
+
 
 	/**
 	 * @inheritdoc
@@ -30,13 +37,24 @@ export class EmailMatcher extends Matcher {
 	parseMatches( text: string ) {
 		const tagBuilder = this.tagBuilder,
 			  localPartCharRegex = this.localPartCharRegex,
+			  strictTldRegex = this.strictTldRegex,
 			  matches: Match[] = [],
 			  len = text.length,
-			  noCurrentEmailAddress = new CurrentEmailAddress();
+			  noCurrentEmailMatch = new CurrentEmailMatch();
+
+		// for matching a 'mailto:' prefix
+		const mailtoTransitions = {
+			'm': 'a',
+			'a': 'i',
+			'i': 'l',
+			'l': 't',
+			't': 'o',
+			'o': ':',
+		};
 
 		let charIdx = 0,
-			state = State.NonEmailAddress as State,
-			currentEmailAddress = noCurrentEmailAddress;
+			state = State.NonEmailMatch as State,
+			currentEmailMatch = noCurrentEmailMatch;
 
 		// For debugging: search for and uncomment other "For debugging" lines
 		// const table = new CliTable( {
@@ -52,7 +70,11 @@ export class EmailMatcher extends Matcher {
 			// );
 
 			switch( state ) {
-				case State.NonEmailAddress: stateNonEmailAddress( char ); break;
+				case State.NonEmailMatch: stateNonEmailAddress( char ); break;
+
+				case State.Mailto: 
+					stateMailTo( text.charAt( charIdx - 1 ) as MailtoChar, char ); 
+					break;
 				case State.LocalPart: stateLocalPart( char ); break;
 				case State.LocalPartDot: stateLocalPartDot( char ); break;
 				case State.AtSign: stateAtSign( char ); break;
@@ -83,11 +105,58 @@ export class EmailMatcher extends Matcher {
 
 		// Handles the state when we're not in an email address
 		function stateNonEmailAddress( char: string ) {
-			if( localPartCharRegex.test( char ) ) {
-				beginEmailAddress();
+			if( char === 'm' ) {
+				beginEmailMatch( State.Mailto );
+
+			} else if( localPartCharRegex.test( char ) ) {
+				beginEmailMatch();
 
 			} else {
 				// not an email address character, continue
+			}
+		}
+
+
+		// Handles if we're reading a 'mailto:' prefix on the string
+		function stateMailTo( prevChar: MailtoChar, char: string ) {
+			if( prevChar === ':' ) {
+				// We've reached the end of the 'mailto:' prefix
+				if( localPartCharRegex.test( char ) ) {
+					state = State.LocalPart;
+					currentEmailMatch = new CurrentEmailMatch( { 
+						...currentEmailMatch, 
+						hasMailtoPrefix: true 
+					} );
+
+				} else {
+					// we've matched 'mailto:' but didn't get anything meaningful
+					// immediately afterwards (for example, we encountered a 
+					// space character, or an '@' character which formed 'mailto:@'
+					resetToNonEmailMatchState();
+				}
+
+			} else if( mailtoTransitions[ prevChar ] === char ) {
+				// We're currently reading the 'mailto:' prefix, stay in
+				// Mailto state
+				
+			} else if( localPartCharRegex.test( char ) ) {
+				// We we're reading a prefix of 'mailto:', but encountered a
+				// different character that didn't continue the prefix
+				state = State.LocalPart;
+
+			} else if( char === '.' ) {
+				// We we're reading a prefix of 'mailto:', but encountered a
+				// dot character
+				state = State.LocalPartDot;
+
+			} else if( char === '@' ) {
+				// We we're reading a prefix of 'mailto:', but encountered a
+				// an @ character
+				state = State.AtSign;
+
+			} else {
+				// not an email address character, return to "NonEmailAddress" state
+				resetToNonEmailMatchState();
 			}
 		}
 
@@ -106,7 +175,7 @@ export class EmailMatcher extends Matcher {
 
 			} else {
 				// not an email address character, return to "NonEmailAddress" state
-				resetToNonEmailAddressState();
+				resetToNonEmailMatchState();
 			}
 		}
 
@@ -116,19 +185,19 @@ export class EmailMatcher extends Matcher {
 			if( char === '.' ) {
 				// We read a second '.' in a row, not a valid email address 
 				// local part
-				resetToNonEmailAddressState();
+				resetToNonEmailMatchState();
 
 			} else if( char === '@' ) {
 				// We read the '@' character immediately after a dot ('.'), not 
 				// an email address
-				resetToNonEmailAddressState();
+				resetToNonEmailMatchState();
 
 			} else if( localPartCharRegex.test( char ) ) {
 				state = State.LocalPart;
 
 			} else {
 				// Anything else, not an email address
-				resetToNonEmailAddressState();
+				resetToNonEmailMatchState();
 			}
 		}
 
@@ -139,7 +208,7 @@ export class EmailMatcher extends Matcher {
 
 			} else {
 				// Anything else, not an email address
-				resetToNonEmailAddressState();
+				resetToNonEmailMatchState();
 			}
 		}
 
@@ -186,8 +255,8 @@ export class EmailMatcher extends Matcher {
 				// we now know that the domain part of the email is valid, and
 				// we have found at least a partial EmailMatch (however, the
 				// email address may have additional characters from this point)
-				currentEmailAddress = new CurrentEmailAddress( { 
-					...currentEmailAddress, 
+				currentEmailMatch = new CurrentEmailMatch( { 
+					...currentEmailMatch, 
 					hasDomainDot: true 
 				} );
 
@@ -198,15 +267,16 @@ export class EmailMatcher extends Matcher {
 		}
 
 
-		function beginEmailAddress() {
-			state = State.LocalPart;
-			currentEmailAddress = new CurrentEmailAddress( { idx: charIdx } );
+		function beginEmailMatch( newState = State.LocalPart ) {
+			state = newState;
+			currentEmailMatch = new CurrentEmailMatch( { idx: charIdx } );
 		}
 
-		function resetToNonEmailAddressState() {
-			state = State.NonEmailAddress;
-			currentEmailAddress = noCurrentEmailAddress
+		function resetToNonEmailMatchState() {
+			state = State.NonEmailMatch;
+			currentEmailMatch = noCurrentEmailMatch;
 		}
+
 
 
 		/*
@@ -214,34 +284,57 @@ export class EmailMatcher extends Matcher {
 		 * and resets the state to read another email address.
 		 */
 		function captureMatchIfValidAndReset() {
-			if( currentEmailAddress.hasDomainDot ) {  // we need at least one dot in the domain to be considered a valid email address
-				let emailAddress = text.slice( currentEmailAddress.idx, charIdx );
+			if( currentEmailMatch.hasDomainDot ) {  // we need at least one dot in the domain to be considered a valid email address
+				let matchedText = text.slice( currentEmailMatch.idx, charIdx );
 
 				// If we read a '.' or '-' char that ended the email address
 				// (valid domain name characters, but only valid email address
 				// characters if they are followed by something else), strip 
 				// it off now
-				if( /[-.]$/.test( emailAddress ) ){
-					emailAddress = emailAddress.slice( 0, -1 );
+				if( /[-.]$/.test( matchedText ) ){
+					matchedText = matchedText.slice( 0, -1 );
 				}
 
-				matches.push( new EmailMatch( {
-					tagBuilder  : tagBuilder,
-					matchedText : emailAddress,
-					offset      : currentEmailAddress.idx,
-					email       : emailAddress
-				} ) );
+				const emailAddress = currentEmailMatch.hasMailtoPrefix 
+					? matchedText.slice( 'mailto:'.length ) 
+					: matchedText;
+
+				// if the email address has a valid TLD, add it to the list of matches
+				if ( doesEmailHaveValidTld( emailAddress ) ) {
+					matches.push( new EmailMatch( {
+						tagBuilder  : tagBuilder,
+						matchedText : matchedText,
+						offset      : currentEmailMatch.idx,
+						email       : emailAddress
+					} ) );
+				}
 			}
 
-			resetToNonEmailAddressState();
-		}
+			resetToNonEmailMatchState();
+		
+
+		/**
+		 * Determines if the given email address has a valid TLD or not
+		 * @param {string} emailAddress - email address
+		 * @return {Boolean} - true is email have valid TLD, false otherwise
+		 */
+		function doesEmailHaveValidTld( emailAddress: string ) {
+			const emailAddressTld : string = emailAddress.split( '.' ).pop() || '';
+			const emailAddressNormalized = emailAddressTld.toLowerCase();
+			const isValidTld = strictTldRegex.test( emailAddressNormalized );
+
+			return isValidTld;
+		}}
 	}
 
 }
 
+type MailtoChar = 'm' | 'a' | 'i' | 'l' | 't' | 'o' | ':';
 
 const enum State {
-	NonEmailAddress = 0,
+	NonEmailMatch = 0,
+	
+	Mailto,  // if matching a 'mailto:' prefix
 	LocalPart,
 	LocalPartDot,
 	AtSign,
@@ -250,13 +343,14 @@ const enum State {
 	DomainDot
 }
 
-
-class CurrentEmailAddress {
+class CurrentEmailMatch {
 	readonly idx: number;  // the index of the first character in the email address
+	readonly hasMailtoPrefix: boolean;
 	readonly hasDomainDot: boolean;
 
-	constructor( cfg: Partial<CurrentEmailAddress> = {} ) {
+	constructor( cfg: Partial<CurrentEmailMatch> = {} ) {
 		this.idx = isUndefined( cfg.idx ) ? -1 : cfg.idx;
+		this.hasMailtoPrefix = !!cfg.hasMailtoPrefix;
 		this.hasDomainDot = !!cfg.hasDomainDot;
 	}
 }

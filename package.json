@@ -5,7 +5,6 @@
   "main": "./dist/commonjs/index.js",
   "typings": "./dist/commonjs/index.d.ts",
   "module": "./dist/es2015/index.js",
-  "browser": "./dist/Autolinker.min.js",
   "files": [
     "./dist"
   ],

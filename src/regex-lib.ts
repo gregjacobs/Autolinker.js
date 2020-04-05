@@ -60,6 +60,13 @@ export const alphaCharsStr = /A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u0
 	.source;  // see note in above variable description
 
 /**
+ * The string form of a regular expression that would match all emoji characters
+ * Based on the emoji regex defined in this article: https://thekevinscott.com/emojis-in-javascript/
+ */
+export const emojiStr = /\u2700-\u27bf\udde6-\uddff\ud800-\udbff\udc00-\udfff\ufe0e\ufe0f\u0300-\u036f\ufe20-\ufe23\u20d0-\u20f0\ud83c\udffb-\udfff\u200d\u3299\u3297\u303d\u3030\u24c2\ud83c\udd70-\udd71\udd7e-\udd7f\udd8e\udd91-\udd9a\udde6-\uddff\ude01-\ude02\ude1a\ude2f\ude32-\ude3a\ude50-\ude51\u203c\u2049\u25aa-\u25ab\u25b6\u25c0\u25fb-\u25fe\u00a9\u00ae\u2122\u2139\udc04\u2600-\u26FF\u2b05\u2b06\u2b07\u2b1b\u2b1c\u2b50\u2b55\u231a\u231b\u2328\u23cf\u23e9-\u23f3\u23f8-\u23fa\udccf\u2935\u2934\u2190-\u21ff/
+	.source;
+
+/**
  * The string form of a regular expression that would match all of the
  * combining mark characters in the unicode character set when placed in a
  * RegExp character class (`[]`). 
@@ -87,14 +94,14 @@ export const marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05
 
 /**
  * The string form of a regular expression that would match all of the
- * alphabetic ("letter") chars and combining marks in the unicode character set 
+ * alphabetic ("letter") chars, emoji, and combining marks in the unicode character set 
  * when placed in a RegExp character class (`[]`). This includes all 
  * international alphabetic characters.
  *
  * These would be the characters matched by unicode regex engines `\p{L}\p{M}`
- * escapes.
+ * escapes and emoji characters.
  */
-export const alphaCharsAndMarksStr = alphaCharsStr + marksStr;
+export const alphaCharsAndMarksStr = alphaCharsStr + emojiStr + marksStr ;
 
 /**
  * The string form of a regular expression that would match all of the

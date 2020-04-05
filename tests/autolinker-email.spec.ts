@@ -102,4 +102,19 @@ describe( "Autolinker Email Matching -", () => {
 		expect( result ).toBe( 'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>');
 	} );
 
+
+	it( "should automatically link an email address with a 'mailto:' prefix", function () {
+		let result = autolinker.link( "My email is mailto:asdf@asdf.com" );
+		
+		expect( result ).toBe( 'My email is <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>');
+	} );
+
+	it( "should NOT link an email address with an invalid tld", function () {
+		let result1 = autolinker.link( "My email is fake@gmail.c" );
+		expect( result1 ).toBe( 'My email is fake@gmail.c');
+
+		let result2 = autolinker.link( "My email is fake@gmail.comf" );
+		expect( result2 ).toBe( 'My email is fake@gmail.comf');
+	} );
+
 } );

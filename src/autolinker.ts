@@ -489,7 +489,22 @@ export default class Autolinker {
 	 */
 	private readonly context: any = undefined;  // default value just to get the above doc comment in the ES5 output and documentation generator
 
-
+	/**
+	 * @cfg {Boolean} [sanitizeHtml=false]
+	 * 
+	 * `true` to HTML-encode the start and end brackets of existing HTML tags found 
+  	 * in the input string. This will escape `<` and `>` characters to `&lt;` and 
+	 * `&gt;`, respectively.
+	 * 
+	 * Setting this to `true` will prevent XSS (Cross-site Scripting) attacks, 
+	 * but will remove the significance of existing HTML tags in the input string. If 
+	 * you would like to maintain the significance of existing HTML tags while also 
+	 * making the output HTML string safe, leave this option as `false` and use a 
+	 * tool like https://github.com/cure53/DOMPurify (or others) on the input string 
+	 * before running Autolinker.
+	 */
+	private readonly sanitizeHtml: boolean = false;  // default value just to get the above doc comment in the ES5 output and documentation generator
+	
 	/**
 	 * @private
 	 * @property {Autolinker.matcher.Matcher[]} matchers
@@ -528,6 +543,7 @@ export default class Autolinker {
 		this.stripPrefix = this.normalizeStripPrefixCfg( cfg.stripPrefix );
 		this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : this.stripTrailingSlash;
 		this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : this.decodePercentEncoding;
+		this.sanitizeHtml = cfg.sanitizeHtml || false;
 
 		// Validate the value of the `mention` cfg
 		const mention = this.mention;
@@ -858,7 +874,17 @@ export default class Autolinker {
 	 * @return {String} The HTML, with matches automatically linked.
 	 */
 	link( textOrHtml: string ) {
-		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined`
+		if( !textOrHtml ) { return ""; }  // handle `null` and `undefined` (for JavaScript users that don't have TypeScript support)
+		
+		/* We would want to sanitize the start and end characters of a tag 
+		 * before processing the string in order to avoid an XSS scenario.
+		 * This behaviour can be changed by toggling the sanitizeHtml option.
+		 */
+		if( this.sanitizeHtml ) {
+			textOrHtml = textOrHtml
+				.replace( /</g, '&lt;' )
+				.replace( />/g, '&gt;' );
+		}
 
 		let matches = this.parse( textOrHtml ),
 			newHtml: string[] = [],
@@ -981,6 +1007,7 @@ export interface AutolinkerConfig {
 	className?: string;
 	replaceFn?: ReplaceFn | null;
 	context?: any;
+	sanitizeHtml?: boolean;
 	decodePercentEncoding?: boolean;
 }
 
