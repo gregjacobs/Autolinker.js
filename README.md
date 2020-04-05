@@ -245,6 +245,21 @@ These include:
   <a href="#custom-replacement-function">Custom Replacement Function</a> for
   more details.
 
+- [sanitizeHtml](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-sanitizeHtml) : boolean<br />
+  
+	`true` to HTML-encode the start and end brackets of existing HTML tags found 
+  in the input string. This will escape `<` and `>` characters to `&lt;` and 
+  `&gt;`, respectively.
+	
+	Setting this to `true` will prevent XSS (Cross-site Scripting) attacks, 
+	but will remove the significance of existing HTML tags in the input string. If 
+  you would like to maintain the significance of existing HTML tags while also 
+  making the output HTML string safe, leave this option as `false` and use a 
+  tool like https://github.com/cure53/DOMPurify (or others) on the input string 
+  before running Autolinker.
+
+  Defaults to `false`.
+
 For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow), you could do:
 
 ```javascript

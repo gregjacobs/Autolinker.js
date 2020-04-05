@@ -5,7 +5,6 @@ import { EmailMatch } from "../src/match/email-match";
 import { HashtagMatch } from "../src/match/hashtag-match";
 import { MentionMatch } from "../src/match/mention-match";
 import { PhoneMatch } from "../src/match/phone-match";
-import { PhoneMatcher } from "../src/matcher/phone-matcher";
 import { Match } from '../src/match/match';
 
 describe( "Autolinker", function() {
