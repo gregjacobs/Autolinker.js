@@ -380,6 +380,21 @@ var Autolinker =  (function () {
          * Defaults to this Autolinker instance.
          */
         this.context = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
+<span id='Autolinker-cfg-sanitizeHtml'>        /**
+</span>         * @cfg {Boolean} [sanitizeHtml=false]
+         *
+         * `true` to HTML-encode the start and end brackets of existing HTML tags found
+         * in the input string. This will escape `&lt;` and `&gt;` characters to `&amp;lt;` and
+         * `&amp;gt;`, respectively.
+         *
+         * Setting this to `true` will prevent XSS (Cross-site Scripting) attacks,
+         * but will remove the significance of existing HTML tags in the input string. If
+         * you would like to maintain the significance of existing HTML tags while also
+         * making the output HTML string safe, leave this option as `false` and use a
+         * tool like https://github.com/cure53/DOMPurify (or others) on the input string
+         * before running Autolinker.
+         */
+        this.sanitizeHtml = false; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-property-matchers'>        /**
 </span>         * @private
          * @property {Autolinker.matcher.Matcher[]} matchers
@@ -409,6 +424,7 @@ var Autolinker =  (function () {
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
         this.stripTrailingSlash = typeof cfg.stripTrailingSlash === &#39;boolean&#39; ? cfg.stripTrailingSlash : this.stripTrailingSlash;
         this.decodePercentEncoding = typeof cfg.decodePercentEncoding === &#39;boolean&#39; ? cfg.decodePercentEncoding : this.decodePercentEncoding;
+        this.sanitizeHtml = cfg.sanitizeHtml || false;
         // Validate the value of the `mention` cfg
         var mention = this.mention;
         if (mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39; &amp;&amp; mention !== &#39;soundcloud&#39;) {
@@ -766,7 +782,16 @@ var Autolinker =  (function () {
     Autolinker.prototype.link = function (textOrHtml) {
         if (!textOrHtml) {
             return &quot;&quot;;
-        } // handle `null` and `undefined`
+        } // handle `null` and `undefined` (for JavaScript users that don&#39;t have TypeScript support)
+        /* We would want to sanitize the start and end characters of a tag
+         * before processing the string in order to avoid an XSS scenario.
+         * This behaviour can be changed by toggling the sanitizeHtml option.
+         */
+        if (this.sanitizeHtml) {
+            textOrHtml = textOrHtml
+                .replace(/&lt;/g, &#39;&amp;lt;&#39;)
+                .replace(/&gt;/g, &#39;&amp;gt;&#39;);
+        }
         var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
         for (var i = 0, len = matches.length; i &lt; len; i++) {
             var match = matches[i];
@@ -859,7 +884,7 @@ var Autolinker =  (function () {
      *
      * Ex: 0.25.1
      */
-    Autolinker.version = &#39;3.13.0&#39;;
+    Autolinker.version = &#39;3.14.0&#39;;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.
