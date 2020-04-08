@@ -4,6 +4,16 @@ import { MentionServices } from "../autolinker";
 import { MentionMatch } from "../match/mention-match";
 import { Match } from "../match/match";
 
+// RegExp objects which are shared by all instances of MentionMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating MentionMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+const twitterRegex = new RegExp( `@[_${alphaNumericAndMarksCharsStr}]{1,50}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 50 characters
+const instagramRegex = new RegExp( `@[_.${alphaNumericAndMarksCharsStr}]{1,30}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 30 characters
+const soundcloudRegex = new RegExp( `@[-_.${alphaNumericAndMarksCharsStr}]{1,50}(?![-_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 50 characters
+const nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
+
 /**
  * @class Autolinker.matcher.Mention
  * @extends Autolinker.matcher.Matcher
@@ -30,9 +40,9 @@ export class MentionMatcher extends Matcher {
 	 * @property {Object} matcherRegexes
 	 */
 	protected readonly matcherRegexes: {[key: string]: RegExp} = {
-		'twitter': new RegExp( `@[_${alphaNumericAndMarksCharsStr}]{1,50}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' ),       // lookahead used to make sure we don't match something above 50 characters
-		'instagram': new RegExp( `@[_.${alphaNumericAndMarksCharsStr}]{1,30}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' ),    // lookahead used to make sure we don't match something above 30 characters
-		'soundcloud': new RegExp( `@[-_.${alphaNumericAndMarksCharsStr}]{1,50}(?![-_${alphaNumericAndMarksCharsStr}])`, 'g' )  // lookahead used to make sure we don't match something above 50 characters
+		'twitter': twitterRegex,
+		'instagram': instagramRegex,
+		'soundcloud': soundcloudRegex
 	};
 
 	/**
@@ -44,7 +54,7 @@ export class MentionMatcher extends Matcher {
 	 * @private
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	protected readonly nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
+	protected readonly nonWordCharRegex = nonWordCharRegex;
 
 
 	/**

@@ -4,6 +4,14 @@ import { alphaNumericAndMarksCharsStr } from "../regex-lib";
 import { HashtagMatch } from "../match/hashtag-match";
 import { Match } from "../match/match";
 
+// RegExp objects which are shared by all instances of HashtagMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating HashtagMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+const matcherRegex = new RegExp( `#[_${alphaNumericAndMarksCharsStr}]{1,139}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 139 characters
+const nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
+
 /**
  * @class Autolinker.matcher.Hashtag
  * @extends Autolinker.matcher.Matcher
@@ -20,7 +28,6 @@ export class HashtagMatcher extends Matcher {
 	 */
 	protected readonly serviceName: HashtagServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
-
 	/**
 	 * The regular expression to match Hashtags. Example match:
 	 *
@@ -29,7 +36,7 @@ export class HashtagMatcher extends Matcher {
 	 * @protected
 	 * @property {RegExp} matcherRegex
 	 */
-	protected matcherRegex = new RegExp( `#[_${alphaNumericAndMarksCharsStr}]{1,139}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 139 characters
+	protected matcherRegex = matcherRegex;
 
 	/**
 	 * The regular expression to use to check the character before a username match to
@@ -40,7 +47,7 @@ export class HashtagMatcher extends Matcher {
 	 * @protected
 	 * @property {RegExp} nonWordCharRegex
 	 */
-	protected nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
+	protected nonWordCharRegex = nonWordCharRegex;
 
 
 	/**

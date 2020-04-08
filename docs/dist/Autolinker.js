@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * 3.14.0
+ * 3.14.1
  *
  * Copyright(c) 2020 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -1651,7 +1651,11 @@
     /**
      * Regular expression to match ASCII digits
      */
-    var digitRe = /[0-9]/;
+    var digitRe = /[\d]/;
+    /**
+     * Regular expression to match everything *except* ASCII digits
+     */
+    var nonDigitRe = /[\D]/;
     /**
      * Regular expression to match whitespace
      */
@@ -1802,6 +1806,13 @@
 
     // For debugging: search for other "For debugging" lines
     // import CliTable from 'cli-table';
+    // RegExp objects which are shared by all instances of EmailMatcher. These are
+    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+    // called multiple times, thus instantiating EmailMatcher and its RegExp 
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // See descriptions of the properties where they are used for details about them
+    var localPartCharRegex = new RegExp("[" + alphaNumericAndMarksCharsStr + "!#$%&'*+/=?^_`{|}~-]");
+    var strictTldRegex = new RegExp("^" + tldRegex.source + "$");
     /**
      * @class Autolinker.matcher.Email
      * @extends Autolinker.matcher.Matcher
@@ -1818,12 +1829,12 @@
              * Valid characters that can be used in the "local" part of an email address,
              * i.e. the "name" part of "name@site.com"
              */
-            _this.localPartCharRegex = new RegExp("[" + alphaNumericAndMarksCharsStr + "!#$%&'*+/=?^_`{|}~-]");
+            _this.localPartCharRegex = localPartCharRegex;
             /**
              * Stricter TLD regex which adds a beginning and end check to ensure
              * the string is a valid TLD
              */
-            _this.strictTldRegex = new RegExp("^" + tldRegex.source + "$");
+            _this.strictTldRegex = strictTldRegex;
             return _this;
         }
         /**
@@ -2248,6 +2259,42 @@
         return UrlMatchValidator;
     }());
 
+    // RegExp objects which are shared by all instances of UrlMatcher. These are
+    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+    // called multiple times, thus instantiating UrlMatcher and its RegExp 
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // See descriptions of the properties where they are used for details about them
+    var matcherRegex = (function () {
+        var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+        wwwRegex = /(?:www\.)/, // starting with 'www.'
+        // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
+        // http://blog.codinghorror.com/the-problem-with-urls/
+        urlSuffixRegex = new RegExp('[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?');
+        return new RegExp([
+            '(?:',
+            '(',
+            schemeRegex.source,
+            getDomainNameStr(2),
+            ')',
+            '|',
+            '(',
+            '(//)?',
+            wwwRegex.source,
+            getDomainNameStr(6),
+            ')',
+            '|',
+            '(',
+            '(//)?',
+            getDomainNameStr(10) + '\\.',
+            tldRegex.source,
+            '(?![-' + alphaNumericCharsStr + '])',
+            ')',
+            ')',
+            '(?::[0-9]+)?',
+            '(?:' + urlSuffixRegex.source + ')?' // match for path, query string, and/or hash anchor - optional
+        ].join(""), 'gi');
+    })();
+    var wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
     /**
      * @class Autolinker.matcher.Url
      * @extends Autolinker.matcher.Matcher
@@ -2315,36 +2362,7 @@
              *     URL. Will be an empty string if it is not a protocol-relative match.
              *     See #3 for more info.
              */
-            _this.matcherRegex = (function () {
-                var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
-                wwwRegex = /(?:www\.)/, // starting with 'www.'
-                // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
-                // http://blog.codinghorror.com/the-problem-with-urls/
-                urlSuffixRegex = new RegExp('[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?');
-                return new RegExp([
-                    '(?:',
-                    '(',
-                    schemeRegex.source,
-                    getDomainNameStr(2),
-                    ')',
-                    '|',
-                    '(',
-                    '(//)?',
-                    wwwRegex.source,
-                    getDomainNameStr(6),
-                    ')',
-                    '|',
-                    '(',
-                    '(//)?',
-                    getDomainNameStr(10) + '\\.',
-                    tldRegex.source,
-                    '(?![-' + alphaNumericCharsStr + '])',
-                    ')',
-                    ')',
-                    '(?::[0-9]+)?',
-                    '(?:' + urlSuffixRegex.source + ')?' // match for path, query string, and/or hash anchor - optional
-                ].join(""), 'gi');
-            })();
+            _this.matcherRegex = matcherRegex;
             /**
              * A regular expression to use to check the character before a protocol-relative
              * URL match. We don't want to match a protocol-relative URL if it is part
@@ -2358,7 +2376,7 @@
              * @protected
              * @type {RegExp} wordCharRegExp
              */
-            _this.wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
+            _this.wordCharRegExp = wordCharRegExp;
             _this.stripPrefix = cfg.stripPrefix;
             _this.stripTrailingSlash = cfg.stripTrailingSlash;
             _this.decodePercentEncoding = cfg.decodePercentEncoding;
@@ -2545,6 +2563,13 @@
         return UrlMatcher;
     }(Matcher));
 
+    // RegExp objects which are shared by all instances of HashtagMatcher. These are
+    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+    // called multiple times, thus instantiating HashtagMatcher and its RegExp 
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // See descriptions of the properties where they are used for details about them
+    var matcherRegex$1 = new RegExp("#[_" + alphaNumericAndMarksCharsStr + "]{1,139}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 139 characters
+    var nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
     /**
      * @class Autolinker.matcher.Hashtag
      * @extends Autolinker.matcher.Matcher
@@ -2575,7 +2600,7 @@
              * @protected
              * @property {RegExp} matcherRegex
              */
-            _this.matcherRegex = new RegExp("#[_" + alphaNumericAndMarksCharsStr + "]{1,139}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 139 characters
+            _this.matcherRegex = matcherRegex$1;
             /**
              * The regular expression to use to check the character before a username match to
              * make sure we didn't accidentally match an email address.
@@ -2585,7 +2610,7 @@
              * @protected
              * @property {RegExp} nonWordCharRegex
              */
-            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
+            _this.nonWordCharRegex = nonWordCharRegex;
             _this.serviceName = cfg.serviceName;
             return _this;
         }
@@ -2615,6 +2640,12 @@
         return HashtagMatcher;
     }(Matcher));
 
+    // RegExp objects which are shared by all instances of PhoneMatcher. These are
+    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+    // called multiple times, thus instantiating PhoneMatcher and its RegExp 
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // See descriptions of the properties where they are used for details about them
+    var phoneMatcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/g;
     /**
      * @class Autolinker.matcher.Phone
      * @extends Autolinker.matcher.Matcher
@@ -2629,9 +2660,15 @@
         function PhoneMatcher() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * The regular expression to match Phone numbers. Example match:
+             * The regular expression to match Phone numbers. Example matches:
              *
              *     (123) 456-7890
+             *     123 456 7890
+             *     123-456-7890
+             *     +18004441234,,;,10226420346#
+             *     +1 (800) 444 1234
+             *     10226420346#
+             *     1-800-444-1234,1022,64,20346#
              *
              * This regular expression has the following capturing groups:
              *
@@ -2640,11 +2677,9 @@
              * @protected
              * @property {RegExp} matcherRegex
              */
-            _this.matcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/g;
+            _this.matcherRegex = phoneMatcherRegex;
             return _this;
         }
-        // ex: (123) 456-7890, 123 456 7890, 123-456-7890, +18004441234,,;,10226420346#,
-        // +1 (800) 444 1234, 10226420346#, 1-800-444-1234,1022,64,20346#
         /**
          * @inheritdoc
          */
@@ -2668,11 +2703,20 @@
             return matches;
         };
         PhoneMatcher.prototype.testMatch = function (text) {
-            return /\D/.test(text);
+            return nonDigitRe.test(text);
         };
         return PhoneMatcher;
     }(Matcher));
 
+    // RegExp objects which are shared by all instances of MentionMatcher. These are
+    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+    // called multiple times, thus instantiating MentionMatcher and its RegExp 
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // See descriptions of the properties where they are used for details about them
+    var twitterRegex = new RegExp("@[_" + alphaNumericAndMarksCharsStr + "]{1,50}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 50 characters
+    var instagramRegex = new RegExp("@[_." + alphaNumericAndMarksCharsStr + "]{1,30}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 30 characters
+    var soundcloudRegex = new RegExp("@[-_." + alphaNumericAndMarksCharsStr + "]{1,50}(?![-_" + alphaNumericAndMarksCharsStr + "])", 'g'); // lookahead used to make sure we don't match something above 50 characters
+    var nonWordCharRegex$1 = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
     /**
      * @class Autolinker.matcher.Mention
      * @extends Autolinker.matcher.Matcher
@@ -2705,9 +2749,9 @@
              * @property {Object} matcherRegexes
              */
             _this.matcherRegexes = {
-                'twitter': new RegExp("@[_" + alphaNumericAndMarksCharsStr + "]{1,50}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'),
-                'instagram': new RegExp("@[_." + alphaNumericAndMarksCharsStr + "]{1,30}(?![_" + alphaNumericAndMarksCharsStr + "])", 'g'),
-                'soundcloud': new RegExp("@[-_." + alphaNumericAndMarksCharsStr + "]{1,50}(?![-_" + alphaNumericAndMarksCharsStr + "])", 'g') // lookahead used to make sure we don't match something above 50 characters
+                'twitter': twitterRegex,
+                'instagram': instagramRegex,
+                'soundcloud': soundcloudRegex
             };
             /**
              * The regular expression to use to check the character before a username match to
@@ -2718,7 +2762,7 @@
              * @private
              * @property {RegExp} nonWordCharRegex
              */
-            _this.nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
+            _this.nonWordCharRegex = nonWordCharRegex$1;
             _this.serviceName = cfg.serviceName;
             return _this;
         }
@@ -4199,7 +4243,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.14.0';
+        Autolinker.version = '3.14.1';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
