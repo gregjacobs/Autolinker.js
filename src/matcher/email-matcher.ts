@@ -8,6 +8,14 @@ import { tldRegex } from "./tld-regex";
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
 
+// RegExp objects which are shared by all instances of EmailMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating EmailMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+const localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
+const strictTldRegex = new RegExp( `^${tldRegex.source}$` );
+
 /**
  * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
@@ -22,13 +30,13 @@ export class EmailMatcher extends Matcher {
 	 * Valid characters that can be used in the "local" part of an email address,
 	 * i.e. the "name" part of "name@site.com"
 	 */
-	protected localPartCharRegex = new RegExp( `[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]` );
+	protected localPartCharRegex = localPartCharRegex;
 
 	/**
 	 * Stricter TLD regex which adds a beginning and end check to ensure
 	 * the string is a valid TLD
 	 */
-	protected strictTldRegex = new RegExp( `^${tldRegex.source}$` );
+	protected strictTldRegex = strictTldRegex;
 
 
 	/**

@@ -6,6 +6,52 @@ import { UrlMatch } from "../match/url-match";
 import { UrlMatchValidator } from "./url-match-validator";
 import { Match } from "../match/match";
 
+// RegExp objects which are shared by all instances of UrlMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating UrlMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+const matcherRegex = (function() {
+	let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+		wwwRegex = /(?:www\.)/,  // starting with 'www.'
+
+		// Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
+		// http://blog.codinghorror.com/the-problem-with-urls/
+		urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?' );
+
+	return new RegExp( [
+		'(?:', // parens to cover match for scheme (optional), and domain
+			'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
+				schemeRegex.source,
+				getDomainNameStr( 2 ),
+			')',
+
+			'|',
+
+			'(',  // *** Capturing group $4 for a 'www.' prefixed url (ex: www.google.com)
+				'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
+				wwwRegex.source,
+				getDomainNameStr(6),
+			')',
+
+			'|',
+
+			'(',  // *** Capturing group $8, for known a TLD url (ex: google.com)
+				'(//)?',  // *** Capturing group $9 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
+				getDomainNameStr(10) + '\\.',
+				tldRegex.source,
+				'(?![-' + alphaNumericCharsStr + '])', // TLD not followed by a letter, behaves like unicode-aware \b
+			')',
+		')',
+
+		'(?::[0-9]+)?', // port
+
+		'(?:' + urlSuffixRegex.source + ')?'  // match for path, query string, and/or hash anchor - optional
+	].join( "" ), 'gi' );
+} )();
+
+const wordCharRegExp = new RegExp( '[' + alphaNumericAndMarksCharsStr + ']' );
+
 /**
  * @class Autolinker.matcher.Url
  * @extends Autolinker.matcher.Matcher
@@ -34,7 +80,6 @@ export class UrlMatcher extends Matcher {
 	 * @inheritdoc Autolinker#decodePercentEncoding
 	 */
 	protected decodePercentEncoding: boolean = true;  // default value just to get the above doc comment in the ES5 output and documentation generator
-
 
 	/**
 	 * @protected
@@ -70,45 +115,7 @@ export class UrlMatcher extends Matcher {
 	 *     URL. Will be an empty string if it is not a protocol-relative match.
 	 *     See #3 for more info.
 	 */
-	protected matcherRegex = (function() {
-		let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
-		    wwwRegex = /(?:www\.)/,  // starting with 'www.'
-
-		    // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
-		    // http://blog.codinghorror.com/the-problem-with-urls/
-		    urlSuffixRegex = new RegExp( '[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?' );
-
-		return new RegExp( [
-			'(?:', // parens to cover match for scheme (optional), and domain
-				'(',  // *** Capturing group $1, for a scheme-prefixed url (ex: http://google.com)
-					schemeRegex.source,
-					getDomainNameStr( 2 ),
-				')',
-
-				'|',
-
-				'(',  // *** Capturing group $4 for a 'www.' prefixed url (ex: www.google.com)
-					'(//)?',  // *** Capturing group $5 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
-					wwwRegex.source,
-					getDomainNameStr(6),
-				')',
-
-				'|',
-
-				'(',  // *** Capturing group $8, for known a TLD url (ex: google.com)
-					'(//)?',  // *** Capturing group $9 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character (handled later)
-					getDomainNameStr(10) + '\\.',
-					tldRegex.source,
-					'(?![-' + alphaNumericCharsStr + '])', // TLD not followed by a letter, behaves like unicode-aware \b
-				')',
-			')',
-
-			'(?::[0-9]+)?', // port
-
-			'(?:' + urlSuffixRegex.source + ')?'  // match for path, query string, and/or hash anchor - optional
-		].join( "" ), 'gi' );
-	} )();
-
+	protected matcherRegex = matcherRegex;
 
 	/**
 	 * A regular expression to use to check the character before a protocol-relative
@@ -123,7 +130,7 @@ export class UrlMatcher extends Matcher {
 	 * @protected
 	 * @type {RegExp} wordCharRegExp
 	 */
-	protected wordCharRegExp = new RegExp( '[' + alphaNumericAndMarksCharsStr + ']' );
+	protected wordCharRegExp = wordCharRegExp;
 
 
 	/**

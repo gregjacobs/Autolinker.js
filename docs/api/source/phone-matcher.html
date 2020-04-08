@@ -20,6 +20,13 @@ Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 var tslib_1 = require(&quot;tslib&quot;);
 var matcher_1 = require(&quot;./matcher&quot;);
 var phone_match_1 = require(&quot;../match/phone-match&quot;);
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+// RegExp objects which are shared by all instances of PhoneMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating PhoneMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+var phoneMatcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/g;
 <span id='Autolinker-matcher-Phone'>/**
 </span> * @class Autolinker.matcher.Phone
  * @extends Autolinker.matcher.Matcher
@@ -34,9 +41,15 @@ var PhoneMatcher =  (function (_super) {
     function PhoneMatcher() {
         var _this = _super !== null &amp;&amp; _super.apply(this, arguments) || this;
 <span id='Autolinker-matcher-Phone-property-matcherRegex'>        /**
-</span>         * The regular expression to match Phone numbers. Example match:
+</span>         * The regular expression to match Phone numbers. Example matches:
          *
          *     (123) 456-7890
+         *     123 456 7890
+         *     123-456-7890
+         *     +18004441234,,;,10226420346#
+         *     +1 (800) 444 1234
+         *     10226420346#
+         *     1-800-444-1234,1022,64,20346#
          *
          * This regular expression has the following capturing groups:
          *
@@ -45,11 +58,9 @@ var PhoneMatcher =  (function (_super) {
          * @protected
          * @property {RegExp} matcherRegex
          */
-        _this.matcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/g;
+        _this.matcherRegex = phoneMatcherRegex;
         return _this;
     }
-    // ex: (123) 456-7890, 123 456 7890, 123-456-7890, +18004441234,,;,10226420346#,
-    // +1 (800) 444 1234, 10226420346#, 1-800-444-1234,1022,64,20346#
 <span id='Autolinker-matcher-Phone-method-parseMatches'>    /**
 </span>     * @inheritdoc
      */
@@ -73,7 +84,7 @@ var PhoneMatcher =  (function (_super) {
         return matches;
     };
     PhoneMatcher.prototype.testMatch = function (text) {
-        return /\D/.test(text);
+        return regex_lib_1.nonDigitRe.test(text);
     };
     return PhoneMatcher;
 }(matcher_1.Matcher));

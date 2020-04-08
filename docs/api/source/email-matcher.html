@@ -25,6 +25,13 @@ var utils_1 = require(&quot;../utils&quot;);
 var tld_regex_1 = require(&quot;./tld-regex&quot;);
 // For debugging: search for other &quot;For debugging&quot; lines
 // import CliTable from &#39;cli-table&#39;;
+// RegExp objects which are shared by all instances of EmailMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating EmailMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+var localPartCharRegex = new RegExp(&quot;[&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;);
+var strictTldRegex = new RegExp(&quot;^&quot; + tld_regex_1.tldRegex.source + &quot;$&quot;);
 <span id='Autolinker-matcher-Email'>/**
 </span> * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
@@ -41,12 +48,12 @@ var EmailMatcher =  (function (_super) {
 </span>         * Valid characters that can be used in the &quot;local&quot; part of an email address,
          * i.e. the &quot;name&quot; part of &quot;name@site.com&quot;
          */
-        _this.localPartCharRegex = new RegExp(&quot;[&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;);
+        _this.localPartCharRegex = localPartCharRegex;
 <span id='Autolinker-matcher-Email-property-strictTldRegex'>        /**
 </span>         * Stricter TLD regex which adds a beginning and end check to ensure
          * the string is a valid TLD
          */
-        _this.strictTldRegex = new RegExp(&quot;^&quot; + tld_regex_1.tldRegex.source + &quot;$&quot;);
+        _this.strictTldRegex = strictTldRegex;
         return _this;
     }
 <span id='Autolinker-matcher-Email-method-parseMatches'>    /**

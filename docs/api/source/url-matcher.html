@@ -23,6 +23,42 @@ var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var tld_regex_1 = require(&quot;./tld-regex&quot;);
 var url_match_1 = require(&quot;../match/url-match&quot;);
 var url_match_validator_1 = require(&quot;./url-match-validator&quot;);
+// RegExp objects which are shared by all instances of UrlMatcher. These are
+// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
+// called multiple times, thus instantiating UrlMatcher and its RegExp 
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// See descriptions of the properties where they are used for details about them
+var matcherRegex = (function () {
+    var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format &quot;http://&quot; or &quot;mailto:&quot;. However, do not match the first part of something like &#39;link:http://www.google.com&#39; (i.e. don&#39;t match &quot;link:&quot;). Also, make sure we don&#39;t interpret &#39;google.com:8000&#39; as if &#39;google.com&#39; was a protocol here (i.e. ignore a trailing port number in this regex)
+    wwwRegex = /(?:www\.)/, // starting with &#39;www.&#39;
+    // Allow optional path, query string, and hash anchor, not ending in the following characters: &quot;?!:,.;&quot;
+    // http://blog.codinghorror.com/the-problem-with-urls/
+    urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}?!:,.;^\u2713]*[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}\u2713])?&#39;);
+    return new RegExp([
+        &#39;(?:&#39;,
+        &#39;(&#39;,
+        schemeRegex.source,
+        regex_lib_1.getDomainNameStr(2),
+        &#39;)&#39;,
+        &#39;|&#39;,
+        &#39;(&#39;,
+        &#39;(//)?&#39;,
+        wwwRegex.source,
+        regex_lib_1.getDomainNameStr(6),
+        &#39;)&#39;,
+        &#39;|&#39;,
+        &#39;(&#39;,
+        &#39;(//)?&#39;,
+        regex_lib_1.getDomainNameStr(10) + &#39;\\.&#39;,
+        tld_regex_1.tldRegex.source,
+        &#39;(?![-&#39; + regex_lib_1.alphaNumericCharsStr + &#39;])&#39;,
+        &#39;)&#39;,
+        &#39;)&#39;,
+        &#39;(?::[0-9]+)?&#39;,
+        &#39;(?:&#39; + urlSuffixRegex.source + &#39;)?&#39; // match for path, query string, and/or hash anchor - optional
+    ].join(&quot;&quot;), &#39;gi&#39;);
+})();
+var wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-Url'>/**
 </span> * @class Autolinker.matcher.Url
  * @extends Autolinker.matcher.Matcher
@@ -90,36 +126,7 @@ var UrlMatcher =  (function (_super) {
          *     URL. Will be an empty string if it is not a protocol-relative match.
          *     See #3 for more info.
          */
-        _this.matcherRegex = (function () {
-            var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format &quot;http://&quot; or &quot;mailto:&quot;. However, do not match the first part of something like &#39;link:http://www.google.com&#39; (i.e. don&#39;t match &quot;link:&quot;). Also, make sure we don&#39;t interpret &#39;google.com:8000&#39; as if &#39;google.com&#39; was a protocol here (i.e. ignore a trailing port number in this regex)
-            wwwRegex = /(?:www\.)/, // starting with &#39;www.&#39;
-            // Allow optional path, query string, and hash anchor, not ending in the following characters: &quot;?!:,.;&quot;
-            // http://blog.codinghorror.com/the-problem-with-urls/
-            urlSuffixRegex = new RegExp(&#39;[/?#](?:[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}?!:,.;^\u2713]*[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;\\-+&amp;@#/%=~_()|\&#39;$*\\[\\]{}\u2713])?&#39;);
-            return new RegExp([
-                &#39;(?:&#39;,
-                &#39;(&#39;,
-                schemeRegex.source,
-                regex_lib_1.getDomainNameStr(2),
-                &#39;)&#39;,
-                &#39;|&#39;,
-                &#39;(&#39;,
-                &#39;(//)?&#39;,
-                wwwRegex.source,
-                regex_lib_1.getDomainNameStr(6),
-                &#39;)&#39;,
-                &#39;|&#39;,
-                &#39;(&#39;,
-                &#39;(//)?&#39;,
-                regex_lib_1.getDomainNameStr(10) + &#39;\\.&#39;,
-                tld_regex_1.tldRegex.source,
-                &#39;(?![-&#39; + regex_lib_1.alphaNumericCharsStr + &#39;])&#39;,
-                &#39;)&#39;,
-                &#39;)&#39;,
-                &#39;(?::[0-9]+)?&#39;,
-                &#39;(?:&#39; + urlSuffixRegex.source + &#39;)?&#39; // match for path, query string, and/or hash anchor - optional
-            ].join(&quot;&quot;), &#39;gi&#39;);
-        })();
+        _this.matcherRegex = matcherRegex;
 <span id='Autolinker-matcher-Url-property-wordCharRegExp'>        /**
 </span>         * A regular expression to use to check the character before a protocol-relative
          * URL match. We don&#39;t want to match a protocol-relative URL if it is part
@@ -133,7 +140,7 @@ var UrlMatcher =  (function (_super) {
          * @protected
          * @type {RegExp} wordCharRegExp
          */
-        _this.wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
+        _this.wordCharRegExp = wordCharRegExp;
         _this.stripPrefix = cfg.stripPrefix;
         _this.stripTrailingSlash = cfg.stripTrailingSlash;
         _this.decodePercentEncoding = cfg.decodePercentEncoding;

@@ -14,7 +14,12 @@ export const letterRe = /[A-Za-z]/;
 /**
  * Regular expression to match ASCII digits
  */
-export const digitRe = /[0-9]/;
+export const digitRe = /[\d]/;
+
+/**
+ * Regular expression to match everything *except* ASCII digits
+ */
+export const nonDigitRe = /[\D]/;
 
 /**
  * Regular expression to match whitespace

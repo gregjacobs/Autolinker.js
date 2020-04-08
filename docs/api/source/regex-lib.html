@@ -31,7 +31,11 @@ exports.letterRe = /[A-Za-z]/;
 <span id='global-property-digitRe'>/**
 </span> * Regular expression to match ASCII digits
  */
-exports.digitRe = /[0-9]/;
+exports.digitRe = /[\d]/;
+<span id='global-property-nonDigitRe'>/**
+</span> * Regular expression to match everything *except* ASCII digits
+ */
+exports.nonDigitRe = /[\D]/;
 <span id='global-property-whitespaceRe'>/**
 </span> * Regular expression to match whitespace
  */
