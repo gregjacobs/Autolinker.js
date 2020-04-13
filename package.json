@@ -46,6 +46,7 @@
     "@types/jasmine": "^2.5.41",
     "@types/jquery": "^3.3.28",
     "@types/lodash": "^4.14.70",
+    "@types/node": "^13.11.1",
     "awesome-typescript-loader": "^5.2.1",
     "child-process-promise": "^2.2.1",
     "cli-table": "^0.3.1",

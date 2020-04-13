@@ -209,7 +209,6 @@ export class EmailMatcher extends Matcher {
 			}
 		}
 
-
 		function stateAtSign( char: string ) {
 			if( domainNameCharRegex.test( char ) ) {
 				state = State.DomainChar;
@@ -274,7 +273,6 @@ export class EmailMatcher extends Matcher {
 			}
 		}
 
-
 		function beginEmailMatch( newState = State.LocalPart ) {
 			state = newState;
 			currentEmailMatch = new CurrentEmailMatch( { idx: charIdx } );
@@ -284,8 +282,6 @@ export class EmailMatcher extends Matcher {
 			state = State.NonEmailMatch;
 			currentEmailMatch = noCurrentEmailMatch;
 		}
-
-
 
 		/*
 		 * Captures the current email address as an EmailMatch if it's valid,
@@ -320,19 +316,19 @@ export class EmailMatcher extends Matcher {
 
 			resetToNonEmailMatchState();
 		
+			/**
+			 * Determines if the given email address has a valid TLD or not
+			 * @param {string} emailAddress - email address
+			 * @return {Boolean} - true is email have valid TLD, false otherwise
+			 */
+			function doesEmailHaveValidTld( emailAddress: string ) {
+				const emailAddressTld : string = emailAddress.split( '.' ).pop() || '';
+				const emailAddressNormalized = emailAddressTld.toLowerCase();
+				const isValidTld = strictTldRegex.test( emailAddressNormalized );
 
-		/**
-		 * Determines if the given email address has a valid TLD or not
-		 * @param {string} emailAddress - email address
-		 * @return {Boolean} - true is email have valid TLD, false otherwise
-		 */
-		function doesEmailHaveValidTld( emailAddress: string ) {
-			const emailAddressTld : string = emailAddress.split( '.' ).pop() || '';
-			const emailAddressNormalized = emailAddressTld.toLowerCase();
-			const isValidTld = strictTldRegex.test( emailAddressNormalized );
-
-			return isValidTld;
-		}}
+				return isValidTld;
+			}
+		}
 	}
 
 }

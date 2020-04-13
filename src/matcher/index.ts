@@ -1,4 +1,4 @@
-export * from './email-matcher';
+export * from './email-matcher-table-driven';
 export * from './hashtag-matcher';
 export * from './matcher';
 export * from './mention-matcher';

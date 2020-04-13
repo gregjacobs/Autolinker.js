@@ -1,4 +1,4 @@
-import { EmailMatcher } from "../../src/matcher/email-matcher";
+import { EmailMatcher } from "../../src/matcher/email-matcher-table-driven";
 import { AnchorTagBuilder } from "../../src/anchor-tag-builder";
 import { MatchChecker } from "../match/match-checker";
 
@@ -22,7 +22,7 @@ describe( "Autolinker.matcher.Email", () => {
 		} );
 
 
-		it( 'should return an array of a single email address match when the string is the email address itself', () => {
+		it( 'should return a single email address match when the string is the email address itself', () => {
 			let matches = matcher.parseMatches( 'asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
@@ -30,7 +30,7 @@ describe( "Autolinker.matcher.Email", () => {
 		} );
 
 
-		it( 'should return an array of a single email address match when the email address is at the start of the string', () => {
+		it( 'should return a single email address match when the email address is at the start of the string', () => {
 			let matches = matcher.parseMatches( 'asdf@asdf.com is my good friend' );
 
 			expect( matches.length ).toBe( 1 );
@@ -38,7 +38,7 @@ describe( "Autolinker.matcher.Email", () => {
 		} );
 
 
-		it( 'should return an array of a single email address match when the email address is in the middle of the string', () => {
+		it( 'should return a single email address match when the email address is in the middle of the string', () => {
 			let matches = matcher.parseMatches( 'Hello asdf@asdf.com my good friend' );
 
 			expect( matches.length ).toBe( 1 );
@@ -46,7 +46,7 @@ describe( "Autolinker.matcher.Email", () => {
 		} );
 
 
-		it( 'should return an array of a single email address match when the email address is at the end of the string', () => {
+		it( 'should return a single email address match when the email address is at the end of the string', () => {
 			let matches = matcher.parseMatches( 'Hello asdf@asdf.com' );
 
 			expect( matches.length ).toBe( 1 );
@@ -76,6 +76,13 @@ describe( "Autolinker.matcher.Email", () => {
 			expect( matches.length ).toBe( 2 );
 			MatchChecker.expectEmailMatch( matches[ 0 ], 'asdf@asdf.com', 8 );
 			MatchChecker.expectEmailMatch( matches[ 1 ], 'fdsa@fdsa.com', 25 );
+		} );
+
+
+		it( 'should not return an email address that does not have a valid TLD', () => {
+			let matches = matcher.parseMatches( 'Talk to asdf@asdf.comasdfaefabew' );
+
+			expect( matches.length ).toBe( 0 );
 		} );
 
 
