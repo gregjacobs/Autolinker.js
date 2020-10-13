@@ -5,10 +5,10 @@ import { nonDigitRe } from '../regex-lib';
 
 // RegExp objects which are shared by all instances of PhoneMatcher. These are
 // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-// called multiple times, thus instantiating PhoneMatcher and its RegExp 
-// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// called multiple times, thus instantiating PhoneMatcher and its RegExp
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
 // See descriptions of the properties where they are used for details about them
-const phoneMatcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/g;
+const phoneMatcherRegex = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*|(?:(\+)?\d{2,3}[-\040.]?)?\(?\d{4}\)?[-\040.]?\d{4}/g;
 
 /**
  * @class Autolinker.matcher.Phone

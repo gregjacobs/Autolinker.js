@@ -62,13 +62,20 @@ describe( "Autolinker.matcher.Phone", function() {
 			MatchChecker.expectPhoneMatch( matches[ 0 ], '1234567890', 7 );
 		} );
 
+		it( 'should return an array of single phone numbers match when the phone number is japanese phone number', function() {
+			let matches = matcher.parseMatches( ' Hello 03-1123-4562 ' );
+
+			expect( matches.length ).toBe( 1 );
+			MatchChecker.expectPhoneMatch( matches[ 0 ], '0311234562', 7 );
+		} );
+
 	} );
 
 
 	describe( 'getPhoneNumber()', function() {
 
-		it( `should should return the matched phone number without any 
-			 formatting`, 
+		it( `should should return the matched phone number without any
+			 formatting`,
 		() => {
 			let matches = matcher.parseMatches( 'Talk to (123) 456-7890' );
 
@@ -82,8 +89,8 @@ describe( "Autolinker.matcher.Phone", function() {
 
 	describe( 'getNumber()', function() {
 
-		it( `as an alias of getPhoneNumber(), should return the matched phone 
-			 number, without any formatting`, 
+		it( `as an alias of getPhoneNumber(), should return the matched phone
+			 number, without any formatting`,
 		() => {
 			let matches = matcher.parseMatches( 'Talk to (123) 456-7890' );
 
