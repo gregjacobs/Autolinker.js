@@ -45,26 +45,6 @@ export function ellipsis( str: string, truncateLen: number, ellipsisChars?: stri
 
 
 /**
- * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
- *
- * @param {Array} arr The array to find an element of.
- * @param {*} element The element to find in the array, and return the index of.
- * @return {Number} The index of the `element`, or -1 if it was not found.
- */
-export function indexOf<T>( arr: T[], element: T ) {
-	if( Array.prototype.indexOf ) {
-		return arr.indexOf( element );
-
-	} else {
-		for( let i = 0, len = arr.length; i < len; i++ ) {
-			if( arr[ i ] === element ) return i;
-		}
-		return -1;
-	}
-}
-
-
-/**
  * Removes array elements based on a filtering function. Mutates the input
  * array.
  *

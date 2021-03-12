@@ -1,5 +1,3 @@
-import { indexOf } from "./utils";
-
 /**
  * @class Autolinker.HtmlTag
  * @extends Object
@@ -217,7 +215,7 @@ export class HtmlTag {
 		    newClass: string | undefined;
 
 		while( newClass = newClasses.shift() ) {
-			if( indexOf( classes, newClass ) === -1 ) {
+			if( classes.indexOf(newClass) === -1 ) {
 				classes.push( newClass );
 			}
 		}
@@ -241,7 +239,7 @@ export class HtmlTag {
 		    removeClass: string | undefined;
 
 		while( classes.length && ( removeClass = removeClasses.shift() ) ) {
-			let idx = indexOf( classes, removeClass );
+			let idx = classes.indexOf(removeClass);
 			if( idx !== -1 ) {
 				classes.splice( idx, 1 );
 			}
