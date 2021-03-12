@@ -10,15 +10,6 @@ const NamedAutolinker = require( 'autolinker' ).Autolinker;
 
 describe( 'Autolinker require() tests - ', () => {
 
-	/*it( `Autolinker should be the default export of 'autolinker'`, () => {
-		expect( Autolinker ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.name ).toBe( 'Autolinker' );  // function name
-		expect( Autolinker.link ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.link( 'Hello google.com', { newWindow: false } ) )
-			.toBe( 'Hello <a href="http://google.com">google.com</a>' );
-	} );*/
-
 
 	it( `Autolinker should also be a named export of 'autolinker'`, () => {
 		expect( NamedAutolinker ).toEqual( jasmine.any( Function ) );  // constructor function
@@ -68,33 +59,6 @@ describe( 'Autolinker require() tests - ', () => {
 	} );
 
 
-	/*it( `The 'Match' classes should also continue to be in their 1.x namespace locations for backward compatibility`, () => {
-		expect( Autolinker.match.Match ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Match.name ).toBe( 'Match' );  // function name
-		expect( Autolinker.match.Match.prototype.getMatchedText ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.match.Email ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Email.name ).toBe( 'EmailMatch' );  // function name
-		expect( Autolinker.match.Email.prototype.getEmail ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.match.Hashtag ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Hashtag.name ).toBe( 'HashtagMatch' );  // function name
-		expect( Autolinker.match.Hashtag.prototype.getHashtag ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.match.Mention ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Mention.name ).toBe( 'MentionMatch' );  // function name
-		expect( Autolinker.match.Mention.prototype.getMention ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.match.Phone ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Phone.name ).toBe( 'PhoneMatch' );  // function name
-		expect( Autolinker.match.Phone.prototype.getNumber ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.match.Url ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.match.Url.name ).toBe( 'UrlMatch' );  // function name
-		expect( Autolinker.match.Url.prototype.getUrl ).toEqual( jasmine.any( Function ) );
-	} );*/
-
-
 	it( `The 'Matcher' classes should be top-level named exports of 'autolinker' (as of v2.0)`, () => {
 		expect( Autolinker.Matcher ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( Autolinker.Matcher.name ).toBe( 'Matcher' );  // function name
@@ -120,32 +84,5 @@ describe( 'Autolinker require() tests - ', () => {
 		expect( Autolinker.UrlMatcher.name ).toBe( 'UrlMatcher' );  // function name
 		expect( Autolinker.UrlMatcher.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
 	} );
-
-
-	/*it( `The 'Matcher' classes should also continue to be in their 1.x namespace locations for backward compatibility`, () => {
-		expect( Autolinker.matcher.Matcher ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Matcher.name ).toBe( 'Matcher' );  // function name
-		// Note: no methods which can be checked here - abstract methods are not compiled into ES5
-
-		expect( Autolinker.matcher.Email ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Email.name ).toBe( 'EmailMatcher' );  // function name
-		expect( Autolinker.matcher.Email.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.matcher.Hashtag ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Hashtag.name ).toBe( 'HashtagMatcher' );  // function name
-		expect( Autolinker.matcher.Hashtag.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.matcher.Mention ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Mention.name ).toBe( 'MentionMatcher' );  // function name
-		expect( Autolinker.matcher.Mention.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.matcher.Phone ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Phone.name ).toBe( 'PhoneMatcher' );  // function name
-		expect( Autolinker.matcher.Phone.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
-
-		expect( Autolinker.matcher.Url ).toEqual( jasmine.any( Function ) );  // constructor function
-		expect( Autolinker.matcher.Url.name ).toBe( 'UrlMatcher' );  // function name
-		expect( Autolinker.matcher.Url.prototype.parseMatches ).toEqual( jasmine.any( Function ) );
-	} );*/
 
 } );
