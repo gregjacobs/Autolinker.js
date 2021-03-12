@@ -17,6 +17,7 @@ describe( 'Autolinker require() tests - ', () => {
 
 		expect( Autolinker.link( 'Hello google.com', { newWindow: false } ) )
 			.toBe( 'Hello <a href="http://google.com">google.com</a>' );
+		expect(false).toBe(true);
 	} );
 
 
