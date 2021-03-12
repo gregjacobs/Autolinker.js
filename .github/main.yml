@@ -1,6 +1,7 @@
 name: Run tests on PR
 
 on:
+  push:
   pull_request:
     branches: [ master ]
 
