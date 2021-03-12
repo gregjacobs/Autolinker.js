@@ -1,7 +1,6 @@
 name: Run tests on PR
 
 on:
-  push:
   pull_request:
     branches: [ master ]
 
@@ -10,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
       - name: Yarn install
         run: yarn
 
