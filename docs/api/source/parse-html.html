@@ -17,6 +17,7 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.parseHtml = void 0;
 var tslib_1 = require(&quot;tslib&quot;);
 var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var utils_1 = require(&quot;../utils&quot;);
@@ -183,7 +184,7 @@ function parseHtml(html, _a) {
         }
         else if (char === &#39;/&#39;) {
             state = 2 /* EndTagOpen */;
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { isClosing: true }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { isClosing: true }));
         }
         else if (char === &#39;&lt;&#39;) {
             // start of another tag (ignore the previous, incomplete one)
@@ -192,7 +193,7 @@ function parseHtml(html, _a) {
         else if (regex_lib_1.letterRe.test(char)) {
             // tag name start (and no &#39;/&#39; read)
             state = 3 /* TagName */;
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { isOpening: true }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { isOpening: true }));
         }
         else {
             // Any other 
@@ -205,7 +206,7 @@ function parseHtml(html, _a) {
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
     function stateTagName(char) {
         if (regex_lib_1.whitespaceRe.test(char)) {
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { name: captureTagName() }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { name: captureTagName() }));
             state = 4 /* BeforeAttributeName */;
         }
         else if (char === &#39;&lt;&#39;) {
@@ -213,11 +214,11 @@ function parseHtml(html, _a) {
             startNewTag();
         }
         else if (char === &#39;/&#39;) {
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { name: captureTagName() }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { name: captureTagName() }));
             state = 12 /* SelfClosingStartTag */;
         }
         else if (char === &#39;&gt;&#39;) {
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { name: captureTagName() }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { name: captureTagName() }));
             emitTagAndPreviousTextNode(); // resets to Data state as well
         }
         else if (!regex_lib_1.letterRe.test(char) &amp;&amp; !regex_lib_1.digitRe.test(char) &amp;&amp; char !== &#39;:&#39;) {
@@ -413,7 +414,7 @@ function parseHtml(html, _a) {
     // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
     function stateSelfClosingStartTag(char) {
         if (char === &#39;&gt;&#39;) {
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { isClosing: true }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { isClosing: true }));
             emitTagAndPreviousTextNode(); // resets to Data state as well
         }
         else {
@@ -425,12 +426,12 @@ function parseHtml(html, _a) {
     function stateMarkupDeclarationOpen(char) {
         if (html.substr(charIdx, 2) === &#39;--&#39;) { // html comment
             charIdx += 2; // &quot;consume&quot; characters
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { type: &#39;comment&#39; }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { type: &#39;comment&#39; }));
             state = 14 /* CommentStart */;
         }
         else if (html.substr(charIdx, 7).toUpperCase() === &#39;DOCTYPE&#39;) {
             charIdx += 7; // &quot;consume&quot; characters
-            currentTag = new CurrentTag(tslib_1.__assign({}, currentTag, { type: &#39;doctype&#39; }));
+            currentTag = new CurrentTag(tslib_1.__assign(tslib_1.__assign({}, currentTag), { type: &#39;doctype&#39; }));
             state = 20 /* Doctype */;
         }
         else {

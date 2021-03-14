@@ -1,8 +1,8 @@
 /*!
  * Autolinker.js
- * 3.14.2
+ * 3.14.3
  *
- * Copyright(c) 2020 Gregory Jacobs <greg@greg-jacobs.com>
+ * Copyright(c) 2021 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
  *
  * https://github.com/gregjacobs/Autolinker.js
@@ -61,6 +61,9 @@
      * @return {Number} The index of the `element`, or -1 if it was not found.
      */
     function indexOf(arr, element) {
+        // @ts-ignore - As far as TypeScript is concerned, this method will always
+        // exist (lowest "lib" in TS is "ES5"). Hence we need to ignore this error
+        // to support IE8 which only implements ES3 and doesn't have this method
         if (Array.prototype.indexOf) {
             return arr.indexOf(element);
         }
@@ -1916,7 +1919,7 @@
                     // We've reached the end of the 'mailto:' prefix
                     if (localPartCharRegex.test(char)) {
                         state = 2 /* LocalPart */;
-                        currentEmailMatch = new CurrentEmailMatch(__assign({}, currentEmailMatch, { hasMailtoPrefix: true }));
+                        currentEmailMatch = new CurrentEmailMatch(__assign(__assign({}, currentEmailMatch), { hasMailtoPrefix: true }));
                     }
                     else {
                         // we've matched 'mailto:' but didn't get anything meaningful
@@ -2028,7 +2031,7 @@
                     // we now know that the domain part of the email is valid, and
                     // we have found at least a partial EmailMatch (however, the
                     // email address may have additional characters from this point)
-                    currentEmailMatch = new CurrentEmailMatch(__assign({}, currentEmailMatch, { hasDomainDot: true }));
+                    currentEmailMatch = new CurrentEmailMatch(__assign(__assign({}, currentEmailMatch), { hasDomainDot: true }));
                 }
                 else {
                     // Anything else
@@ -2965,7 +2968,7 @@
             }
             else if (char === '/') {
                 state = 2 /* EndTagOpen */;
-                currentTag = new CurrentTag(__assign({}, currentTag, { isClosing: true }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isClosing: true }));
             }
             else if (char === '<') {
                 // start of another tag (ignore the previous, incomplete one)
@@ -2974,7 +2977,7 @@
             else if (letterRe.test(char)) {
                 // tag name start (and no '/' read)
                 state = 3 /* TagName */;
-                currentTag = new CurrentTag(__assign({}, currentTag, { isOpening: true }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isOpening: true }));
             }
             else {
                 // Any other 
@@ -2987,7 +2990,7 @@
         // https://www.w3.org/TR/html51/syntax.html#tag-name-state
         function stateTagName(char) {
             if (whitespaceRe.test(char)) {
-                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
                 state = 4 /* BeforeAttributeName */;
             }
             else if (char === '<') {
@@ -2995,11 +2998,11 @@
                 startNewTag();
             }
             else if (char === '/') {
-                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
                 state = 12 /* SelfClosingStartTag */;
             }
             else if (char === '>') {
-                currentTag = new CurrentTag(__assign({}, currentTag, { name: captureTagName() }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
             else if (!letterRe.test(char) && !digitRe.test(char) && char !== ':') {
@@ -3174,7 +3177,7 @@
         // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
         function stateSelfClosingStartTag(char) {
             if (char === '>') {
-                currentTag = new CurrentTag(__assign({}, currentTag, { isClosing: true }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isClosing: true }));
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
             else {
@@ -3186,12 +3189,12 @@
         function stateMarkupDeclarationOpen(char) {
             if (html.substr(charIdx, 2) === '--') { // html comment
                 charIdx += 2; // "consume" characters
-                currentTag = new CurrentTag(__assign({}, currentTag, { type: 'comment' }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'comment' }));
                 state = 14 /* CommentStart */;
             }
             else if (html.substr(charIdx, 7).toUpperCase() === 'DOCTYPE') {
                 charIdx += 7; // "consume" characters
-                currentTag = new CurrentTag(__assign({}, currentTag, { type: 'doctype' }));
+                currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'doctype' }));
                 state = 20 /* Doctype */;
             }
             else {
@@ -4006,7 +4009,7 @@
                     }
                 },
                 onComment: function (offset) { },
-                onDoctype: function (offset) { },
+                onDoctype: function (offset) { }, // no need to process doctype nodes
             });
             // After we have found all matches, remove subsequent matches that
             // overlap with a previous match. This can happen for instance with URLs,
@@ -4249,7 +4252,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.14.2';
+        Autolinker.version = '3.14.3';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.

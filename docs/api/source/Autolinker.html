@@ -641,7 +641,7 @@ var Autolinker =  (function () {
                 }
             },
             onComment: function (offset) { },
-            onDoctype: function (offset) { },
+            onDoctype: function (offset) { }, // no need to process doctype nodes
         });
         // After we have found all matches, remove subsequent matches that
         // overlap with a previous match. This can happen for instance with URLs,
@@ -884,7 +884,7 @@ var Autolinker =  (function () {
      *
      * Ex: 0.25.1
      */
-    Autolinker.version = &#39;3.14.2&#39;;
+    Autolinker.version = &#39;3.14.3&#39;;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.

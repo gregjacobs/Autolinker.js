@@ -24,6 +24,7 @@
  * regular expressions that are shared between source files.
  */
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.domainNameCharRegex = exports.domainNameRegex = exports.getDomainNameStr = exports.alphaNumericAndMarksCharsStr = exports.alphaNumericCharsStr = exports.decimalNumbersStr = exports.alphaCharsAndMarksStr = exports.marksStr = exports.emojiStr = exports.alphaCharsStr = exports.controlCharsRe = exports.quoteRe = exports.whitespaceRe = exports.nonDigitRe = exports.digitRe = exports.letterRe = void 0;
 <span id='global-property-letterRe'>/**
 </span> * Regular expression to match upper and lowercase ASCII letters
  */
@@ -171,9 +172,10 @@ var getDomainLabelStr = function (group) {
 </span> * A function to match domain names of a URL or email address.
  * Ex: &#39;google&#39;, &#39;yahoo&#39;, &#39;some-other-company&#39;, etc.
  */
-exports.getDomainNameStr = function (group) {
+var getDomainNameStr = function (group) {
     return &#39;(?:&#39; + getDomainLabelStr(group) + &#39;(?:\\.&#39; + getDomainLabelStr(group + 1) + &#39;){0,126}|&#39; + ipStr + &#39;)&#39;;
 };
+exports.getDomainNameStr = getDomainNameStr;
 <span id='global-property-domainNameRegex'>/**
 </span> * A regular expression to match domain names of a URL or email address.
  * Ex: &#39;google&#39;, &#39;yahoo&#39;, &#39;some-other-company&#39;, etc.

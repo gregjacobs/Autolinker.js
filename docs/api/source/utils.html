@@ -17,6 +17,7 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.throwUnhandledCaseError = exports.splitAndCapture = exports.remove = exports.indexOf = exports.ellipsis = exports.defaults = void 0;
 <span id='global-method-defaults'>/**
 </span> * Assigns (shallow copies) the properties of `src` onto `dest`, if the
  * corresponding property on `dest` === `undefined`.
@@ -67,6 +68,9 @@ exports.ellipsis = ellipsis;
  * @return {Number} The index of the `element`, or -1 if it was not found.
  */
 function indexOf(arr, element) {
+    // @ts-ignore - As far as TypeScript is concerned, this method will always
+    // exist (lowest &quot;lib&quot; in TS is &quot;ES5&quot;). Hence we need to ignore this error
+    // to support IE8 which only implements ES3 and doesn&#39;t have this method
     if (Array.prototype.indexOf) {
         return arr.indexOf(element);
     }
