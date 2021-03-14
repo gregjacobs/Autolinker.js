@@ -1,5 +1,4 @@
 language: node_js
 node_js:
   - "lts/*"  # latest long-term-support version of node.js
-  - "9.0"
   - "8.9"
