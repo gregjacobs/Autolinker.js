@@ -3,8 +3,10 @@
 // This is done by the buildSrcFixCommonJsIndexTask() function in the gulpfile. 
 // See that function for more details.
 
-export { default } from './autolinker';
-export { default as Autolinker } from './autolinker';
+import Autolinker from './autolinker';
+
+export default Autolinker;
+export { Autolinker }
 
 export * from './autolinker';
 export * from './anchor-tag-builder';

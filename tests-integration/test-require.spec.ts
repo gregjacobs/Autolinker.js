@@ -7,7 +7,6 @@
 const Autolinker = require( 'autolinker' );
 const NamedAutolinker = require( 'autolinker' ).Autolinker;
 
-
 describe( 'Autolinker require() tests - ', () => {
 
 	it( `Autolinker should be the default export of 'autolinker'`, () => {
@@ -69,6 +68,8 @@ describe( 'Autolinker require() tests - ', () => {
 
 
 	it( `The 'Match' classes should also continue to be in their 1.x namespace locations for backward compatibility`, () => {
+		expect( Autolinker.match ).toEqual( jasmine.any(Object) );
+
 		expect( Autolinker.match.Match ).toEqual( jasmine.any( Function ) );  // constructor function
 		expect( Autolinker.match.Match.name ).toBe( 'Match' );  // function name
 		expect( Autolinker.match.Match.prototype.getMatchedText ).toEqual( jasmine.any( Function ) );

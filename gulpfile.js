@@ -184,60 +184,56 @@ function buildSrcTypeScript( tsProject, outputDir ) {
  * 
  *     const Autolinker = require( 'autolinker' );
  * 
- * In order to get this to work, we need to change the generated output index.js 
- * line: 
- *     exports.default = autolinker_1.default; 
- * to:
- *     exports = autolinker_1.default;   // make the Autolinker class the actual export
+ * In order to get this to work, we need to redefine the `exports` object of 
+ * dist/commonjs/index.js to be the Autolinker class itself. To do this, this
+ * line is prepended to the file:
+ * 
+ *     exports = module.exports = require('./autolinker').Autolinker;
+ * 
+ * Then TypeScript will happily assign the `.default` and `.Autolinker` 
+ * properties to that new `exports object.
  * 
  * This function essentially changes the generated index.js from its original 
  * content of:
  * 
  *     "use strict";
- *     function __export(m) {
- *         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
- *     }
  *     Object.defineProperty(exports, "__esModule", { value: true });
- *     var autolinker_1 = require("./autolinker");
- *     exports.default = autolinker_1.default;   // <-- target of change
- *     var autolinker_2 = require("./autolinker");
- *     exports.Autolinker = autolinker_2.default;
- *     __export(require("./anchor-tag-builder"));
- *     __export(require("./html-tag"));
- *     __export(require("./match/index"));
- *     __export(require("./matcher/index"));
+ *     exports.Autolinker = void 0;
+ *     var tslib_1 = require("tslib");
+ *     var autolinker_1 = tslib_1.__importDefault(require("./autolinker"));
+ *     exports.Autolinker = autolinker_1.default;
+ *     exports.default = autolinker_1.default;
+ *     tslib_1.__exportStar(require("./autolinker"), exports);
+ *     tslib_1.__exportStar(require("./anchor-tag-builder"), exports);
+ *     tslib_1.__exportStar(require("./html-tag"), exports);
+ *     tslib_1.__exportStar(require("./match/index"), exports);
+ *     tslib_1.__exportStar(require("./matcher/index"), exports);
  * 
  * to this:
  * 
  *     "use strict";
- *     function __export(m) {
- *         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
- *     }
+ *     // Note: the following line is added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
+ *     exports = module.exports = require('./autolinker').Autolinker;  // redefine 'exports' object as the Autolinker class itself
  *     Object.defineProperty(exports, "__esModule", { value: true });
- *     var autolinker_1 = require("./autolinker");
- * 
- *     // Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
- *     exports = module.exports = autolinker_1.default;                  // redefine 'exports' object as the Autolinker class itself
- *     Object.defineProperty( exports, "__esModule", { value: true } );  // redeclare '__esModule' on new 'exports' object
- * 
- *     exports.default = autolinker_1.default;    // continue to allow 'default' property import for ES6 default import
- *     var autolinker_2 = require("./autolinker");
- *     exports.Autolinker = autolinker_2.default;
- *     __export(require("./anchor-tag-builder"));
- *     __export(require("./html-tag"));
- *     __export(require("./match/index"));
- *     __export(require("./matcher/index"));
+ *     exports.Autolinker = void 0;
+ *     var tslib_1 = require("tslib");
+ *     var autolinker_1 = tslib_1.__importDefault(require("./autolinker"));
+ *     exports.Autolinker = autolinker_1.default;
+ *     exports.default = autolinker_1.default;
+ *     tslib_1.__exportStar(require("./autolinker"), exports);
+ *     tslib_1.__exportStar(require("./anchor-tag-builder"), exports);
+ *     tslib_1.__exportStar(require("./html-tag"), exports);
+ *     tslib_1.__exportStar(require("./match/index"), exports);
+ *     tslib_1.__exportStar(require("./matcher/index"), exports);
  */
 async function buildSrcFixCommonJsIndexTask() {
 	const indexJsContents = fs.readFileSync( './dist/commonjs/index.js', 'utf-8' )
-		.replace( 'exports.default =', `
-			// Note: the following two lines are added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
-			exports = module.exports = autolinker_1.default;                  // redefine 'exports' object as the Autolinker class itself
-			Object.defineProperty( exports, "__esModule", { value: true } );  // redeclare '__esModule' on new 'exports' object
-
-			exports.default =
+		.replace( '"use strict";', `
+			"use strict";
+			// Note: the following line is added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
+			exports = module.exports = require('./autolinker').default;  // redefine 'exports' object as the Autolinker class itself
 		`.trimRight().replace( /^\t{3}/gm, '' ) );
-	
+
 	fs.writeFileSync( './dist/commonjs/index.js', indexJsContents );
 }
 

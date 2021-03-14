@@ -121,7 +121,7 @@ import { parseHtml } from './htmlParser/parse-html';
  * - An {@link Autolinker.HtmlTag} instance, which can be used to build/modify
  *   an HTML tag before writing out its HTML text.
  */
-export default class Autolinker {
+export default class Autolinker {  // NOTE: must be 'export default' here for UMD module
 
 	/**
 	 * @static
@@ -986,7 +986,6 @@ export default class Autolinker {
 	}
 
 }
-
 
 export interface AutolinkerConfig {
 	urls?: UrlsConfig;
