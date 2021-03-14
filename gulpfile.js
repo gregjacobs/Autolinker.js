@@ -188,10 +188,10 @@ function buildSrcTypeScript( tsProject, outputDir ) {
  * dist/commonjs/index.js to be the Autolinker class itself. To do this, this
  * line is prepended to the file:
  * 
- *     exports = module.exports = require('./autolinker').Autolinker;
+ *     exports = module.exports = require('./autolinker').default;
  * 
  * Then TypeScript will happily assign the `.default` and `.Autolinker` 
- * properties to that new `exports object.
+ * properties to that new `exports` object.
  * 
  * This function essentially changes the generated index.js from its original 
  * content of:
@@ -212,8 +212,10 @@ function buildSrcTypeScript( tsProject, outputDir ) {
  * to this:
  * 
  *     "use strict";
+ * 
  *     // Note: the following line is added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
- *     exports = module.exports = require('./autolinker').Autolinker;  // redefine 'exports' object as the Autolinker class itself
+ *     exports = module.exports = require('./autolinker').default;  // redefine 'exports' object as the Autolinker class itself
+ * 
  *     Object.defineProperty(exports, "__esModule", { value: true });
  *     exports.Autolinker = void 0;
  *     var tslib_1 = require("tslib");
