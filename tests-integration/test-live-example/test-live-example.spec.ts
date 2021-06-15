@@ -42,7 +42,8 @@ describe( 'Live example page -', function() {
 			`<a href="mailto:google@google.com" target="_blank" rel="noopener noreferrer">google@google.com</a><br>`,
 			`<a href="tel:1234567890" target="_blank" rel="noopener noreferrer">123-456-7890</a><br>`,
 			`@MentionUser<br>`,
-			`#HashTag`
+			`#HashTag<br>`,
+			`<a href="http://deep_link" target="_blank" rel="noopener noreferrer">deep_link</a>`
 		].join( '' ) );
 	} );
 
