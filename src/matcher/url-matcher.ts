@@ -12,7 +12,7 @@ import { Match } from "../match/match";
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
 const matcherRegex = (function() {
-	let schemeRegex = /(?:[A-Za-z][_-.+A-Za-z0-9]{0,63}:(?![A-Za-z][_-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
+	let schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/,  // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
 		wwwRegex = /(?:www\.)/,  // starting with 'www.'
 
 		// Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
