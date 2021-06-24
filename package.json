@@ -84,5 +84,11 @@
   },
   "dependencies": {
     "tslib": "^1.9.3"
-  }
+  },
+	"resolutions": {
+		"glob-parent": "^5.1.2",
+		"css-what": "^5.0.1",
+		"y18n": "^5.0.5",
+		"yargs-parser": "^18.1.2"
+	}
 }
