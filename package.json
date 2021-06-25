@@ -51,7 +51,7 @@
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "gulp-connect": "^5.7.0",
-    "gulp-download": "^0.0.1",
+    "gulp-download2": "^1.1.0",
     "gulp-header": "^1.7.1",
     "gulp-jasmine": "^4.0.0",
     "gulp-jsduck": "^1.0.0",
