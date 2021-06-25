@@ -82,6 +82,7 @@
     "chokidar": "^3.0.0",
     "glob-parent": "^5.1.2",
     "node-gyp": "^8.1.0",
+    "source-map-resolve": "^0.6.0",
     "yargs-parser": "^18.1.2"
   }
 }
