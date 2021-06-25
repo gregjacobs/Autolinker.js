@@ -61,7 +61,7 @@
     "gulp-replace": "^1.0.0",
     "gulp-size": "^3.0.0",
     "gulp-sourcemaps": "^2.6.4",
-    "gulp-transform": "^1.1.0",
+    "gulp-transform": "^2.0.0",
     "gulp-typescript": "^5.0.0",
     "gulp-uglify": "^3.0.1",
     "html-webpack-plugin": "^4.0.0",

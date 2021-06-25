@@ -2013,7 +2013,7 @@ es6-iterator@^2.0.1, es6-iterator@^2.0.3, es6-iterator@~2.0.3:
     es5-ext "^0.10.35"
     es6-symbol "^3.1.1"
 
-es6-promise@^4.0.3, es6-promise@^4.0.5:
+es6-promise@^4.0.3:
   version "4.2.8"
   resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.2.8.tgz#4eb21594c972bc40553d276e510539143db53e0a"
   integrity sha512-HJDGx5daxeIvxdBxvG2cb9g4tEvwIk3i8+nhX0yGrYmZUzbkdg8QbDevheDB8gd0//uPj4c1EQua8Q+MViT0/w==
@@ -2791,14 +2791,13 @@ gulp-sourcemaps@^2.6.4:
     strip-bom-string "1.X"
     through2 "2.X"
 
-gulp-transform@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/gulp-transform/-/gulp-transform-1.1.0.tgz#6e28fdb78756b315df4f08925c58e5379d3bdd02"
-  integrity sha1-bij9t4dWsxXfTwiSXFjlN5073QI=
+gulp-transform@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/gulp-transform/-/gulp-transform-2.0.0.tgz#7ac7e3e3e06ed7ebc52847b9b4e2a3686b22e5a2"
+  integrity sha1-esfj4+Bu1+vFKEe5tOKjaGsi5aI=
   dependencies:
-    es6-promise "^4.0.5"
-    gulp-util "^3.0.7"
-    lodash "^4.13.1"
+    gulp-util "^3.0.8"
+    lodash "^4.17.4"
 
 gulp-typescript@^5.0.0:
   version "5.0.0"
@@ -2826,7 +2825,7 @@ gulp-uglify@^3.0.1:
     uglify-js "^3.0.5"
     vinyl-sourcemaps-apply "^0.2.0"
 
-gulp-util@*, gulp-util@^3.0.6, gulp-util@^3.0.7, gulp-util@latest:
+gulp-util@*, gulp-util@^3.0.6, gulp-util@^3.0.8, gulp-util@latest:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/gulp-util/-/gulp-util-3.0.8.tgz#0054e1e744502e27c04c187c3ecc505dd54bbb4f"
   integrity sha1-AFTh50RQLifATBh8PsxQXdVLu08=
