@@ -68,7 +68,7 @@
     "merge-stream": "^1.0.0",
     "mkdirp": "^1.0.4",
     "npm": "^7.19.0",
-    "punycode": "^2.1.0",
+    "punycode": "^2.1.1",
     "puppeteer": "^1.20.0",
     "rollup": "^0.68.1",
     "rollup-plugin-commonjs": "^9.2.0",
