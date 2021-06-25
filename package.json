@@ -81,7 +81,6 @@
   "resolutions": {
     "glob-parent": "^5.1.2",
     "node-gyp": "^8.1.0",
-    "y18n": "^5.0.5",
     "yargs-parser": "^18.1.2"
   }
 }
