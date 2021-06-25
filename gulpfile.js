@@ -3,7 +3,7 @@
 const _                 = require( 'lodash' ),
       clean             = require( 'gulp-clean' ),
       connect           = require( 'gulp-connect' ),
-	  download          = require( 'gulp-download' ),
+	  download          = require( 'gulp-download2' ),
 	  exec              = require( 'child-process-promise' ).exec,
 	  fs                = require( 'fs-extra' ),
       gulp              = require( 'gulp' ),
@@ -20,7 +20,7 @@ const _                 = require( 'lodash' ),
 	  rename            = require( 'gulp-rename' ),
 	  replace           = require( 'gulp-replace' ),
 	  rollup            = require( 'rollup' ),
-	  rollupResolveNode = require( 'rollup-plugin-node-resolve' ),
+	  rollupResolveNode = require( '@rollup/plugin-node-resolve' ),
 	  rollupCommonjs    = require( '@rollup/plugin-commonjs' ),
 	  size              = require( 'gulp-size' ),
 	  sourcemaps        = require( 'gulp-sourcemaps' ),
@@ -245,7 +245,7 @@ async function buildSrcRollupTask() {
 	const bundle = await rollup.rollup( {
 		input: './dist/es2015/autolinker.js',
 		plugins: [
-			rollupResolveNode( {
+			rollupResolveNode.nodeResolve( {
 				jsnext: true,
 				browser: true,
 			} ),
@@ -355,7 +355,7 @@ async function buildExampleRollupTask() {
 	const bundle = await rollup.rollup( {
 		input: './.tmp/live-example/main.js',
 		plugins: [
-			rollupResolveNode( {
+			rollupResolveNode.nodeResolve( {
 				jsnext: true,
 				browser: true,
 			} ),
