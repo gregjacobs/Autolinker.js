@@ -61,7 +61,7 @@
     "gulp-sourcemaps": "^3.0.0",
     "gulp-transform": "^3.0.5",
     "gulp-typescript": "^5.0.1",
-    "gulp-uglify": "^3.0.1",
+    "gulp-uglify": "^3.0.2",
     "html-webpack-plugin": "^4.0.0",
     "json5": "^2.1.0",
     "lodash": "^4.17.4",
