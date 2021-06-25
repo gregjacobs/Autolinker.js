@@ -486,10 +486,7 @@ async function buildWebpackTypeScriptTestProject() {
 				rules: [
 					{ 
 						test: /\.ts$/, 
-						loader: 'awesome-typescript-loader', 
-						options: {
-							configFileName: path.resolve( testsIntegrationTmpDir, 'tsconfig.json' )
-						} 
+						loader: 'ts-loader'
 					}
 				]
 			},
