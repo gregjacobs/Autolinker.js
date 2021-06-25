@@ -76,7 +76,7 @@
     "ts-loader": "^9.2.3",
     "typescript": "^4.3.4",
     "webpack": "^5.40.0",
-    "yarn": "^1.12.3"
+    "yarn": "^1.22.10"
   },
   "resolutions": {
     "glob-parent": "^5.1.2",
