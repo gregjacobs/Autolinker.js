@@ -70,7 +70,7 @@
     "npm": "^7.19.0",
     "punycode": "^2.1.1",
     "puppeteer": "^10.0.0",
-    "rollup": "^0.68.1",
+    "rollup": "^2.52.2",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "ts-loader": "^8.0.14",
