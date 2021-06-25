@@ -79,6 +79,7 @@
     "yarn": "^1.22.10"
   },
   "resolutions": {
+    "chokidar": "^3.0.0",
     "glob-parent": "^5.1.2",
     "node-gyp": "^8.1.0",
     "yargs-parser": "^18.1.2"
