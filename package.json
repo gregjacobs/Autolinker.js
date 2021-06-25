@@ -82,9 +82,6 @@
     "webpack": "^4.28.2",
     "yarn": "^1.12.3"
   },
-  "dependencies": {
-    "tslib": "^1.9.3"
-  },
   "resolutions": {
     "glob-parent": "^5.1.2",
     "y18n": "^5.0.5",
