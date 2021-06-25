@@ -63,7 +63,7 @@
     "gulp-typescript": "^5.0.1",
     "gulp-uglify": "^3.0.2",
     "html-webpack-plugin": "^5.3.2",
-    "json5": "^2.1.0",
+    "json5": "^2.2.0",
     "lodash": "^4.17.4",
     "merge-stream": "^1.0.0",
     "mkdirp": "^0.5.1",
