@@ -53,7 +53,7 @@
     "gulp-download": "^0.0.1",
     "gulp-header": "^1.7.1",
     "gulp-jasmine": "^4.0.0",
-    "gulp-jsduck": "^0.3.0",
+    "gulp-jsduck": "^1.0.0",
     "gulp-preprocess": "^3.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^1.0.0",
