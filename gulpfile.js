@@ -24,7 +24,6 @@ const _                 = require( 'lodash' ),
 	  rollupCommonjs    = require( '@rollup/plugin-commonjs' ),
 	  size              = require( 'gulp-size' ),
 	  sourcemaps        = require( 'gulp-sourcemaps' ),
-      transform         = require( 'gulp-transform' ),
       typescript        = require( 'gulp-typescript' ),
 	  uglify            = require( 'gulp-uglify' ),
 	  webpack           = require( 'webpack' );
@@ -533,15 +532,18 @@ function createBanner() {
 }
 
 
-function updateTldRegex(){
-	return download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
-		.pipe( transform( domainsToRegex, { encoding: 'utf8' } ) )
-		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' ) )
-		.pipe( rename( path => {
-			path.basename = "tld-regex";
-			path.extname = '.ts';
-		} ) )
-		.pipe( gulp.dest( './src/matcher/' ) );
+async function updateTldRegex(){
+    await streamToPromise(
+        download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
+          .pipe( gulp.dest( './.tmp/tld' ) )
+    );
+
+    let fileContent = fs.readFileSync("./.tmp/tld/tlds-alpha-by-domain.txt", "utf8");
+
+    let result = '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' 
+        + domainsToRegex(fileContent);
+
+    fs.writeFile('./src/matcher/tld-regex.ts', result);
 }
 
 
