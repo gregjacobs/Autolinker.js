@@ -3,14 +3,14 @@
 const _                 = require( 'lodash' ),
       clean             = require( 'gulp-clean' ),
       connect           = require( 'gulp-connect' ),
-	  download          = require( 'gulp-download' ),
+	  download          = require( 'gulp-download2' ),
 	  exec              = require( 'child-process-promise' ).exec,
 	  fs                = require( 'fs-extra' ),
       gulp              = require( 'gulp' ),
 	  header            = require( 'gulp-header' ),
 	  HtmlWebpackPlugin = require( 'html-webpack-plugin' ),
 	  jasmine           = require( 'gulp-jasmine' ),
-      JsDuck            = require( 'gulp-jsduck' ),
+      JsDuck            = require( 'gulp-jsduck2' ),
 	  json5             = require( 'json5' ),
 	  mergeStream       = require( 'merge-stream' ),
 	  mkdirp            = require( 'mkdirp' ),
@@ -20,11 +20,10 @@ const _                 = require( 'lodash' ),
 	  rename            = require( 'gulp-rename' ),
 	  replace           = require( 'gulp-replace' ),
 	  rollup            = require( 'rollup' ),
-	  rollupResolveNode = require( 'rollup-plugin-node-resolve' ),
-	  rollupCommonjs    = require( 'rollup-plugin-commonjs' ),
+	  rollupResolveNode = require( '@rollup/plugin-node-resolve' ),
+	  rollupCommonjs    = require( '@rollup/plugin-commonjs' ),
 	  size              = require( 'gulp-size' ),
 	  sourcemaps        = require( 'gulp-sourcemaps' ),
-      transform         = require( 'gulp-transform' ),
       typescript        = require( 'gulp-typescript' ),
 	  uglify            = require( 'gulp-uglify' ),
 	  webpack           = require( 'webpack' );
@@ -245,7 +244,7 @@ async function buildSrcRollupTask() {
 	const bundle = await rollup.rollup( {
 		input: './dist/es2015/autolinker.js',
 		plugins: [
-			rollupResolveNode( {
+			rollupResolveNode.nodeResolve( {
 				jsnext: true,
 				browser: true,
 			} ),
@@ -355,7 +354,7 @@ async function buildExampleRollupTask() {
 	const bundle = await rollup.rollup( {
 		input: './.tmp/live-example/main.js',
 		plugins: [
-			rollupResolveNode( {
+			rollupResolveNode.nodeResolve( {
 				jsnext: true,
 				browser: true,
 			} ),
@@ -486,10 +485,7 @@ async function buildWebpackTypeScriptTestProject() {
 				rules: [
 					{ 
 						test: /\.ts$/, 
-						loader: 'awesome-typescript-loader', 
-						options: {
-							configFileName: path.resolve( testsIntegrationTmpDir, 'tsconfig.json' )
-						} 
+						loader: 'ts-loader'
 					}
 				]
 			},
@@ -536,15 +532,18 @@ function createBanner() {
 }
 
 
-function updateTldRegex(){
-	return download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
-		.pipe( transform( domainsToRegex, { encoding: 'utf8' } ) )
-		.pipe( header( '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' ) )
-		.pipe( rename( path => {
-			path.basename = "tld-regex";
-			path.extname = '.ts';
-		} ) )
-		.pipe( gulp.dest( './src/matcher/' ) );
+async function updateTldRegex(){
+    await streamToPromise(
+        download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
+          .pipe( gulp.dest( './.tmp/tld' ) )
+    );
+
+    let fileContent = fs.readFileSync("./.tmp/tld/tlds-alpha-by-domain.txt", "utf8");
+
+    let result = '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' 
+        + domainsToRegex(fileContent);
+
+    fs.writeFile('./src/matcher/tld-regex.ts', result);
 }
 
 
