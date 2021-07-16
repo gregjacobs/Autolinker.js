@@ -86,6 +86,6 @@
     "node-gyp": "^8.1.0",
     "source-map-resolve": "^0.6.0",
     "uuid": "^7.0.0",
-    "yargs-parser": "^18.1.2"
+    "yargs-parser": "^20.2.9"
   }
 }
