@@ -160,7 +160,7 @@ export const alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbe
 const ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
 
 // Protected domain label which do not allow "-" character on the beginning and the end of a single label
-const domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
+const domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-\\_]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
 
 const getDomainLabelStr = (group: number) => {
 	return '(?=(' + domainLabelStr + '))\\' + group;

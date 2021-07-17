@@ -259,6 +259,10 @@ describe( "Autolinker Url Matching -", () => {
 			expect( autolinker.link( 'hello:wo.....rld' ) ).toBe( 'hello:wo.....rld' );
 		});
 
+		it( "should link URLs with underscore when there is a protocol", function() {
+			let result = autolinker.link( "Joe went to http://deep_link today" );
+			expect( result ).toBe( 'Joe went to <a href="http://deep_link">deep_link</a> today' );
+		} );
 
 		describe( "protocol linking", function() {
 
