@@ -78,6 +78,7 @@
     "yarn": "^1.22.10"
   },
   "dependencies": {
+    "node-gyp": "^8.1.0",
     "tslib": "^2.3.0"
   },
   "resolutions": {
