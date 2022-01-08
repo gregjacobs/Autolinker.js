@@ -1073,4 +1073,13 @@ describe( "Autolinker Url Matching -", () => {
 
 	} );
 
+	describe( "emails in URL", function() {
+		it( "should autolink a url with multiple email in the query string", function() {
+			const result = autolinker.link("https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y");
+
+			expect( result ).toBe( '<a href="https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y">example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y</a>' );
+		} );
+
+	} );
+
 } );
