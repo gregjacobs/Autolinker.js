@@ -745,8 +745,8 @@ export default class Autolinker {  // NOTE: must be 'export default' here for UM
 	private compactMatches( matches: Match[] ) {
 		// First, the matches need to be sorted in order of offset
 		matches.sort( function( a, b ) { return a.getOffset() - b.getOffset(); } );
-
-		for( let i = 0; i < matches.length - 1; i++ ) {
+		let i = 0;
+		while(i < matches.length - 1) {
 			let match = matches[ i ],
 					offset = match.getOffset(),
 					matchedTextLength = match.getMatchedText().length,
@@ -763,8 +763,10 @@ export default class Autolinker {  // NOTE: must be 'export default' here for UM
 				// Remove subsequent matches that overlap with the current match
 				if( matches[ i + 1 ].getOffset() < endIdx ) {
 					matches.splice( i + 1, 1 );
+					continue;
 				}
 			}
+			i++;
 		}
 
 		return matches;
