@@ -85,6 +85,8 @@ export class MentionMatch extends Match {
 				return 'https://instagram.com/' + this.mention;
 			case 'soundcloud' :
 				return 'https://soundcloud.com/' + this.mention;
+			case 'tiktok' :
+				return 'https://www.tiktok.com/@' + this.mention;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
 				throw new Error( 'Unknown service name to point mention to: ' + this.serviceName );

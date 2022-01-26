@@ -5,11 +5,13 @@ describe( "Autolinker Mention Matching -", () => {
 	const twitterAutolinker = new Autolinker( { mention: 'twitter', newWindow: false } )
 	const instagramAutolinker = new Autolinker( { mention: 'instagram', newWindow: false } );
 	const soundcloudAutolinker = new Autolinker( { mention: 'soundcloud', newWindow: false } );
+	const tiktokAutolinker = new Autolinker( { mention: 'soundcloud', newWindow: false } );
 
 	const services = [
 		{ serviceName: 'twitter', urlPrefix: 'https://twitter.com', autolinker: twitterAutolinker },
 		{ serviceName: 'instagram', urlPrefix: 'https://instagram.com', autolinker: instagramAutolinker },
 		{ serviceName: 'soundcloud', urlPrefix: 'https://soundcloud.com', autolinker: soundcloudAutolinker },
+		{ serviceName: 'tiktok', urlPrefix: 'https://www.tiktok.com/@', autolinker: tiktokAutolinker },
 	];
 
 	it( `should not autolink mentions by default`, () => {
@@ -211,6 +213,25 @@ describe( "Autolinker Mention Matching -", () => {
 			const result = soundcloudAutolinker.link( `Hello @asdf.defg` );
 
 			expect( result ).toBe( `Hello <a href="https://soundcloud.com/asdf.defg">@asdf.defg</a>` );
+		} );
+
+	} );
+
+	describe( 'tiktok-specific tests', () => {
+
+		it( 'should link a tiktok mention that is up to 24 characters long', () => {
+			const aUsername = _.repeat( 'a', 24 );
+			const bUsername = _.repeat( 'b', 25 );  // too long - don't link
+
+			const result = tiktokAutolinker.link( `@${aUsername} and @${bUsername}` );
+			expect( result ).toBe( `<a href="https://www.tiktok.com/@${aUsername}">@${aUsername}</a> and @${bUsername}` );
+		} );
+
+
+		it( `should link a tiktok mention that has a period in it`, () => {
+			const result = tiktokAutolinker.link( `Hello @asdf.defg` );
+
+			expect( result ).toBe( `Hello <a href="https://www.tiktok.com/@asdf.defg">@asdf.defg</a>` );
 		} );
 
 	} );

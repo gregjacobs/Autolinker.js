@@ -89,6 +89,8 @@ export class HashtagMatch extends Match {
 				return 'https://www.facebook.com/hashtag/' + hashtag;
 			case 'instagram' :
 				return 'https://instagram.com/explore/tags/' + hashtag;
+			case 'tiktok' :
+				return 'https://www.tiktok.com/tag/' + hashtag;
 
 			default :  // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
 				throw new Error( 'Unknown service name to point hashtag to: ' + serviceName );
