@@ -917,6 +917,9 @@ describe( "Autolinker", function() {
 
 				result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'instagram', className: 'myLink' } );
 				expect( result ).toBe( 'hi from <a href="https://instagram.com/iggypopschest" class="myLink myLink-mention myLink-instagram">@iggypopschest</a>' );
+
+				result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'tiktok', className: 'myLink' } );
+				expect( result ).toBe( 'hi from <a href="https://www.tiktok.com/@iggypopschest" class="myLink myLink-mention myLink-instagram">@iggypopschest</a>' );
 			} );
 
 		} );

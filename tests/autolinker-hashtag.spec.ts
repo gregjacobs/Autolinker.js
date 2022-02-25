@@ -6,11 +6,13 @@ describe( `Autolinker Hashtag Matching -`, () => {
 	const twitterAutolinker = new Autolinker( { hashtag: 'twitter', newWindow: false } );
 	const facebookAutolinker = new Autolinker( { hashtag: 'facebook', newWindow: false } );
 	const instagramAutolinker = new Autolinker( { hashtag: 'instagram', newWindow: false } );
+	const tiktokAutolinker = new Autolinker( { hashtag: 'tiktok', newWindow: false } );
 
 	const services = [
 		{ serviceName: 'twitter', urlPrefix: 'https://twitter.com/hashtag', autolinker: twitterAutolinker },
 		{ serviceName: 'instagram', urlPrefix: 'https://instagram.com/explore/tags', autolinker: instagramAutolinker },
 		{ serviceName: 'facebook', urlPrefix: 'https://www.facebook.com/hashtag', autolinker: facebookAutolinker },
+		{ serviceName: 'tiktok', urlPrefix: 'https://www.tiktok.com/tag', autolinker: tiktokAutolinker },
 	];
 
 

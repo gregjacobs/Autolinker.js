@@ -1028,10 +1028,10 @@ export interface TruncateConfigObj {
 }
 
 export type HashtagConfig = false | HashtagServices;
-export type HashtagServices = 'twitter' | 'facebook' | 'instagram';
+export type HashtagServices = 'twitter' | 'facebook' | 'instagram' | 'tiktok';
 
 export type MentionConfig = false | MentionServices;
-export type MentionServices = 'twitter' | 'instagram' | 'soundcloud';
+export type MentionServices = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';
 
 export type ReplaceFn = ( match: Match ) => ReplaceFnReturn;
 export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;

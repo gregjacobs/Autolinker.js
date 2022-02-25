@@ -14,7 +14,7 @@ So, this utility attempts to handle everything. It:
 - Will properly handle URLs with query parameters or a named anchor (i.e. hash)
 - Will autolink email addresses.
 - Will autolink phone numbers.
-- Will autolink mentions (Twitter, Instagram, Soundcloud).
+- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok).
 - Will autolink hashtags.
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
@@ -161,12 +161,12 @@ These include:
 
 - [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : string<br />
   A string for the service name to have mentions (@username) auto-linked to. Supported
-  values at this time are 'twitter', 'soundcloud' and 'instagram'. Pass `false` to skip
+  values at this time are 'twitter', 'soundcloud', 'instagram' and 'tiktok'. Pass `false` to skip
   auto-linking of mentions. Defaults to `false`.
 
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : boolean/string<br />
   A string for the service name to have hashtags auto-linked to. Supported
-  values at this time are 'twitter', 'facebook' and 'instagram'. Pass `false` to skip
+  values at this time are 'twitter', 'facebook', 'instagram' and 'tiktok'. Pass `false` to skip
   auto-linking of hashtags. Defaults to `false`.
 
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripPrefix) : boolean<br />
