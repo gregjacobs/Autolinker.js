@@ -543,14 +543,14 @@ export default class Autolinker {  // NOTE: must be 'export default' here for UM
 
 		// Validate the value of the `mention` cfg
 		const mention = this.mention;
-		if( mention !== false && mention !== 'twitter' && mention !== 'instagram' && mention !== 'soundcloud' ) {
-			throw new Error( "invalid `mention` cfg - see docs" );
+		if( mention !== false && ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1 ) {
+			throw new Error( `invalid \`mention\` cfg '${mention}' - see docs` );
 		}
 
 		// Validate the value of the `hashtag` cfg
 		const hashtag = this.hashtag;
-		if( hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram' ) {
-			throw new Error( "invalid `hashtag` cfg - see docs" );
+		if( hashtag !== false && ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1 ) {
+			throw new Error( `invalid \`hashtag\` cfg '${hashtag}' - see docs` );
 		}
 
 		this.truncate = this.normalizeTruncateCfg( cfg.truncate );

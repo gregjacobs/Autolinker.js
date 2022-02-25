@@ -208,7 +208,7 @@ var HtmlTag =  (function () {
     HtmlTag.prototype.addClass = function (cssClass) {
         var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
         while (newClass = newClasses.shift()) {
-            if (utils_1.indexOf(classes, newClass) === -1) {
+            if ((0, utils_1.indexOf)(classes, newClass) === -1) {
                 classes.push(newClass);
             }
         }
@@ -224,7 +224,7 @@ var HtmlTag =  (function () {
     HtmlTag.prototype.removeClass = function (cssClass) {
         var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
         while (classes.length &amp;&amp; (removeClass = removeClasses.shift())) {
-            var idx = utils_1.indexOf(classes, removeClass);
+            var idx = (0, utils_1.indexOf)(classes, removeClass);
             if (idx !== -1) {
                 classes.splice(idx, 1);
             }

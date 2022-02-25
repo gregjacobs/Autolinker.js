@@ -2,29 +2,31 @@
     'use strict';
 
     /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
+    Copyright (c) Microsoft Corporation.
 
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
 
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
     /* global Reflect, Promise */
 
     var extendStatics = function(d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
 
     function __extends(d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -57,7 +59,7 @@
          * @return {String}
          */
         Option.prototype.getApiDocAnchor = function () {
-            return "<a href=\"" + this.getApiDocLink() + "\" target=\"autolinkerDocs\">" + this.optionName + "</a>";
+            return "<a href=\"".concat(this.getApiDocLink(), "\" target=\"autolinkerDocs\">").concat(this.optionName, "</a>");
         };
         /**
          * @protected
@@ -65,7 +67,7 @@
          */
         Option.prototype.getApiDocLink = function () {
             var configName = this.optionName.match(/[^.]+/)[0]; // ex: 'urls.schemeMatches' -> 'urls'
-            return "http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-" + configName;
+            return "http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-".concat(configName);
         };
         /**
          * Registers a callback to call when the option is changed.
@@ -121,7 +123,7 @@
          */
         CheckboxOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, defaultValue = this.defaultValue, checkboxId = containerId + '-checkbox';
-            return "\n\t\t\t<input type=\"checkbox\" id=\"" + checkboxId + "\" " + (defaultValue ? 'checked' : '') + ">\n\t\t\t<label for=\"" + checkboxId + "\">" + optionDescription + "</label>\n\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + defaultValue + "</span></code>)\n\t\t";
+            return "\n\t\t\t<input type=\"checkbox\" id=\"".concat(checkboxId, "\" ").concat(defaultValue ? 'checked' : '', ">\n\t\t\t<label for=\"").concat(checkboxId, "\">").concat(optionDescription, "</label>\n\t\t\t(<code>").concat(this.getApiDocAnchor(), ": <span id=\"").concat(containerId, "-value\">").concat(defaultValue, "</span></code>)\n\t\t");
         };
         /**
          * @private
@@ -174,7 +176,7 @@
          */
         RadioOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, defaultValue = this.defaultValue, radiosHtml = this.createRadiosHtml(this.options, defaultValue);
-            return "\n\t\t\t<label>" + optionDescription + ": </label>\n\t\t\t(<code>" + this.getApiDocAnchor() + ": <span id=\"" + containerId + "-value\">" + this.formatValueForDisplay(defaultValue) + "</span></code>)\n\t\t\t<div class=\"pl10\">" + radiosHtml.join('<br>') + "</div>\n\t\t";
+            return "\n\t\t\t<label>".concat(optionDescription, ": </label>\n\t\t\t(<code>").concat(this.getApiDocAnchor(), ": <span id=\"").concat(containerId, "-value\">").concat(this.formatValueForDisplay(defaultValue), "</span></code>)\n\t\t\t<div class=\"pl10\">").concat(radiosHtml.join('<br>'), "</div>\n\t\t");
         };
         /**
          * Creates an array of '<input type="radio">' HTML tags.
@@ -187,7 +189,7 @@
         RadioOption.prototype.createRadiosHtml = function (options, defaultValue) {
             var _this = this;
             return options.map(function (option, idx) {
-                return "\n\t\t\t\t<input type=\"radio\" id=\"" + _this.containerId + "-radio-" + option + "\" name=\"" + _this.containerId + "-radio\" data-option-idx=\"" + idx + "\" " + (option === _this.defaultValue ? 'checked' : '') + "> \n\t\t\t\t<label for=\"" + _this.containerId + "-radio-" + option + "\">" + option + "</label>\n\t\t\t";
+                return "\n\t\t\t\t<input type=\"radio\" id=\"".concat(_this.containerId, "-radio-").concat(option, "\" name=\"").concat(_this.containerId, "-radio\" data-option-idx=\"").concat(idx, "\" ").concat(option === _this.defaultValue ? 'checked' : '', "> \n\t\t\t\t<label for=\"").concat(_this.containerId, "-radio-").concat(option, "\">").concat(option, "</label>\n\t\t\t");
             });
         };
         /**
@@ -214,7 +216,7 @@
          * @param {*} value
          */
         RadioOption.prototype.formatValueForDisplay = function (value) {
-            return (typeof value === 'string') ? "'" + value + "'" : (value + '');
+            return (typeof value === 'string') ? "'".concat(value, "'") : (value + '');
         };
         return RadioOption;
     }(Option));
@@ -259,7 +261,7 @@
          */
         TextOption.prototype.generateHtml = function () {
             var containerId = this.containerId, optionDescription = this.optionDescription, size = this.size, defaultValue = this.defaultValue, textFieldId = containerId + '-textField';
-            return "\n\t\t\t<label for=\"" + textFieldId + "\">" + optionDescription + "</label>\n\t\t\t<input type=\"text\" id=\"" + textFieldId + "\" value=\"" + defaultValue + "\" size=\"" + size + "\" class=\"textfield\">\n\t\t\t(<code>" + this.getApiDocAnchor() + "</code>)\n\t\t";
+            return "\n\t\t\t<label for=\"".concat(textFieldId, "\">").concat(optionDescription, "</label>\n\t\t\t<input type=\"text\" id=\"").concat(textFieldId, "\" value=\"").concat(defaultValue, "\" size=\"").concat(size, "\" class=\"textfield\">\n\t\t\t(<code>").concat(this.getApiDocAnchor(), "</code>)\n\t\t");
         };
         /**
          * @return {String}
@@ -324,25 +326,25 @@
             return [
                 "var autolinker = new Autolinker( {",
                 "    urls : {",
-                "        schemeMatches : " + optionsObj.urls.schemeMatches + ",",
-                "        wwwMatches    : " + optionsObj.urls.wwwMatches + ",",
-                "        tldMatches    : " + optionsObj.urls.tldMatches,
+                "        schemeMatches : ".concat(optionsObj.urls.schemeMatches, ","),
+                "        wwwMatches    : ".concat(optionsObj.urls.wwwMatches, ","),
+                "        tldMatches    : ".concat(optionsObj.urls.tldMatches),
                 "    },",
-                "    email       : " + optionsObj.email + ",",
-                "    phone       : " + optionsObj.phone + ",",
-                "    mention     : " + (typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention) + ",",
-                "    hashtag     : " + (typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag) + ",",
+                "    email       : ".concat(optionsObj.email, ","),
+                "    phone       : ".concat(optionsObj.phone, ","),
+                "    mention     : ".concat(typeof optionsObj.mention === 'string' ? "'" + optionsObj.mention + "'" : optionsObj.mention, ","),
+                "    hashtag     : ".concat(typeof optionsObj.hashtag === 'string' ? "'" + optionsObj.hashtag + "'" : optionsObj.hashtag, ","),
                 "",
-                "    stripPrefix : " + optionsObj.stripPrefix + ",",
-                "    stripTrailingSlash : " + optionsObj.stripTrailingSlash + ",",
-                "    newWindow   : " + optionsObj.newWindow + ",",
+                "    stripPrefix : ".concat(optionsObj.stripPrefix, ","),
+                "    stripTrailingSlash : ".concat(optionsObj.stripTrailingSlash, ","),
+                "    newWindow   : ".concat(optionsObj.newWindow, ","),
                 "",
                 "    truncate : {",
-                "        length   : " + optionsObj.truncate.length + ",",
-                "        location : '" + optionsObj.truncate.location + "'",
+                "        length   : ".concat(optionsObj.truncate.length, ","),
+                "        location : '".concat(optionsObj.truncate.location, "'"),
                 "    },",
                 "",
-                "    className : '" + optionsObj.className + "'",
+                "    className : '".concat(optionsObj.className, "'"),
                 "} );",
                 "",
                 "var myLinkedHtml = autolinker.link( myText );"
@@ -356,4 +358,4 @@
         }
     });
 
-}());
+})();

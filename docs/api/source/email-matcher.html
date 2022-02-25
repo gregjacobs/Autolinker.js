@@ -31,8 +31,8 @@ var tld_regex_1 = require(&quot;./tld-regex&quot;);
 // called multiple times, thus instantiating EmailMatcher and its RegExp 
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
-var localPartCharRegex = new RegExp(&quot;[&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;);
-var strictTldRegex = new RegExp(&quot;^&quot; + tld_regex_1.tldRegex.source + &quot;$&quot;);
+var localPartCharRegex = new RegExp(&quot;[&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;));
+var strictTldRegex = new RegExp(&quot;^&quot;.concat(tld_regex_1.tldRegex.source, &quot;$&quot;));
 <span id='Autolinker-matcher-Email'>/**
 </span> * @class Autolinker.matcher.Email
  * @extends Autolinker.matcher.Matcher
@@ -42,7 +42,7 @@ var strictTldRegex = new RegExp(&quot;^&quot; + tld_regex_1.tldRegex.source + &q
  * See this class&#39;s superclass ({@link Autolinker.matcher.Matcher}) for more details.
  */
 var EmailMatcher =  (function (_super) {
-    tslib_1.__extends(EmailMatcher, _super);
+    (0, tslib_1.__extends)(EmailMatcher, _super);
     function EmailMatcher() {
         var _this = _super !== null &amp;&amp; _super.apply(this, arguments) || this;
 <span id='Autolinker-matcher-Email-property-localPartCharRegex'>        /**
@@ -108,7 +108,7 @@ var EmailMatcher =  (function (_super) {
                     stateDomainDot(char);
                     break;
                 default:
-                    utils_1.throwUnhandledCaseError(state);
+                    (0, utils_1.throwUnhandledCaseError)(state);
             }
             // For debugging: search for other &quot;For debugging&quot; lines
             // table.push( 
@@ -139,7 +139,7 @@ var EmailMatcher =  (function (_super) {
                 // We&#39;ve reached the end of the &#39;mailto:&#39; prefix
                 if (localPartCharRegex.test(char)) {
                     state = 2 /* LocalPart */;
-                    currentEmailMatch = new CurrentEmailMatch(tslib_1.__assign(tslib_1.__assign({}, currentEmailMatch), { hasMailtoPrefix: true }));
+                    currentEmailMatch = new CurrentEmailMatch((0, tslib_1.__assign)((0, tslib_1.__assign)({}, currentEmailMatch), { hasMailtoPrefix: true }));
                 }
                 else {
                     // we&#39;ve matched &#39;mailto:&#39; but didn&#39;t get anything meaningful
@@ -258,7 +258,7 @@ var EmailMatcher =  (function (_super) {
                 // we now know that the domain part of the email is valid, and
                 // we have found at least a partial EmailMatch (however, the
                 // email address may have additional characters from this point)
-                currentEmailMatch = new CurrentEmailMatch(tslib_1.__assign(tslib_1.__assign({}, currentEmailMatch), { hasDomainDot: true }));
+                currentEmailMatch = new CurrentEmailMatch((0, tslib_1.__assign)((0, tslib_1.__assign)({}, currentEmailMatch), { hasDomainDot: true }));
             }
             else {
                 // Anything else

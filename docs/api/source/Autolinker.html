@@ -565,7 +565,7 @@ var Autolinker =  (function () {
             return { length: truncate, location: &#39;end&#39; };
         }
         else { // object, or undefined/null
-            return utils_1.defaults(truncate || {}, {
+            return (0, utils_1.defaults)(truncate || {}, {
                 length: Number.POSITIVE_INFINITY,
                 location: &#39;end&#39;
             });
@@ -608,7 +608,7 @@ var Autolinker =  (function () {
         matches = [];
         // Find all matches within the `textOrHtml` (but not matches that are
         // already nested within &lt;a&gt;, &lt;style&gt; and &lt;script&gt; tags)
-        parse_html_1.parseHtml(textOrHtml, {
+        (0, parse_html_1.parseHtml)(textOrHtml, {
             onOpenTag: function (tagName) {
                 if (skipTagNames.indexOf(tagName) &gt;= 0) {
                     skipTagsStackCount++;
@@ -623,7 +623,7 @@ var Autolinker =  (function () {
                     // TODO: Handle HTML entities separately in parseHtml() and
                     // don&#39;t emit them as &quot;text&quot; except for &amp;amp; entities
                     var htmlCharacterEntitiesRegex = /(&amp;nbsp;|&amp;#160;|&amp;lt;|&amp;#60;|&amp;gt;|&amp;#62;|&amp;quot;|&amp;#34;|&amp;#39;)/gi;
-                    var textSplit = utils_1.splitAndCapture(text, htmlCharacterEntitiesRegex);
+                    var textSplit = (0, utils_1.splitAndCapture)(text, htmlCharacterEntitiesRegex);
                     var currentOffset_1 = offset;
                     textSplit.forEach(function (splitText, i) {
                         // even number matches are text, odd numbers are html entities
@@ -668,7 +668,8 @@ var Autolinker =  (function () {
     Autolinker.prototype.compactMatches = function (matches) {
         // First, the matches need to be sorted in order of offset
         matches.sort(function (a, b) { return a.getOffset() - b.getOffset(); });
-        for (var i = 0; i &lt; matches.length - 1; i++) {
+        var i = 0;
+        while (i &lt; matches.length - 1) {
             var match = matches[i], offset = match.getOffset(), matchedTextLength = match.getMatchedText().length, endIdx = offset + matchedTextLength;
             if (i + 1 &lt; matches.length) {
                 // Remove subsequent matches that equal offset with current match
@@ -680,8 +681,10 @@ var Autolinker =  (function () {
                 // Remove subsequent matches that overlap with the current match
                 if (matches[i + 1].getOffset() &lt; endIdx) {
                     matches.splice(i + 1, 1);
+                    continue;
                 }
             }
+            i++;
         }
         return matches;
     };
@@ -705,21 +708,21 @@ var Autolinker =  (function () {
      */
     Autolinker.prototype.removeUnwantedMatches = function (matches) {
         if (!this.hashtag)
-            utils_1.remove(matches, function (match) { return match.getType() === &#39;hashtag&#39;; });
+            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;hashtag&#39;; });
         if (!this.email)
-            utils_1.remove(matches, function (match) { return match.getType() === &#39;email&#39;; });
+            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;email&#39;; });
         if (!this.phone)
-            utils_1.remove(matches, function (match) { return match.getType() === &#39;phone&#39;; });
+            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;phone&#39;; });
         if (!this.mention)
-            utils_1.remove(matches, function (match) { return match.getType() === &#39;mention&#39;; });
+            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;mention&#39;; });
         if (!this.urls.schemeMatches) {
-            utils_1.remove(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;scheme&#39;; });
+            (0, utils_1.remove)(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;scheme&#39;; });
         }
         if (!this.urls.wwwMatches) {
-            utils_1.remove(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;www&#39;; });
+            (0, utils_1.remove)(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;www&#39;; });
         }
         if (!this.urls.tldMatches) {
-            utils_1.remove(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;tld&#39;; });
+            (0, utils_1.remove)(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;tld&#39;; });
         }
         return matches;
     };
@@ -884,7 +887,7 @@ var Autolinker =  (function () {
      *
      * Ex: 0.25.1
      */
-    Autolinker.version = &#39;3.14.3&#39;;
+    Autolinker.version = &#39;3.15.0&#39;;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.

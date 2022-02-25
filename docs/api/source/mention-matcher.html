@@ -27,9 +27,9 @@ var mention_match_1 = require(&quot;../match/mention-match&quot;);
 // called multiple times, thus instantiating MentionMatcher and its RegExp 
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
-var twitterRegex = new RegExp(&quot;@[_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,50}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
-var instagramRegex = new RegExp(&quot;@[_.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,30}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 30 characters
-var soundcloudRegex = new RegExp(&quot;@[-_.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,50}(?![-_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
+var twitterRegex = new RegExp(&quot;@[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,50}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
+var instagramRegex = new RegExp(&quot;@[_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,30}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 30 characters
+var soundcloudRegex = new RegExp(&quot;@[-_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,50}(?![-_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
 var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-Mention'>/**
 </span> * @class Autolinker.matcher.Mention
@@ -38,7 +38,7 @@ var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMark
  * Matcher to find/replace username matches in an input string.
  */
 var MentionMatcher =  (function (_super) {
-    tslib_1.__extends(MentionMatcher, _super);
+    (0, tslib_1.__extends)(MentionMatcher, _super);
 <span id='Autolinker-matcher-Mention-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,

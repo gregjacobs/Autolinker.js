@@ -180,13 +180,13 @@ var AnchorTagBuilder =  (function () {
             return anchorText;
         var truncateLength = truncate.length, truncateLocation = truncate.location;
         if (truncateLocation === &#39;smart&#39;) {
-            return truncate_smart_1.truncateSmart(anchorText, truncateLength);
+            return (0, truncate_smart_1.truncateSmart)(anchorText, truncateLength);
         }
         else if (truncateLocation === &#39;middle&#39;) {
-            return truncate_middle_1.truncateMiddle(anchorText, truncateLength);
+            return (0, truncate_middle_1.truncateMiddle)(anchorText, truncateLength);
         }
         else {
-            return truncate_end_1.truncateEnd(anchorText, truncateLength);
+            return (0, truncate_end_1.truncateEnd)(anchorText, truncateLength);
         }
     };
     return AnchorTagBuilder;

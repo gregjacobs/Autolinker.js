@@ -5,12 +5,12 @@ describe( "Autolinker Mention Matching -", () => {
 	const twitterAutolinker = new Autolinker( { mention: 'twitter', newWindow: false } )
 	const instagramAutolinker = new Autolinker( { mention: 'instagram', newWindow: false } );
 	const soundcloudAutolinker = new Autolinker( { mention: 'soundcloud', newWindow: false } );
-	const tiktokAutolinker = new Autolinker( { mention: 'soundcloud', newWindow: false } );
+	const tiktokAutolinker = new Autolinker( { mention: 'tiktok', newWindow: false } );
 
 	const services = [
-		{ serviceName: 'twitter', urlPrefix: 'https://twitter.com', autolinker: twitterAutolinker },
-		{ serviceName: 'instagram', urlPrefix: 'https://instagram.com', autolinker: instagramAutolinker },
-		{ serviceName: 'soundcloud', urlPrefix: 'https://soundcloud.com', autolinker: soundcloudAutolinker },
+		{ serviceName: 'twitter', urlPrefix: 'https://twitter.com/', autolinker: twitterAutolinker },
+		{ serviceName: 'instagram', urlPrefix: 'https://instagram.com/', autolinker: instagramAutolinker },
+		{ serviceName: 'soundcloud', urlPrefix: 'https://soundcloud.com/', autolinker: soundcloudAutolinker },
 		{ serviceName: 'tiktok', urlPrefix: 'https://www.tiktok.com/@', autolinker: tiktokAutolinker },
 	];
 
@@ -29,7 +29,7 @@ describe( "Autolinker Mention Matching -", () => {
 			`, () => {
 				let result = autolinker.link( `@joe` );
 
-				expect( result ).toBe( `<a href="${urlPrefix}/joe">@joe</a>` );
+				expect( result ).toBe( `<a href="${urlPrefix}joe">@joe</a>` );
 			} );
 	
 	
@@ -38,7 +38,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `@joe_the_man12` );
 
-				expect( result ).toBe( `<a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>` );
+				expect( result ).toBe( `<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>` );
 			} );
 	
 	
@@ -47,7 +47,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `@greg is my ${serviceName} handle` );
 
-				expect( result ).toBe( `<a href="${urlPrefix}/greg">@greg</a> is my ${serviceName} handle` );
+				expect( result ).toBe( `<a href="${urlPrefix}greg">@greg</a> is my ${serviceName} handle` );
 			} );
 	
 	
@@ -56,7 +56,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is @joe_the_man12 today, but what will it be tomorrow?` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a> today, but what will it be tomorrow?` );
+				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a> today, but what will it be tomorrow?` );
 			} );
 	
 	
@@ -65,7 +65,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is @joe_the_man12` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>` );
+				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>` );
 			} );
 	
 	
@@ -74,7 +74,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is @joe_the_man12.` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>.` );
+				expect( result ).toBe( `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>.` );
 			} );
 	
 	
@@ -83,7 +83,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is (@joe_the_man12)` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is (<a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>)` );
+				expect( result ).toBe( `Joe's ${serviceName} is (<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>)` );
 			} );
 	
 	
@@ -92,7 +92,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is {@joe_the_man12}` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is {<a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>}` );
+				expect( result ).toBe( `Joe's ${serviceName} is {<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>}` );
 			} );
 	
 	
@@ -101,7 +101,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Joe's ${serviceName} is [@joe_the_man12]` );
 
-				expect( result ).toBe( `Joe's ${serviceName} is [<a href="${urlPrefix}/joe_the_man12">@joe_the_man12</a>]` );
+				expect( result ).toBe( `Joe's ${serviceName} is [<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>]` );
 			} );
 	
 	
@@ -110,14 +110,14 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `@greg is tweeting @joe with @josh` );
 
-				expect( result ).toBe( `<a href="${urlPrefix}/greg">@greg</a> is tweeting <a href="${urlPrefix}/joe">@joe</a> with <a href="${urlPrefix}/josh">@josh</a>` );
+				expect( result ).toBe( `<a href="${urlPrefix}greg">@greg</a> is tweeting <a href="${urlPrefix}joe">@joe</a> with <a href="${urlPrefix}josh">@josh</a>` );
 			} );
 	
 	
 			it( `should automatically link fully capitalized ${serviceName} handles`, () => {
 				let result = autolinker.link( `@GREG is tweeting @JOE with @JOSH` );
 
-				expect( result ).toBe( `<a href="${urlPrefix}/GREG">@GREG</a> is tweeting <a href="${urlPrefix}/JOE">@JOE</a> with <a href="${urlPrefix}/JOSH">@JOSH</a>` );
+				expect( result ).toBe( `<a href="${urlPrefix}GREG">@GREG</a> is tweeting <a href="${urlPrefix}JOE">@JOE</a> with <a href="${urlPrefix}JOSH">@JOSH</a>` );
 			} );
 	
 	
@@ -128,7 +128,7 @@ describe( "Autolinker Mention Matching -", () => {
 			() => {
 				let result = autolinker.link( `Hello @mañana how are you?` );
 
-				expect( result ).toBe( `Hello <a href="${urlPrefix}/mañana">@mañana</a> how are you?` );
+				expect( result ).toBe( `Hello <a href="${urlPrefix}mañana">@mañana</a> how are you?` );
 			} );
 	
 	
@@ -139,7 +139,7 @@ describe( "Autolinker Mention Matching -", () => {
 			`, () => {
 				let result = autolinker.link( `Hello @Кириллица how are you?` );
 
-				expect( result ).toBe( `Hello <a href="${urlPrefix}/Кириллица">@Кириллица</a> how are you?` );
+				expect( result ).toBe( `Hello <a href="${urlPrefix}Кириллица">@Кириллица</a> how are you?` );
 			} );
 	
 	
@@ -217,7 +217,7 @@ describe( "Autolinker Mention Matching -", () => {
 
 	} );
 
-	describe( 'tiktok-specific tests', () => {
+	fdescribe( 'tiktok-specific tests', () => {
 
 		it( 'should link a tiktok mention that is up to 24 characters long', () => {
 			const aUsername = _.repeat( 'a', 24 );
