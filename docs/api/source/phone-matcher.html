@@ -33,7 +33,7 @@ var mostPhoneNumbers = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3
 // Regex for Japanese phone numbers
 var japanesePhoneRe = /(0([1-9]{1}-?[1-9]\d{3}|[1-9]{2}-?\d{3}|[1-9]{2}\d{1}-?\d{2}|[1-9]{2}\d{2}-?\d{1})-?\d{4}|0[789]0-?\d{4}-?\d{4}|050-?\d{4}-?\d{4})/;
 // Combined regex
-var phoneMatcherRegex = new RegExp(mostPhoneNumbers.source + &quot;|&quot; + japanesePhoneRe.source, &#39;g&#39;);
+var phoneMatcherRegex = new RegExp(&quot;&quot;.concat(mostPhoneNumbers.source, &quot;|&quot;).concat(japanesePhoneRe.source), &#39;g&#39;);
 <span id='Autolinker-matcher-Phone'>/**
 </span> * @class Autolinker.matcher.Phone
  * @extends Autolinker.matcher.Matcher
@@ -44,7 +44,7 @@ var phoneMatcherRegex = new RegExp(mostPhoneNumbers.source + &quot;|&quot; + jap
  * details.
  */
 var PhoneMatcher =  (function (_super) {
-    tslib_1.__extends(PhoneMatcher, _super);
+    (0, tslib_1.__extends)(PhoneMatcher, _super);
     function PhoneMatcher() {
         var _this = _super !== null &amp;&amp; _super.apply(this, arguments) || this;
 <span id='Autolinker-matcher-Phone-property-matcherRegex'>        /**

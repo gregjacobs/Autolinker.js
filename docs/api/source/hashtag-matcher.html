@@ -27,7 +27,7 @@ var hashtag_match_1 = require(&quot;../match/hashtag-match&quot;);
 // called multiple times, thus instantiating HashtagMatcher and its RegExp 
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
-var matcherRegex = new RegExp(&quot;#[_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,139}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 139 characters
+var matcherRegex = new RegExp(&quot;#[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,139}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 139 characters
 var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-Hashtag'>/**
 </span> * @class Autolinker.matcher.Hashtag
@@ -36,7 +36,7 @@ var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMark
  * Matcher to find HashtagMatch matches in an input string.
  */
 var HashtagMatcher =  (function (_super) {
-    tslib_1.__extends(HashtagMatcher, _super);
+    (0, tslib_1.__extends)(HashtagMatcher, _super);
 <span id='Autolinker-matcher-Hashtag-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,

@@ -39,18 +39,18 @@ var matcherRegex = (function () {
         &#39;(?:&#39;,
         &#39;(&#39;,
         schemeRegex.source,
-        regex_lib_1.getDomainNameStr(2),
+        (0, regex_lib_1.getDomainNameStr)(2),
         &#39;)&#39;,
         &#39;|&#39;,
         &#39;(&#39;,
         &#39;(//)?&#39;,
         wwwRegex.source,
-        regex_lib_1.getDomainNameStr(6),
+        (0, regex_lib_1.getDomainNameStr)(6),
         &#39;)&#39;,
         &#39;|&#39;,
         &#39;(&#39;,
         &#39;(//)?&#39;,
-        regex_lib_1.getDomainNameStr(10) + &#39;\\.&#39;,
+        (0, regex_lib_1.getDomainNameStr)(10) + &#39;\\.&#39;,
         tld_regex_1.tldRegex.source,
         &#39;(?![-&#39; + regex_lib_1.alphaNumericCharsStr + &#39;])&#39;,
         &#39;)&#39;,
@@ -69,7 +69,7 @@ var wordCharRegExp = new RegExp(&#39;[&#39; + regex_lib_1.alphaNumericAndMarksCh
  * See this class&#39;s superclass ({@link Autolinker.matcher.Matcher}) for more details.
  */
 var UrlMatcher =  (function (_super) {
-    tslib_1.__extends(UrlMatcher, _super);
+    (0, tslib_1.__extends)(UrlMatcher, _super);
 <span id='Autolinker-matcher-Url-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,

@@ -29,7 +29,7 @@ var match_1 = require(&quot;./match&quot;);
  * See this class&#39;s superclass ({@link Autolinker.match.Match}) for more details.
  */
 var MentionMatch =  (function (_super) {
-    tslib_1.__extends(MentionMatch, _super);
+    (0, tslib_1.__extends)(MentionMatch, _super);
 <span id='Autolinker-match-Mention-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match
@@ -93,7 +93,7 @@ var MentionMatch =  (function (_super) {
                 return &#39;https://instagram.com/&#39; + this.mention;
             case &#39;soundcloud&#39;:
                 return &#39;https://soundcloud.com/&#39; + this.mention;
-			case &#39;instagram&#39;:
+            case &#39;tiktok&#39;:
                 return &#39;https://www.tiktok.com/@&#39; + this.mention;
             default: // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
                 throw new Error(&#39;Unknown service name to point mention to: &#39; + this.serviceName);

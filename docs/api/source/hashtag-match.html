@@ -31,7 +31,7 @@ var match_1 = require(&quot;./match&quot;);
  * details.
  */
 var HashtagMatch =  (function (_super) {
-    tslib_1.__extends(HashtagMatch, _super);
+    (0, tslib_1.__extends)(HashtagMatch, _super);
 <span id='Autolinker-match-Hashtag-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match
@@ -96,7 +96,7 @@ var HashtagMatch =  (function (_super) {
                 return &#39;https://www.facebook.com/hashtag/&#39; + hashtag;
             case &#39;instagram&#39;:
                 return &#39;https://instagram.com/explore/tags/&#39; + hashtag;
-			case &#39;tiktok&#39;:
+            case &#39;tiktok&#39;:
                 return &#39;https://www.tiktok.com/tag/&#39; + hashtag;
             default: // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
                 throw new Error(&#39;Unknown service name to point hashtag to: &#39; + serviceName);

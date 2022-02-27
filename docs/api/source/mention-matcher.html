@@ -27,9 +27,12 @@ var mention_match_1 = require(&quot;../match/mention-match&quot;);
 // called multiple times, thus instantiating MentionMatcher and its RegExp 
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
-var twitterRegex = new RegExp(&quot;@[_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,50}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
-var instagramRegex = new RegExp(&quot;@[_.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,30}(?![_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 30 characters
-var soundcloudRegex = new RegExp(&quot;@[-_.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]{1,50}(?![-_&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;])&quot;, &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
+var twitterRegex = new RegExp(&quot;@[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,50}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
+var instagramRegex = new RegExp(&quot;@[_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,30}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 30 characters
+var soundcloudRegex = new RegExp(&quot;@[-_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,50}(?![-_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
+// TikTok usernames are 1-24 characters containing letters, numbers, underscores
+// and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
+var tiktokRegex = new RegExp(&quot;@[_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,23}[_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;](?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 24 characters
 var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-Mention'>/**
 </span> * @class Autolinker.matcher.Mention
@@ -38,7 +41,7 @@ var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMark
  * Matcher to find/replace username matches in an input string.
  */
 var MentionMatcher =  (function (_super) {
-    tslib_1.__extends(MentionMatcher, _super);
+    (0, tslib_1.__extends)(MentionMatcher, _super);
 <span id='Autolinker-matcher-Mention-method-constructor'>    /**
 </span>     * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
@@ -51,7 +54,7 @@ var MentionMatcher =  (function (_super) {
          *
          * The name of service to link @mentions to.
          *
-         * Valid values are: &#39;twitter&#39;, &#39;instagram&#39;, or &#39;soundcloud&#39;
+         * Valid values are: &#39;twitter&#39;, &#39;instagram&#39;, &#39;soundcloud&#39;, or &#39;tiktok&#39;
          */
         _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-matcher-Mention-property-matcherRegexes'>        /**
@@ -65,7 +68,8 @@ var MentionMatcher =  (function (_super) {
         _this.matcherRegexes = {
             &#39;twitter&#39;: twitterRegex,
             &#39;instagram&#39;: instagramRegex,
-            &#39;soundcloud&#39;: soundcloudRegex
+            &#39;soundcloud&#39;: soundcloudRegex,
+            &#39;tiktok&#39;: tiktokRegex
         };
 <span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to

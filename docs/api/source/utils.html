@@ -146,7 +146,7 @@ exports.splitAndCapture = splitAndCapture;
  * enum value is handled using TypeScript&#39;s &#39;never&#39; type.
  */
 function throwUnhandledCaseError(theValue) {
-    throw new Error(&quot;Unhandled case for value: &#39;&quot; + theValue + &quot;&#39;&quot;);
+    throw new Error(&quot;Unhandled case for value: &#39;&quot;.concat(theValue, &quot;&#39;&quot;));
 }
 exports.throwUnhandledCaseError = throwUnhandledCaseError;
 

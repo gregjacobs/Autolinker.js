@@ -1,6 +1,6 @@
 {
 	"name": "autolinker",
-	"version": "3.14.3",
+	"version": "3.15.0",
 	"description": "Utility to automatically link the URLs, email addresses, phone numbers, hashtags, and mentions (Twitter, Instagram) in a given block of text/HTML",
 	"main": "./dist/commonjs/index.js",
 	"typings": "./dist/commonjs/index.d.ts",
@@ -17,7 +17,7 @@
 		"build-example": "gulp build-example",
 		"clean": "gulp clean",
 		"prepublishOnly": "gulp",
-		"serve": "gulp serve",
+		"start": "gulp serve",
 		"test": "gulp test",
 		"test-unit": "gulp test-unit",
 		"test-integration": "gulp test-integration",

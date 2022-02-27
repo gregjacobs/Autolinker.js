@@ -185,7 +185,7 @@ exports.domainNameRegex = new RegExp(&#39;[&#39; + exports.alphaNumericAndMarksC
 </span> * A regular expression that is simply the character class of the characters
  * that may be used in a domain name, minus the &#39;-&#39; or &#39;.&#39;
  */
-exports.domainNameCharRegex = new RegExp(&quot;[&quot; + exports.alphaNumericAndMarksCharsStr + &quot;]&quot;);
+exports.domainNameCharRegex = new RegExp(&quot;[&quot;.concat(exports.alphaNumericAndMarksCharsStr, &quot;]&quot;));
 
 //# sourceMappingURL=regex-lib.js.map
 </pre>
