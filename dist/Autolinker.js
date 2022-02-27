@@ -2732,6 +2732,9 @@
     var twitterRegex = new RegExp("@[_".concat(alphaNumericAndMarksCharsStr, "]{1,50}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 50 characters
     var instagramRegex = new RegExp("@[_.".concat(alphaNumericAndMarksCharsStr, "]{1,30}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 30 characters
     var soundcloudRegex = new RegExp("@[-_.".concat(alphaNumericAndMarksCharsStr, "]{1,50}(?![-_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 50 characters
+    // TikTok usernames are 1-24 characters containing letters, numbers, underscores
+    // and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
+    var tiktokRegex = new RegExp("@[_.".concat(alphaNumericAndMarksCharsStr, "]{1,23}[_").concat(alphaNumericAndMarksCharsStr, "](?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 24 characters
     var nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
     /**
      * @class Autolinker.matcher.Mention
@@ -2753,7 +2756,7 @@
              *
              * The name of service to link @mentions to.
              *
-             * Valid values are: 'twitter', 'instagram', or 'soundcloud'
+             * Valid values are: 'twitter', 'instagram', 'soundcloud', or 'tiktok'
              */
             _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
@@ -2767,7 +2770,8 @@
             _this.matcherRegexes = {
                 'twitter': twitterRegex,
                 'instagram': instagramRegex,
-                'soundcloud': soundcloudRegex
+                'soundcloud': soundcloudRegex,
+                'tiktok': tiktokRegex
             };
             /**
              * The regular expression to use to check the character before a username match to
@@ -3806,13 +3810,13 @@
             this.sanitizeHtml = cfg.sanitizeHtml || false;
             // Validate the value of the `mention` cfg
             var mention = this.mention;
-            if (mention !== false && mention !== 'twitter' && mention !== 'instagram' && mention !== 'soundcloud') {
-                throw new Error("invalid `mention` cfg - see docs");
+            if (mention !== false && ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1) {
+                throw new Error("invalid `mention` cfg '".concat(mention, "' - see docs"));
             }
             // Validate the value of the `hashtag` cfg
             var hashtag = this.hashtag;
-            if (hashtag !== false && hashtag !== 'twitter' && hashtag !== 'facebook' && hashtag !== 'instagram') {
-                throw new Error("invalid `hashtag` cfg - see docs");
+            if (hashtag !== false && ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1) {
+                throw new Error("invalid `hashtag` cfg '".concat(hashtag, "' - see docs"));
             }
             this.truncate = this.normalizeTruncateCfg(cfg.truncate);
             this.className = cfg.className || this.className;

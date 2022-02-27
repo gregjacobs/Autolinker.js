@@ -9,9 +9,17 @@ import { Match } from "../match/match";
 // called multiple times, thus instantiating MentionMatcher and its RegExp 
 // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
 // See descriptions of the properties where they are used for details about them
+
 const twitterRegex = new RegExp( `@[_${alphaNumericAndMarksCharsStr}]{1,50}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 50 characters
+
 const instagramRegex = new RegExp( `@[_.${alphaNumericAndMarksCharsStr}]{1,30}(?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 30 characters
+
 const soundcloudRegex = new RegExp( `@[-_.${alphaNumericAndMarksCharsStr}]{1,50}(?![-_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 50 characters
+
+// TikTok usernames are 1-24 characters containing letters, numbers, underscores
+// and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
+const tiktokRegex = new RegExp( `@[_.${alphaNumericAndMarksCharsStr}]{1,23}[_${alphaNumericAndMarksCharsStr}](?![_${alphaNumericAndMarksCharsStr}])`, 'g' );  // lookahead used to make sure we don't match something above 24 characters
+
 const nonWordCharRegex = new RegExp( '[^' + alphaNumericAndMarksCharsStr + ']' );
 
 /**
@@ -27,7 +35,7 @@ export class MentionMatcher extends Matcher {
 	 * 
 	 * The name of service to link @mentions to.
 	 * 
-	 * Valid values are: 'twitter', 'instagram', or 'soundcloud'
+	 * Valid values are: 'twitter', 'instagram', 'soundcloud', or 'tiktok'
 	 */
 	protected serviceName: MentionServices = 'twitter';  // default value just to get the above doc comment in the ES5 output and documentation generator
 
@@ -42,7 +50,8 @@ export class MentionMatcher extends Matcher {
 	protected readonly matcherRegexes: {[key: string]: RegExp} = {
 		'twitter': twitterRegex,
 		'instagram': instagramRegex,
-		'soundcloud': soundcloudRegex
+		'soundcloud': soundcloudRegex,
+		'tiktok': tiktokRegex
 	};
 
 	/**

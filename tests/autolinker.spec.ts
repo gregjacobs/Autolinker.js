@@ -36,13 +36,12 @@ describe( "Autolinker", function() {
 			it( "should throw if `hashtag` is a value other than `false` or one of the valid service names", function() {
 				expect( function() {
 					new Autolinker( { hashtag: true } as any );  // `true` is an invalid value - must be a service name
-				} ).toThrowError( "invalid `hashtag` cfg - see docs" );
+				} ).toThrowError( "invalid `hashtag` cfg 'true' - see docs" );
 
 				expect( function() {
 					new Autolinker( { hashtag: 'non-existent-service' } as any );
-				} ).toThrowError( "invalid `hashtag` cfg - see docs" );
+				} ).toThrowError( "invalid `hashtag` cfg 'non-existent-service' - see docs" );
 			} );
-
 
 			it( "should not throw for the valid service name 'twitter'", function() {
 				expect( function() {
@@ -50,17 +49,21 @@ describe( "Autolinker", function() {
 				} ).not.toThrow();
 			} );
 
-
 			it( "should not throw for the valid service name 'facebook'", function() {
 				expect( function() {
 					new Autolinker( { hashtag: 'facebook' } );
 				} ).not.toThrow();
 			} );
 
-
 			it( "should not throw for the valid service name 'instagram'", function() {
 				expect( function() {
 					new Autolinker( { hashtag: 'instagram' } );
+				} ).not.toThrow();
+			} );
+
+			it( "should not throw for the valid service name 'tiktok'", function() {
+				expect( function() {
+					new Autolinker( { hashtag: 'tiktok' } );
 				} ).not.toThrow();
 			} );
 
@@ -72,13 +75,12 @@ describe( "Autolinker", function() {
 			it( "should throw if `mention` is a value other than `false` or one of the valid service names", function() {
 				expect( function() {
 					new Autolinker( { mention: true } as any );  // `true` is an invalid value - must be a service name
-				} ).toThrowError( "invalid `mention` cfg - see docs" );
+				} ).toThrowError( "invalid `mention` cfg 'true' - see docs" );
 
 				expect( function() {
 					new Autolinker( { mention: 'non-existent-service' } as any );
-				} ).toThrowError( "invalid `mention` cfg - see docs" );
+				} ).toThrowError( "invalid `mention` cfg 'non-existent-service' - see docs" );
 			} );
-
 
 			it( "should not throw for the valid service name 'twitter'", function() {
 				expect( function() {
@@ -86,10 +88,21 @@ describe( "Autolinker", function() {
 				} ).not.toThrow();
 			} );
 
-
 			it( "should not throw for the valid service name 'instagram'", function() {
 				expect( function() {
 					new Autolinker( { mention: 'instagram' } );
+				} ).not.toThrow();
+			} );
+
+			it( "should not throw for the valid service name 'soundcloud'", function() {
+				expect( function() {
+					new Autolinker( { mention: 'soundcloud' } );
+				} ).not.toThrow();
+			} );
+
+			it( "should not throw for the valid service name 'tiktok'", function() {
+				expect( function() {
+					new Autolinker( { mention: 'tiktok' } );
 				} ).not.toThrow();
 			} );
 
@@ -918,8 +931,11 @@ describe( "Autolinker", function() {
 				result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'instagram', className: 'myLink' } );
 				expect( result ).toBe( 'hi from <a href="https://instagram.com/iggypopschest" class="myLink myLink-mention myLink-instagram">@iggypopschest</a>' );
 
+				result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'soundcloud', className: 'myLink' } );
+				expect( result ).toBe( 'hi from <a href="https://soundcloud.com/iggypopschest" class="myLink myLink-mention myLink-soundcloud">@iggypopschest</a>' );
+
 				result = Autolinker.link( "hi from @iggypopschest", { newWindow: false, mention: 'tiktok', className: 'myLink' } );
-				expect( result ).toBe( 'hi from <a href="https://www.tiktok.com/@iggypopschest" class="myLink myLink-mention myLink-instagram">@iggypopschest</a>' );
+				expect( result ).toBe( 'hi from <a href="https://www.tiktok.com/@iggypopschest" class="myLink myLink-mention myLink-tiktok">@iggypopschest</a>' );
 			} );
 
 		} );

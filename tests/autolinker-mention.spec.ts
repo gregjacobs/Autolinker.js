@@ -166,7 +166,6 @@ describe( "Autolinker Mention Matching -", () => {
 			expect( result ).toBe( `<a href="https://twitter.com/${aUsername}">@${aUsername}</a> and @${bUsername}` );
 		} );
 
-
 		it( `should link a twitter mention that has a period in it only up until
 			 the period`, 
 		() => {
@@ -188,7 +187,6 @@ describe( "Autolinker Mention Matching -", () => {
 			expect( result ).toBe( `<a href="https://instagram.com/${aUsername}">@${aUsername}</a> and @${bUsername}` );
 		} );
 
-
 		it( `should link an instagram mention that has a period in it`, () => {
 			const result = instagramAutolinker.link( `Hello @asdf.defg` );
 
@@ -208,7 +206,6 @@ describe( "Autolinker Mention Matching -", () => {
 			expect( result ).toBe( `<a href="https://soundcloud.com/${aUsername}">@${aUsername}</a> and @${bUsername}` );
 		} );
 
-
 		it( `should link a soundcloud mention that has a period in it`, () => {
 			const result = soundcloudAutolinker.link( `Hello @asdf.defg` );
 
@@ -217,7 +214,7 @@ describe( "Autolinker Mention Matching -", () => {
 
 	} );
 
-	fdescribe( 'tiktok-specific tests', () => {
+	describe( 'tiktok-specific tests', () => {
 
 		it( 'should link a tiktok mention that is up to 24 characters long', () => {
 			const aUsername = _.repeat( 'a', 24 );
@@ -227,11 +224,22 @@ describe( "Autolinker Mention Matching -", () => {
 			expect( result ).toBe( `<a href="https://www.tiktok.com/@${aUsername}">@${aUsername}</a> and @${bUsername}` );
 		} );
 
+		it( `should link to an all all alpha username`, () => {
+			const result = tiktokAutolinker.link( `Hello @shewhocannot` );
+
+			expect( result ).toBe( `Hello <a href="https://www.tiktok.com/@shewhocannot">@shewhocannot</a>` );
+		} );
 
 		it( `should link a tiktok mention that has a period in it`, () => {
 			const result = tiktokAutolinker.link( `Hello @asdf.defg` );
 
 			expect( result ).toBe( `Hello <a href="https://www.tiktok.com/@asdf.defg">@asdf.defg</a>` );
+		} );
+
+		it( `should not include a trailing period in the username since tiktok usernames are not allowed to end in a period`, () => {
+			const result = tiktokAutolinker.link( `Hello @asdf_fdsa.` );
+
+			expect( result ).toBe( `Hello <a href="https://www.tiktok.com/@asdf_fdsa">@asdf_fdsa</a>.` );
 		} );
 
 	} );

@@ -17,7 +17,7 @@
 		"build-example": "gulp build-example",
 		"clean": "gulp clean",
 		"prepublishOnly": "gulp",
-		"serve": "gulp serve",
+		"start": "gulp serve",
 		"test": "gulp test",
 		"test-unit": "gulp test-unit",
 		"test-integration": "gulp test-integration",

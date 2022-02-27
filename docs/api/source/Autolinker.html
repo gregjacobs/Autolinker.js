@@ -427,13 +427,13 @@ var Autolinker =  (function () {
         this.sanitizeHtml = cfg.sanitizeHtml || false;
         // Validate the value of the `mention` cfg
         var mention = this.mention;
-        if (mention !== false &amp;&amp; mention !== &#39;twitter&#39; &amp;&amp; mention !== &#39;instagram&#39; &amp;&amp; mention !== &#39;soundcloud&#39;) {
-            throw new Error(&quot;invalid `mention` cfg - see docs&quot;);
+        if (mention !== false &amp;&amp; [&#39;twitter&#39;, &#39;instagram&#39;, &#39;soundcloud&#39;, &#39;tiktok&#39;].indexOf(mention) === -1) {
+            throw new Error(&quot;invalid `mention` cfg &#39;&quot;.concat(mention, &quot;&#39; - see docs&quot;));
         }
         // Validate the value of the `hashtag` cfg
         var hashtag = this.hashtag;
-        if (hashtag !== false &amp;&amp; hashtag !== &#39;twitter&#39; &amp;&amp; hashtag !== &#39;facebook&#39; &amp;&amp; hashtag !== &#39;instagram&#39;) {
-            throw new Error(&quot;invalid `hashtag` cfg - see docs&quot;);
+        if (hashtag !== false &amp;&amp; [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;].indexOf(hashtag) === -1) {
+            throw new Error(&quot;invalid `hashtag` cfg &#39;&quot;.concat(hashtag, &quot;&#39; - see docs&quot;));
         }
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);
         this.className = cfg.className || this.className;
