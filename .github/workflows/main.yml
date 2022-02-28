@@ -16,8 +16,8 @@ jobs:
       - run: ls ${HOME}
       - run: ls ${HOME}/.gem
       - run: ls ${HOME}/.gem/ruby
-      - run: ls ${HOME}/.gem/ruby/2.7.18
-      - run: ls ${HOME}/.gem/ruby/2.7.18/bin
-      - run: export PATH=${HOME}/.gem/ruby/2.7.18/bin:${PATH}
+      - run: ls ${HOME}/.gem/ruby/2.7.0
+      - run: ls ${HOME}/.gem/ruby/2.7.0/bin
+      - run: export PATH=${HOME}/.gem/ruby/2.7.0/bin:${PATH}
       - run: npm run build
       - run: npm run test
