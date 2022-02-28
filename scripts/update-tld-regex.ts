@@ -3,12 +3,15 @@ import dedent from 'dedent';
 import fse from 'fs-extra';
 import punycode from 'punycode';
 
-updateTldRegex().catch(error => {
-    console.error(error);
-    process.exit(1);
-});
+if (require.main === module) {
+    // If called directly from the command line
+    updateTldRegex().catch(error => {
+        console.error(error);
+        process.exit(1);
+    });
+}
 
-async function updateTldRegex(){
+export async function updateTldRegex() {
     const tldsFile = await axios.get<string>('http://data.iana.org/TLD/tlds-alpha-by-domain.txt', {
 		responseType: 'text'	
 	});

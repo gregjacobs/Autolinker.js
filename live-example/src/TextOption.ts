@@ -28,10 +28,7 @@ export class TextOption extends Option {
 	 */
 	private defaultValue: string = '';
 
-
 	private $textEl: JQuery;
-	private $valueDisplayEl: JQuery;
-
 
 	/**
 	 * @method constructor
@@ -46,7 +43,6 @@ export class TextOption extends Option {
 
 		this.$containerEl.html( this.generateHtml() );
 		this.$textEl = this.$containerEl.find( 'input' ).on( 'keyup change', this.fireChange.bind( this ) );
-		this.$valueDisplayEl = this.$containerEl.find( '#' + this.containerId + '-value' );
 	}
 
 

@@ -39,6 +39,7 @@ export abstract class Match {
 	 * Reference to the AnchorTagBuilder instance to use to generate an anchor
 	 * tag for the Match.
 	 */
+	// @ts-ignore
 	private __jsduckDummyDocProp = null;  // property used just to get the above doc comment into the ES5 output and documentation generator
 
 	// Actual property for the above jsdoc comment

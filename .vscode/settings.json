@@ -1,5 +1,5 @@
 {
-    "editor.insertSpaces": false,
+    "editor.insertSpaces": true,
     "editor.rulers": [
         80
     ],

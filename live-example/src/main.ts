@@ -1,11 +1,12 @@
+import { Autolinker } from '../../src';
 import { Option } from "./Option";
 import { CheckboxOption } from "./CheckboxOption";
 import { RadioOption } from "./RadioOption";
 import { TextOption } from "./TextOption";
 
-declare var Autolinker: any;
-
 $( document ).ready( function() {
+	$('#version').text(Autolinker.version);
+
 	var $inputEl = $( '#input' ),
 	    $outputEl = $( '#output' ),
 	    $optionsOutputEl = $( '#options-output' ),

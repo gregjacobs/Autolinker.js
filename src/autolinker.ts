@@ -1,3 +1,4 @@
+import { version } from './version';
 import { defaults, remove, splitAndCapture } from "./utils";
 import { AnchorTagBuilder } from "./anchor-tag-builder";
 import { Match } from "./match/match";
@@ -129,9 +130,9 @@ export default class Autolinker {  // NOTE: must be 'export default' here for UM
 	 * 
 	 * The Autolinker version number in the form major.minor.patch
 	 *
-	 * Ex: 0.25.1
+	 * Ex: 3.15.0
 	 */
-	static readonly version = '/* @echo VERSION */';
+	static readonly version = version;
 
 	/**
 	 * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder 
