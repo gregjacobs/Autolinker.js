@@ -5,7 +5,7 @@ describe( "Autolinker.HtmlTag", function() {
 
 	it( "should be able to be instantiated with no arguments", function() {
 		expect( function() {
-			let tag = new HtmlTag();
+			new HtmlTag();
 		} ).not.toThrow();
 	} );
 

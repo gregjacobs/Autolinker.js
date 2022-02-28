@@ -1206,7 +1206,7 @@ describe( "Autolinker", function() {
 
 			it( "should populate a UrlMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
-				let result = Autolinker.link( "Website: asdf.com ", {  // purposeful trailing space
+				Autolinker.link( "Website: asdf.com ", {  // purposeful trailing space
 					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
@@ -1221,7 +1221,7 @@ describe( "Autolinker", function() {
 
 			it( "should populate an EmailMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
-				let result = Autolinker.link( "EmailMatch: asdf@asdf.com ", {  // purposeful trailing space
+				Autolinker.link( "EmailMatch: asdf@asdf.com ", {  // purposeful trailing space
 					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
 
@@ -1236,7 +1236,7 @@ describe( "Autolinker", function() {
 
 			it( "should populate a HashtagMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
-				let result = Autolinker.link( "HashtagMatch: #myHashtag ", {  // purposeful trailing space
+				Autolinker.link( "HashtagMatch: #myHashtag ", {  // purposeful trailing space
 					hashtag: 'twitter',
 					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
@@ -1253,7 +1253,7 @@ describe( "Autolinker", function() {
 
 			it( "should populate a TwitterMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
-				let result = Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
+				Autolinker.link( "Twitter: @myTwitter ", {  // purposeful trailing space
 					mention: 'twitter',
 					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
@@ -1269,7 +1269,7 @@ describe( "Autolinker", function() {
 
 			it( "should populate a MentionMatch object with the appropriate properties", function() {
 				let replaceFnCallCount = 0;
-				let result = Autolinker.link( "Mention: @myTwitter ", {  // purposeful trailing space
+				Autolinker.link( "Mention: @myTwitter ", {  // purposeful trailing space
 					mention: 'twitter',
 					replaceFn : function( match: Match ) {
 						replaceFnCallCount++;
@@ -1614,7 +1614,7 @@ describe( "Autolinker", function() {
 			// const testMatchOriginal = PhoneMatcher.prototype.testMatch;
 
 			beforeEach( function() {
-				const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
+				// const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
 				// PhoneMatcher.prototype.matcherRegex = phoneInTextRegex;
 				// PhoneMatcher.prototype.testMatch = () => true;
 			} );

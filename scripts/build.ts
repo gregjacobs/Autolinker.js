@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import fse from 'fs-extra';
 import path from 'path';
-import { execSync as doExecSync, ExecSyncOptions } from 'child_process';
+import { execSync } from './util/exec-sync';
 
 // This script builds the 'src/' to the 'dist/' directory
 
@@ -24,23 +24,13 @@ execSync(`mkdirp dist/es2015 && tsc --module es2015 --outDir ${es2015OutputDir} 
 execSync(`rollup --config rollup.config.ts && terser dist/autolinker.js --output dist/autolinker.min.js --compress --mangle --source-map "url='autolinker.min.js.map',includeSources=true"`);
 
 fixCommonJsOutput();
+checkMinifiedFileSize();
 
 // End of script
 
 // -----------------------------
 
 // Helper functions
-
-function execSync(command: string, options: ExecSyncOptions = {}): void {
-    // Output the command to keep track of what's going on
-    console.log(`> ${command}`);
-
-    doExecSync(command, {
-        cwd: pkgDir,  // root dir of the package is the current working directory
-        stdio: 'inherit',
-        ...options
-    });
-}
 
 /**
  * Ultimate in hackery: by default, with TypeScript's default commonjs output of
@@ -108,4 +98,26 @@ function fixCommonJsOutput() {
         `);
 
     fse.writeFileSync(`${commonJsOutputAbsDir}/index.js`, indexJsContents);
+}
+
+/**
+ * Checks that we don't accidentally add an extra dependency that bloats the
+ * minified size of Autolinker
+ */
+ async function checkMinifiedFileSize() {
+	const stats = fse.statSync( './dist/Autolinker.min.js' );
+	const sizeInKb = stats.size / 1000;
+	const maxExpectedSizeInKb = 46.5;
+	
+	if( sizeInKb > maxExpectedSizeInKb ) {
+		throw new Error(dedent`
+			Minified file size of ${sizeInKb.toFixed( 2 )}kb is greater than max 
+			expected minified size of ${maxExpectedSizeInKb}kb
+			
+			This check is to make sure that a dependency is not accidentally 
+			added which significantly inflates the size of Autolinker. If 
+			additions to the codebase have been made though and a higher size 
+			is expected, bump the 'maxExpectedSizeInKb' number in ${__filename}
+		`);
+	}
 }
