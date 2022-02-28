@@ -2,6 +2,8 @@ import glob from 'fast-glob';
 import fse from 'fs-extra';
 import path from 'path';
 
+// Note: the JSDuck python gem must be installed manually using:
+//   gem install jsduck
 const JsDuck = require('jsduck');
 
 const pkgRoot = path.normalize(`${__dirname}/..`);

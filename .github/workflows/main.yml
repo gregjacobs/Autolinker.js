@@ -12,6 +12,6 @@ jobs:
         with:
           python-version: '2.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
       - run: npm install
-      - run: pip install jsduck
+      - run: gem install jsduck --user-install
       - run: npm run build
       - run: npm run test
