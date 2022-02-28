@@ -16,7 +16,6 @@ const _                 = require( 'lodash' ),
 	  mkdirp            = require( 'mkdirp' ),
 	  path              = require( 'path' ),
 	  preprocess        = require( 'gulp-preprocess' ),
-      punycode          = require( 'punycode' ),
 	  rename            = require( 'gulp-rename' ),
 	  replace           = require( 'gulp-replace' ),
 	  rollup            = require( 'rollup' ),
@@ -132,135 +131,6 @@ gulp.task( 'default', gulp.series( 'build-all', 'do-doc', 'do-test' ) );
 // -----------------------------------------------------
 
 
-function cleanSrcOutputTask() {
-	return gulp.src( './dist', { read: false, allowEmpty: true } )
-        .pipe( clean() );
-}
-
-function buildSrcTypeScriptCommonjsTask() {
-	const tsProject = typescript.createProject( Object.assign( {}, tsconfig.compilerOptions, {
-		module: 'commonjs'
-	} ) );
-	
-	return buildSrcTypeScript( tsProject, './dist/commonjs' );
-}
-
-function buildSrcTypeScriptEs2015Task() {
-	const tsProject = typescript.createProject( Object.assign( {}, tsconfig.compilerOptions, {
-		module: 'es2015'
-	} ) );
-
-	return buildSrcTypeScript( tsProject, './dist/es2015' );
-}
-
-
-function buildSrcTypeScript( tsProject, outputDir ) {
-	const tsResult = gulp.src( './src/**/*.ts' )
-		.pipe( preprocess( { context: { VERSION: pkg.version } } ) )
-		.pipe( sourcemaps.init() )  // preprocess doesn't seem to support sourcemaps, so initializing it after
-		.pipe( tsProject() );
-
-	return mergeStream( [
-		tsResult.dts
-			.pipe( gulp.dest( outputDir ) ),
-
-		tsResult.js
-			.pipe( sourcemaps.write( '.' ) )
-			.pipe( gulp.dest( outputDir ) )
-	] );
-}
-
-
-/**
- * Ultimate in hackery: by default, with TypeScript's default commonjs output of
- * the source ES6 modules, users would be required to `require()` Autolinker in 
- * the following way:
- * 
- *     const Autolinker = require( 'autolinker' ).default;   // (ugh)
- * 
- * In order to maintain backward compatibility with the v1.x interface, and to 
- * make things simpler for users, we want to allow the following statement:
- * 
- *     const Autolinker = require( 'autolinker' );
- * 
- * In order to get this to work, we need to redefine the `exports` object of 
- * dist/commonjs/index.js to be the Autolinker class itself. To do this, this
- * line is prepended to the file:
- * 
- *     exports = module.exports = require('./autolinker').default;
- * 
- * Then TypeScript will happily assign the `.default` and `.Autolinker` 
- * properties to that new `exports` object.
- * 
- * This function essentially changes the generated index.js from its original 
- * content of:
- * 
- *     "use strict";
- *     Object.defineProperty(exports, "__esModule", { value: true });
- *     exports.Autolinker = void 0;
- *     var tslib_1 = require("tslib");
- *     var autolinker_1 = tslib_1.__importDefault(require("./autolinker"));
- *     exports.Autolinker = autolinker_1.default;
- *     exports.default = autolinker_1.default;
- *     tslib_1.__exportStar(require("./autolinker"), exports);
- *     tslib_1.__exportStar(require("./anchor-tag-builder"), exports);
- *     tslib_1.__exportStar(require("./html-tag"), exports);
- *     tslib_1.__exportStar(require("./match/index"), exports);
- *     tslib_1.__exportStar(require("./matcher/index"), exports);
- * 
- * to this:
- * 
- *     "use strict";
- * 
- *     // Note: the following line is added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
- *     exports = module.exports = require('./autolinker').default;  // redefine 'exports' object as the Autolinker class itself
- * 
- *     Object.defineProperty(exports, "__esModule", { value: true });
- *     exports.Autolinker = void 0;
- *     var tslib_1 = require("tslib");
- *     var autolinker_1 = tslib_1.__importDefault(require("./autolinker"));
- *     exports.Autolinker = autolinker_1.default;
- *     exports.default = autolinker_1.default;
- *     tslib_1.__exportStar(require("./autolinker"), exports);
- *     tslib_1.__exportStar(require("./anchor-tag-builder"), exports);
- *     tslib_1.__exportStar(require("./html-tag"), exports);
- *     tslib_1.__exportStar(require("./match/index"), exports);
- *     tslib_1.__exportStar(require("./matcher/index"), exports);
- */
-async function buildSrcFixCommonJsIndexTask() {
-	const indexJsContents = fs.readFileSync( './dist/commonjs/index.js', 'utf-8' )
-		.replace( '"use strict";', `
-			"use strict";
-			// Note: the following line is added by gulpfile.js's buildSrcFixCommonJsIndexTask() to allow require('autolinker') to work correctly
-			exports = module.exports = require('./autolinker').default;  // redefine 'exports' object as the Autolinker class itself
-		`.trimRight().replace( /^\t{3}/gm, '' ) );
-
-	fs.writeFileSync( './dist/commonjs/index.js', indexJsContents );
-}
-
-
-async function buildSrcRollupTask() {
-	// create a bundle
-	const bundle = await rollup.rollup( {
-		input: './dist/es2015/autolinker.js',
-		plugins: [
-			rollupResolveNode.nodeResolve( {
-				jsnext: true,
-				browser: true,
-			} ),
-			rollupCommonjs()
-		],
-		treeshake: true
-	} );
-
-	// write the bundle to disk
-	return bundle.write( {
-		file: './dist/Autolinker.js',
-		format: 'umd',
-		name: 'Autolinker',
-		sourcemap: true
-	} );
-}
 
 function buildSrcAddHeaderToUmdTask() {
 	return gulp.src( './dist/Autolinker.js' )
@@ -408,32 +278,9 @@ function serveTask() {
 	connect.server();
 }
 
-
-function runUnitTestsTask() {
-	return gulp.src( './.tmp/tests-unit/**/*.spec.js' )
-		.pipe( jasmine( { verbose: false, includeStackTrace: true } ) );
-}
-
-function cleanUnitTestsTask() {
-	return gulp.src( './.tmp/tests-unit', { read: false, allowEmpty: true } )
-        .pipe( clean() );
-}
-
 function cleanIntegrationTestsTask() {
 	return gulp.src( './.tmp/tests-integration', { read: false, allowEmpty: true } )
 		.pipe( clean() );
-}
-
-function buildTestsTypeScriptTask() {
-	const tsProject = typescript.createProject( _.merge( {}, tsconfig.compilerOptions, {
-		noEmit: false,
-		module: 'commonjs'
-	} ) );
-
-	const tsResult = gulp.src( [ './+(src|tests)/**/*.ts' ] )
-		.pipe( tsProject() );
-
-	return tsResult.js.pipe( gulp.dest( './.tmp/tests-unit' ) );
 }
 
 async function buildIntegrationTestsTask() {
@@ -441,7 +288,9 @@ async function buildIntegrationTestsTask() {
 
 	// First, create a .tar.gz output file like the one that would be downloaded
 	// from npm
-	await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, { 
+	// TODO: Was using 'yarn' - does npm have a --filename arg?
+	//await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, { 
+	await exec( `./node_modules/.bin/npm pack --pack-destination ./.tmp/tests-integration`, { 
 		cwd: __dirname
 	} );
 
@@ -476,9 +325,9 @@ async function buildWebpackTypeScriptTestProject() {
 	return new Promise( ( resolve, reject ) => {
 		webpack( {
 			context: testsIntegrationTmpDir,
-			entry: path.resolve( testsIntegrationTmpDir, './page.ts' ),
+			entry: path.resolve(testsIntegrationTmpDir, './page.ts'),
 			output: {
-				path: path.resolve( testsIntegrationTmpDir, './webpack-output' )
+				path: path.resolve(testsIntegrationTmpDir, './webpack-output')
 			},
 			mode: 'production',
 			module: {
@@ -530,58 +379,6 @@ function createBanner() {
 		' */\n'
 	].join( "\n" );
 }
-
-
-async function updateTldRegex(){
-    await streamToPromise(
-        download( 'http://data.iana.org/TLD/tlds-alpha-by-domain.txt' )
-          .pipe( gulp.dest( './.tmp/tld' ) )
-    );
-
-    let fileContent = fs.readFileSync("./.tmp/tld/tlds-alpha-by-domain.txt", "utf8");
-
-    let result = '// NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run `npm run update-tld-regex` or `yarn update-tld-regex` (depending on which you have installed)\n\n' 
-        + domainsToRegex(fileContent);
-
-    fs.writeFile('./src/matcher/tld-regex.ts', result);
-}
-
-
-function domainsToRegex(contents){
-	contents = contents
-		.split( '\n' )
-		.filter( notCommentLine )
-		.map( dePunycodeDomain );
-	
-	contents = [].concat.apply([], contents);
-	contents = contents.filter( s => !!s );  // remove empty elements
-	contents.sort( compareLengthLongestFirst );
-	contents = contents.join('|');
-	contents = 'export const tldRegex = /(?:' + contents + ')/;\n';
-
-	return contents;
-}
-
-function notCommentLine(line){
-	return !/^#/.test(line);
-}
-
-function dePunycodeDomain(d){
-	d = d.toLowerCase();
-	if (/xn--/.test(d)){
-		return [d, punycode.toUnicode(d)];
-	}
-	return [d];
-}
-
-function compareLengthLongestFirst(a, b){
-	var result = b.length - a.length;
-	if (result === 0) {
-		result = a.localeCompare(b);
-	}
-	return result;
-}
-
 
 /**
  * Helper function to turn a stream into a promise

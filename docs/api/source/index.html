@@ -15,9 +15,8 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">
-&quot;use strict&quot;;
-// Note: the following line is added by gulpfile.js&#39;s buildSrcFixCommonJsIndexTask() to allow require(&#39;autolinker&#39;) to work correctly
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+// Note: the following line is added by scripts/fix-common-js-output.ts to allow require(&#39;autolinker&#39;) to work correctly
 exports = module.exports = require(&#39;./autolinker&#39;).default;  // redefine &#39;exports&#39; object as the Autolinker class itself
 // WARNING: This file is modified a bit when it is compiled into index.js in 
 // order to support nodejs interoperability with require(&#39;autolinker&#39;) directly. 
@@ -34,8 +33,6 @@ exports.default = autolinker_1.default;
 (0, tslib_1.__exportStar)(require(&quot;./html-tag&quot;), exports);
 (0, tslib_1.__exportStar)(require(&quot;./match/index&quot;), exports);
 (0, tslib_1.__exportStar)(require(&quot;./matcher/index&quot;), exports);
-
-//# sourceMappingURL=index.js.map
-</pre>
+//# sourceMappingURL=index.js.map</pre>
 </body>
 </html>

@@ -1,12 +1,3 @@
-/*!
- * Autolinker.js
- * 3.15.0
- *
- * Copyright(c) 2022 Gregory Jacobs <greg@greg-jacobs.com>
- * MIT License
- *
- * https://github.com/gregjacobs/Autolinker.js
- */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
@@ -4270,7 +4261,7 @@
          *
          * Ex: 0.25.1
          */
-        Autolinker.version = '3.15.0';
+        Autolinker.version = '/* @echo VERSION */';
         /**
          * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
          * class is provided as a static on the Autolinker class.
@@ -4311,6 +4302,4 @@
     return Autolinker;
 
 }));
-
-
-//# sourceMappingURL=Autolinker.js.map
+//# sourceMappingURL=autolinker.js.map
