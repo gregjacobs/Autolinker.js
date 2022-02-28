@@ -1,0 +1,7 @@
+# Ignore artifacts:
+.tmp
+dist
+docs
+tsconfig.json
+package-lock.json
+*.md

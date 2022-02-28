@@ -13,8 +13,8 @@ if (require.main === module) {
 
 export async function updateTldRegex() {
     const tldsFile = await axios.get<string>('http://data.iana.org/TLD/tlds-alpha-by-domain.txt', {
-		responseType: 'text'	
-	});
+        responseType: 'text',
+    });
 
     const tldRegex = domainsToRegex(tldsFile.data);
     let outputFile = dedent`
@@ -25,17 +25,15 @@ export async function updateTldRegex() {
 }
 
 function domainsToRegex(contents: string): string {
-    let lines = contents
-        .split('\n')
-        .filter(notCommentLine);
+    let lines = contents.split('\n').filter(notCommentLine);
 
     let domains = lines
         .map(dePunycodeDomain)
-		.flat()
-		.filter(s => !!s)  // remove empty elements;
-		.sort(compareLengthLongestFirst);
-    
-	const domainsRegexStr = `export const tldRegex = /(?:${domains.join('|')})/;\n`;
+        .flat()
+        .filter(s => !!s) // remove empty elements;
+        .sort(compareLengthLongestFirst);
+
+    const domainsRegexStr = `export const tldRegex = /(?:${domains.join('|')})/;\n`;
     return domainsRegexStr;
 }
 
@@ -45,7 +43,7 @@ function notCommentLine(line: string): boolean {
 
 function dePunycodeDomain(domain: string): string[] {
     domain = domain.toLowerCase();
-    if (/xn--/.test(domain)){
+    if (/xn--/.test(domain)) {
         return [domain, punycode.toUnicode(domain)];
     }
     return [domain];

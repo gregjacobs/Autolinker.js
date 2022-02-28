@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import rollupCommonjs from '@rollup/plugin-commonjs'; 
+import rollupCommonjs from '@rollup/plugin-commonjs';
 
 const pkg = require('./package.json');
 
@@ -21,13 +21,13 @@ export default {
              *
              * ${pkg.homepage}
              */
-        `
+        `,
     },
     plugins: [
-        nodeResolve( {
+        nodeResolve({
             browser: true,
-        } ),
-        rollupCommonjs()
+        }),
+        rollupCommonjs(),
     ],
-    treeshake: true
+    treeshake: true,
 };

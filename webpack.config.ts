@@ -9,28 +9,28 @@ const config: webpack.Configuration = {
     output: {
         path: path.resolve(__dirname, 'docs/examples'),
         filename: 'live-example.[contenthash].js',
-        clean: true
+        clean: true,
     },
     module: {
         rules: [
-            { 
-                test: /\.ts$/, 
-                use: 'ts-loader'
+            {
+                test: /\.ts$/,
+                use: 'ts-loader',
             },
-            { 
-                test: /\.css$/, 
-                use: ['style-loader', 'css-loader']
-            }
-        ]
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
+            },
+        ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
-        new HtmlWebpackPlugin({ 
-            template: path.resolve(__dirname, './live-example/index.html' ) 
-        })
-    ]
+        new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, './live-example/index.html'),
+        }),
+    ],
 };
 
 export default config;

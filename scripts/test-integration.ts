@@ -1,14 +1,13 @@
-import fse from "fs-extra";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import path from "path";
-import { webpack } from "webpack";
-import { execSync } from "./util/exec-sync";
+import fse from 'fs-extra';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import path from 'path';
+import { webpack } from 'webpack';
+import { execSync } from './util/exec-sync';
 
 /**
  * This script creates a ./.tmp/tests-integration folder where we install the
  * actual Autolinker package from its .tgz, and run tests against it.
  */
-
 (async () => {
     const pkgRoot = path.normalize(`${__dirname}/..`);
     const pkg = require(`${pkgRoot}/package.json`);
@@ -25,22 +24,16 @@ import { execSync } from "./util/exec-sync";
     // Create a .tar.gz output file like the one that would be downloaded from npm
     // TODO: Was using 'yarn' - does npm have a --filename arg?
     //await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, {
-    execSync(
-        `${pkgRoot}/node_modules/.bin/npm pack --pack-destination ${testsOutputDir}`,
-        {
-            cwd: pkgRoot,
-        }
-    );
+    execSync(`${pkgRoot}/node_modules/.bin/npm pack --pack-destination ${testsOutputDir}`, {
+        cwd: pkgRoot,
+    });
 
     // Locally install the package created in the first step into the ./.tmp/tests-integration
     // directory. Note: yarn was caching old versions of the tarball, even
     // with --force, so using npm here instead.
-    execSync(
-        `${pkgRoot}/node_modules/.bin/npm install ./autolinker-${pkg.version}.tgz --force`,
-        {
-            cwd: testsOutputDir,
-        }
-    );
+    execSync(`${pkgRoot}/node_modules/.bin/npm install ./autolinker-${pkg.version}.tgz --force`, {
+        cwd: testsOutputDir,
+    });
 
     // Compile the test-webpack-typescript test project
     await buildWebpackTypeScriptTestProject();
@@ -51,33 +44,28 @@ import { execSync } from "./util/exec-sync";
     );
 
     async function buildWebpackTypeScriptTestProject() {
-        const testProjectDir = path.normalize(
-            `${testsOutputDir}/test-webpack-typescript`
-        );
+        const testProjectDir = path.normalize(`${testsOutputDir}/test-webpack-typescript`);
 
         return new Promise<void>((resolve, reject) => {
             webpack(
                 {
                     context: testProjectDir,
-                    entry: path.resolve(testProjectDir, "./page.ts"),
+                    entry: path.resolve(testProjectDir, './page.ts'),
                     output: {
-                        path: path.resolve(testProjectDir, "./webpack-output"),
+                        path: path.resolve(testProjectDir, './webpack-output'),
                     },
-                    mode: "production",
+                    mode: 'production',
                     module: {
                         rules: [
                             {
                                 test: /\.ts$/,
-                                loader: "ts-loader",
+                                loader: 'ts-loader',
                             },
                         ],
                     },
                     plugins: [
                         new HtmlWebpackPlugin({
-                            template: path.resolve(
-                                testProjectDir,
-                                "./page.html"
-                            ),
+                            template: path.resolve(testProjectDir, './page.html'),
                         }),
                     ],
                 },

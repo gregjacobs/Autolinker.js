@@ -1,28 +1,28 @@
 name: build-and-test
 on: [push]
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '2.7.18' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+            - uses: actions/setup-python@v2
+              with:
+                  python-version: '2.7.18' # Version range or exact version of a Python version to use, using SemVer's version range syntax
 
-      - name: npm install
-        run: npm install
+            - name: npm install
+              run: npm install
 
-      - name: install jsduck
-        run: gem install jsduck --user-install  # Need user install because system dir is not accessible
+            - name: install jsduck
+              run: gem install jsduck --user-install # Need user install because system dir is not accessible
 
-      - name: add jsduck to $PATH var
-        run: echo "${HOME}/.gem/ruby/2.7.0/bin" >> ${GITHUB_PATH} # This is how to add to $PATH on GitHub's runners
+            - name: add jsduck to $PATH var
+              run: echo "${HOME}/.gem/ruby/2.7.0/bin" >> ${GITHUB_PATH} # This is how to add to $PATH on GitHub's runners
 
-      - name: build
-        run: npm run build
+            - name: build
+              run: npm run build
 
-      - name: test
-        run: npm run test
+            - name: test
+              run: npm run test

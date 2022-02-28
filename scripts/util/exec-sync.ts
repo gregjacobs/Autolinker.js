@@ -8,8 +8,8 @@ export function execSync(command: string, options: ExecSyncOptions = {}): void {
     console.log(`> ${command}`);
 
     doExecSync(command, {
-        cwd: pkgDir,  // root dir of the package is the current working directory
+        cwd: pkgDir, // root dir of the package is the current working directory
         stdio: 'inherit',
-        ...options
+        ...options,
     });
 }

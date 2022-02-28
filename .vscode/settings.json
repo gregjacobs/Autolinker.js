@@ -1,7 +1,5 @@
 {
     "editor.insertSpaces": true,
-    "editor.rulers": [
-        80
-    ],
+    "editor.rulers": [80],
     "search.usePCRE2": true
 }
