@@ -8,8 +8,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - name: install
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '2.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+      - name: npm install
         run: npm install
+      - name: gem install jsduck
+        run: gem install jsduck
       - name: build
         run: npm run build
       - name: test
