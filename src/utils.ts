@@ -6,6 +6,7 @@
  * @param {Object} src The source object.
  * @return {Object} The destination object (`dest`)
  */
+//test
 export function defaults(dest: any, src: any) {
     for (let prop in src) {
         if (src.hasOwnProperty(prop) && dest[prop] === undefined) {
