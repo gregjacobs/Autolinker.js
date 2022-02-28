@@ -10,8 +10,19 @@ jobs:
           node-version: '14'
       - uses: actions/setup-python@v2
         with:
-          python-version: '2.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-      - run: npm install
-      - run: gem install jsduck --user-install
-      - run: npm run build
-      - run: npm run test
+          python-version: '2.7.18' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+      - name: npm install
+        run: npm install
+      - name: gem install jsduck
+        run: 
+          - gem install jsduck --user-install
+          - ls ${HOME}
+          - ls ${HOME}/.gem
+          - ls ${HOME}/.gem/ruby
+          - ls ${HOME}/.gem/ruby/2.7.18
+          - ls ${HOME}/.gem/ruby/2.7.18/bin
+          - export PATH=${HOME}/.gem/ruby/2.7.18/bin:${PATH}
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
