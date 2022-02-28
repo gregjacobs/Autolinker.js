@@ -13,11 +13,8 @@ jobs:
           python-version: '2.7.18' # Version range or exact version of a Python version to use, using SemVer's version range syntax
       - run: npm install
       - run: gem install jsduck --user-install
-      - run: ls ${HOME}
-      - run: ls ${HOME}/.gem
-      - run: ls ${HOME}/.gem/ruby
-      - run: ls ${HOME}/.gem/ruby/2.7.0
       - run: ls ${HOME}/.gem/ruby/2.7.0/bin
       - run: export PATH=${HOME}/.gem/ruby/2.7.0/bin:${PATH}
+      - run: which jsduck
       - run: npm run build
       - run: npm run test
