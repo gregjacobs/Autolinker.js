@@ -1,9 +1,8 @@
 import { Option, OptionCfg } from './Option';
 
 interface CheckboxOptionCfg extends OptionCfg {
-	defaultValue?: boolean;
+    defaultValue?: boolean;
 }
-
 
 /**
  * @class CheckboxOption
@@ -11,66 +10,62 @@ interface CheckboxOptionCfg extends OptionCfg {
  * A checkbox option for the live example.
  */
 export class CheckboxOption extends Option {
+    /**
+     * @cfg {Boolean} [defaultValue=false]
+     *
+     * `true` to check the checkbox by default.
+     */
+    private defaultValue: boolean = false;
 
-	/**
-	 * @cfg {Boolean} [defaultValue=false]
-	 *
-	 * `true` to check the checkbox by default.
-	 */
-	private defaultValue: boolean = false;
+    private $checkboxEl: JQuery;
+    private $valueDisplayEl: JQuery;
 
-	private $checkboxEl: JQuery;
-	private $valueDisplayEl: JQuery;
+    /**
+     * @method constructor
+     * @param {CheckboxOptionCfg} cfg The configuration options for this
+     *   class, specified in an Object (map).
+     */
+    constructor(cfg: CheckboxOptionCfg) {
+        super(cfg);
 
+        this.defaultValue = cfg.defaultValue || false;
 
-	/**
-	 * @method constructor
-	 * @param {CheckboxOptionCfg} cfg The configuration options for this
-	 *   class, specified in an Object (map).
-	 */
-	constructor( cfg: CheckboxOptionCfg ) {
-		super( cfg );
+        this.$containerEl.html(this.generateHtml());
+        this.$checkboxEl = this.$containerEl
+            .find(':checkbox')
+            .on('change', this.updateDisplayEl.bind(this));
+        this.$valueDisplayEl = this.$containerEl.find('#' + this.containerId + '-value');
+    }
 
-		this.defaultValue = cfg.defaultValue || false;
+    /**
+     * @private
+     * @return {string}
+     */
+    private generateHtml() {
+        var containerId = this.containerId,
+            optionDescription = this.optionDescription,
+            defaultValue = this.defaultValue,
+            checkboxId = containerId + '-checkbox';
 
-		this.$containerEl.html( this.generateHtml() );
-		this.$checkboxEl = this.$containerEl.find( ':checkbox' ).on( 'change', this.updateDisplayEl.bind( this ) );
-		this.$valueDisplayEl = this.$containerEl.find( '#' + this.containerId + '-value' );
-	}
-
-
-	/**
-	 * @private
-	 * @return {string}
-	 */
-	private generateHtml() {
-		var containerId = this.containerId,
-			optionDescription = this.optionDescription,
-			defaultValue = this.defaultValue,
-			checkboxId = containerId + '-checkbox';
-
-		return `
-			<input type="checkbox" id="${checkboxId}" ${ defaultValue ? 'checked' : '' }>
+        return `
+			<input type="checkbox" id="${checkboxId}" ${defaultValue ? 'checked' : ''}>
 			<label for="${checkboxId}">${optionDescription}</label>
-			(<code>${ this.getApiDocAnchor() }: <span id="${containerId}-value">${defaultValue}</span></code>)
+			(<code>${this.getApiDocAnchor()}: <span id="${containerId}-value">${defaultValue}</span></code>)
 		`;
-	}
+    }
 
+    /**
+     * @private
+     */
+    private updateDisplayEl() {
+        this.$valueDisplayEl.html(this.getValue() + '');
+        this.fireChange();
+    }
 
-	/**
-	 * @private
-	 */
-	private updateDisplayEl() {
-		this.$valueDisplayEl.html( this.getValue() + '' );
-		this.fireChange();
-	}
-
-
-	/**
-	 * @return {Boolean}
-	 */
-	getValue() {
-		return this.$checkboxEl.prop( 'checked' );
-	}
-
+    /**
+     * @return {Boolean}
+     */
+    getValue() {
+        return this.$checkboxEl.prop('checked');
+    }
 }

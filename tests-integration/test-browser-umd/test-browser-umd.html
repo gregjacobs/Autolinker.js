@@ -3,20 +3,22 @@
 	 Autolinker UMD file exposes Autolinker as a global variable when it is 
 	 included in a <script> tag -->
 <html>
-	<head>
-		<!-- Note: node_modules will be installed when this file is moved to the
+    <head>
+        <!-- Note: node_modules will be installed when this file is moved to the
 		     './.tmp/tests-integration' folder -->
-		<script src="../node_modules/autolinker/dist/Autolinker.min.js"></script>
-	</head>
+        <script src="../node_modules/autolinker/dist/Autolinker.min.js"></script>
+    </head>
 
-	<body>
-		Result: <span id="result"></span>
+    <body>
+        Result: <span id="result"></span>
 
-		<script>
-			var resultEl = document.getElementById( 'result' );
-			
-			var linkedStr = Autolinker.link( 'Go to google.com', { newWindow: false } );
-			resultEl.innerHTML = linkedStr;
-		</script>
-	</body>
+        <script>
+            var resultEl = document.getElementById('result');
+
+            var linkedStr = Autolinker.link('Go to google.com', {
+                newWindow: false,
+            });
+            resultEl.innerHTML = linkedStr;
+        </script>
+    </body>
 </html>

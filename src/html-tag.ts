@@ -1,4 +1,4 @@
-import { indexOf } from "./utils";
+import { indexOf } from './utils';
 
 /**
  * @class Autolinker.HtmlTag
@@ -75,291 +75,270 @@ import { indexOf } from "./utils";
  *     //   Test <button title="Load URL: http://google.com">Load URL: google.com</button>
  */
 export class HtmlTag {
+    /**
+     * @cfg {String} tagName
+     *
+     * The tag name. Ex: 'a', 'button', etc.
+     *
+     * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
+     * is executed.
+     */
+    private tagName: string = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
 
-	/**
-	 * @cfg {String} tagName
-	 *
-	 * The tag name. Ex: 'a', 'button', etc.
-	 *
-	 * Not required at instantiation time, but should be set using {@link #setTagName} before {@link #toAnchorString}
-	 * is executed.
-	 */
-	private tagName: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
+    /**
+     * @cfg {Object.<String, String>} attrs
+     *
+     * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
+     * values are the attribute values.
+     */
+    private attrs: { [key: string]: string } = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
 
-	/**
-	 * @cfg {Object.<String, String>} attrs
-	 *
-	 * An key/value Object (map) of attributes to create the tag with. The keys are the attribute names, and the
-	 * values are the attribute values.
-	 */
-	private attrs: { [key: string]: string } = {};  // default value just to get the above doc comment in the ES5 output and documentation generator
+    /**
+     * @cfg {String} innerHTML
+     *
+     * The inner HTML for the tag.
+     */
+    private innerHTML: string = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
 
-	/**
-	 * @cfg {String} innerHTML
-	 *
-	 * The inner HTML for the tag.
-	 */
-	private innerHTML: string = '';  // default value just to get the above doc comment in the ES5 output and documentation generator
+    /**
+     * @protected
+     * @property {RegExp} whitespaceRegex
+     *
+     * Regular expression used to match whitespace in a string of CSS classes.
+     */
+    protected whitespaceRegex = /\s+/; // default value just to get the above doc comment in the ES5 output and documentation generator
 
-	/**
-	 * @protected
-	 * @property {RegExp} whitespaceRegex
-	 *
-	 * Regular expression used to match whitespace in a string of CSS classes.
-	 */
-	protected whitespaceRegex = /\s+/;  // default value just to get the above doc comment in the ES5 output and documentation generator
+    /**
+     * @method constructor
+     * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
+     */
+    constructor(cfg: HtmlTagCfg = {}) {
+        this.tagName = cfg.tagName || '';
+        this.attrs = cfg.attrs || {};
+        this.innerHTML = cfg.innerHtml || cfg.innerHTML || ''; // accept either the camelCased form or the fully capitalized acronym as in the DOM
+    }
 
+    /**
+     * Sets the tag name that will be used to generate the tag with.
+     *
+     * @param {String} tagName
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setTagName(tagName: string) {
+        this.tagName = tagName;
+        return this;
+    }
 
-	/**
-	 * @method constructor
-	 * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
-	 */
-	constructor( cfg: HtmlTagCfg = {} ) {
-		this.tagName = cfg.tagName || '';
-		this.attrs = cfg.attrs || {};
-		this.innerHTML = cfg.innerHtml || cfg.innerHTML || '';  // accept either the camelCased form or the fully capitalized acronym as in the DOM
-	}
+    /**
+     * Retrieves the tag name.
+     *
+     * @return {String}
+     */
+    getTagName() {
+        return this.tagName || '';
+    }
 
+    /**
+     * Sets an attribute on the HtmlTag.
+     *
+     * @param {String} attrName The attribute name to set.
+     * @param {String} attrValue The attribute value to set.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setAttr(attrName: string, attrValue: string) {
+        let tagAttrs = this.getAttrs();
+        tagAttrs[attrName] = attrValue;
 
-	/**
-	 * Sets the tag name that will be used to generate the tag with.
-	 *
-	 * @param {String} tagName
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setTagName( tagName: string ) {
-		this.tagName = tagName;
-		return this;
-	}
+        return this;
+    }
 
+    /**
+     * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
+     *
+     * @param {String} attrName The attribute name to retrieve.
+     * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
+     */
+    getAttr(attrName: string) {
+        return this.getAttrs()[attrName];
+    }
 
-	/**
-	 * Retrieves the tag name.
-	 *
-	 * @return {String}
-	 */
-	getTagName() {
-		return this.tagName || '';
-	}
+    /**
+     * Sets one or more attributes on the HtmlTag.
+     *
+     * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setAttrs(attrs: { [attr: string]: string }) {
+        Object.assign(this.getAttrs(), attrs);
 
+        return this;
+    }
 
-	/**
-	 * Sets an attribute on the HtmlTag.
-	 *
-	 * @param {String} attrName The attribute name to set.
-	 * @param {String} attrValue The attribute value to set.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setAttr( attrName: string, attrValue: string ) {
-		let tagAttrs = this.getAttrs();
-		tagAttrs[ attrName ] = attrValue;
+    /**
+     * Retrieves the attributes Object (map) for the HtmlTag.
+     *
+     * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
+     */
+    getAttrs() {
+        return this.attrs || (this.attrs = {});
+    }
 
-		return this;
-	}
+    /**
+     * Sets the provided `cssClass`, overwriting any current CSS classes on the HtmlTag.
+     *
+     * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setClass(cssClass: string) {
+        return this.setAttr('class', cssClass);
+    }
 
+    /**
+     * Convenience method to add one or more CSS classes to the HtmlTag. Will not add duplicate CSS classes.
+     *
+     * @param {String} cssClass One or more space-separated CSS classes to add.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    addClass(cssClass: string) {
+        let classAttr = this.getClass(),
+            whitespaceRegex = this.whitespaceRegex,
+            classes = !classAttr ? [] : classAttr.split(whitespaceRegex),
+            newClasses = cssClass.split(whitespaceRegex),
+            newClass: string | undefined;
 
-	/**
-	 * Retrieves an attribute from the HtmlTag. If the attribute does not exist, returns `undefined`.
-	 *
-	 * @param {String} attrName The attribute name to retrieve.
-	 * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
-	 */
-	getAttr( attrName: string ) {
-		return this.getAttrs()[ attrName ];
-	}
+        while ((newClass = newClasses.shift())) {
+            if (indexOf(classes, newClass) === -1) {
+                classes.push(newClass);
+            }
+        }
 
+        this.getAttrs()['class'] = classes.join(' ');
+        return this;
+    }
 
-	/**
-	 * Sets one or more attributes on the HtmlTag.
-	 *
-	 * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setAttrs( attrs: {[attr: string]: string} ) {
-		Object.assign( this.getAttrs(), attrs );
+    /**
+     * Convenience method to remove one or more CSS classes from the HtmlTag.
+     *
+     * @param {String} cssClass One or more space-separated CSS classes to remove.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    removeClass(cssClass: string) {
+        let classAttr = this.getClass(),
+            whitespaceRegex = this.whitespaceRegex,
+            classes = !classAttr ? [] : classAttr.split(whitespaceRegex),
+            removeClasses = cssClass.split(whitespaceRegex),
+            removeClass: string | undefined;
 
-		return this;
-	}
+        while (classes.length && (removeClass = removeClasses.shift())) {
+            let idx = indexOf(classes, removeClass);
+            if (idx !== -1) {
+                classes.splice(idx, 1);
+            }
+        }
 
+        this.getAttrs()['class'] = classes.join(' ');
+        return this;
+    }
 
-	/**
-	 * Retrieves the attributes Object (map) for the HtmlTag.
-	 *
-	 * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
-	 */
-	getAttrs() {
-		return this.attrs || ( this.attrs = {} );
-	}
+    /**
+     * Convenience method to retrieve the CSS class(es) for the HtmlTag, which will each be separated by spaces when
+     * there are multiple.
+     *
+     * @return {String}
+     */
+    getClass() {
+        return this.getAttrs()['class'] || '';
+    }
 
+    /**
+     * Convenience method to check if the tag has a CSS class or not.
+     *
+     * @param {String} cssClass The CSS class to check for.
+     * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
+     */
+    hasClass(cssClass: string) {
+        return (' ' + this.getClass() + ' ').indexOf(' ' + cssClass + ' ') !== -1;
+    }
 
-	/**
-	 * Sets the provided `cssClass`, overwriting any current CSS classes on the HtmlTag.
-	 *
-	 * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setClass( cssClass: string ) {
-		return this.setAttr( 'class', cssClass );
-	}
+    /**
+     * Sets the inner HTML for the tag.
+     *
+     * @param {String} html The inner HTML to set.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setInnerHTML(html: string) {
+        this.innerHTML = html;
 
+        return this;
+    }
 
-	/**
-	 * Convenience method to add one or more CSS classes to the HtmlTag. Will not add duplicate CSS classes.
-	 *
-	 * @param {String} cssClass One or more space-separated CSS classes to add.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	addClass( cssClass: string ) {
-		let classAttr = this.getClass(),
-		    whitespaceRegex = this.whitespaceRegex,
-		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
-		    newClasses = cssClass.split( whitespaceRegex ),
-		    newClass: string | undefined;
+    /**
+     * Backwards compatibility method name.
+     *
+     * @param {String} html The inner HTML to set.
+     * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
+     */
+    setInnerHtml(html: string) {
+        return this.setInnerHTML(html);
+    }
 
-		while( newClass = newClasses.shift() ) {
-			if( indexOf( classes, newClass ) === -1 ) {
-				classes.push( newClass );
-			}
-		}
+    /**
+     * Retrieves the inner HTML for the tag.
+     *
+     * @return {String}
+     */
+    getInnerHTML() {
+        return this.innerHTML || '';
+    }
 
-		this.getAttrs()[ 'class' ] = classes.join( " " );
-		return this;
-	}
+    /**
+     * Backward compatibility method name.
+     *
+     * @return {String}
+     */
+    getInnerHtml() {
+        return this.getInnerHTML();
+    }
 
+    /**
+     * Override of superclass method used to generate the HTML string for the tag.
+     *
+     * @return {String}
+     */
+    toAnchorString() {
+        let tagName = this.getTagName(),
+            attrsStr = this.buildAttrsStr();
 
-	/**
-	 * Convenience method to remove one or more CSS classes from the HtmlTag.
-	 *
-	 * @param {String} cssClass One or more space-separated CSS classes to remove.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	removeClass( cssClass: string ) {
-		let classAttr = this.getClass(),
-		    whitespaceRegex = this.whitespaceRegex,
-		    classes = ( !classAttr ) ? [] : classAttr.split( whitespaceRegex ),
-		    removeClasses = cssClass.split( whitespaceRegex ),
-		    removeClass: string | undefined;
+        attrsStr = attrsStr ? ' ' + attrsStr : ''; // prepend a space if there are actually attributes
 
-		while( classes.length && ( removeClass = removeClasses.shift() ) ) {
-			let idx = indexOf( classes, removeClass );
-			if( idx !== -1 ) {
-				classes.splice( idx, 1 );
-			}
-		}
+        return ['<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>'].join('');
+    }
 
-		this.getAttrs()[ 'class' ] = classes.join( " " );
-		return this;
-	}
+    /**
+     * Support method for {@link #toAnchorString}, returns the string space-separated key="value" pairs, used to populate
+     * the stringified HtmlTag.
+     *
+     * @protected
+     * @return {String} Example return: `attr1="value1" attr2="value2"`
+     */
+    protected buildAttrsStr() {
+        if (!this.attrs) return ''; // no `attrs` Object (map) has been set, return empty string
 
+        let attrs = this.getAttrs(),
+            attrsArr: string[] = [];
 
-	/**
-	 * Convenience method to retrieve the CSS class(es) for the HtmlTag, which will each be separated by spaces when
-	 * there are multiple.
-	 *
-	 * @return {String}
-	 */
-	getClass() {
-		return this.getAttrs()[ 'class' ] || "";
-	}
-
-
-	/**
-	 * Convenience method to check if the tag has a CSS class or not.
-	 *
-	 * @param {String} cssClass The CSS class to check for.
-	 * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
-	 */
-	hasClass( cssClass: string ) {
-		return ( ' ' + this.getClass() + ' ' ).indexOf( ' ' + cssClass + ' ' ) !== -1;
-	}
-
-
-	/**
-	 * Sets the inner HTML for the tag.
-	 *
-	 * @param {String} html The inner HTML to set.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setInnerHTML( html: string ) {
-		this.innerHTML = html;
-
-		return this;
-	}
-
-
-	/**
-	 * Backwards compatibility method name.
-	 *
-	 * @param {String} html The inner HTML to set.
-	 * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
-	 */
-	setInnerHtml( html: string ) {
-		return this.setInnerHTML( html );
-	}
-
-
-	/**
-	 * Retrieves the inner HTML for the tag.
-	 *
-	 * @return {String}
-	 */
-	getInnerHTML() {
-		return this.innerHTML || "";
-	}
-
-
-	/**
-	 * Backward compatibility method name.
-	 *
-	 * @return {String}
-	 */
-	getInnerHtml() {
-		return this.getInnerHTML();
-	}
-
-
-	/**
-	 * Override of superclass method used to generate the HTML string for the tag.
-	 *
-	 * @return {String}
-	 */
-	toAnchorString() {
-		let tagName = this.getTagName(),
-		    attrsStr = this.buildAttrsStr();
-
-		attrsStr = ( attrsStr ) ? ' ' + attrsStr : '';  // prepend a space if there are actually attributes
-
-		return [ '<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>' ].join( "" );
-	}
-
-
-	/**
-	 * Support method for {@link #toAnchorString}, returns the string space-separated key="value" pairs, used to populate
-	 * the stringified HtmlTag.
-	 *
-	 * @protected
-	 * @return {String} Example return: `attr1="value1" attr2="value2"`
-	 */
-	protected buildAttrsStr() {
-		if( !this.attrs ) return "";  // no `attrs` Object (map) has been set, return empty string
-
-		let attrs = this.getAttrs(),
-		    attrsArr: string[] = [];
-
-		for( let prop in attrs ) {
-			if( attrs.hasOwnProperty( prop ) ) {
-				attrsArr.push( prop + '="' + attrs[ prop ] + '"' );
-			}
-		}
-		return attrsArr.join( " " );
-	}
-
+        for (let prop in attrs) {
+            if (attrs.hasOwnProperty(prop)) {
+                attrsArr.push(prop + '="' + attrs[prop] + '"');
+            }
+        }
+        return attrsArr.join(' ');
+    }
 }
 
-
 export interface HtmlTagCfg {
-	tagName?: string;
-	attrs?: { [key: string]: string };
-	innerHtml?: string;
-	innerHTML?: string;
+    tagName?: string;
+    attrs?: { [key: string]: string };
+    innerHtml?: string;
+    innerHTML?: string;
 }

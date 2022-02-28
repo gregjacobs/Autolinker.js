@@ -5,9 +5,5 @@ root = true
 
 # Tab indentation (no size specified)
 [*]
-indent_style = tab
-
-# Space indentation for markdown
-[*.md]
 indent_style = space
 indent_size = 4

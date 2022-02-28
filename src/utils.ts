@@ -6,16 +6,15 @@
  * @param {Object} src The source object.
  * @return {Object} The destination object (`dest`)
  */
-export function defaults( dest: any, src: any ) {
-	for( let prop in src ) {
-		if( src.hasOwnProperty( prop ) && dest[ prop ] === undefined ) {
-			dest[ prop ] = src[ prop ];
-		}
-	}
+export function defaults(dest: any, src: any) {
+    for (let prop in src) {
+        if (src.hasOwnProperty(prop) && dest[prop] === undefined) {
+            dest[prop] = src[prop];
+        }
+    }
 
-	return dest;
+    return dest;
 }
-
 
 /**
  * Truncates the `str` at `len - ellipsisChars.length`, and adds the `ellipsisChars` to the
@@ -27,22 +26,21 @@ export function defaults( dest: any, src: any ) {
  * @param {String} [ellipsisChars=...] The ellipsis character(s) to add to the end of `str`
  *   when truncated. Defaults to '...'
  */
-export function ellipsis( str: string, truncateLen: number, ellipsisChars?: string ) {
-	let ellipsisLength: number;
+export function ellipsis(str: string, truncateLen: number, ellipsisChars?: string) {
+    let ellipsisLength: number;
 
-	if( str.length > truncateLen ) {
-		if(ellipsisChars == null) {
-		  ellipsisChars = '&hellip;';
-		  ellipsisLength = 3;
-		} else {
-		  ellipsisLength = ellipsisChars.length;
-		}
+    if (str.length > truncateLen) {
+        if (ellipsisChars == null) {
+            ellipsisChars = '&hellip;';
+            ellipsisLength = 3;
+        } else {
+            ellipsisLength = ellipsisChars.length;
+        }
 
-		str = str.substring( 0, truncateLen - ellipsisLength ) + ellipsisChars;
-	}
-	return str;
+        str = str.substring(0, truncateLen - ellipsisLength) + ellipsisChars;
+    }
+    return str;
 }
-
 
 /**
  * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
@@ -51,21 +49,19 @@ export function ellipsis( str: string, truncateLen: number, ellipsisChars?: stri
  * @param {*} element The element to find in the array, and return the index of.
  * @return {Number} The index of the `element`, or -1 if it was not found.
  */
-export function indexOf<T>( arr: T[], element: T ) {
-	// @ts-ignore - As far as TypeScript is concerned, this method will always
-	// exist (lowest "lib" in TS is "ES5"). Hence we need to ignore this error
-	// to support IE8 which only implements ES3 and doesn't have this method
-	if( Array.prototype.indexOf ) {
-		return arr.indexOf( element );
-
-	} else {
-		for( let i = 0, len = arr.length; i < len; i++ ) {
-			if( arr[ i ] === element ) return i;
-		}
-		return -1;
-	}
+export function indexOf<T>(arr: T[], element: T) {
+    // @ts-ignore - As far as TypeScript is concerned, this method will always
+    // exist (lowest "lib" in TS is "ES5"). Hence we need to ignore this error
+    // to support IE8 which only implements ES3 and doesn't have this method
+    if (Array.prototype.indexOf) {
+        return arr.indexOf(element);
+    } else {
+        for (let i = 0, len = arr.length; i < len; i++) {
+            if (arr[i] === element) return i;
+        }
+        return -1;
+    }
 }
-
 
 /**
  * Removes array elements based on a filtering function. Mutates the input
@@ -81,14 +77,13 @@ export function indexOf<T>( arr: T[], element: T ) {
  *   remove an element.
  * @return {Array} The mutated input `arr`.
  */
-export function remove<T>( arr: T[], fn: ( item: T ) => boolean ) {
-	for( let i = arr.length - 1; i >= 0; i-- ) {
-		if( fn( arr[ i ] ) === true ) {
-			arr.splice( i, 1 );
-		}
-	}
+export function remove<T>(arr: T[], fn: (item: T) => boolean) {
+    for (let i = arr.length - 1; i >= 0; i--) {
+        if (fn(arr[i]) === true) {
+            arr.splice(i, 1);
+        }
+    }
 }
-
 
 /**
  * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
@@ -113,29 +108,28 @@ export function remove<T>( arr: T[], fn: ( item: T ) => boolean ) {
  *   to contain capturing parenthesis - it will be assumed that any match has them.
  * @return {String[]} The split array of strings, with the splitting character(s) included.
  */
-export function splitAndCapture( str: string, splitRegex: RegExp ) {
-	if( !splitRegex.global ) throw new Error( "`splitRegex` must have the 'g' flag set" );
+export function splitAndCapture(str: string, splitRegex: RegExp) {
+    if (!splitRegex.global) throw new Error("`splitRegex` must have the 'g' flag set");
 
-	let result: string[] = [],
-	    lastIdx = 0,
-	    match: RegExpExecArray | null;
+    let result: string[] = [],
+        lastIdx = 0,
+        match: RegExpExecArray | null;
 
-	while( match = splitRegex.exec( str ) ) {
-		result.push( str.substring( lastIdx, match.index ) );
-		result.push( match[ 0 ] );  // push the splitting char(s)
+    while ((match = splitRegex.exec(str))) {
+        result.push(str.substring(lastIdx, match.index));
+        result.push(match[0]); // push the splitting char(s)
 
-		lastIdx = match.index + match[ 0 ].length;
-	}
-	result.push( str.substring( lastIdx ) );
+        lastIdx = match.index + match[0].length;
+    }
+    result.push(str.substring(lastIdx));
 
-	return result;
+    return result;
 }
-
 
 /**
  * Function that should never be called but is used to check that every
  * enum value is handled using TypeScript's 'never' type.
  */
-export function throwUnhandledCaseError( theValue: never ) {
-	throw new Error( `Unhandled case for value: '${theValue}'` );
+export function throwUnhandledCaseError(theValue: never) {
+    throw new Error(`Unhandled case for value: '${theValue}'`);
 }

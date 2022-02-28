@@ -17,6 +17,7 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+var version_1 = require(&quot;./version&quot;);
 var utils_1 = require(&quot;./utils&quot;);
 var anchor_tag_builder_1 = require(&quot;./anchor-tag-builder&quot;);
 var match_1 = require(&quot;./match/match&quot;);
@@ -885,9 +886,9 @@ var Autolinker =  (function () {
      *
      * The Autolinker version number in the form major.minor.patch
      *
-     * Ex: 0.25.1
+     * Ex: 3.15.0
      */
-    Autolinker.version = &#39;3.15.0&#39;;
+    Autolinker.version = version_1.version;
 <span id='Autolinker-AnchorTagBuilder'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
      * class is provided as a static on the Autolinker class.
@@ -925,8 +926,6 @@ var Autolinker =  (function () {
     return Autolinker;
 }());
 exports.default = Autolinker;
-
-//# sourceMappingURL=autolinker.js.map
-</pre>
+//# sourceMappingURL=autolinker.js.map</pre>
 </body>
 </html>
