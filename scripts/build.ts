@@ -105,7 +105,7 @@ function fixCommonJsOutput() {
  * minified size of Autolinker
  */
  async function checkMinifiedFileSize() {
-	const stats = fse.statSync( './dist/Autolinker.min.js' );
+	const stats = fse.statSync(`${pkgDir}/dist/autolinker.min.js`);
 	const sizeInKb = stats.size / 1000;
 	const maxExpectedSizeInKb = 46.5;
 	
