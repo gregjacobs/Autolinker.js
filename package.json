@@ -14,7 +14,7 @@
 		"build:src": "ts-node scripts/build.ts",
 		"build:live-example": "webpack",
 		"clean": "rimraf dist",
-		"prepublishOnly": "npm run build",
+		"prepublishOnly": "npm-run-all build test",
 		"start": "webpack serve --open",
 		"test": "npm-run-all test:unit test:integration",
 		"test:unit": "node --require=ts-node/register node_modules/jasmine/bin/jasmine.js \"tests/**/*.spec.ts\"",
