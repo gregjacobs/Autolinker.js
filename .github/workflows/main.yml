@@ -11,11 +11,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '2.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-      - name: npm install
-        run: npm install
-      - name: gem install jsduck
-        run: gem install jsduck
-      - name: build
-        run: npm run build
-      - name: test
-        run: npm run test
+      - run: npm install
+      - run: pip install jsduck
+      - run: npm run build
+      - run: npm run test
