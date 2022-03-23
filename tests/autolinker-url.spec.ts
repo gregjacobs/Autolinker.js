@@ -307,6 +307,13 @@ describe('Autolinker Url Matching -', () => {
             );
         });
 
+        it('should match a url with underscores in domain label', function () {
+            let result = autolinker.link('https://gcs_test_env.storage.googleapis.com/file.pdf');
+            expect(result).toBe(
+                '<a href="https://gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
+            );
+        });
+
         it('should not match local urls with numbers when NOT prefixed with http://', function () {
             let result1 = autolinker.link('localhost.local001/test');
             expect(result1).toBe('localhost.local001/test');
@@ -653,6 +660,13 @@ describe('Autolinker Url Matching -', () => {
             );
         });
 
+        it('should match a url with underscores in domain label', function () {
+            let result = autolinker.link('gcs_test_env.storage.googleapis.com/file.pdf');
+            expect(result).toBe(
+                '<a href="http://gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
+            );
+        });
+
         it('should automatically link a URL with accented characters', function () {
             let result = autolinker.link('Joe went to mañana.com today.');
             expect(result).toBe('Joe went to <a href="http://mañana.com">mañana.com</a> today.');
@@ -678,6 +692,13 @@ describe('Autolinker Url Matching -', () => {
         it('should automatically link capitalized protocol-relative URLs', function () {
             let result = autolinker.link('Joe went to //YAHOO.COM');
             expect(result).toBe('Joe went to <a href="//YAHOO.COM">YAHOO.COM</a>');
+        });
+
+        it('should match a url with underscores in domain label', function () {
+            let result = autolinker.link('//gcs_test_env.storage.googleapis.com/file.pdf');
+            expect(result).toBe(
+                '<a href="//gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
+            );
         });
 
         it('should NOT automatically link supposed protocol-relative URLs in the form of abc//yahoo.com, which is most likely not supposed to be interpreted as a URL', function () {
