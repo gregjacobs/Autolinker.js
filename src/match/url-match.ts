@@ -170,6 +170,9 @@ export class UrlMatch extends Match {
     getAnchorHref() {
         let url = this.getUrl();
 
+        //Strip malicious Unicode SNYK-AUTOLINKER-2438289
+        url.replace('\u202E', '');
+
         return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
     }
 
