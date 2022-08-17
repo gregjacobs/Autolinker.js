@@ -1,11 +1,12 @@
 import _ from 'lodash';
+import { EmailMatcher } from '../src';
 import Autolinker, { AutolinkerConfig } from '../src/autolinker';
 
 describe('Autolinker XSS (Cross Site Scripting) check -', () => {
     function createAutolinker(options: Partial<AutolinkerConfig> = {}) {
         return new Autolinker(
             Object.assign({}, options, {
-                matchers: [],
+                matchers: [new EmailMatcher()],
                 newWindow: false, // just so that target="_blank" is not added to resulting autolinked URLs
             })
         );

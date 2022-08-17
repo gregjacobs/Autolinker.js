@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { EmailMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Mention Matching -', () => {
@@ -276,8 +277,7 @@ describe('Autolinker Mention Matching -', () => {
 		 email address when email address linking is turned on
 	`, () => {
         let emailAutolinker = new Autolinker({
-            matchers: [],
-            email: true,
+            matchers: [new EmailMatcher()],
             mention: 'twitter',
             newWindow: false,
         });
@@ -290,8 +290,9 @@ describe('Autolinker Mention Matching -', () => {
 		 email address when email address linking is turned *off*
 	`, () => {
         let noEmailAutolinker = new Autolinker({
-            matchers: [],
-            email: false,
+            matchers: [
+                // NOTE: No EmailMatcher
+            ],
             mention: 'twitter',
             newWindow: false,
         });

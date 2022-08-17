@@ -1,9 +1,10 @@
 import _ from 'lodash';
+import { EmailMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Email Matching -', () => {
     const autolinker = new Autolinker({
-        matchers: [],
+        matchers: [new EmailMatcher()],
         newWindow: false,
     }); // so that target="_blank" is not added to resulting autolinked URLs
 

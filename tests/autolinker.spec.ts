@@ -8,10 +8,11 @@ import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
 import { Matcher } from '../src/matcher/matcher';
+import { EmailMatcher } from '../src';
 
 describe('Autolinker', function () {
     // All matchers for purposes of testing
-    const matchers: Matcher[] = [new HashtagMatcher({ service: 'twitter' })];
+    const matchers: Matcher[] = [new HashtagMatcher({ service: 'twitter' }), new EmailMatcher()];
 
     describe('instantiating and using as a class', function () {
         it('should configure the instance with configuration options, and then be able to execute the link() method', function () {
@@ -1053,7 +1054,6 @@ describe('Autolinker', function () {
                 let result = Autolinker.link("Iggy's email is mr@iggypop.com", {
                     matchers,
                     newWindow: false,
-                    email: true,
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1313,9 +1313,11 @@ describe('Autolinker', function () {
 
             it('should not link email addresses when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers,
+                    matchers: [
+                        // NOTE: No EmailMatcher
+                        new HashtagMatcher({ service: 'twitter' }),
+                    ],
                     mention: 'twitter',
-                    email: false,
                     newWindow: false,
                 });
 
@@ -1371,6 +1373,7 @@ describe('Autolinker', function () {
                 let result = Autolinker.link(inputStr, {
                     matchers: [
                         // NOTE: no Hashtag matcher
+                        new EmailMatcher(),
                     ],
                     mention: 'twitter',
                     newWindow: false,
@@ -1771,6 +1774,7 @@ describe('Autolinker', function () {
 
                 const matchers: Matcher[] = [
                     ...(cfg.hashtag ? [new HashtagMatcher({ service: 'twitter' })] : []),
+                    ...(cfg.email ? [new EmailMatcher()] : []),
                 ];
 
                 let autolinker = new Autolinker({
@@ -1780,7 +1784,6 @@ describe('Autolinker', function () {
                         wwwMatches: cfg.wwwMatches,
                         tldMatches: cfg.tldMatches,
                     },
-                    email: cfg.email,
                     mention: cfg.mention,
                     phone: cfg.phone,
 
