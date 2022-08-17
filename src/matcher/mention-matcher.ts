@@ -115,7 +115,7 @@ export class MentionMatcher extends Matcher {
 
                 matches.push(
                     new MentionMatch({
-                        tagBuilder: tagBuilder,
+                        tagBuilder: tagBuilder!,
                         matchedText: matchedText,
                         offset: offset,
                         serviceName: serviceName,

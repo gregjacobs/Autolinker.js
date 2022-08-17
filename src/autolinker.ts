@@ -938,22 +938,26 @@ export default class Autolinker {
 
             let matchers = [
                 new HashtagMatcher({
-                    tagBuilder,
                     serviceName: this.hashtag as HashtagServices,
                 }),
-                new EmailMatcher({ tagBuilder }),
-                new PhoneMatcher({ tagBuilder }),
+                new EmailMatcher(),
+                new PhoneMatcher(),
                 new MentionMatcher({
-                    tagBuilder,
                     serviceName: this.mention as MentionServices,
                 }),
                 new UrlMatcher({
-                    tagBuilder,
                     stripPrefix: this.stripPrefix,
                     stripTrailingSlash: this.stripTrailingSlash,
                     decodePercentEncoding: this.decodePercentEncoding,
                 }),
             ];
+
+            // The TagBuilder will be provided to matchers after-the-fact to
+            // allow users to instantiate Matcher instances without needing to
+            // provide a TagBuilder to its constructor
+            matchers.forEach(matcher => {
+                matcher.setTagBuilder(tagBuilder);
+            });
 
             return (this.matchers = matchers);
         } else {

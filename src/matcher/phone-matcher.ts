@@ -72,7 +72,7 @@ export class PhoneMatcher extends Matcher {
             if (this.testMatch(match[3]) && this.testMatch(matchedText) && contextClear) {
                 matches.push(
                     new PhoneMatch({
-                        tagBuilder: tagBuilder,
+                        tagBuilder: tagBuilder!,
                         matchedText: matchedText,
                         offset: match.index,
                         number: cleanNumber,

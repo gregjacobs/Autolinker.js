@@ -237,7 +237,7 @@ export class UrlMatcher extends Matcher {
 
             matches.push(
                 new UrlMatch({
-                    tagBuilder: tagBuilder,
+                    tagBuilder: tagBuilder!,
                     matchedText: matchStr,
                     offset: offset,
                     urlMatchType: urlMatchType,
@@ -348,7 +348,7 @@ export class UrlMatcher extends Matcher {
 
         // prettier-ignore
         let re = new RegExp( "^((.?\/\/)?[-." + alphaNumericAndMarksCharsStr + "]*[-" + alphaNumericAndMarksCharsStr + "]\\.[-" + alphaNumericAndMarksCharsStr + "]+)" );
-		let res = re.exec(urlMatch);
+        let res = re.exec(urlMatch);
         if (res === null) {
             return -1;
         }

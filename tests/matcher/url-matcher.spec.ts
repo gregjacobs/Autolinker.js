@@ -1,13 +1,11 @@
 import { UrlMatcher } from '../../src/matcher/url-matcher';
 import { MatchChecker } from '../match/match-checker';
-import { AnchorTagBuilder } from '../../src/anchor-tag-builder';
 
 describe('Autolinker.matcher.Url', function () {
     let matcher: UrlMatcher;
 
     beforeEach(function () {
         matcher = new UrlMatcher({
-            tagBuilder: new AnchorTagBuilder(),
             stripPrefix: { scheme: false, www: false },
             stripTrailingSlash: false,
             decodePercentEncoding: false,

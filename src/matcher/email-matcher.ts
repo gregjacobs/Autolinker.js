@@ -294,7 +294,7 @@ export class EmailMatcher extends Matcher {
                 if (doesEmailHaveValidTld(emailAddress)) {
                     matches.push(
                         new EmailMatch({
-                            tagBuilder: tagBuilder,
+                            tagBuilder: tagBuilder!,
                             matchedText: matchedText,
                             offset: currentEmailMatch.idx,
                             email: emailAddress,

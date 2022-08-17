@@ -86,7 +86,7 @@ export class HashtagMatcher extends Matcher {
 
                 matches.push(
                     new HashtagMatch({
-                        tagBuilder: tagBuilder,
+                        tagBuilder: tagBuilder!,
                         matchedText: matchedText,
                         offset: offset,
                         serviceName: serviceName,

@@ -1,5 +1,4 @@
 import { MentionMatcher } from '../../src/matcher/mention-matcher';
-import { AnchorTagBuilder } from '../../src/anchor-tag-builder';
 import { MatchChecker } from '../match/match-checker';
 
 describe('Autolinker.matcher.Mention', function () {
@@ -7,7 +6,6 @@ describe('Autolinker.matcher.Mention', function () {
 
     beforeEach(function () {
         matcher = new MentionMatcher({
-            tagBuilder: new AnchorTagBuilder(),
             serviceName: 'twitter',
         });
     });
@@ -58,7 +56,6 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an Instagram username with period not at boundaries should be parsed correctly', function () {
             let instagramMatcher = new MentionMatcher({
-                tagBuilder: new AnchorTagBuilder(),
                 serviceName: 'instagram',
             });
             let matches = instagramMatcher.parseMatches('Hello (@as.df)');
@@ -69,7 +66,6 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an Instagram username with period at end of string should ignore period', function () {
             let instagramMatcher = new MentionMatcher({
-                tagBuilder: new AnchorTagBuilder(),
                 serviceName: 'instagram',
             });
             let matches = instagramMatcher.parseMatches('Hello (@asdf.)');
@@ -80,7 +76,6 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an soundcloud username with dashes not at boundaries should be parsed correctly', function () {
             var soundcloudMatcher = new MentionMatcher({
-                tagBuilder: new AnchorTagBuilder(),
                 serviceName: 'soundcloud',
             });
             var matches = soundcloudMatcher.parseMatches('Hello (@as-df)');

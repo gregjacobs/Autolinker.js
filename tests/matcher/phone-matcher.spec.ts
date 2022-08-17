@@ -1,5 +1,4 @@
 import { PhoneMatcher } from '../../src/matcher/phone-matcher';
-import { AnchorTagBuilder } from '../../src/anchor-tag-builder';
 import { MatchChecker } from '../match/match-checker';
 import { PhoneMatch } from '../../src';
 
@@ -7,9 +6,7 @@ describe('Autolinker.matcher.Phone', function () {
     let matcher: PhoneMatcher;
 
     beforeEach(function () {
-        matcher = new PhoneMatcher({
-            tagBuilder: new AnchorTagBuilder(),
-        });
+        matcher = new PhoneMatcher();
     });
 
     describe('parseMatches()', function () {

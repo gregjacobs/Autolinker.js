@@ -1,14 +1,11 @@
 import { EmailMatcher } from '../../src/matcher/email-matcher';
-import { AnchorTagBuilder } from '../../src/anchor-tag-builder';
 import { MatchChecker } from '../match/match-checker';
 
 describe('Autolinker.matcher.Email', () => {
     let matcher: EmailMatcher;
 
     beforeEach(() => {
-        matcher = new EmailMatcher({
-            tagBuilder: new AnchorTagBuilder(),
-        });
+        matcher = new EmailMatcher();
     });
 
     describe('parseMatches()', () => {

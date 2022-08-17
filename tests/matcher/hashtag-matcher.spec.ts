@@ -1,5 +1,4 @@
 import { HashtagMatcher } from '../../src/matcher/hashtag-matcher';
-import { AnchorTagBuilder } from '../../src/anchor-tag-builder';
 import { MatchChecker } from '../match/match-checker';
 
 describe('Autolinker.matcher.Hashtag', function () {
@@ -7,7 +6,6 @@ describe('Autolinker.matcher.Hashtag', function () {
 
     beforeEach(function () {
         matcher = new HashtagMatcher({
-            tagBuilder: new AnchorTagBuilder(),
             serviceName: 'twitter',
         });
     });

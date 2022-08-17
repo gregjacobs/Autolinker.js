@@ -1,5 +1,5 @@
-import { AnchorTagBuilder } from '../anchor-tag-builder';
-import { Match } from '../match/match';
+import type { AnchorTagBuilder } from '../anchor-tag-builder';
+import type { Match } from '../match/match';
 
 /**
  * @abstract
@@ -22,15 +22,24 @@ export abstract class Matcher {
     private __jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
 
     // Actual property for the above jsdoc comment
-    protected tagBuilder: AnchorTagBuilder;
+    protected tagBuilder?: AnchorTagBuilder;
 
     /**
      * @method constructor
      * @param {Object} cfg The configuration properties for the Matcher
-     *   instance, specified in an Object (map).
+     *   instance, specified in an Object.
      */
-    constructor(cfg: MatcherConfig) {
-        this.tagBuilder = cfg.tagBuilder;
+    constructor(_cfg: MatcherConfig = {}) {}
+
+    /**
+     * Because we allow custom Matcher instances to be configured in the
+     * Autolinker instance, we don't want to have users need to create their own
+     * TagBuilder instance to provide it as part of the Matcher constructor.
+     * Hence, we allow the Autolinker instance to assign the TagBuilder instance
+     * after-the-fact.
+     */
+    public setTagBuilder(tagBuilder: AnchorTagBuilder) {
+        this.tagBuilder = tagBuilder;
     }
 
     /**
@@ -44,6 +53,4 @@ export abstract class Matcher {
     abstract parseMatches(text: string): Match[];
 }
 
-export interface MatcherConfig {
-    tagBuilder: AnchorTagBuilder;
-}
+export interface MatcherConfig {}
