@@ -8,11 +8,15 @@ import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
 import { Matcher } from '../src/matcher/matcher';
-import { EmailMatcher } from '../src';
+import { EmailMatcher, PhoneMatcher } from '../src';
 
 describe('Autolinker', function () {
     // All matchers for purposes of testing
-    const matchers: Matcher[] = [new HashtagMatcher({ service: 'twitter' }), new EmailMatcher()];
+    const matchers: Matcher[] = [
+        new HashtagMatcher({ service: 'twitter' }),
+        new EmailMatcher(),
+        new PhoneMatcher(),
+    ];
 
     describe('instantiating and using as a class', function () {
         it('should configure the instance with configuration options, and then be able to execute the link() method', function () {
@@ -1316,6 +1320,7 @@ describe('Autolinker', function () {
                     matchers: [
                         // NOTE: No EmailMatcher
                         new HashtagMatcher({ service: 'twitter' }),
+                        new PhoneMatcher(),
                     ],
                     mention: 'twitter',
                     newWindow: false,
@@ -1334,9 +1339,12 @@ describe('Autolinker', function () {
 
             it('should not link phone numbers when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers,
+                    matchers: [
+                        // Note: no PhoneMatcher
+                        new HashtagMatcher({ service: 'twitter' }),
+                        new EmailMatcher(),
+                    ],
                     mention: 'twitter',
-                    phone: false,
                     newWindow: false,
                 });
 
@@ -1374,6 +1382,7 @@ describe('Autolinker', function () {
                     matchers: [
                         // NOTE: no Hashtag matcher
                         new EmailMatcher(),
+                        new PhoneMatcher(),
                     ],
                     mention: 'twitter',
                     newWindow: false,
@@ -1762,7 +1771,7 @@ describe('Autolinker', function () {
             // 7 different settings and two possibilities for each (on or off)
             // is 2^7 == 128 settings possibilities
             for (let i = 0, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
-                let cfg: MatcherTestConfig = {
+                let testCfg: MatcherTestConfig = {
                     schemeMatches: !!(i & parseInt('00000001', 2)),
                     wwwMatches: !!(i & parseInt('00000010', 2)),
                     tldMatches: !!(i & parseInt('00000100', 2)),
@@ -1773,19 +1782,19 @@ describe('Autolinker', function () {
                 };
 
                 const matchers: Matcher[] = [
-                    ...(cfg.hashtag ? [new HashtagMatcher({ service: 'twitter' })] : []),
-                    ...(cfg.email ? [new EmailMatcher()] : []),
+                    ...(testCfg.hashtag ? [new HashtagMatcher({ service: 'twitter' })] : []),
+                    ...(testCfg.email ? [new EmailMatcher()] : []),
+                    ...(testCfg.phone ? [new PhoneMatcher()] : []),
                 ];
 
                 let autolinker = new Autolinker({
                     matchers,
                     urls: {
-                        schemeMatches: cfg.schemeMatches,
-                        wwwMatches: cfg.wwwMatches,
-                        tldMatches: cfg.tldMatches,
+                        schemeMatches: testCfg.schemeMatches,
+                        wwwMatches: testCfg.wwwMatches,
+                        tldMatches: testCfg.tldMatches,
                     },
-                    mention: cfg.mention,
-                    phone: cfg.phone,
+                    mention: testCfg.mention,
 
                     newWindow: false,
                     stripPrefix: false,
@@ -1793,13 +1802,13 @@ describe('Autolinker', function () {
 
                 let result = autolinker.link(sourceParagraph),
                     resultLines = result.split('\n'), // splitting line-by-line to make it easier to see where a failure is
-                    expectedLines = generateExpectedLines(cfg);
+                    expectedLines = generateExpectedLines(testCfg);
 
                 expect(resultLines.length).toBe(expectedLines.length); // just in case
 
                 for (let j = 0, jlen = expectedLines.length; j < jlen; j++) {
                     if (resultLines[j] !== expectedLines[j]) {
-                        let errorMsg = generateErrMsg(resultLines[j], expectedLines[j], cfg);
+                        let errorMsg = generateErrMsg(resultLines[j], expectedLines[j], testCfg);
                         throw new Error(errorMsg);
                     }
                 }

@@ -6,7 +6,6 @@ import { UrlMatch } from './match/url-match';
 import type { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
 import { UrlMatcher } from './matcher/url-matcher';
-import { PhoneMatcher } from './matcher/phone-matcher';
 import { MentionMatcher } from './matcher/mention-matcher';
 import { parseHtml } from './htmlParser/parse-html';
 
@@ -247,14 +246,6 @@ export default class Autolinker {
     private readonly urls: UrlsConfigObj = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
-     * @cfg {Boolean} [phone=true]
-     *
-     * `true` if Phone numbers ("(555)555-5555") should be automatically linked,
-     * `false` if they should not be.
-     */
-    private readonly phone: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-
-    /**
      * @cfg {String/Boolean} [mention=false]
      *
      * A string for the service name to have mentions (ex: "@myuser")
@@ -479,7 +470,6 @@ export default class Autolinker {
         //       it refers to the default values set above the constructor
         this.matchers = cfg.matchers;
         this.urls = this.normalizeUrlsCfg(cfg.urls);
-        this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : this.phone;
         this.mention = cfg.mention || this.mention;
         this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
@@ -744,10 +734,10 @@ export default class Autolinker {
         //     remove(matches, (match: Match) => {
         //         return match.getType() === 'email';
         //     });
-        if (!this.phone)
-            remove(matches, (match: Match) => {
-                return match.getType() === 'phone';
-            });
+        // if (!this.phone)
+        //     remove(matches, (match: Match) => {
+        //         return match.getType() === 'phone';
+        //     });
         if (!this.mention)
             remove(matches, (match: Match) => {
                 return match.getType() === 'mention';
@@ -912,7 +902,6 @@ export default class Autolinker {
 
             let matchers = [
                 ...this.matchers,
-                new PhoneMatcher(),
                 new MentionMatcher({
                     serviceName: this.mention as MentionServices,
                 }),
@@ -961,7 +950,6 @@ export default class Autolinker {
 export interface AutolinkerConfig {
     matchers: Matcher[];
     urls?: UrlsConfig;
-    phone?: boolean;
     mention?: MentionConfig;
     newWindow?: boolean;
     stripPrefix?: StripPrefixConfig;
