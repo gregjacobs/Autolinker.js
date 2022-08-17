@@ -3,18 +3,22 @@ import Autolinker from '../src/autolinker';
 
 describe('Autolinker Mention Matching -', () => {
     const twitterAutolinker = new Autolinker({
+        matchers: [],
         mention: 'twitter',
         newWindow: false,
     });
     const instagramAutolinker = new Autolinker({
+        matchers: [],
         mention: 'instagram',
         newWindow: false,
     });
     const soundcloudAutolinker = new Autolinker({
+        matchers: [],
         mention: 'soundcloud',
         newWindow: false,
     });
     const tiktokAutolinker = new Autolinker({
+        matchers: [],
         mention: 'tiktok',
         newWindow: false,
     });
@@ -43,7 +47,10 @@ describe('Autolinker Mention Matching -', () => {
     ];
 
     it(`should not autolink mentions by default`, () => {
-        let autolinker = new Autolinker({ newWindow: false });
+        let autolinker = new Autolinker({
+            matchers: [],
+            newWindow: false,
+        });
         expect(autolinker.link('@test')).toBe('@test');
     });
 
@@ -269,6 +276,7 @@ describe('Autolinker Mention Matching -', () => {
 		 email address when email address linking is turned on
 	`, () => {
         let emailAutolinker = new Autolinker({
+            matchers: [],
             email: true,
             mention: 'twitter',
             newWindow: false,
@@ -282,6 +290,7 @@ describe('Autolinker Mention Matching -', () => {
 		 email address when email address linking is turned *off*
 	`, () => {
         let noEmailAutolinker = new Autolinker({
+            matchers: [],
             email: false,
             mention: 'twitter',
             newWindow: false,

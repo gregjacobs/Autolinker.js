@@ -6,7 +6,45 @@ describe('Autolinker.matcher.Hashtag', function () {
 
     beforeEach(function () {
         matcher = new HashtagMatcher({
-            serviceName: 'twitter',
+            service: 'twitter',
+        });
+    });
+
+    describe('`service` cfg', function () {
+        it('should throw if `hashtag` is a value other than `false` or one of the valid service names', function () {
+            expect(function () {
+                new HashtagMatcher({ service: true } as any); // `true` is an invalid value - must be a service name
+            }).toThrowError("HashtagMatcher: invalid `service` cfg 'true' - see docs");
+
+            expect(function () {
+                new HashtagMatcher({ service: 'non-existent-service' } as any);
+            }).toThrowError(
+                "HashtagMatcher: invalid `service` cfg 'non-existent-service' - see docs"
+            );
+        });
+
+        it("should not throw for the valid service name 'twitter'", function () {
+            expect(function () {
+                new HashtagMatcher({ service: 'twitter' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'facebook'", function () {
+            expect(function () {
+                new HashtagMatcher({ service: 'facebook' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'instagram'", function () {
+            expect(function () {
+                new HashtagMatcher({ service: 'instagram' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'tiktok'", function () {
+            expect(function () {
+                new HashtagMatcher({ service: 'tiktok' });
+            }).not.toThrow();
         });
     });
 

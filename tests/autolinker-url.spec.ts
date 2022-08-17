@@ -2,7 +2,10 @@ import _ from 'lodash';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Url Matching -', () => {
-    const autolinker = new Autolinker({ newWindow: false }); // so that target="_blank" is not added to resulting autolinked URLs
+    const autolinker = new Autolinker({
+        matchers: [],
+        newWindow: false, // so that target="_blank" is not added to resulting autolinked URLs
+    });
 
     describe('protocol-prefixed URLs (i.e. URLs starting with http:// or https://)', function () {
         it('should automatically link URLs in the form of http://yahoo.com', function () {

@@ -3,11 +3,10 @@ import { defaults, remove, splitAndCapture } from './utils';
 import { AnchorTagBuilder } from './anchor-tag-builder';
 import { Match } from './match/match';
 import { UrlMatch } from './match/url-match';
-import { Matcher } from './matcher/matcher';
+import type { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
 import { EmailMatcher } from './matcher/email-matcher';
 import { UrlMatcher } from './matcher/url-matcher';
-import { HashtagMatcher } from './matcher/hashtag-matcher';
 import { PhoneMatcher } from './matcher/phone-matcher';
 import { MentionMatcher } from './matcher/mention-matcher';
 import { parseHtml } from './htmlParser/parse-html';
@@ -147,13 +146,13 @@ export default class Autolinker {
      * @static
      * @param {String} textOrHtml The HTML or text to find matches within (depending
      *   on if the {@link #urls}, {@link #email}, {@link #phone}, {@link #mention},
-     *   {@link #hashtag}, and {@link #mention} options are enabled).
+     *   and {@link #mention} options are enabled).
      * @param {Object} [options] Any of the configuration options for the Autolinker
      *   class, specified in an Object (map). See the class description for an
      *   example call.
      * @return {String} The HTML text, with matches automatically linked.
      */
-    static link(textOrHtml: string, options?: AutolinkerConfig) {
+    static link(textOrHtml: string, options: AutolinkerConfig) {
         const autolinker = new Autolinker(options);
         return autolinker.link(textOrHtml);
     }
@@ -202,6 +201,14 @@ export default class Autolinker {
      * Ex: 0.25.1
      */
     readonly version = Autolinker.version;
+
+    /**
+     * @cfg {Autolinker.matcher.Matcher[]} matchers
+     *
+     * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
+     * instance to use to match the text to link.
+     */
+    private readonly matchers: Matcher[] = [];
 
     /**
      * @cfg {Boolean/Object} [urls]
@@ -255,20 +262,6 @@ export default class Autolinker {
      * `false` if they should not be.
      */
     private readonly phone: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-
-    /**
-     * @cfg {Boolean/String} [hashtag=false]
-     *
-     * A string for the service name to have hashtags (ex: "#myHashtag")
-     * auto-linked to. The currently-supported values are:
-     *
-     * - 'twitter'
-     * - 'facebook'
-     * - 'instagram'
-     *
-     * Pass `false` to skip auto-linking of hashtags.
-     */
-    private readonly hashtag: HashtagConfig = false; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {String/Boolean} [mention=false]
@@ -474,7 +467,7 @@ export default class Autolinker {
      *
      * This is lazily created in {@link #getMatchers}.
      */
-    private matchers: Matcher[] | null = null;
+    private finalMatchers: Matcher[] | null = null;
 
     /**
      * @private
@@ -490,13 +483,13 @@ export default class Autolinker {
      * @param {Object} [cfg] The configuration options for the Autolinker instance,
      *   specified in an Object (map).
      */
-    constructor(cfg: AutolinkerConfig = {}) {
+    constructor(cfg: AutolinkerConfig) {
         // Note: when `this.something` is used in the rhs of these assignments,
         //       it refers to the default values set above the constructor
+        this.matchers = cfg.matchers;
         this.urls = this.normalizeUrlsCfg(cfg.urls);
         this.email = typeof cfg.email === 'boolean' ? cfg.email : this.email;
         this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : this.phone;
-        this.hashtag = cfg.hashtag || this.hashtag;
         this.mention = cfg.mention || this.mention;
         this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
@@ -517,15 +510,6 @@ export default class Autolinker {
             ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1
         ) {
             throw new Error(`invalid \`mention\` cfg '${mention}' - see docs`);
-        }
-
-        // Validate the value of the `hashtag` cfg
-        const hashtag = this.hashtag;
-        if (
-            hashtag !== false &&
-            ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1
-        ) {
-            throw new Error(`invalid \`hashtag\` cfg '${hashtag}' - see docs`);
         }
 
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);
@@ -762,10 +746,10 @@ export default class Autolinker {
      * @return {Autolinker.match.Match[]} The mutated input `matches` array.
      */
     private removeUnwantedMatches(matches: Match[]) {
-        if (!this.hashtag)
-            remove(matches, (match: Match) => {
-                return match.getType() === 'hashtag';
-            });
+        // if (!this.hashtag)
+        //     remove(matches, (match: Match) => {
+        //         return match.getType() === 'hashtag';
+        //     });
         if (!this.email)
             remove(matches, (match: Match) => {
                 return match.getType() === 'email';
@@ -933,13 +917,11 @@ export default class Autolinker {
      * @return {Autolinker.matcher.Matcher[]}
      */
     private getMatchers() {
-        if (!this.matchers) {
+        if (!this.finalMatchers) {
             let tagBuilder = this.getTagBuilder();
 
             let matchers = [
-                new HashtagMatcher({
-                    serviceName: this.hashtag as HashtagServices,
-                }),
+                ...this.matchers,
                 new EmailMatcher(),
                 new PhoneMatcher(),
                 new MentionMatcher({
@@ -959,9 +941,9 @@ export default class Autolinker {
                 matcher.setTagBuilder(tagBuilder);
             });
 
-            return (this.matchers = matchers);
+            return (this.finalMatchers = matchers);
         } else {
-            return this.matchers;
+            return this.finalMatchers;
         }
     }
 
@@ -988,10 +970,10 @@ export default class Autolinker {
 }
 
 export interface AutolinkerConfig {
+    matchers: Matcher[];
     urls?: UrlsConfig;
     email?: boolean;
     phone?: boolean;
-    hashtag?: HashtagConfig;
     mention?: MentionConfig;
     newWindow?: boolean;
     stripPrefix?: StripPrefixConfig;
@@ -1024,9 +1006,6 @@ export interface TruncateConfigObj {
     length?: number;
     location?: 'end' | 'middle' | 'smart';
 }
-
-export type HashtagConfig = false | HashtagServices;
-export type HashtagServices = 'twitter' | 'facebook' | 'instagram' | 'tiktok';
 
 export type MentionConfig = false | MentionServices;
 export type MentionServices = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';

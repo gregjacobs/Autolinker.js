@@ -1,22 +1,26 @@
 import _ from 'lodash';
+import { HashtagMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe(`Autolinker Hashtag Matching -`, () => {
-    const autolinker = new Autolinker({ newWindow: false });
+    const autolinker = new Autolinker({
+        matchers: [],
+        newWindow: false,
+    });
     const twitterAutolinker = new Autolinker({
-        hashtag: 'twitter',
+        matchers: [new HashtagMatcher({ service: 'twitter' })],
         newWindow: false,
     });
     const facebookAutolinker = new Autolinker({
-        hashtag: 'facebook',
+        matchers: [new HashtagMatcher({ service: 'facebook' })],
         newWindow: false,
     });
     const instagramAutolinker = new Autolinker({
-        hashtag: 'instagram',
+        matchers: [new HashtagMatcher({ service: 'instagram' })],
         newWindow: false,
     });
     const tiktokAutolinker = new Autolinker({
-        hashtag: 'tiktok',
+        matchers: [new HashtagMatcher({ service: 'tiktok' })],
         newWindow: false,
     });
 
@@ -49,8 +53,8 @@ describe(`Autolinker Hashtag Matching -`, () => {
         expect(autolinker.link(`#test`)).toBe(`#test`);
     });
 
-    it(`should NOT autolink hashtags the 'hashtag' cfg is explicitly false`, () => {
-        const result = Autolinker.link(`#test`, { hashtag: false });
+    it(`should NOT autolink hashtags when the HashtagMatcher is not included`, () => {
+        const result = Autolinker.link(`#test`, { matchers: [] });
 
         expect(result).toBe(`#test`);
     });
@@ -121,7 +125,7 @@ describe(`Autolinker Hashtag Matching -`, () => {
 				 when using the ${serviceName} service`, () => {
                 const noUrlTwitterHashtagAutolinker = new Autolinker({
                     urls: false,
-                    hashtag: 'twitter',
+                    matchers: [],
                     newWindow: false,
                 });
                 const result = noUrlTwitterHashtagAutolinker.link(`http://google.com/#link`);

@@ -2,7 +2,10 @@ import _ from 'lodash';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Email Matching -', () => {
-    const autolinker = new Autolinker({ newWindow: false }); // so that target="_blank" is not added to resulting autolinked URLs
+    const autolinker = new Autolinker({
+        matchers: [],
+        newWindow: false,
+    }); // so that target="_blank" is not added to resulting autolinked URLs
 
     it('should automatically link an email address which is the only text in the string', function () {
         let result = autolinker.link('joe@joe.com');

@@ -2,7 +2,10 @@ import _ from 'lodash';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Phone Number Matching -', () => {
-    const autolinker = new Autolinker({ newWindow: false }); // so that target="_blank" is not added to resulting autolinked URLs
+    const autolinker = new Autolinker({
+        matchers: [],
+        newWindow: false, // so that target="_blank" is not added to resulting autolinked URLs
+    });
 
     it('should automatically link an in-country phone number', function () {
         expect(autolinker.link('(555)666-7777')).toBe('<a href="tel:5556667777">(555)666-7777</a>');

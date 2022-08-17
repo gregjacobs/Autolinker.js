@@ -1,5 +1,4 @@
 import { Matcher, MatcherConfig } from './matcher';
-import { HashtagServices } from '../autolinker';
 import { alphaNumericAndMarksCharsStr } from '../regex-lib';
 import { HashtagMatch } from '../match/hashtag-match';
 import { Match } from '../match/match';
@@ -23,12 +22,17 @@ const nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
  */
 export class HashtagMatcher extends Matcher {
     /**
-     * @cfg {String} serviceName
+     * @cfg {String} service
      *
-     * The service to point hashtag matches to. See {@link Autolinker#hashtag}
-     * for available values.
+     * A string for the service name to have hashtags (ex: "#myHashtag")
+     * auto-linked to. The currently-supported values are:
+     *
+     * - 'twitter'
+     * - 'facebook'
+     * - 'instagram'
+     * - 'tiktok'
      */
-    protected readonly serviceName: HashtagServices = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
+    protected readonly service: HashtagService = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * The regular expression to match Hashtags. Example match:
@@ -59,7 +63,12 @@ export class HashtagMatcher extends Matcher {
     constructor(cfg: HashtagMatcherConfig) {
         super(cfg);
 
-        this.serviceName = cfg.serviceName;
+        // Validate the value of the `service` cfg
+        const service = cfg.service;
+        if (hashtagServices.indexOf(service) === -1) {
+            throw new Error(`HashtagMatcher: invalid \`service\` cfg '${service}' - see docs`);
+        }
+        this.service = service;
     }
 
     /**
@@ -68,7 +77,7 @@ export class HashtagMatcher extends Matcher {
     parseMatches(text: string) {
         let matcherRegex = this.matcherRegex,
             nonWordCharRegex = this.nonWordCharRegex,
-            serviceName = this.serviceName,
+            serviceName = this.service,
             tagBuilder = this.tagBuilder,
             matches: Match[] = [],
             match: RegExpExecArray | null;
@@ -101,5 +110,9 @@ export class HashtagMatcher extends Matcher {
 }
 
 export interface HashtagMatcherConfig extends MatcherConfig {
-    serviceName: HashtagServices;
+    service: HashtagService;
 }
+
+export type HashtagService = 'twitter' | 'facebook' | 'instagram' | 'tiktok';
+export type HashtagServices = HashtagService; // backward compatibility with v3
+export const hashtagServices: HashtagService[] = ['twitter', 'facebook', 'instagram', 'tiktok'];
