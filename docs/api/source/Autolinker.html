@@ -269,7 +269,10 @@ var Autolinker =  (function () {
          *   `&#39;www.google.com&#39;` will be displayed as `&#39;google.com&#39;`. `false` to not
          *   strip the `&#39;www&#39;`.
          */
-        this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+        this.stripPrefix = {
+            scheme: true,
+            www: true,
+        }; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-cfg-stripTrailingSlash'>        /**
 </span>         * @cfg {Boolean} [stripTrailingSlash=true]
          *
@@ -337,7 +340,10 @@ var Autolinker =  (function () {
          *   &#39;yahoo.com/some..to/a/file&#39;. For more details, see
          *   {@link Autolinker.truncate.TruncateSmart}.
          */
-        this.truncate = { length: 0, location: &#39;end&#39; }; // default value just to get the above doc comment in the ES5 output and documentation generator
+        this.truncate = {
+            length: 0,
+            location: &#39;end&#39;,
+        }; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-cfg-className'>        /**
 </span>         * @cfg {String} className
          *
@@ -423,17 +429,25 @@ var Autolinker =  (function () {
         this.mention = cfg.mention || this.mention;
         this.newWindow = typeof cfg.newWindow === &#39;boolean&#39; ? cfg.newWindow : this.newWindow;
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-        this.stripTrailingSlash = typeof cfg.stripTrailingSlash === &#39;boolean&#39; ? cfg.stripTrailingSlash : this.stripTrailingSlash;
-        this.decodePercentEncoding = typeof cfg.decodePercentEncoding === &#39;boolean&#39; ? cfg.decodePercentEncoding : this.decodePercentEncoding;
+        this.stripTrailingSlash =
+            typeof cfg.stripTrailingSlash === &#39;boolean&#39;
+                ? cfg.stripTrailingSlash
+                : this.stripTrailingSlash;
+        this.decodePercentEncoding =
+            typeof cfg.decodePercentEncoding === &#39;boolean&#39;
+                ? cfg.decodePercentEncoding
+                : this.decodePercentEncoding;
         this.sanitizeHtml = cfg.sanitizeHtml || false;
         // Validate the value of the `mention` cfg
         var mention = this.mention;
-        if (mention !== false &amp;&amp; [&#39;twitter&#39;, &#39;instagram&#39;, &#39;soundcloud&#39;, &#39;tiktok&#39;].indexOf(mention) === -1) {
+        if (mention !== false &amp;&amp;
+            [&#39;twitter&#39;, &#39;instagram&#39;, &#39;soundcloud&#39;, &#39;tiktok&#39;].indexOf(mention) === -1) {
             throw new Error(&quot;invalid `mention` cfg &#39;&quot;.concat(mention, &quot;&#39; - see docs&quot;));
         }
         // Validate the value of the `hashtag` cfg
         var hashtag = this.hashtag;
-        if (hashtag !== false &amp;&amp; [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;].indexOf(hashtag) === -1) {
+        if (hashtag !== false &amp;&amp;
+            [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;].indexOf(hashtag) === -1) {
             throw new Error(&quot;invalid `hashtag` cfg &#39;&quot;.concat(hashtag, &quot;&#39; - see docs&quot;));
         }
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);
@@ -520,11 +534,12 @@ var Autolinker =  (function () {
         if (typeof urls === &#39;boolean&#39;) {
             return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
         }
-        else { // object form
+        else {
+            // object form
             return {
                 schemeMatches: typeof urls.schemeMatches === &#39;boolean&#39; ? urls.schemeMatches : true,
                 wwwMatches: typeof urls.wwwMatches === &#39;boolean&#39; ? urls.wwwMatches : true,
-                tldMatches: typeof urls.tldMatches === &#39;boolean&#39; ? urls.tldMatches : true
+                tldMatches: typeof urls.tldMatches === &#39;boolean&#39; ? urls.tldMatches : true,
             };
         }
     };
@@ -544,10 +559,11 @@ var Autolinker =  (function () {
         if (typeof stripPrefix === &#39;boolean&#39;) {
             return { scheme: stripPrefix, www: stripPrefix };
         }
-        else { // object form
+        else {
+            // object form
             return {
                 scheme: typeof stripPrefix.scheme === &#39;boolean&#39; ? stripPrefix.scheme : true,
-                www: typeof stripPrefix.www === &#39;boolean&#39; ? stripPrefix.www : true
+                www: typeof stripPrefix.www === &#39;boolean&#39; ? stripPrefix.www : true,
             };
         }
     };
@@ -565,10 +581,11 @@ var Autolinker =  (function () {
         if (typeof truncate === &#39;number&#39;) {
             return { length: truncate, location: &#39;end&#39; };
         }
-        else { // object, or undefined/null
+        else {
+            // object, or undefined/null
             return (0, utils_1.defaults)(truncate || {}, {
                 length: Number.POSITIVE_INFINITY,
-                location: &#39;end&#39;
+                location: &#39;end&#39;,
             });
         }
     };
@@ -619,7 +636,7 @@ var Autolinker =  (function () {
                 // Only process text nodes that are not within an &lt;a&gt;, &lt;style&gt; or &lt;script&gt; tag
                 if (skipTagsStackCount === 0) {
                     // &quot;Walk around&quot; common HTML entities. An &#39;&amp;nbsp;&#39; (for example)
-                    // could be at the end of a URL, but we don&#39;t want to 
+                    // could be at the end of a URL, but we don&#39;t want to
                     // include the trailing &#39;&amp;&#39; in the URL. See issue #76
                     // TODO: Handle HTML entities separately in parseHtml() and
                     // don&#39;t emit them as &quot;text&quot; except for &amp;amp; entities
@@ -668,7 +685,9 @@ var Autolinker =  (function () {
      */
     Autolinker.prototype.compactMatches = function (matches) {
         // First, the matches need to be sorted in order of offset
-        matches.sort(function (a, b) { return a.getOffset() - b.getOffset(); });
+        matches.sort(function (a, b) {
+            return a.getOffset() - b.getOffset();
+        });
         var i = 0;
         while (i &lt; matches.length - 1) {
             var match = matches[i], offset = match.getOffset(), matchedTextLength = match.getMatchedText().length, endIdx = offset + matchedTextLength;
@@ -709,15 +728,25 @@ var Autolinker =  (function () {
      */
     Autolinker.prototype.removeUnwantedMatches = function (matches) {
         if (!this.hashtag)
-            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;hashtag&#39;; });
+            (0, utils_1.remove)(matches, function (match) {
+                return match.getType() === &#39;hashtag&#39;;
+            });
         if (!this.email)
-            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;email&#39;; });
+            (0, utils_1.remove)(matches, function (match) {
+                return match.getType() === &#39;email&#39;;
+            });
         if (!this.phone)
-            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;phone&#39;; });
+            (0, utils_1.remove)(matches, function (match) {
+                return match.getType() === &#39;phone&#39;;
+            });
         if (!this.mention)
-            (0, utils_1.remove)(matches, function (match) { return match.getType() === &#39;mention&#39;; });
+            (0, utils_1.remove)(matches, function (match) {
+                return match.getType() === &#39;mention&#39;;
+            });
         if (!this.urls.schemeMatches) {
-            (0, utils_1.remove)(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;scheme&#39;; });
+            (0, utils_1.remove)(matches, function (m) {
+                return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;scheme&#39;;
+            });
         }
         if (!this.urls.wwwMatches) {
             (0, utils_1.remove)(matches, function (m) { return m.getType() === &#39;url&#39; &amp;&amp; m.getUrlMatchType() === &#39;www&#39;; });
@@ -785,16 +814,14 @@ var Autolinker =  (function () {
      */
     Autolinker.prototype.link = function (textOrHtml) {
         if (!textOrHtml) {
-            return &quot;&quot;;
+            return &#39;&#39;;
         } // handle `null` and `undefined` (for JavaScript users that don&#39;t have TypeScript support)
         /* We would want to sanitize the start and end characters of a tag
          * before processing the string in order to avoid an XSS scenario.
          * This behaviour can be changed by toggling the sanitizeHtml option.
          */
         if (this.sanitizeHtml) {
-            textOrHtml = textOrHtml
-                .replace(/&lt;/g, &#39;&amp;lt;&#39;)
-                .replace(/&gt;/g, &#39;&amp;gt;&#39;);
+            textOrHtml = textOrHtml.replace(/&lt;/g, &#39;&amp;lt;&#39;).replace(/&gt;/g, &#39;&amp;gt;&#39;);
         }
         var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
         for (var i = 0, len = matches.length; i &lt; len; i++) {
@@ -833,7 +860,8 @@ var Autolinker =  (function () {
         else if (replaceFnResult instanceof html_tag_1.HtmlTag) {
             return replaceFnResult.toAnchorString();
         }
-        else { // replaceFnResult === true, or no/unknown return value from function
+        else {
+            // replaceFnResult === true, or no/unknown return value from function
             // Perform Autolinker&#39;s default anchor tag generation
             var anchorTag = match.buildTag(); // returns an Autolinker.HtmlTag instance
             return anchorTag.toAnchorString();
@@ -850,11 +878,22 @@ var Autolinker =  (function () {
         if (!this.matchers) {
             var tagBuilder = this.getTagBuilder();
             var matchers = [
-                new hashtag_matcher_1.HashtagMatcher({ tagBuilder: tagBuilder, serviceName: this.hashtag }),
+                new hashtag_matcher_1.HashtagMatcher({
+                    tagBuilder: tagBuilder,
+                    serviceName: this.hashtag,
+                }),
                 new email_matcher_1.EmailMatcher({ tagBuilder: tagBuilder }),
                 new phone_matcher_1.PhoneMatcher({ tagBuilder: tagBuilder }),
-                new mention_matcher_1.MentionMatcher({ tagBuilder: tagBuilder, serviceName: this.mention }),
-                new url_matcher_1.UrlMatcher({ tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding })
+                new mention_matcher_1.MentionMatcher({
+                    tagBuilder: tagBuilder,
+                    serviceName: this.mention,
+                }),
+                new url_matcher_1.UrlMatcher({
+                    tagBuilder: tagBuilder,
+                    stripPrefix: this.stripPrefix,
+                    stripTrailingSlash: this.stripTrailingSlash,
+                    decodePercentEncoding: this.decodePercentEncoding,
+                }),
             ];
             return (this.matchers = matchers);
         }
@@ -875,11 +914,12 @@ var Autolinker =  (function () {
             tagBuilder = this.tagBuilder = new anchor_tag_builder_1.AnchorTagBuilder({
                 newWindow: this.newWindow,
                 truncate: this.truncate,
-                className: this.className
+                className: this.className,
             });
         }
         return tagBuilder;
     };
+    // NOTE: must be &#39;export default&#39; here for UMD module
 <span id='Autolinker-static-property-version'>    /**
 </span>     * @static
      * @property {String} version
@@ -909,7 +949,7 @@ var Autolinker =  (function () {
         Matcher: matcher_1.Matcher,
         Mention: mention_matcher_1.MentionMatcher,
         Phone: phone_matcher_1.PhoneMatcher,
-        Url: url_matcher_1.UrlMatcher
+        Url: url_matcher_1.UrlMatcher,
     };
 <span id='Autolinker-HtmlTag-property-match'>    /**
 </span>     * For backwards compatibility with Autolinker 1.x, the Match classes are
@@ -921,7 +961,7 @@ var Autolinker =  (function () {
         Match: match_1.Match,
         Mention: mention_match_1.MentionMatch,
         Phone: phone_match_1.PhoneMatch,
-        Url: url_match_1.UrlMatch
+        Url: url_match_1.UrlMatch,
     };
     return Autolinker;
 }());

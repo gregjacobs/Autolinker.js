@@ -24,8 +24,8 @@ var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var hashtag_match_1 = require(&quot;../match/hashtag-match&quot;);
 // RegExp objects which are shared by all instances of HashtagMatcher. These are
 // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-// called multiple times, thus instantiating HashtagMatcher and its RegExp 
-// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// called multiple times, thus instantiating HashtagMatcher and its RegExp
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
 // See descriptions of the properties where they are used for details about them
 var matcherRegex = new RegExp(&quot;#[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,139}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 139 characters
 var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
@@ -90,7 +90,7 @@ var HashtagMatcher =  (function (_super) {
                     matchedText: matchedText,
                     offset: offset,
                     serviceName: serviceName,
-                    hashtag: hashtag
+                    hashtag: hashtag,
                 }));
             }
         }

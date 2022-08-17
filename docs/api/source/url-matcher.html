@@ -26,9 +26,10 @@ var url_match_1 = require(&quot;../match/url-match&quot;);
 var url_match_validator_1 = require(&quot;./url-match-validator&quot;);
 // RegExp objects which are shared by all instances of UrlMatcher. These are
 // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-// called multiple times, thus instantiating UrlMatcher and its RegExp 
-// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// called multiple times, thus instantiating UrlMatcher and its RegExp
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
 // See descriptions of the properties where they are used for details about them
+// prettier-ignore
 var matcherRegex = (function () {
     var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format &quot;http://&quot; or &quot;mailto:&quot;. However, do not match the first part of something like &#39;link:http://www.google.com&#39; (i.e. don&#39;t match &quot;link:&quot;). Also, make sure we don&#39;t interpret &#39;google.com:8000&#39; as if &#39;google.com&#39; was a protocol here (i.e. ignore a trailing port number in this regex)
     wwwRegex = /(?:www\.)/, // starting with &#39;www.&#39;
@@ -82,7 +83,10 @@ var UrlMatcher =  (function (_super) {
          *
          * The Object form of {@link Autolinker#cfg-stripPrefix}.
          */
-        _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+        _this.stripPrefix = {
+            scheme: true,
+            www: true,
+        }; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-matcher-Url-cfg-stripTrailingSlash'>        /**
 </span>         * @cfg {Boolean} stripTrailingSlash (required)
          * @inheritdoc Autolinker#stripTrailingSlash
@@ -177,8 +181,8 @@ var UrlMatcher =  (function (_super) {
             if (/\?$/.test(matchStr)) {
                 matchStr = matchStr.substr(0, matchStr.length - 1);
             }
-            // Handle a closing parenthesis or square bracket at the end of the 
-            // match, and exclude it if there is not a matching open parenthesis 
+            // Handle a closing parenthesis or square bracket at the end of the
+            // match, and exclude it if there is not a matching open parenthesis
             // or square bracket in the match itself.
             if (this_1.matchHasUnbalancedClosingParen(matchStr)) {
                 matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing &quot;)&quot;
@@ -193,8 +197,8 @@ var UrlMatcher =  (function (_super) {
             // The autolinker accepts many characters in a url&#39;s scheme (like `fake://test.com`).
             // However, in cases where a URL is missing whitespace before an obvious link,
             // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
-            // at the http:// part. We will check if the match contains a common scheme and then 
-            // shift the match to start from there. 		
+            // at the http:// part. We will check if the match contains a common scheme and then
+            // shift the match to start from there.
             var foundCommonScheme = [&#39;http://&#39;, &#39;https://&#39;].find(function (commonScheme) { return !!schemeUrlMatch &amp;&amp; schemeUrlMatch.indexOf(commonScheme) !== -1; });
             if (foundCommonScheme) {
                 // If we found an overmatched URL, we want to find the index
@@ -205,7 +209,11 @@ var UrlMatcher =  (function (_super) {
                 schemeUrlMatch = schemeUrlMatch.substr(indexOfSchemeStart);
                 offset = offset + indexOfSchemeStart;
             }
-            var urlMatchType = schemeUrlMatch ? &#39;scheme&#39; : (wwwUrlMatch ? &#39;www&#39; : &#39;tld&#39;), protocolUrlMatch = !!schemeUrlMatch;
+            var urlMatchType = schemeUrlMatch
+                ? &#39;scheme&#39;
+                : wwwUrlMatch
+                    ? &#39;www&#39;
+                    : &#39;tld&#39;, protocolUrlMatch = !!schemeUrlMatch;
             matches.push(new url_match_1.UrlMatch({
                 tagBuilder: tagBuilder,
                 matchedText: matchStr,
@@ -267,7 +275,7 @@ var UrlMatcher =  (function (_super) {
             return false; // not a close parenthesis or square bracket
         }
         // Find if there are the same number of open braces as close braces in
-        // the URL string, minus the last character (which we have already 
+        // the URL string, minus the last character (which we have already
         // determined to be either &#39;)&#39;, &#39;]&#39; or &#39;}&#39;
         var numOpenBraces = 0;
         for (var i = 0, len = matchStr.length - 1; i &lt; len; i++) {
@@ -313,6 +321,7 @@ var UrlMatcher =  (function (_super) {
             offset = urlMatch.indexOf(&#39;:&#39;);
             urlMatch = urlMatch.slice(offset);
         }
+        // prettier-ignore
         var re = new RegExp(&quot;^((.?\/\/)?[-.&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]*[-&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]\\.[-&quot; + regex_lib_1.alphaNumericAndMarksCharsStr + &quot;]+)&quot;);
         var res = re.exec(urlMatch);
         if (res === null) {

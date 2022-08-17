@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v3.15.0
+ * v3.16.0
  *
  * Copyright(c) 2022 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -15,7 +15,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '3.15.0';
+    var version = '3.16.0';
 
     /**
      * Assigns (shallow copies) the properties of `src` onto `dest`, if the
@@ -127,7 +127,7 @@
         if (!splitRegex.global)
             throw new Error("`splitRegex` must have the 'g' flag set");
         var result = [], lastIdx = 0, match;
-        while (match = splitRegex.exec(str)) {
+        while ((match = splitRegex.exec(str))) {
             result.push(str.substring(lastIdx, match.index));
             result.push(match[0]); // push the splitting char(s)
             lastIdx = match.index + match[0].length;
@@ -330,13 +330,13 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.addClass = function (cssClass) {
-            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
-            while (newClass = newClasses.shift()) {
+            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
+            while ((newClass = newClasses.shift())) {
                 if (indexOf(classes, newClass) === -1) {
                     classes.push(newClass);
                 }
             }
-            this.getAttrs()['class'] = classes.join(" ");
+            this.getAttrs()['class'] = classes.join(' ');
             return this;
         };
         /**
@@ -346,14 +346,14 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.removeClass = function (cssClass) {
-            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
+            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
             while (classes.length && (removeClass = removeClasses.shift())) {
                 var idx = indexOf(classes, removeClass);
                 if (idx !== -1) {
                     classes.splice(idx, 1);
                 }
             }
-            this.getAttrs()['class'] = classes.join(" ");
+            this.getAttrs()['class'] = classes.join(' ');
             return this;
         };
         /**
@@ -363,7 +363,7 @@
          * @return {String}
          */
         HtmlTag.prototype.getClass = function () {
-            return this.getAttrs()['class'] || "";
+            return this.getAttrs()['class'] || '';
         };
         /**
          * Convenience method to check if the tag has a CSS class or not.
@@ -399,7 +399,7 @@
          * @return {String}
          */
         HtmlTag.prototype.getInnerHTML = function () {
-            return this.innerHTML || "";
+            return this.innerHTML || '';
         };
         /**
          * Backward compatibility method name.
@@ -416,8 +416,8 @@
          */
         HtmlTag.prototype.toAnchorString = function () {
             var tagName = this.getTagName(), attrsStr = this.buildAttrsStr();
-            attrsStr = (attrsStr) ? ' ' + attrsStr : ''; // prepend a space if there are actually attributes
-            return ['<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>'].join("");
+            attrsStr = attrsStr ? ' ' + attrsStr : ''; // prepend a space if there are actually attributes
+            return ['<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>'].join('');
         };
         /**
          * Support method for {@link #toAnchorString}, returns the string space-separated key="value" pairs, used to populate
@@ -428,14 +428,14 @@
          */
         HtmlTag.prototype.buildAttrsStr = function () {
             if (!this.attrs)
-                return ""; // no `attrs` Object (map) has been set, return empty string
+                return ''; // no `attrs` Object (map) has been set, return empty string
             var attrs = this.getAttrs(), attrsArr = [];
             for (var prop in attrs) {
                 if (attrs.hasOwnProperty(prop)) {
                     attrsArr.push(prop + '="' + attrs[prop] + '"');
                 }
             }
-            return attrsArr.join(" ");
+            return attrsArr.join(' ');
         };
         return HtmlTag;
     }());
@@ -465,6 +465,7 @@
             ellipsisLengthBeforeParsing = ellipsisChars.length;
         }
         var parse_url = function (url) {
+            // Functionality inspired by PHP function of same name
             var urlObj = {};
             var urlSub = url;
             var match = urlSub.match(/^([a-z]+):\/\//i);
@@ -495,26 +496,26 @@
             return urlObj;
         };
         var buildUrl = function (urlObj) {
-            var url = "";
+            var url = '';
             if (urlObj.scheme && urlObj.host) {
-                url += urlObj.scheme + "://";
+                url += urlObj.scheme + '://';
             }
             if (urlObj.host) {
                 url += urlObj.host;
             }
             if (urlObj.path) {
-                url += "/" + urlObj.path;
+                url += '/' + urlObj.path;
             }
             if (urlObj.query) {
-                url += "?" + urlObj.query;
+                url += '?' + urlObj.query;
             }
             if (urlObj.fragment) {
-                url += "#" + urlObj.fragment;
+                url += '#' + urlObj.fragment;
             }
             return url;
         };
         var buildSegment = function (segment, remainingAvailableLength) {
-            var remainingAvailableLengthHalf = remainingAvailableLength / 2, startOffset = Math.ceil(remainingAvailableLengthHalf), endOffset = (-1) * Math.floor(remainingAvailableLengthHalf), end = "";
+            var remainingAvailableLengthHalf = remainingAvailableLength / 2, startOffset = Math.ceil(remainingAvailableLengthHalf), endOffset = -1 * Math.floor(remainingAvailableLengthHalf), end = '';
             if (endOffset < 0) {
                 end = segment.substr(endOffset);
             }
@@ -538,29 +539,29 @@
             return url;
         }
         if (urlObj.host) {
-            urlObj.host = urlObj.host.replace(/^www\./, "");
+            urlObj.host = urlObj.host.replace(/^www\./, '');
             url = buildUrl(urlObj);
         }
         if (url.length <= truncateLen) {
             return url;
         }
         // Process and build the URL
-        var str = "";
+        var str = '';
         if (urlObj.host) {
             str += urlObj.host;
         }
         if (str.length >= availableLength) {
             if (urlObj.host.length == truncateLen) {
-                return (urlObj.host.substr(0, (truncateLen - ellipsisLength)) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
+                return (urlObj.host.substr(0, truncateLen - ellipsisLength) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
             }
             return buildSegment(str, availableLength).substr(0, availableLength + ellipsisLengthBeforeParsing);
         }
-        var pathAndQuery = "";
+        var pathAndQuery = '';
         if (urlObj.path) {
-            pathAndQuery += "/" + urlObj.path;
+            pathAndQuery += '/' + urlObj.path;
         }
         if (urlObj.query) {
-            pathAndQuery += "?" + urlObj.query;
+            pathAndQuery += '?' + urlObj.query;
         }
         if (pathAndQuery) {
             if ((str + pathAndQuery).length >= availableLength) {
@@ -575,7 +576,7 @@
             }
         }
         if (urlObj.fragment) {
-            var fragment = "#" + urlObj.fragment;
+            var fragment = '#' + urlObj.fragment;
             if ((str + fragment).length >= availableLength) {
                 if ((str + fragment).length == truncateLen) {
                     return (str + fragment).substr(0, truncateLen);
@@ -588,7 +589,7 @@
             }
         }
         if (urlObj.scheme && urlObj.host) {
-            var scheme = urlObj.scheme + "://";
+            var scheme = urlObj.scheme + '://';
             if ((str + scheme).length < availableLength) {
                 return (scheme + str).substr(0, truncateLen);
             }
@@ -596,9 +597,9 @@
         if (str.length <= truncateLen) {
             return str;
         }
-        var end = "";
+        var end = '';
         if (availableLength > 0) {
-            end = str.substr((-1) * Math.floor(availableLength / 2));
+            end = str.substr(-1 * Math.floor(availableLength / 2));
         }
         return (str.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
     }
@@ -630,9 +631,9 @@
             ellipsisLength = ellipsisChars.length;
         }
         var availableLength = truncateLen - ellipsisLength;
-        var end = "";
+        var end = '';
         if (availableLength > 0) {
-            end = url.substr((-1) * Math.floor(availableLength / 2));
+            end = url.substr(-1 * Math.floor(availableLength / 2));
         }
         return (url.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
     }
@@ -713,7 +714,7 @@
             return new HtmlTag({
                 tagName: 'a',
                 attrs: this.createAttrs(match),
-                innerHtml: this.processAnchorText(match.getAnchorText())
+                innerHtml: this.processAnchorText(match.getAnchorText()),
             });
         };
         /**
@@ -727,15 +728,15 @@
          */
         AnchorTagBuilder.prototype.createAttrs = function (match) {
             var attrs = {
-                'href': match.getAnchorHref() // we'll always have the `href` attribute
+                href: match.getAnchorHref(), // we'll always have the `href` attribute
             };
             var cssClass = this.createCssClass(match);
             if (cssClass) {
                 attrs['class'] = cssClass;
             }
             if (this.newWindow) {
-                attrs['target'] = "_blank";
-                attrs['rel'] = "noopener noreferrer"; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
+                attrs['target'] = '_blank';
+                attrs['rel'] = 'noopener noreferrer'; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
             }
             if (this.truncate) {
                 if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
@@ -767,7 +768,7 @@
         AnchorTagBuilder.prototype.createCssClass = function (match) {
             var className = this.className;
             if (!className) {
-                return "";
+                return '';
             }
             else {
                 var returnClasses = [className], cssClassSuffixes = match.getCssClassSuffixes();
@@ -1155,7 +1156,8 @@
                     return 'https://instagram.com/explore/tags/' + hashtag;
                 case 'tiktok':
                     return 'https://www.tiktok.com/tag/' + hashtag;
-                default: // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                default:
+                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
                     throw new Error('Unknown service name to point hashtag to: ' + serviceName);
             }
         };
@@ -1245,7 +1247,8 @@
                     return 'https://soundcloud.com/' + this.mention;
                 case 'tiktok':
                     return 'https://www.tiktok.com/@' + this.mention;
-                default: // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                default:
+                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
                     throw new Error('Unknown service name to point mention to: ' + this.serviceName);
             }
         };
@@ -1418,7 +1421,10 @@
              *
              * The Object form of {@link Autolinker#cfg-stripPrefix}.
              */
-            _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            _this.stripPrefix = {
+                scheme: true,
+                www: true,
+            }; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @cfg {Boolean} stripTrailingSlash (required)
              * @inheritdoc Autolinker#cfg-stripTrailingSlash
@@ -1615,7 +1621,8 @@
                 // Now attempt to decode the rest of the anchor text
                 return decodeURIComponent(preProcessedEntityAnchorText);
             }
-            catch (e) { // Invalid % escape sequence in the anchor text
+            catch (e) {
+                // Invalid % escape sequence in the anchor text
                 return preProcessedEntityAnchorText;
             }
         };
@@ -1708,6 +1715,7 @@
      *   help others who are pulling in Autolinker into their own build and running
      *   UglifyJS themselves.
      */
+    // prettier-ignore
     var alphaCharsStr = /A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC/
         .source; // see note in above variable description
     /**
@@ -1739,6 +1747,7 @@
      *   help others who are pulling in Autolinker into their own build and running
      *   UglifyJS themselves.
      */
+    // prettier-ignore
     var marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0711\u0730-\u074A\u07A6-\u07B0\u07EB-\u07F3\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D4-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A70\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0C00-\u0C03\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0D01-\u0D03\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D\u135D-\u135F\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u180B-\u180D\u1885\u1886\u18A9\u1920-\u192B\u1930-\u193B\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F\u1AB0-\u1ABE\u1B00-\u1B04\u1B34-\u1B44\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BE6-\u1BF3\u1C24-\u1C37\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF2-\u1CF4\u1CF8\u1CF9\u1DC0-\u1DF5\u1DFB-\u1DFF\u20D0-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA66F-\uA672\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8E0-\uA8F1\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9E5\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F/
         .source; // see note in above variable description
     /**
@@ -1774,6 +1783,7 @@
      *   help others who are pulling in Autolinker into their own build and running
      *   UglifyJS themselves.
      */
+    // prettier-ignore
     var decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\u1040-\u1049\u1090-\u1099\u17E0-\u17E9\u1810-\u1819\u1946-\u194F\u19D0-\u19D9\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\uA620-\uA629\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19/
         .source; // see note in above variable description
     /**
@@ -1797,8 +1807,9 @@
     var alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
     // Simplified IP regular expression
     var ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
-    // Protected domain label which do not allow "-" character on the beginning and the end of a single label
-    var domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
+    // Protected domain label which do not allow "-" or "_" character on the beginning and the end of a single label
+    // prettier-ignore
+    var domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-_]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
     var getDomainLabelStr = function (group) {
         return '(?=(' + domainLabelStr + '))\\' + group;
     };
@@ -1806,6 +1817,7 @@
      * A function to match domain names of a URL or email address.
      * Ex: 'google', 'yahoo', 'some-other-company', etc.
      */
+    // prettier-ignore
     var getDomainNameStr = function (group) {
         return '(?:' + getDomainLabelStr(group) + '(?:\\.' + getDomainLabelStr(group + 1) + '){0,126}|' + ipStr + ')';
     };
@@ -1817,14 +1829,14 @@
 
     // NOTE: THIS IS A GENERATED FILE
     // To update with the latest TLD list, run `npm run update-tld-regex`
-    var tldRegex = /(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|northwesternmutual|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbaakc7dvf|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|bananarepublic|cancerresearch|cookingchannel|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--jlq61u9w7b|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|travelchannel|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|foodnetwork|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|volkswagen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|alfaromeo|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|frontdoor|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|passagens|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cityeats|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|etisalat|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|guardian|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|maserati|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|showtime|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|avianca|banamex|bauhaus|bentley|bestbuy|booking|brother|bugatti|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|comcast|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hoteles|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|oldnavy|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|tiffany|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|xfinity|yamaxun|youtube|zuerich|католик|اتصالات|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abarth|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kinder|kindle|kosher|lancia|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|mutual|nagoya|natura|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rocher|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|vuelos|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dabur|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|linde|lipsy|loans|locus|lotte|lotto|macys|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|adac|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fiat|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|hgtv|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|loft|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shaw|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|cbs|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|sca|scb|ses|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|诺基亚|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)/;
+    var tldRegex = /(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|northwesternmutual|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbaakc7dvf|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|bananarepublic|cancerresearch|cookingchannel|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--jlq61u9w7b|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|travelchannel|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|foodnetwork|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|volkswagen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|alfaromeo|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|frontdoor|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|passagens|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cityeats|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|etisalat|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|guardian|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|maserati|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|showtime|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|avianca|banamex|bauhaus|bentley|bestbuy|booking|brother|bugatti|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|comcast|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hoteles|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|oldnavy|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|tiffany|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|xfinity|yamaxun|youtube|zuerich|католик|اتصالات|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abarth|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kinder|kindle|kosher|lancia|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|mutual|nagoya|natura|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rocher|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|vuelos|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dabur|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|linde|lipsy|loans|locus|lotte|lotto|macys|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|adac|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fiat|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|hgtv|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|loft|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shaw|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|cbs|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|sca|scb|ses|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|诺基亚|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)/;
 
     // For debugging: search for other "For debugging" lines
     // import CliTable from 'cli-table';
     // RegExp objects which are shared by all instances of EmailMatcher. These are
     // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating EmailMatcher and its RegExp 
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // called multiple times, thus instantiating EmailMatcher and its RegExp
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
     // See descriptions of the properties where they are used for details about them
     var localPartCharRegex = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "!#$%&'*+/=?^_`{|}~-]"));
     var strictTldRegex = new RegExp("^".concat(tldRegex.source, "$"));
@@ -1859,12 +1871,12 @@
             var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, strictTldRegex = this.strictTldRegex, matches = [], len = text.length, noCurrentEmailMatch = new CurrentEmailMatch();
             // for matching a 'mailto:' prefix
             var mailtoTransitions = {
-                'm': 'a',
-                'a': 'i',
-                'i': 'l',
-                'l': 't',
-                't': 'o',
-                'o': ':',
+                m: 'a',
+                a: 'i',
+                i: 'l',
+                l: 't',
+                t: 'o',
+                o: ':',
             };
             var charIdx = 0, state = 0 /* NonEmailMatch */, currentEmailMatch = noCurrentEmailMatch;
             // For debugging: search for other "For debugging" lines
@@ -1874,8 +1886,8 @@
             while (charIdx < len) {
                 var char = text.charAt(charIdx);
                 // For debugging: search for other "For debugging" lines
-                // table.push( 
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
+                // table.push(
+                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
                 // );
                 switch (state) {
                     case 0 /* NonEmailMatch */:
@@ -1906,8 +1918,8 @@
                         throwUnhandledCaseError(state);
                 }
                 // For debugging: search for other "For debugging" lines
-                // table.push( 
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ] 
+                // table.push(
+                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
                 // );
                 charIdx++;
             }
@@ -1936,7 +1948,7 @@
                     }
                     else {
                         // we've matched 'mailto:' but didn't get anything meaningful
-                        // immediately afterwards (for example, we encountered a 
+                        // immediately afterwards (for example, we encountered a
                         // space character, or an '@' character which formed 'mailto:@'
                         resetToNonEmailMatchState();
                     }
@@ -1962,7 +1974,7 @@
                     resetToNonEmailMatchState();
                 }
             }
-            // Handles the state when we're currently in the "local part" of an 
+            // Handles the state when we're currently in the "local part" of an
             // email address (as opposed to the "domain part")
             function stateLocalPart(char) {
                 if (char === '.') {
@@ -1977,15 +1989,15 @@
                     resetToNonEmailMatchState();
                 }
             }
-            // Handles the state where we've read 
+            // Handles the state where we've read
             function stateLocalPartDot(char) {
                 if (char === '.') {
-                    // We read a second '.' in a row, not a valid email address 
+                    // We read a second '.' in a row, not a valid email address
                     // local part
                     resetToNonEmailMatchState();
                 }
                 else if (char === '@') {
-                    // We read the '@' character immediately after a dot ('.'), not 
+                    // We read the '@' character immediately after a dot ('.'), not
                     // an email address
                     resetToNonEmailMatchState();
                 }
@@ -2065,11 +2077,12 @@
              * and resets the state to read another email address.
              */
             function captureMatchIfValidAndReset() {
-                if (currentEmailMatch.hasDomainDot) { // we need at least one dot in the domain to be considered a valid email address
+                if (currentEmailMatch.hasDomainDot) {
+                    // we need at least one dot in the domain to be considered a valid email address
                     var matchedText = text.slice(currentEmailMatch.idx, charIdx);
                     // If we read a '.' or '-' char that ended the email address
                     // (valid domain name characters, but only valid email address
-                    // characters if they are followed by something else), strip 
+                    // characters if they are followed by something else), strip
                     // it off now
                     if (/[-.]$/.test(matchedText)) {
                         matchedText = matchedText.slice(0, -1);
@@ -2083,7 +2096,7 @@
                             tagBuilder: tagBuilder,
                             matchedText: matchedText,
                             offset: currentEmailMatch.idx,
-                            email: emailAddress
+                            email: emailAddress,
                         }));
                     }
                 }
@@ -2176,7 +2189,7 @@
             if (this.hasFullProtocolRegex.test(urlMatch)) {
                 stringBeforeSlash = urlMatch.split('://')[1];
             }
-            return stringBeforeSlash.split('/')[0].indexOf("..") > -1;
+            return stringBeforeSlash.split('/')[0].indexOf('..') > -1;
         };
         /**
          * Determines if the URI scheme is a valid scheme to be autolinked. Returns
@@ -2189,7 +2202,7 @@
          */
         UrlMatchValidator.isValidUriScheme = function (uriSchemeMatch) {
             var uriSchemeMatchArr = uriSchemeMatch.match(this.uriSchemeRegex), uriScheme = uriSchemeMatchArr && uriSchemeMatchArr[0].toLowerCase();
-            return (uriScheme !== 'javascript:' && uriScheme !== 'vbscript:');
+            return uriScheme !== 'javascript:' && uriScheme !== 'vbscript:';
         };
         /**
          * Determines if a URL match does not have either:
@@ -2213,7 +2226,9 @@
          *   or at least one dot ('.') in a non-full-protocol match.
          */
         UrlMatchValidator.urlMatchDoesNotHaveProtocolOrDot = function (urlMatch, protocolUrlMatch) {
-            return (!!urlMatch && (!protocolUrlMatch || !this.hasFullProtocolRegex.test(protocolUrlMatch)) && urlMatch.indexOf('.') === -1);
+            return (!!urlMatch &&
+                (!protocolUrlMatch || !this.hasFullProtocolRegex.test(protocolUrlMatch)) &&
+                urlMatch.indexOf('.') === -1);
         };
         /**
          * Determines if a URL match does not have either:
@@ -2236,7 +2251,8 @@
          */
         UrlMatchValidator.urlMatchDoesNotHaveAtLeastOneWordChar = function (urlMatch, protocolUrlMatch) {
             if (urlMatch && protocolUrlMatch) {
-                return !this.hasFullProtocolRegex.test(protocolUrlMatch) && !this.hasWordCharAfterProtocolRegex.test(urlMatch);
+                return (!this.hasFullProtocolRegex.test(protocolUrlMatch) &&
+                    !this.hasWordCharAfterProtocolRegex.test(urlMatch));
             }
             else {
                 return false;
@@ -2264,7 +2280,7 @@
          * @private
          * @property {RegExp} hasWordCharAfterProtocolRegex
          */
-        UrlMatchValidator.hasWordCharAfterProtocolRegex = new RegExp(":[^\\s]*?[" + alphaCharsStr + "]");
+        UrlMatchValidator.hasWordCharAfterProtocolRegex = new RegExp(':[^\\s]*?[' + alphaCharsStr + ']');
         /**
          * Regex to determine if the string is a valid IP address
          *
@@ -2277,9 +2293,10 @@
 
     // RegExp objects which are shared by all instances of UrlMatcher. These are
     // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating UrlMatcher and its RegExp 
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // called multiple times, thus instantiating UrlMatcher and its RegExp
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
     // See descriptions of the properties where they are used for details about them
+    // prettier-ignore
     var matcherRegex$1 = (function () {
         var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
         wwwRegex = /(?:www\.)/, // starting with 'www.'
@@ -2333,7 +2350,10 @@
              *
              * The Object form of {@link Autolinker#cfg-stripPrefix}.
              */
-            _this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            _this.stripPrefix = {
+                scheme: true,
+                www: true,
+            }; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @cfg {Boolean} stripTrailingSlash (required)
              * @inheritdoc Autolinker#stripTrailingSlash
@@ -2428,8 +2448,8 @@
                 if (/\?$/.test(matchStr)) {
                     matchStr = matchStr.substr(0, matchStr.length - 1);
                 }
-                // Handle a closing parenthesis or square bracket at the end of the 
-                // match, and exclude it if there is not a matching open parenthesis 
+                // Handle a closing parenthesis or square bracket at the end of the
+                // match, and exclude it if there is not a matching open parenthesis
                 // or square bracket in the match itself.
                 if (this_1.matchHasUnbalancedClosingParen(matchStr)) {
                     matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing ")"
@@ -2444,8 +2464,8 @@
                 // The autolinker accepts many characters in a url's scheme (like `fake://test.com`).
                 // However, in cases where a URL is missing whitespace before an obvious link,
                 // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
-                // at the http:// part. We will check if the match contains a common scheme and then 
-                // shift the match to start from there. 		
+                // at the http:// part. We will check if the match contains a common scheme and then
+                // shift the match to start from there.
                 var foundCommonScheme = ['http://', 'https://'].find(function (commonScheme) { return !!schemeUrlMatch && schemeUrlMatch.indexOf(commonScheme) !== -1; });
                 if (foundCommonScheme) {
                     // If we found an overmatched URL, we want to find the index
@@ -2456,7 +2476,11 @@
                     schemeUrlMatch = schemeUrlMatch.substr(indexOfSchemeStart);
                     offset = offset + indexOfSchemeStart;
                 }
-                var urlMatchType = schemeUrlMatch ? 'scheme' : (wwwUrlMatch ? 'www' : 'tld'), protocolUrlMatch = !!schemeUrlMatch;
+                var urlMatchType = schemeUrlMatch
+                    ? 'scheme'
+                    : wwwUrlMatch
+                        ? 'www'
+                        : 'tld', protocolUrlMatch = !!schemeUrlMatch;
                 matches.push(new UrlMatch({
                     tagBuilder: tagBuilder,
                     matchedText: matchStr,
@@ -2518,7 +2542,7 @@
                 return false; // not a close parenthesis or square bracket
             }
             // Find if there are the same number of open braces as close braces in
-            // the URL string, minus the last character (which we have already 
+            // the URL string, minus the last character (which we have already
             // determined to be either ')', ']' or '}'
             var numOpenBraces = 0;
             for (var i = 0, len = matchStr.length - 1; i < len; i++) {
@@ -2564,6 +2588,7 @@
                 offset = urlMatch.indexOf(':');
                 urlMatch = urlMatch.slice(offset);
             }
+            // prettier-ignore
             var re = new RegExp("^((.?\/\/)?[-." + alphaNumericAndMarksCharsStr + "]*[-" + alphaNumericAndMarksCharsStr + "]\\.[-" + alphaNumericAndMarksCharsStr + "]+)");
             var res = re.exec(urlMatch);
             if (res === null) {
@@ -2581,8 +2606,8 @@
 
     // RegExp objects which are shared by all instances of HashtagMatcher. These are
     // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating HashtagMatcher and its RegExp 
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // called multiple times, thus instantiating HashtagMatcher and its RegExp
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
     // See descriptions of the properties where they are used for details about them
     var matcherRegex = new RegExp("#[_".concat(alphaNumericAndMarksCharsStr, "]{1,139}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 139 characters
     var nonWordCharRegex$1 = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
@@ -2647,7 +2672,7 @@
                         matchedText: matchedText,
                         offset: offset,
                         serviceName: serviceName,
-                        hashtag: hashtag
+                        hashtag: hashtag,
                     }));
                 }
             }
@@ -2718,7 +2743,7 @@
                         matchedText: matchedText,
                         offset: match.index,
                         number: cleanNumber,
-                        plusSign: plusSign
+                        plusSign: plusSign,
                     }));
                 }
             }
@@ -2732,8 +2757,8 @@
 
     // RegExp objects which are shared by all instances of MentionMatcher. These are
     // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating MentionMatcher and its RegExp 
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+    // called multiple times, thus instantiating MentionMatcher and its RegExp
+    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
     // See descriptions of the properties where they are used for details about them
     var twitterRegex = new RegExp("@[_".concat(alphaNumericAndMarksCharsStr, "]{1,50}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 50 characters
     var instagramRegex = new RegExp("@[_.".concat(alphaNumericAndMarksCharsStr, "]{1,30}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 30 characters
@@ -2774,10 +2799,10 @@
              * @property {Object} matcherRegexes
              */
             _this.matcherRegexes = {
-                'twitter': twitterRegex,
-                'instagram': instagramRegex,
-                'soundcloud': soundcloudRegex,
-                'tiktok': tiktokRegex
+                twitter: twitterRegex,
+                instagram: instagramRegex,
+                soundcloud: soundcloudRegex,
+                tiktok: tiktokRegex,
             };
             /**
              * The regular expression to use to check the character before a username match to
@@ -2813,7 +2838,7 @@
                         matchedText: matchedText,
                         offset: offset,
                         serviceName: serviceName,
-                        mention: mention
+                        mention: mention,
                     }));
                 }
             }
@@ -2888,8 +2913,8 @@
             var char = html.charAt(charIdx);
             // For debugging: search for other "For debugging" lines
             // ALSO: Temporarily remove the 'const' keyword on the State enum
-            // table.push( 
-            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+            // table.push(
+            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
             // );
             switch (state) {
                 case 0 /* Data */:
@@ -2960,8 +2985,8 @@
             }
             // For debugging: search for other "For debugging" lines
             // ALSO: Temporarily remove the 'const' keyword on the State enum
-            // table.push( 
-            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ] 
+            // table.push(
+            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
             // );
             charIdx++;
         }
@@ -2997,12 +3022,12 @@
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isOpening: true }));
             }
             else {
-                // Any other 
+                // Any other
                 state = 0 /* Data */;
                 currentTag = noCurrentTag;
             }
         }
-        // After a '<x', '</x' sequence is read (where 'x' is a letter character), 
+        // After a '<x', '</x' sequence is read (where 'x' is a letter character),
         // this is to continue reading the tag name
         // https://www.w3.org/TR/html51/syntax.html#tag-name-state
         function stateTagName(char) {
@@ -3023,7 +3048,7 @@
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
             else if (!letterRe.test(char) && !digitRe.test(char) && char !== ':') {
-                // Anything else that does not form an html tag. Note: the colon 
+                // Anything else that does not form an html tag. Note: the colon
                 // character is accepted for XML namespaced tags
                 resetToDataState();
             }
@@ -3032,7 +3057,8 @@
         // Called after the '/' is read from a '</' sequence
         // https://www.w3.org/TR/html51/syntax.html#end-tag-open-state
         function stateEndTagOpen(char) {
-            if (char === '>') { // parse error. Encountered "</>". Skip it without treating as a tag
+            if (char === '>') {
+                // parse error. Encountered "</>". Skip it without treating as a tag
                 resetToDataState();
             }
             else if (letterRe.test(char)) {
@@ -3130,7 +3156,7 @@
                 state = 9 /* AttributeValueSingleQuoted */;
             }
             else if (/[>=`]/.test(char)) {
-                // Invalid chars after an '=' for an attribute value, don't count 
+                // Invalid chars after an '=' for an attribute value, don't count
                 // the current tag as an HTML tag
                 resetToDataState();
             }
@@ -3145,13 +3171,15 @@
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-value-double-quoted-state
         function stateAttributeValueDoubleQuoted(char) {
-            if (char === "\"") { // end the current double-quoted attribute
+            if (char === "\"") {
+                // end the current double-quoted attribute
                 state = 11 /* AfterAttributeValueQuoted */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-value-single-quoted-state
         function stateAttributeValueSingleQuoted(char) {
-            if (char === "'") { // end the current single-quoted attribute
+            if (char === "'") {
+                // end the current single-quoted attribute
                 state = 11 /* AfterAttributeValueQuoted */;
             }
         }
@@ -3192,7 +3220,7 @@
                 reconsumeCurrentCharacter();
             }
         }
-        // A '/' has just been read in the current tag (presumably for '/>'), and 
+        // A '/' has just been read in the current tag (presumably for '/>'), and
         // this handles the next character
         // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
         function stateSelfClosingStartTag(char) {
@@ -3207,7 +3235,8 @@
         // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
         // (HTML Comments or !DOCTYPE)
         function stateMarkupDeclarationOpen(char) {
-            if (html.substr(charIdx, 2) === '--') { // html comment
+            if (html.substr(charIdx, 2) === '--') {
+                // html comment
                 charIdx += 2; // "consume" characters
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'comment' }));
                 state = 14 /* CommentStart */;
@@ -3219,7 +3248,7 @@
             }
             else {
                 // At this point, the spec specifies that the state machine should
-                // enter the "bogus comment" state, in which case any character(s) 
+                // enter the "bogus comment" state, in which case any character(s)
                 // after the '<!' that were read should become an HTML comment up
                 // until the first '>' that is read (or EOF). Instead, we'll assume
                 // that a user just typed '<!' as part of text data
@@ -3235,7 +3264,7 @@
             }
             else if (char === '>') {
                 // At this point, we'll assume the comment wasn't a real comment
-                // so we'll just emit it as data. We basically read the sequence 
+                // so we'll just emit it as data. We basically read the sequence
                 // '<!-->'
                 resetToDataState();
             }
@@ -3253,7 +3282,7 @@
             }
             else if (char === '>') {
                 // At this point, we'll assume the comment wasn't a real comment
-                // so we'll just emit it as data. We basically read the sequence 
+                // so we'll just emit it as data. We basically read the sequence
                 // '<!--->'
                 resetToDataState();
             }
@@ -3281,7 +3310,7 @@
                 state = 16 /* Comment */;
             }
         }
-        // After we've read two dashes inside a comment, it may signal the end of 
+        // After we've read two dashes inside a comment, it may signal the end of
         // the comment if we then read a '>' char
         // https://www.w3.org/TR/html51/syntax.html#comment-end-state
         function stateCommentEnd(char) {
@@ -3311,7 +3340,7 @@
                 emitTagAndPreviousTextNode();
             }
             else {
-                // The '--!' was not followed by a '>', continue reading the 
+                // The '--!' was not followed by a '>', continue reading the
                 // comment's text
                 state = 16 /* Comment */;
             }
@@ -3365,8 +3394,8 @@
         function emitTagAndPreviousTextNode() {
             var textBeforeTag = html.slice(currentDataIdx, currentTag.idx);
             if (textBeforeTag) {
-                // the html tag was the first element in the html string, or two 
-                // tags next to each other, in which case we should not emit a text 
+                // the html tag was the first element in the html string, or two
+                // tags next to each other, in which case we should not emit a text
                 // node
                 onText(textBeforeTag, currentDataIdx);
             }
@@ -3380,7 +3409,8 @@
                 if (currentTag.isOpening) {
                     onOpenTag(currentTag.name, currentTag.idx);
                 }
-                if (currentTag.isClosing) { // note: self-closing tags will emit both opening and closing
+                if (currentTag.isClosing) {
+                    // note: self-closing tags will emit both opening and closing
                     onCloseTag(currentTag.name, currentTag.idx);
                 }
             }
@@ -3657,7 +3687,10 @@
              *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
              *   strip the `'www'`.
              */
-            this.stripPrefix = { scheme: true, www: true }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            this.stripPrefix = {
+                scheme: true,
+                www: true,
+            }; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @cfg {Boolean} [stripTrailingSlash=true]
              *
@@ -3725,7 +3758,10 @@
              *   'yahoo.com/some..to/a/file'. For more details, see
              *   {@link Autolinker.truncate.TruncateSmart}.
              */
-            this.truncate = { length: 0, location: 'end' }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            this.truncate = {
+                length: 0,
+                location: 'end',
+            }; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @cfg {String} className
              *
@@ -3811,17 +3847,25 @@
             this.mention = cfg.mention || this.mention;
             this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
             this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-            this.stripTrailingSlash = typeof cfg.stripTrailingSlash === 'boolean' ? cfg.stripTrailingSlash : this.stripTrailingSlash;
-            this.decodePercentEncoding = typeof cfg.decodePercentEncoding === 'boolean' ? cfg.decodePercentEncoding : this.decodePercentEncoding;
+            this.stripTrailingSlash =
+                typeof cfg.stripTrailingSlash === 'boolean'
+                    ? cfg.stripTrailingSlash
+                    : this.stripTrailingSlash;
+            this.decodePercentEncoding =
+                typeof cfg.decodePercentEncoding === 'boolean'
+                    ? cfg.decodePercentEncoding
+                    : this.decodePercentEncoding;
             this.sanitizeHtml = cfg.sanitizeHtml || false;
             // Validate the value of the `mention` cfg
             var mention = this.mention;
-            if (mention !== false && ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1) {
+            if (mention !== false &&
+                ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1) {
                 throw new Error("invalid `mention` cfg '".concat(mention, "' - see docs"));
             }
             // Validate the value of the `hashtag` cfg
             var hashtag = this.hashtag;
-            if (hashtag !== false && ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1) {
+            if (hashtag !== false &&
+                ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1) {
                 throw new Error("invalid `hashtag` cfg '".concat(hashtag, "' - see docs"));
             }
             this.truncate = this.normalizeTruncateCfg(cfg.truncate);
@@ -3908,11 +3952,12 @@
             if (typeof urls === 'boolean') {
                 return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
             }
-            else { // object form
+            else {
+                // object form
                 return {
                     schemeMatches: typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
                     wwwMatches: typeof urls.wwwMatches === 'boolean' ? urls.wwwMatches : true,
-                    tldMatches: typeof urls.tldMatches === 'boolean' ? urls.tldMatches : true
+                    tldMatches: typeof urls.tldMatches === 'boolean' ? urls.tldMatches : true,
                 };
             }
         };
@@ -3932,10 +3977,11 @@
             if (typeof stripPrefix === 'boolean') {
                 return { scheme: stripPrefix, www: stripPrefix };
             }
-            else { // object form
+            else {
+                // object form
                 return {
                     scheme: typeof stripPrefix.scheme === 'boolean' ? stripPrefix.scheme : true,
-                    www: typeof stripPrefix.www === 'boolean' ? stripPrefix.www : true
+                    www: typeof stripPrefix.www === 'boolean' ? stripPrefix.www : true,
                 };
             }
         };
@@ -3953,10 +3999,11 @@
             if (typeof truncate === 'number') {
                 return { length: truncate, location: 'end' };
             }
-            else { // object, or undefined/null
+            else {
+                // object, or undefined/null
                 return defaults(truncate || {}, {
                     length: Number.POSITIVE_INFINITY,
-                    location: 'end'
+                    location: 'end',
                 });
             }
         };
@@ -4007,7 +4054,7 @@
                     // Only process text nodes that are not within an <a>, <style> or <script> tag
                     if (skipTagsStackCount === 0) {
                         // "Walk around" common HTML entities. An '&nbsp;' (for example)
-                        // could be at the end of a URL, but we don't want to 
+                        // could be at the end of a URL, but we don't want to
                         // include the trailing '&' in the URL. See issue #76
                         // TODO: Handle HTML entities separately in parseHtml() and
                         // don't emit them as "text" except for &amp; entities
@@ -4056,7 +4103,9 @@
          */
         Autolinker.prototype.compactMatches = function (matches) {
             // First, the matches need to be sorted in order of offset
-            matches.sort(function (a, b) { return a.getOffset() - b.getOffset(); });
+            matches.sort(function (a, b) {
+                return a.getOffset() - b.getOffset();
+            });
             var i = 0;
             while (i < matches.length - 1) {
                 var match = matches[i], offset = match.getOffset(), matchedTextLength = match.getMatchedText().length, endIdx = offset + matchedTextLength;
@@ -4097,15 +4146,25 @@
          */
         Autolinker.prototype.removeUnwantedMatches = function (matches) {
             if (!this.hashtag)
-                remove(matches, function (match) { return match.getType() === 'hashtag'; });
+                remove(matches, function (match) {
+                    return match.getType() === 'hashtag';
+                });
             if (!this.email)
-                remove(matches, function (match) { return match.getType() === 'email'; });
+                remove(matches, function (match) {
+                    return match.getType() === 'email';
+                });
             if (!this.phone)
-                remove(matches, function (match) { return match.getType() === 'phone'; });
+                remove(matches, function (match) {
+                    return match.getType() === 'phone';
+                });
             if (!this.mention)
-                remove(matches, function (match) { return match.getType() === 'mention'; });
+                remove(matches, function (match) {
+                    return match.getType() === 'mention';
+                });
             if (!this.urls.schemeMatches) {
-                remove(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'scheme'; });
+                remove(matches, function (m) {
+                    return m.getType() === 'url' && m.getUrlMatchType() === 'scheme';
+                });
             }
             if (!this.urls.wwwMatches) {
                 remove(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'www'; });
@@ -4173,16 +4232,14 @@
          */
         Autolinker.prototype.link = function (textOrHtml) {
             if (!textOrHtml) {
-                return "";
+                return '';
             } // handle `null` and `undefined` (for JavaScript users that don't have TypeScript support)
             /* We would want to sanitize the start and end characters of a tag
              * before processing the string in order to avoid an XSS scenario.
              * This behaviour can be changed by toggling the sanitizeHtml option.
              */
             if (this.sanitizeHtml) {
-                textOrHtml = textOrHtml
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
+                textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
             var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
             for (var i = 0, len = matches.length; i < len; i++) {
@@ -4221,7 +4278,8 @@
             else if (replaceFnResult instanceof HtmlTag) {
                 return replaceFnResult.toAnchorString();
             }
-            else { // replaceFnResult === true, or no/unknown return value from function
+            else {
+                // replaceFnResult === true, or no/unknown return value from function
                 // Perform Autolinker's default anchor tag generation
                 var anchorTag = match.buildTag(); // returns an Autolinker.HtmlTag instance
                 return anchorTag.toAnchorString();
@@ -4238,11 +4296,22 @@
             if (!this.matchers) {
                 var tagBuilder = this.getTagBuilder();
                 var matchers = [
-                    new HashtagMatcher({ tagBuilder: tagBuilder, serviceName: this.hashtag }),
+                    new HashtagMatcher({
+                        tagBuilder: tagBuilder,
+                        serviceName: this.hashtag,
+                    }),
                     new EmailMatcher({ tagBuilder: tagBuilder }),
                     new PhoneMatcher({ tagBuilder: tagBuilder }),
-                    new MentionMatcher({ tagBuilder: tagBuilder, serviceName: this.mention }),
-                    new UrlMatcher({ tagBuilder: tagBuilder, stripPrefix: this.stripPrefix, stripTrailingSlash: this.stripTrailingSlash, decodePercentEncoding: this.decodePercentEncoding })
+                    new MentionMatcher({
+                        tagBuilder: tagBuilder,
+                        serviceName: this.mention,
+                    }),
+                    new UrlMatcher({
+                        tagBuilder: tagBuilder,
+                        stripPrefix: this.stripPrefix,
+                        stripTrailingSlash: this.stripTrailingSlash,
+                        decodePercentEncoding: this.decodePercentEncoding,
+                    }),
                 ];
                 return (this.matchers = matchers);
             }
@@ -4263,11 +4332,12 @@
                 tagBuilder = this.tagBuilder = new AnchorTagBuilder({
                     newWindow: this.newWindow,
                     truncate: this.truncate,
-                    className: this.className
+                    className: this.className,
                 });
             }
             return tagBuilder;
         };
+        // NOTE: must be 'export default' here for UMD module
         /**
          * @static
          * @property {String} version
@@ -4297,7 +4367,7 @@
             Matcher: Matcher,
             Mention: MentionMatcher,
             Phone: PhoneMatcher,
-            Url: UrlMatcher
+            Url: UrlMatcher,
         };
         /**
          * For backwards compatibility with Autolinker 1.x, the Match classes are
@@ -4309,7 +4379,7 @@
             Match: Match,
             Mention: MentionMatch,
             Phone: PhoneMatch,
-            Url: UrlMatch
+            Url: UrlMatch,
         };
         return Autolinker;
     }());
