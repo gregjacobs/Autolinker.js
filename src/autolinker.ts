@@ -2,10 +2,6 @@ import { version } from './version';
 import { defaults, remove, splitAndCapture } from './utils';
 import { AnchorTagBuilder } from './anchor-tag-builder';
 import { Match } from './match/match';
-import { EmailMatch } from './match/email-match';
-import { HashtagMatch } from './match/hashtag-match';
-import { MentionMatch } from './match/mention-match';
-import { PhoneMatch } from './match/phone-match';
 import { UrlMatch } from './match/url-match';
 import { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
@@ -134,44 +130,6 @@ export default class Autolinker {
      * Ex: 3.15.0
      */
     static readonly version = version;
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
-     * class is provided as a static on the Autolinker class.
-     */
-    static readonly AnchorTagBuilder = AnchorTagBuilder;
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the HtmlTag class is
-     * provided as a static on the Autolinker class.
-     */
-    static readonly HtmlTag = HtmlTag;
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the Matcher classes are
-     * provided as statics on the Autolinker class.
-     */
-    static readonly matcher = {
-        Email: EmailMatcher,
-        Hashtag: HashtagMatcher,
-        Matcher: Matcher,
-        Mention: MentionMatcher,
-        Phone: PhoneMatcher,
-        Url: UrlMatcher,
-    };
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the Match classes are
-     * provided as statics on the Autolinker class.
-     */
-    static readonly match = {
-        Email: EmailMatch,
-        Hashtag: HashtagMatch,
-        Match: Match,
-        Mention: MentionMatch,
-        Phone: PhoneMatch,
-        Url: UrlMatch,
-    };
 
     /**
      * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
