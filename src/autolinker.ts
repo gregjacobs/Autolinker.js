@@ -6,7 +6,6 @@ import { UrlMatch } from './match/url-match';
 import type { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
 import { UrlMatcher } from './matcher/url-matcher';
-import { MentionMatcher } from './matcher/mention-matcher';
 import { parseHtml } from './htmlParser/parse-html';
 
 /**
@@ -246,20 +245,6 @@ export default class Autolinker {
     private readonly urls: UrlsConfigObj = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
-     * @cfg {String/Boolean} [mention=false]
-     *
-     * A string for the service name to have mentions (ex: "@myuser")
-     * auto-linked to. The currently supported values are:
-     *
-     * - 'twitter'
-     * - 'instagram'
-     * - 'soundcloud'
-     *
-     * Defaults to `false` to skip auto-linking of mentions.
-     */
-    private readonly mention: MentionConfig = false; // default value just to get the above doc comment in the ES5 output and documentation generator
-
-    /**
      * @cfg {Boolean} [newWindow=true]
      *
      * `true` if the links should open in a new window, `false` otherwise.
@@ -470,7 +455,6 @@ export default class Autolinker {
         //       it refers to the default values set above the constructor
         this.matchers = cfg.matchers;
         this.urls = this.normalizeUrlsCfg(cfg.urls);
-        this.mention = cfg.mention || this.mention;
         this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
         this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
         this.stripTrailingSlash =
@@ -482,15 +466,6 @@ export default class Autolinker {
                 ? cfg.decodePercentEncoding
                 : this.decodePercentEncoding;
         this.sanitizeHtml = cfg.sanitizeHtml || false;
-
-        // Validate the value of the `mention` cfg
-        const mention = this.mention;
-        if (
-            mention !== false &&
-            ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1
-        ) {
-            throw new Error(`invalid \`mention\` cfg '${mention}' - see docs`);
-        }
 
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);
         this.className = cfg.className || this.className;
@@ -738,10 +713,10 @@ export default class Autolinker {
         //     remove(matches, (match: Match) => {
         //         return match.getType() === 'phone';
         //     });
-        if (!this.mention)
-            remove(matches, (match: Match) => {
-                return match.getType() === 'mention';
-            });
+        // if (!this.mention)
+        //     remove(matches, (match: Match) => {
+        //         return match.getType() === 'mention';
+        //     });
         if (!this.urls.schemeMatches) {
             remove(
                 matches,
@@ -902,9 +877,6 @@ export default class Autolinker {
 
             let matchers = [
                 ...this.matchers,
-                new MentionMatcher({
-                    serviceName: this.mention as MentionServices,
-                }),
                 new UrlMatcher({
                     stripPrefix: this.stripPrefix,
                     stripTrailingSlash: this.stripTrailingSlash,
@@ -950,7 +922,6 @@ export default class Autolinker {
 export interface AutolinkerConfig {
     matchers: Matcher[];
     urls?: UrlsConfig;
-    mention?: MentionConfig;
     newWindow?: boolean;
     stripPrefix?: StripPrefixConfig;
     stripTrailingSlash?: boolean;
@@ -982,9 +953,6 @@ export interface TruncateConfigObj {
     length?: number;
     location?: 'end' | 'middle' | 'smart';
 }
-
-export type MentionConfig = false | MentionServices;
-export type MentionServices = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';
 
 export type ReplaceFn = (match: Match) => ReplaceFnReturn;
 export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;

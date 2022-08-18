@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import Autolinker, { MentionServices } from '../src/autolinker';
+import Autolinker from '../src/autolinker';
 import { UrlMatch } from '../src/match/url-match';
 import { EmailMatch } from '../src/match/email-match';
 import { HashtagMatch } from '../src/match/hashtag-match';
@@ -8,7 +8,7 @@ import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
 import { Matcher } from '../src/matcher/matcher';
-import { EmailMatcher, PhoneMatcher } from '../src';
+import { EmailMatcher, MentionMatcher, MentionService, PhoneMatcher } from '../src';
 
 describe('Autolinker', function () {
     // All matchers for purposes of testing
@@ -16,6 +16,7 @@ describe('Autolinker', function () {
         new HashtagMatcher({ service: 'twitter' }),
         new EmailMatcher(),
         new PhoneMatcher(),
+        new MentionMatcher({ service: 'twitter' }),
     ];
 
     describe('instantiating and using as a class', function () {
@@ -37,42 +38,6 @@ describe('Autolinker', function () {
                 );
             });
         });
-
-        describe('`mention` cfg', function () {
-            it('should throw if `mention` is a value other than `false` or one of the valid service names', function () {
-                expect(function () {
-                    new Autolinker({ matchers, mention: true } as any); // `true` is an invalid value - must be a service name
-                }).toThrowError("invalid `mention` cfg 'true' - see docs");
-
-                expect(function () {
-                    new Autolinker({ matchers, mention: 'non-existent-service' } as any);
-                }).toThrowError("invalid `mention` cfg 'non-existent-service' - see docs");
-            });
-
-            it("should not throw for the valid service name 'twitter'", function () {
-                expect(function () {
-                    new Autolinker({ matchers, mention: 'twitter' });
-                }).not.toThrow();
-            });
-
-            it("should not throw for the valid service name 'instagram'", function () {
-                expect(function () {
-                    new Autolinker({ matchers, mention: 'instagram' });
-                }).not.toThrow();
-            });
-
-            it("should not throw for the valid service name 'soundcloud'", function () {
-                expect(function () {
-                    new Autolinker({ matchers, mention: 'soundcloud' });
-                }).not.toThrow();
-            });
-
-            it("should not throw for the valid service name 'tiktok'", function () {
-                expect(function () {
-                    new Autolinker({ matchers, mention: 'tiktok' });
-                }).not.toThrow();
-            });
-        });
     });
 
     describe('link() method', function () {
@@ -82,7 +47,6 @@ describe('Autolinker', function () {
             autolinker = new Autolinker({ matchers, newWindow: false }); // so that target="_blank" is not added to resulting autolinked URLs
             twitterAutolinker = new Autolinker({
                 matchers,
-                mention: 'twitter',
                 newWindow: false,
             });
         });
@@ -1067,9 +1031,8 @@ describe('Autolinker', function () {
 
             it('should add className to twitter links', function () {
                 let result = Autolinker.link('hi from @iggypopschest', {
-                    matchers,
+                    matchers: [new MentionMatcher({ service: 'twitter' })],
                     newWindow: false,
-                    mention: 'twitter',
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1079,9 +1042,8 @@ describe('Autolinker', function () {
 
             it('should add className to mention links', function () {
                 let result = Autolinker.link('hi from @iggypopschest', {
-                    matchers,
+                    matchers: [new MentionMatcher({ service: 'twitter' })],
                     newWindow: false,
-                    mention: 'twitter',
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1089,9 +1051,8 @@ describe('Autolinker', function () {
                 );
 
                 result = Autolinker.link('hi from @iggypopschest', {
-                    matchers,
+                    matchers: [new MentionMatcher({ service: 'instagram' })],
                     newWindow: false,
-                    mention: 'instagram',
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1099,9 +1060,8 @@ describe('Autolinker', function () {
                 );
 
                 result = Autolinker.link('hi from @iggypopschest', {
-                    matchers,
+                    matchers: [new MentionMatcher({ service: 'soundcloud' })],
                     newWindow: false,
-                    mention: 'soundcloud',
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1109,9 +1069,8 @@ describe('Autolinker', function () {
                 );
 
                 result = Autolinker.link('hi from @iggypopschest', {
-                    matchers,
+                    matchers: [new MentionMatcher({ service: 'tiktok' })],
                     newWindow: false,
-                    mention: 'tiktok',
                     className: 'myLink',
                 });
                 expect(result).toBe(
@@ -1250,7 +1209,6 @@ describe('Autolinker', function () {
             it('should link all 5 types if all 5 urls/email/phone/mention/hashtag options are enabled', function () {
                 let result = Autolinker.link(inputStr, {
                     matchers,
-                    mention: 'twitter',
                     newWindow: false,
                 });
                 expect(result).toBe(
@@ -1266,9 +1224,10 @@ describe('Autolinker', function () {
 
             it('should link mentions based on value provided to mention option', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers,
+                    matchers: matchers
+                        .filter(m => !(m instanceof MentionMatcher))
+                        .concat(new MentionMatcher({ service: 'twitter' })),
                     newWindow: false,
-                    mention: 'twitter',
                 });
                 expect(result).toBe(
                     [
@@ -1281,9 +1240,10 @@ describe('Autolinker', function () {
                 );
 
                 result = Autolinker.link(inputStr, {
-                    matchers,
+                    matchers: matchers
+                        .filter(m => !(m instanceof MentionMatcher))
+                        .concat(new MentionMatcher({ service: 'instagram' })),
                     newWindow: false,
-                    mention: 'instagram',
                 });
                 expect(result).toBe(
                     [
@@ -1299,7 +1259,6 @@ describe('Autolinker', function () {
             it('should not link urls when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
                     matchers,
-                    mention: 'twitter',
                     urls: false,
                     newWindow: false,
                 });
@@ -1317,12 +1276,7 @@ describe('Autolinker', function () {
 
             it('should not link email addresses when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers: [
-                        // NOTE: No EmailMatcher
-                        new HashtagMatcher({ service: 'twitter' }),
-                        new PhoneMatcher(),
-                    ],
-                    mention: 'twitter',
+                    matchers: matchers.filter(m => !(m instanceof EmailMatcher)),
                     newWindow: false,
                 });
 
@@ -1339,12 +1293,7 @@ describe('Autolinker', function () {
 
             it('should not link phone numbers when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers: [
-                        // Note: no PhoneMatcher
-                        new HashtagMatcher({ service: 'twitter' }),
-                        new EmailMatcher(),
-                    ],
-                    mention: 'twitter',
+                    matchers: matchers.filter(m => !(m instanceof PhoneMatcher)),
                     newWindow: false,
                 });
 
@@ -1361,9 +1310,8 @@ describe('Autolinker', function () {
 
             it('should not link mention handles when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers,
+                    matchers: matchers.filter(m => !(m instanceof MentionMatcher)),
                     newWindow: false,
-                    mention: false,
                 });
 
                 expect(result).toBe(
@@ -1379,12 +1327,7 @@ describe('Autolinker', function () {
 
             it('should not link Hashtags when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers: [
-                        // NOTE: no Hashtag matcher
-                        new EmailMatcher(),
-                        new PhoneMatcher(),
-                    ],
-                    mention: 'twitter',
+                    matchers: matchers.filter(m => !(m instanceof HashtagMatcher)),
                     newWindow: false,
                 });
 
@@ -1499,7 +1442,6 @@ describe('Autolinker', function () {
                 // Note: purposeful trailing space after @mention
                 Autolinker.link('Twitter: @myTwitter ', {
                     matchers,
-                    mention: 'twitter',
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
@@ -1516,7 +1458,6 @@ describe('Autolinker', function () {
                 // Note: purposeful trailing space after @mention
                 Autolinker.link('Mention: @myTwitter ', {
                     matchers,
-                    mention: 'twitter',
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
@@ -1533,7 +1474,6 @@ describe('Autolinker', function () {
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         matchers,
-                        mention: 'twitter',
                         newWindow: false, // just to suppress the target="_blank" from the output for this test
                         replaceFn: returnTrueFn,
                     }
@@ -1553,7 +1493,6 @@ describe('Autolinker', function () {
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         matchers,
-                        mention: 'twitter',
                         newWindow: false, // just to suppress the target="_blank" from the output for this test
                         replaceFn: function () {}, // no return value (`undefined` is returned)
                     }
@@ -1573,7 +1512,6 @@ describe('Autolinker', function () {
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         matchers,
-                        mention: 'twitter',
                         replaceFn: returnFalseFn,
                     }
                 );
@@ -1588,7 +1526,6 @@ describe('Autolinker', function () {
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         matchers,
-                        mention: 'twitter',
                         replaceFn: function () {
                             return 'test';
                         },
@@ -1652,7 +1589,6 @@ describe('Autolinker', function () {
 
                     let result2 = Autolinker.link('Twitter: @asdf', {
                         matchers,
-                        mention: 'twitter',
                         replaceFn: returnFalseFn,
                     });
                     expect(result2).toBe('Twitter: @asdf');
@@ -1761,7 +1697,7 @@ describe('Autolinker', function () {
                 wwwMatches: boolean;
                 tldMatches: boolean;
                 email: boolean;
-                mention: MentionServices | false;
+                mention: MentionService | false;
                 phone: boolean;
                 hashtag: HashtagService | false;
             }
@@ -1785,6 +1721,7 @@ describe('Autolinker', function () {
                     ...(testCfg.hashtag ? [new HashtagMatcher({ service: 'twitter' })] : []),
                     ...(testCfg.email ? [new EmailMatcher()] : []),
                     ...(testCfg.phone ? [new PhoneMatcher()] : []),
+                    ...(testCfg.mention ? [new MentionMatcher({ service: 'twitter' })] : []),
                 ];
 
                 let autolinker = new Autolinker({
@@ -1794,7 +1731,6 @@ describe('Autolinker', function () {
                         wwwMatches: testCfg.wwwMatches,
                         tldMatches: testCfg.tldMatches,
                     },
-                    mention: testCfg.mention,
 
                     newWindow: false,
                     stripPrefix: false,
@@ -1873,7 +1809,6 @@ describe('Autolinker', function () {
 
             let matches = Autolinker.parse(text, {
                 matchers,
-                mention: 'twitter',
             });
 
             expect(matches.length).toBe(5);
@@ -1930,7 +1865,6 @@ describe('Autolinker', function () {
 
                 let matches = Autolinker.parse(text, {
                     matchers,
-                    mention: 'twitter',
                 });
 
                 expect(matches.length).toBe(8);
@@ -1948,7 +1882,6 @@ describe('Autolinker', function () {
         it('should return an array of Match objects for the input', function () {
             let autolinker = new Autolinker({
                 matchers,
-                mention: 'twitter',
             });
 
             let text = [

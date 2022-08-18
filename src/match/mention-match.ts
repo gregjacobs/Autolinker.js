@@ -1,5 +1,5 @@
+import { MentionService } from '../matcher/mention-matcher';
 import { Match, MatchConfig } from './match';
-import { MentionServices } from '../autolinker';
 
 /**
  * @class Autolinker.match.Mention
@@ -16,7 +16,7 @@ export class MentionMatch extends Match {
      * The service to point mention matches to. See {@link Autolinker#mention}
      * for available values.
      */
-    private readonly serviceName: MentionServices = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly service: MentionService = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {String} mention (required)
@@ -34,7 +34,7 @@ export class MentionMatch extends Match {
         super(cfg);
 
         this.mention = cfg.mention;
-        this.serviceName = cfg.serviceName;
+        this.service = cfg.service;
     }
 
     /**
@@ -63,7 +63,7 @@ export class MentionMatch extends Match {
      * @return {String}
      */
     getServiceName() {
-        return this.serviceName;
+        return this.service;
     }
 
     /**
@@ -72,7 +72,7 @@ export class MentionMatch extends Match {
      * @return {String}
      */
     getAnchorHref() {
-        switch (this.serviceName) {
+        switch (this.service) {
             case 'twitter':
                 return 'https://twitter.com/' + this.mention;
             case 'instagram':
@@ -84,7 +84,7 @@ export class MentionMatch extends Match {
 
             default:
                 // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
-                throw new Error('Unknown service name to point mention to: ' + this.serviceName);
+                throw new Error('Unknown service name to point mention to: ' + this.service);
         }
     }
 
@@ -116,6 +116,6 @@ export class MentionMatch extends Match {
 }
 
 export interface MentionMatchConfig extends MatchConfig {
-    serviceName: MentionServices;
+    service: MentionService;
     mention: string;
 }

@@ -1,26 +1,22 @@
 import _ from 'lodash';
-import { EmailMatcher } from '../src';
+import { EmailMatcher, MentionMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Mention Matching -', () => {
     const twitterAutolinker = new Autolinker({
-        matchers: [],
-        mention: 'twitter',
+        matchers: [new MentionMatcher({ service: 'twitter' })],
         newWindow: false,
     });
     const instagramAutolinker = new Autolinker({
-        matchers: [],
-        mention: 'instagram',
+        matchers: [new MentionMatcher({ service: 'instagram' })],
         newWindow: false,
     });
     const soundcloudAutolinker = new Autolinker({
-        matchers: [],
-        mention: 'soundcloud',
+        matchers: [new MentionMatcher({ service: 'soundcloud' })],
         newWindow: false,
     });
     const tiktokAutolinker = new Autolinker({
-        matchers: [],
-        mention: 'tiktok',
+        matchers: [new MentionMatcher({ service: 'tiktok' })],
         newWindow: false,
     });
 
@@ -277,8 +273,7 @@ describe('Autolinker Mention Matching -', () => {
 		 email address when email address linking is turned on
 	`, () => {
         let emailAutolinker = new Autolinker({
-            matchers: [new EmailMatcher()],
-            mention: 'twitter',
+            matchers: [new EmailMatcher(), new MentionMatcher({ service: 'twitter' })],
             newWindow: false,
         });
         let result = emailAutolinker.link('asdf@asdf.com');
@@ -292,8 +287,8 @@ describe('Autolinker Mention Matching -', () => {
         let noEmailAutolinker = new Autolinker({
             matchers: [
                 // NOTE: No EmailMatcher
+                new MentionMatcher({ service: 'twitter' }),
             ],
-            mention: 'twitter',
             newWindow: false,
         });
         let result = noEmailAutolinker.link('asdf@asdf.com');

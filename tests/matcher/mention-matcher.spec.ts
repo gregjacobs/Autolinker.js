@@ -6,7 +6,45 @@ describe('Autolinker.matcher.Mention', function () {
 
     beforeEach(function () {
         matcher = new MentionMatcher({
-            serviceName: 'twitter',
+            service: 'twitter',
+        });
+    });
+
+    describe('`service` cfg', function () {
+        it('should throw if `mention` is a value other than `false` or one of the valid service names', function () {
+            expect(function () {
+                new MentionMatcher({ service: true } as any); // `true` is an invalid value - must be a service name
+            }).toThrowError("MentionMatcher: invalid `service` cfg 'true' - see docs");
+
+            expect(function () {
+                new MentionMatcher({ service: 'non-existent-service' } as any);
+            }).toThrowError(
+                "MentionMatcher: invalid `service` cfg 'non-existent-service' - see docs"
+            );
+        });
+
+        it("should not throw for the valid service name 'twitter'", function () {
+            expect(function () {
+                new MentionMatcher({ service: 'twitter' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'instagram'", function () {
+            expect(function () {
+                new MentionMatcher({ service: 'instagram' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'soundcloud'", function () {
+            expect(function () {
+                new MentionMatcher({ service: 'soundcloud' });
+            }).not.toThrow();
+        });
+
+        it("should not throw for the valid service name 'tiktok'", function () {
+            expect(function () {
+                new MentionMatcher({ service: 'tiktok' });
+            }).not.toThrow();
         });
     });
 
@@ -56,7 +94,7 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an Instagram username with period not at boundaries should be parsed correctly', function () {
             let instagramMatcher = new MentionMatcher({
-                serviceName: 'instagram',
+                service: 'instagram',
             });
             let matches = instagramMatcher.parseMatches('Hello (@as.df)');
 
@@ -66,7 +104,7 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an Instagram username with period at end of string should ignore period', function () {
             let instagramMatcher = new MentionMatcher({
-                serviceName: 'instagram',
+                service: 'instagram',
             });
             let matches = instagramMatcher.parseMatches('Hello (@asdf.)');
 
@@ -76,7 +114,7 @@ describe('Autolinker.matcher.Mention', function () {
 
         it('an soundcloud username with dashes not at boundaries should be parsed correctly', function () {
             var soundcloudMatcher = new MentionMatcher({
-                serviceName: 'soundcloud',
+                service: 'soundcloud',
             });
             var matches = soundcloudMatcher.parseMatches('Hello (@as-df)');
 

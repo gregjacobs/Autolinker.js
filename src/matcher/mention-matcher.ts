@@ -1,6 +1,5 @@
 import { Matcher, MatcherConfig } from './matcher';
 import { alphaNumericAndMarksCharsStr } from '../regex-lib';
-import { MentionServices } from '../autolinker';
 import { MentionMatch } from '../match/mention-match';
 import { Match } from '../match/match';
 
@@ -46,9 +45,14 @@ export class MentionMatcher extends Matcher {
      *
      * The name of service to link @mentions to.
      *
-     * Valid values are: 'twitter', 'instagram', 'soundcloud', or 'tiktok'
+     * Valid values are:
+     *
+     * - 'twitter'
+     * - 'instagram'
+     * - 'soundcloud'
+     * - 'tiktok'
      */
-    protected serviceName: MentionServices = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
+    protected service: MentionService = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * Hash of regular expression to match username handles. Example match:
@@ -84,15 +88,20 @@ export class MentionMatcher extends Matcher {
     constructor(cfg: MentionMatcherConfig) {
         super(cfg);
 
-        this.serviceName = cfg.serviceName;
+        // Validate the value of the `service` cfg
+        const service = cfg.service;
+        if (mentionServices.indexOf(service) === -1) {
+            throw new Error(`MentionMatcher: invalid \`service\` cfg '${service}' - see docs`);
+        }
+        this.service = service;
     }
 
     /**
      * @inheritdoc
      */
     parseMatches(text: string) {
-        let serviceName = this.serviceName,
-            matcherRegex = this.matcherRegexes[this.serviceName],
+        let serviceName = this.service,
+            matcherRegex = this.matcherRegexes[this.service],
             nonWordCharRegex = this.nonWordCharRegex,
             tagBuilder = this.tagBuilder,
             matches: Match[] = [],
@@ -118,7 +127,7 @@ export class MentionMatcher extends Matcher {
                         tagBuilder: tagBuilder!,
                         matchedText: matchedText,
                         offset: offset,
-                        serviceName: serviceName,
+                        service: serviceName,
                         mention: mention,
                     })
                 );
@@ -130,5 +139,9 @@ export class MentionMatcher extends Matcher {
 }
 
 export interface MentionMatcherConfig extends MatcherConfig {
-    serviceName: MentionServices;
+    service: MentionService;
 }
+
+export type MentionService = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';
+export type MentionServices = MentionService; // backward compatibility with v3
+export const mentionServices: MentionService[] = ['twitter', 'instagram', 'soundcloud', 'tiktok'];

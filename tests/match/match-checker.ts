@@ -7,12 +7,12 @@
  */
 import { Match } from '../../src/match/match';
 import { UrlMatch } from '../../src/match/url-match';
-import { MentionServices } from '../../src/autolinker';
 import { MentionMatch } from '../../src/match/mention-match';
 import { PhoneMatch } from '../../src/match/phone-match';
 import { HashtagMatch } from '../../src/match/hashtag-match';
 import { EmailMatch } from '../../src/match/email-match';
 import { HashtagService } from '../../src/matcher/hashtag-matcher';
+import { MentionService } from '../../src/matcher/mention-matcher';
 
 export class MatchChecker {
     /**
@@ -83,7 +83,7 @@ export class MatchChecker {
      */
     static expectMentionMatch(
         match: Match,
-        serviceName: MentionServices,
+        serviceName: MentionService,
         mention: string,
         offset: number
     ) {
