@@ -1,10 +1,130 @@
 import _ from 'lodash';
+import { HashtagMatcher, UrlMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Url Matching -', () => {
     const autolinker = new Autolinker({
-        matchers: [],
+        matchers: [new UrlMatcher()],
         newWindow: false, // so that target="_blank" is not added to resulting autolinked URLs
+    });
+
+    describe('UrlMatcher options', function () {
+        let str = 'http://google.com www.google.com google.com'; // the 3 types: scheme URL, www URL, and TLD (top level domain) URL
+
+        it('should link all 3 URL types if the UrlMatcher is present', function () {
+            let result = Autolinker.link(str, {
+                matchers: [
+                    new UrlMatcher({
+                        stripPrefix: false,
+                    }),
+                ],
+                newWindow: false,
+            });
+
+            expect(result).toBe(
+                [
+                    '<a href="http://google.com">http://google.com</a>',
+                    '<a href="http://www.google.com">www.google.com</a>',
+                    '<a href="http://google.com">google.com</a>',
+                ].join(' ')
+            );
+        });
+
+        it('should not link any of the URL 3 types if the `UrlMatcher` is not present', function () {
+            let result = Autolinker.link(str, {
+                matchers: [new HashtagMatcher()],
+                newWindow: false,
+            });
+
+            expect(result).toBe(['http://google.com', 'www.google.com', 'google.com'].join(' '));
+        });
+
+        it('should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function () {
+            let result = Autolinker.link(str, {
+                matchers: [
+                    new UrlMatcher({
+                        schemeMatches: true,
+                        wwwMatches: false,
+                        tldMatches: false,
+                        stripPrefix: false,
+                    }),
+                ],
+                newWindow: false,
+            });
+
+            expect(result).toBe(
+                [
+                    '<a href="http://google.com">http://google.com</a>',
+                    'www.google.com',
+                    'google.com',
+                ].join(' ')
+            );
+        });
+
+        it('should only link www URLs if `wwwMatches` is the only `urls` option that is `true`', function () {
+            let result = Autolinker.link(str, {
+                matchers: [
+                    new UrlMatcher({
+                        schemeMatches: false,
+                        wwwMatches: true,
+                        tldMatches: false,
+                        stripPrefix: false,
+                    }),
+                ],
+                newWindow: false,
+            });
+
+            expect(result).toBe(
+                [
+                    'http://google.com',
+                    '<a href="http://www.google.com">www.google.com</a>',
+                    'google.com',
+                ].join(' ')
+            );
+        });
+
+        it('should only link TLD URLs if `tldMatches` is the only `urls` option that is `true`', function () {
+            let result = Autolinker.link(str, {
+                matchers: [
+                    new UrlMatcher({
+                        schemeMatches: false,
+                        wwwMatches: false,
+                        tldMatches: true,
+                    }),
+                ],
+                newWindow: false,
+            });
+
+            expect(result).toBe(
+                [
+                    'http://google.com',
+                    'www.google.com',
+                    '<a href="http://google.com">google.com</a>',
+                ].join(' ')
+            );
+        });
+
+        it('should link both scheme and www matches, but not TLD matches when `tldMatches` is the only option that is `false`', function () {
+            let result = Autolinker.link(str, {
+                matchers: [
+                    new UrlMatcher({
+                        schemeMatches: true,
+                        wwwMatches: true,
+                        tldMatches: false,
+                        stripPrefix: false,
+                    }),
+                ],
+                newWindow: false,
+            });
+
+            expect(result).toBe(
+                [
+                    '<a href="http://google.com">http://google.com</a>',
+                    '<a href="http://www.google.com">www.google.com</a>',
+                    'google.com',
+                ].join(' ')
+            );
+        });
     });
 
     describe('protocol-prefixed URLs (i.e. URLs starting with http:// or https://)', function () {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { EmailMatcher, MentionMatcher } from '../src';
+import { EmailMatcher, MentionMatcher, UrlMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
 describe('Autolinker Mention Matching -', () => {
@@ -45,7 +45,7 @@ describe('Autolinker Mention Matching -', () => {
 
     it(`should not autolink mentions by default`, () => {
         let autolinker = new Autolinker({
-            matchers: [],
+            matchers: [new UrlMatcher()],
             newWindow: false,
         });
         expect(autolinker.link('@test')).toBe('@test');
@@ -176,6 +176,13 @@ describe('Autolinker Mention Matching -', () => {
                 let result = autolinker.link(`test as@df test`);
 
                 expect(result).toBe(`test as@df test`);
+            });
+
+            it(`should NOT automatically link a mention when the '@' belongs to 
+				 a URL`, () => {
+                let result = autolinker.link(`Go to: http://username:password@google.com`);
+
+                expect(result).toBe(`Go to: http://username:password@google.com`);
             });
         });
     });

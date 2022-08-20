@@ -1,5 +1,5 @@
 import { Matcher, MatcherConfig } from './matcher';
-import { alphaNumericAndMarksCharsStr } from '../regex-lib';
+import { alphaNumericAndMarksCharsStr, whitespaceRe } from '../regex-lib';
 import { HashtagMatch } from '../match/hashtag-match';
 import { Match } from '../match/match';
 
@@ -12,6 +12,13 @@ const matcherRegex = new RegExp(
     `#[_${alphaNumericAndMarksCharsStr}]{1,139}(?![_${alphaNumericAndMarksCharsStr}])`,
     'g'
 ); // lookahead used to make sure we don't match something above 139 characters
+
+/*
+ * The regular expression to use to check the character before a username match to
+ * make sure we didn't accidentally match an email address.
+ *
+ * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
+ */
 const nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
 
 /**
@@ -45,26 +52,15 @@ export class HashtagMatcher extends Matcher {
     protected matcherRegex = matcherRegex;
 
     /**
-     * The regular expression to use to check the character before a username match to
-     * make sure we didn't accidentally match an email address.
-     *
-     * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
-     *
-     * @protected
-     * @property {RegExp} nonWordCharRegex
-     */
-    protected nonWordCharRegex = nonWordCharRegex;
-
-    /**
      * @method constructor
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
-    constructor(cfg: HashtagMatcherConfig) {
+    constructor(cfg: HashtagMatcherConfig = {}) {
         super(cfg);
 
         // Validate the value of the `service` cfg
-        const service = cfg.service;
+        const service = cfg.service || this.service;
         if (hashtagServices.indexOf(service) === -1) {
             throw new Error(`HashtagMatcher: invalid \`service\` cfg '${service}' - see docs`);
         }
@@ -76,7 +72,6 @@ export class HashtagMatcher extends Matcher {
      */
     parseMatches(text: string) {
         let matcherRegex = this.matcherRegex,
-            nonWordCharRegex = this.nonWordCharRegex,
             serviceName = this.service,
             tagBuilder = this.tagBuilder,
             matches: Match[] = [],
@@ -110,7 +105,7 @@ export class HashtagMatcher extends Matcher {
 }
 
 export interface HashtagMatcherConfig extends MatcherConfig {
-    service: HashtagService;
+    service?: HashtagService;
 }
 
 export type HashtagService = 'twitter' | 'facebook' | 'instagram' | 'tiktok';

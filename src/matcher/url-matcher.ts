@@ -1,6 +1,5 @@
 import { Matcher, MatcherConfig } from './matcher';
 import { alphaNumericCharsStr, alphaNumericAndMarksCharsStr, getDomainNameStr } from '../regex-lib';
-import { StripPrefixConfigObj, UrlMatchTypeOptions } from '../autolinker';
 import { tldRegex } from './tld-regex';
 import { UrlMatch } from '../match/url-match';
 import { UrlMatchValidator } from './url-match-validator';
@@ -63,26 +62,88 @@ const wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
  */
 export class UrlMatcher extends Matcher {
     /**
-     * @cfg {Object} stripPrefix (required)
-     *
-     * The Object form of {@link Autolinker#cfg-stripPrefix}.
+     * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
+     *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
+     *   `false` to prevent these types of matches.
      */
-    protected stripPrefix: Required<StripPrefixConfigObj> = {
+    protected readonly schemeMatches: boolean = true;
+
+    /**
+     * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
+     *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
+     *   matches. Note that if the URL had a prefixed scheme, and
+     *   `schemeMatches` is true, it will still be linked.
+     */
+    protected readonly wwwMatches: boolean = true;
+
+    /**
+     * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
+     *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
+     *   `'www.'`. This option attempts to match anything that looks like a URL
+     *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
+     *   to prevent these types of matches.
+     */
+    protected readonly tldMatches: boolean = true;
+
+    /**
+     * @cfg {Boolean/Object} [stripPrefix=true]
+     *
+     * `true` if 'http://' (or 'https://') and/or the 'www.' should be stripped
+     * from the beginning of URL links' text, `false` otherwise. Defaults to
+     * `true`.
+     *
+     * Examples:
+     *
+     *     stripPrefix: true
+     *
+     *     // or
+     *
+     *     stripPrefix: {
+     *         scheme : true,
+     *         www    : true
+     *     }
+     *
+     * As shown above, this option also accepts an Object form with 2 properties
+     * to allow for more customization of what exactly is prevented from being
+     * displayed. Both default to `true`:
+     *
+     * @cfg {Boolean} [stripPrefix.scheme] `true` to prevent the scheme part of
+     *   a URL match from being displayed to the user. Example:
+     *   `'http://google.com'` will be displayed as `'google.com'`. `false` to
+     *   not strip the scheme. NOTE: Only an `'http://'` or `'https://'` scheme
+     *   will be removed, so as not to remove a potentially dangerous scheme
+     *   (such as `'file://'` or `'javascript:'`)
+     * @cfg {Boolean} [stripPrefix.www] www (Boolean): `true` to prevent the
+     *   `'www.'` part of a URL match from being displayed to the user. Ex:
+     *   `'www.google.com'` will be displayed as `'google.com'`. `false` to not
+     *   strip the `'www'`.
+     */
+    private readonly stripPrefix: Required<StripPrefixConfigObj> = {
         scheme: true,
         www: true,
     }; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
-     * @cfg {Boolean} stripTrailingSlash (required)
-     * @inheritdoc Autolinker#stripTrailingSlash
+     * @cfg {Boolean} [stripTrailingSlash=true]
+     *
+     * `true` to remove the trailing slash from URL matches, `false` to keep
+     *  the trailing slash.
+     *
+     *  Example when `true`: `http://google.com/` will be displayed as
+     *  `http://google.com`.
      */
-    protected stripTrailingSlash: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly stripTrailingSlash: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
-     * @cfg {Boolean} decodePercentEncoding (required)
-     * @inheritdoc Autolinker#decodePercentEncoding
+     * @cfg {Boolean} [decodePercentEncoding=true]
+     *
+     * `true` to decode percent-encoded characters in URL matches, `false` to keep
+     *  the percent-encoded characters.
+     *
+     *  Example when `true`: `https://en.wikipedia.org/wiki/San_Jos%C3%A9` will
+     *  be displayed as `https://en.wikipedia.org/wiki/San_José`.
      */
-    protected decodePercentEncoding: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly decodePercentEncoding: boolean = true; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @protected
@@ -140,12 +201,49 @@ export class UrlMatcher extends Matcher {
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
-    constructor(cfg: UrlMatcherConfig) {
+    constructor(cfg: UrlMatcherConfig = {}) {
         super(cfg);
 
-        this.stripPrefix = cfg.stripPrefix;
-        this.stripTrailingSlash = cfg.stripTrailingSlash;
-        this.decodePercentEncoding = cfg.decodePercentEncoding;
+        this.schemeMatches =
+            typeof cfg.schemeMatches === 'boolean' ? cfg.schemeMatches : this.schemeMatches;
+        this.wwwMatches = typeof cfg.wwwMatches === 'boolean' ? cfg.wwwMatches : this.wwwMatches;
+        this.tldMatches = typeof cfg.tldMatches === 'boolean' ? cfg.tldMatches : this.tldMatches;
+
+        this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
+        this.stripTrailingSlash =
+            typeof cfg.stripTrailingSlash === 'boolean'
+                ? cfg.stripTrailingSlash
+                : this.stripTrailingSlash;
+        this.decodePercentEncoding =
+            typeof cfg.decodePercentEncoding === 'boolean'
+                ? cfg.decodePercentEncoding
+                : this.decodePercentEncoding;
+    }
+
+    /**
+     * Normalizes the {@link #stripPrefix} config into an Object with 2
+     * properties: `scheme`, and `www` - both Booleans.
+     *
+     * See {@link #stripPrefix} config for details.
+     *
+     * @private
+     * @param {Boolean/Object} stripPrefix
+     * @return {Object}
+     */
+    private normalizeStripPrefixCfg(
+        stripPrefix: StripPrefixConfig | undefined
+    ): Required<StripPrefixConfigObj> {
+        if (stripPrefix == null) stripPrefix = true; // default to `true`
+
+        if (typeof stripPrefix === 'boolean') {
+            return { scheme: stripPrefix, www: stripPrefix };
+        } else {
+            // object form
+            return {
+                scheme: typeof stripPrefix.scheme === 'boolean' ? stripPrefix.scheme : true,
+                www: typeof stripPrefix.www === 'boolean' ? stripPrefix.www : true,
+            };
+        }
     }
 
     /**
@@ -228,27 +326,33 @@ export class UrlMatcher extends Matcher {
                 offset = offset + indexOfSchemeStart;
             }
 
-            let urlMatchType: UrlMatchTypeOptions = schemeUrlMatch
-                    ? 'scheme'
-                    : wwwUrlMatch
-                    ? 'www'
-                    : 'tld',
-                protocolUrlMatch = !!schemeUrlMatch;
+            const urlMatchType: UrlMatchType = schemeUrlMatch
+                ? 'scheme'
+                : wwwUrlMatch
+                ? 'www'
+                : 'tld';
+            const protocolUrlMatch = !!schemeUrlMatch;
 
-            matches.push(
-                new UrlMatch({
-                    tagBuilder: tagBuilder!,
-                    matchedText: matchStr,
-                    offset: offset,
-                    urlMatchType: urlMatchType,
-                    url: matchStr,
-                    protocolUrlMatch: protocolUrlMatch,
-                    protocolRelativeMatch: !!protocolRelativeMatch,
-                    stripPrefix: stripPrefix,
-                    stripTrailingSlash: stripTrailingSlash,
-                    decodePercentEncoding: decodePercentEncoding,
-                })
-            );
+            if (
+                (urlMatchType === 'scheme' && this.schemeMatches) ||
+                (urlMatchType === 'www' && this.wwwMatches) ||
+                (urlMatchType === 'tld' && this.tldMatches)
+            ) {
+                matches.push(
+                    new UrlMatch({
+                        tagBuilder: tagBuilder!,
+                        matchedText: matchStr,
+                        offset: offset,
+                        urlMatchType: urlMatchType,
+                        url: matchStr,
+                        protocolUrlMatch: protocolUrlMatch,
+                        protocolRelativeMatch: !!protocolRelativeMatch,
+                        stripPrefix: stripPrefix,
+                        stripTrailingSlash: stripTrailingSlash,
+                        decodePercentEncoding: decodePercentEncoding,
+                    })
+                );
+            }
         }
 
         return matches;
@@ -364,7 +468,18 @@ export class UrlMatcher extends Matcher {
 }
 
 export interface UrlMatcherConfig extends MatcherConfig {
-    stripPrefix: Required<StripPrefixConfigObj>;
-    stripTrailingSlash: boolean;
-    decodePercentEncoding: boolean;
+    schemeMatches?: boolean;
+    wwwMatches?: boolean;
+    tldMatches?: boolean;
+    stripPrefix?: StripPrefixConfig;
+    stripTrailingSlash?: boolean;
+    decodePercentEncoding?: boolean;
+}
+
+export type UrlMatchType = 'scheme' | 'www' | 'tld';
+
+export type StripPrefixConfig = boolean | StripPrefixConfigObj;
+export interface StripPrefixConfigObj {
+    scheme?: boolean;
+    www?: boolean;
 }

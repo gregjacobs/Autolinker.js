@@ -1,5 +1,5 @@
+import { StripPrefixConfigObj, UrlMatchType } from '../matcher/url-matcher';
 import { Match, MatchConfig } from './match';
-import { StripPrefixConfigObj, UrlMatchTypeOptions } from '../autolinker';
 
 /**
  * @class Autolinker.match.Url
@@ -25,7 +25,7 @@ export class UrlMatch extends Match {
      * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
      * was matched by a known top-level domain (ex: 'google.com').
      */
-    private readonly urlMatchType: UrlMatchTypeOptions = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly urlMatchType: UrlMatchType = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {Boolean} protocolUrlMatch (required)
@@ -290,7 +290,7 @@ export class UrlMatch extends Match {
 
 export interface UrlMatchConfig extends MatchConfig {
     url: string;
-    urlMatchType: UrlMatchTypeOptions;
+    urlMatchType: UrlMatchType;
     protocolUrlMatch: boolean;
     protocolRelativeMatch: boolean;
     stripPrefix: Required<StripPrefixConfigObj>;

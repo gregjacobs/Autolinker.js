@@ -85,11 +85,11 @@ export class MentionMatcher extends Matcher {
      * @param {Object} cfg The configuration properties for the Match instance,
      *   specified in an Object (map).
      */
-    constructor(cfg: MentionMatcherConfig) {
+    constructor(cfg: MentionMatcherConfig = {}) {
         super(cfg);
 
         // Validate the value of the `service` cfg
-        const service = cfg.service;
+        const service = cfg.service || this.service;
         if (mentionServices.indexOf(service) === -1) {
             throw new Error(`MentionMatcher: invalid \`service\` cfg '${service}' - see docs`);
         }
@@ -139,7 +139,7 @@ export class MentionMatcher extends Matcher {
 }
 
 export interface MentionMatcherConfig extends MatcherConfig {
-    service: MentionService;
+    service?: MentionService;
 }
 
 export type MentionService = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';

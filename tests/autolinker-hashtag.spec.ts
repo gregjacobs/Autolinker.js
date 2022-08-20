@@ -1,26 +1,23 @@
 import _ from 'lodash';
+import { UrlMatcher } from '../src';
 import { HashtagMatcher } from '../src';
 import Autolinker from '../src/autolinker';
 
-describe(`Autolinker Hashtag Matching -`, () => {
-    const autolinker = new Autolinker({
-        matchers: [],
-        newWindow: false,
-    });
+fdescribe(`Autolinker Hashtag Matching -`, () => {
     const twitterAutolinker = new Autolinker({
-        matchers: [new HashtagMatcher({ service: 'twitter' })],
+        matchers: [new HashtagMatcher({ service: 'twitter' }), new UrlMatcher()],
         newWindow: false,
     });
     const facebookAutolinker = new Autolinker({
-        matchers: [new HashtagMatcher({ service: 'facebook' })],
+        matchers: [new HashtagMatcher({ service: 'facebook' }), new UrlMatcher()],
         newWindow: false,
     });
     const instagramAutolinker = new Autolinker({
-        matchers: [new HashtagMatcher({ service: 'instagram' })],
+        matchers: [new HashtagMatcher({ service: 'instagram' }), new UrlMatcher()],
         newWindow: false,
     });
     const tiktokAutolinker = new Autolinker({
-        matchers: [new HashtagMatcher({ service: 'tiktok' })],
+        matchers: [new HashtagMatcher({ service: 'tiktok' }), new UrlMatcher()],
         newWindow: false,
     });
 
@@ -50,16 +47,23 @@ describe(`Autolinker Hashtag Matching -`, () => {
     it(`should NOT autolink hashtags by default for both backward compatibility, 
 		 and because we don't know which service (twitter, facebook, etc.) to 
 		 point them to`, () => {
+        const autolinker = new Autolinker({
+            matchers: [new UrlMatcher()],
+            newWindow: false,
+        });
+
         expect(autolinker.link(`#test`)).toBe(`#test`);
     });
 
     it(`should NOT autolink hashtags when the HashtagMatcher is not included`, () => {
-        const result = Autolinker.link(`#test`, { matchers: [] });
+        const result = Autolinker.link(`#test`, {
+            matchers: [new UrlMatcher()],
+        });
 
         expect(result).toBe(`#test`);
     });
 
-    describe('all services hashtag tests', () => {
+    describe('all services hashtag tests -', () => {
         services.forEach(({ serviceName, urlPrefix, autolinker }) => {
             it(`should automatically link hashtags to ${serviceName} when the 
 				 'hashtag' option is '${serviceName}'`, () => {
@@ -106,6 +110,20 @@ describe(`Autolinker Hashtag Matching -`, () => {
                 expect(result).toBe(`Yay, <a href="${urlPrefix}/Кириллица">#Кириллица</a>`);
             });
 
+            it(`should automatically link a hashtag within parenthesis
+				 when using the ${serviceName} service`, () => {
+                const result = autolinker.link(`Yay (#Things)`);
+                expect(result).toBe(`Yay (<a href="${urlPrefix}/Things">#Things</a>)`);
+            });
+
+            it(`should automatically link multiple hashtags separated by slashes
+				 when using the ${serviceName} service`, () => {
+                const result = autolinker.link(`#Stuff/#Things`);
+                expect(result).toBe(
+                    `<a href="${urlPrefix}/Stuff">#Stuff</a>/<a href="${urlPrefix}/Things">#Things</a>`
+                );
+            });
+
             it(`should NOT automatically link a hashtag when the '#' belongs to 
 				 part of another string when using the ${serviceName} service`, () => {
                 const result = autolinker.link(`test as#df test`);
@@ -114,23 +132,45 @@ describe(`Autolinker Hashtag Matching -`, () => {
             });
 
             it(`should NOT automatically link a hashtag that is actually a 
-				 named anchor within a URL when using the ${serviceName} service`, () => {
+				 named anchor within a URL when using the ${serviceName} service
+                 when the UrlMatcher is present`, () => {
                 const result = autolinker.link(`http://google.com/#link`);
 
                 expect(result).toBe(`<a href="http://google.com/#link">google.com/#link</a>`);
             });
 
-            it(`should NOT automatically link a hashtag that is actually a 
-				 named anchor within a URL **when URL linking is turned off** 
-				 when using the ${serviceName} service`, () => {
-                const noUrlTwitterHashtagAutolinker = new Autolinker({
-                    urls: false,
-                    matchers: [],
+            describe('when URL linking is turned off (i.e. no UrlMatcher present)', () => {
+                const noUrlAutolinker = new Autolinker({
+                    matchers: [
+                        new HashtagMatcher(),
+                        // Note: no UrlMatcher
+                    ],
                     newWindow: false,
                 });
-                const result = noUrlTwitterHashtagAutolinker.link(`http://google.com/#link`);
 
-                expect(result).toBe(`http://google.com/#link`);
+                it(`should NOT automatically link a hashtag that is actually a 
+                    named anchor within a scheme-prefixed URL when using the 
+                    ${serviceName} service`, () => {
+                    const result = noUrlAutolinker.link(`http://google.com/#link`);
+
+                    expect(result).toBe(`http://google.com/#link`);
+                });
+
+                it(`should NOT automatically link a hashtag that is actually a 
+                    named anchor within a www-prefixed URL when using the 
+                    ${serviceName} service`, () => {
+                    const result = noUrlAutolinker.link(`www.google.com/#link`);
+
+                    expect(result).toBe(`www.google.com/#link`);
+                });
+
+                it(`should NOT automatically link a hashtag that is actually a 
+                    named anchor within a known TLD URL when using the 
+                    ${serviceName} service`, () => {
+                    const result = noUrlAutolinker.link(`google.com/#link`);
+
+                    expect(result).toBe(`google.com/#link`);
+                });
             });
         });
     });

@@ -8,7 +8,7 @@ import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
 import { Matcher } from '../src/matcher/matcher';
-import { EmailMatcher, MentionMatcher, MentionService, PhoneMatcher } from '../src';
+import { EmailMatcher, MentionMatcher, MentionService, PhoneMatcher, UrlMatcher } from '../src';
 
 describe('Autolinker', function () {
     // All matchers for purposes of testing
@@ -17,6 +17,7 @@ describe('Autolinker', function () {
         new EmailMatcher(),
         new PhoneMatcher(),
         new MentionMatcher({ service: 'twitter' }),
+        new UrlMatcher(),
     ];
 
     describe('instantiating and using as a class', function () {
@@ -31,12 +32,16 @@ describe('Autolinker', function () {
     });
 
     describe('config checking', function () {
-        describe('no configs', function () {
-            it('should default to the default options if no `cfg` object is provided (namely, `newWindow: true`)', function () {
-                expect(Autolinker.link('Welcome to google.com', { matchers })).toBe(
-                    'Welcome to <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>'
-                );
-            });
+        it(`when no 'cfg' arg is provided to the constructor, should throw`, () => {
+            expect(() => {
+                new (Autolinker as any)();
+            }).toThrowError(`Autolinker: Missing 'cfg' arg to constructor`);
+        });
+
+        it(`when 'matchers' is missing, should throw an error`, () => {
+            expect(() => {
+                new Autolinker({} as any);
+            }).toThrowError(`Autolinker: Missing 'matchers' config`);
         });
     });
 
@@ -336,7 +341,7 @@ describe('Autolinker', function () {
                         '-Que estupendos nos vemos <3#lapeorfoto #despedida2016 #dehoyoenhoyo #rabbit';
 
                     let result = Autolinker.link(str, {
-                        matchers: [],
+                        matchers: [new UrlMatcher()],
                     });
 
                     expect(result).toBe(str);
@@ -620,8 +625,7 @@ describe('Autolinker', function () {
         describe('`stripPrefix` option', function () {
             it('should not remove the prefix for non-http protocols', function () {
                 let result = Autolinker.link('Test file://execute-virus.com', {
-                    matchers,
-                    stripPrefix: true,
+                    matchers: [new UrlMatcher({ stripPrefix: true })],
                     newWindow: false,
                 });
                 expect(result).toBe(
@@ -631,8 +635,7 @@ describe('Autolinker', function () {
 
             it("should remove 'http://www.' when the 'stripPrefix' option is set to `true`", function () {
                 let result = Autolinker.link('Test http://www.url.com', {
-                    matchers,
-                    stripPrefix: true,
+                    matchers: [new UrlMatcher({ stripPrefix: true })],
                     newWindow: false,
                 });
                 expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
@@ -640,8 +643,7 @@ describe('Autolinker', function () {
 
             it("should not remove 'http://www.' when the 'stripPrefix' option is set to `false`", function () {
                 let result = Autolinker.link('Test http://www.url.com', {
-                    matchers,
-                    stripPrefix: false,
+                    matchers: [new UrlMatcher({ stripPrefix: false })],
                     newWindow: false,
                 });
                 expect(result).toBe('Test <a href="http://www.url.com">http://www.url.com</a>');
@@ -649,29 +651,25 @@ describe('Autolinker', function () {
 
             it('should leave the original text as-is when the `stripPrefix` option is `false`', function () {
                 let result1 = Autolinker.link('My url.com', {
-                    matchers,
-                    stripPrefix: false,
+                    matchers: [new UrlMatcher({ stripPrefix: false })],
                     newWindow: false,
                 });
                 expect(result1).toBe('My <a href="http://url.com">url.com</a>');
 
                 let result2 = Autolinker.link('My www.url.com', {
-                    matchers,
-                    stripPrefix: false,
+                    matchers: [new UrlMatcher({ stripPrefix: false })],
                     newWindow: false,
                 });
                 expect(result2).toBe('My <a href="http://www.url.com">www.url.com</a>');
 
                 let result3 = Autolinker.link('My http://url.com', {
-                    matchers,
-                    stripPrefix: false,
+                    matchers: [new UrlMatcher({ stripPrefix: false })],
                     newWindow: false,
                 });
                 expect(result3).toBe('My <a href="http://url.com">http://url.com</a>');
 
                 let result4 = Autolinker.link('My http://www.url.com', {
-                    matchers,
-                    stripPrefix: false,
+                    matchers: [new UrlMatcher({ stripPrefix: false })],
                     newWindow: false,
                 });
                 expect(result4).toBe('My <a href="http://www.url.com">http://www.url.com</a>');
@@ -679,7 +677,7 @@ describe('Autolinker', function () {
 
             it('should remove the prefix by default', function () {
                 let result = Autolinker.link('Test http://www.url.com', {
-                    matchers,
+                    matchers: [new UrlMatcher()],
                     newWindow: false,
                 });
                 expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
@@ -690,8 +688,7 @@ describe('Autolinker', function () {
                     'only strip the scheme',
                 function () {
                     let result = Autolinker.link('Test http://www.url.com', {
-                        matchers,
-                        stripPrefix: { scheme: true, www: false },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: true, www: false } })],
                         newWindow: false,
                     });
 
@@ -704,8 +701,7 @@ describe('Autolinker', function () {
                     "only strip the 'www'",
                 function () {
                     let result = Autolinker.link('Test http://www.url.com', {
-                        matchers,
-                        stripPrefix: { scheme: false, www: true },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: false, www: true } })],
                         newWindow: false,
                     });
 
@@ -718,8 +714,7 @@ describe('Autolinker', function () {
                     'scheme-only URL, it should not strip anything',
                 function () {
                     let result = Autolinker.link('Test http://url.com', {
-                        matchers,
-                        stripPrefix: { scheme: false, www: true },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: false, www: true } })],
                         newWindow: false,
                     });
 
@@ -732,8 +727,7 @@ describe('Autolinker', function () {
                     "'www'-only URL, it should strip the 'www'",
                 function () {
                     let result = Autolinker.link('Test www.url.com', {
-                        matchers,
-                        stripPrefix: { scheme: false, www: true },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: false, www: true } })],
                         newWindow: false,
                     });
 
@@ -746,8 +740,7 @@ describe('Autolinker', function () {
                     "strip the entire prefix (scheme and 'www')",
                 function () {
                     let result = Autolinker.link('Test http://www.url.com', {
-                        matchers,
-                        stripPrefix: { scheme: true, www: true },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: true, www: true } })],
                         newWindow: false,
                     });
 
@@ -760,8 +753,7 @@ describe('Autolinker', function () {
                     'not strip any prefix',
                 function () {
                     let result = Autolinker.link('Test http://www.url.com', {
-                        matchers,
-                        stripPrefix: { scheme: false, www: false },
+                        matchers: [new UrlMatcher({ stripPrefix: { scheme: false, www: false } })],
                         newWindow: false,
                     });
 
@@ -773,9 +765,12 @@ describe('Autolinker', function () {
         describe('`stripTrailingSlash` option', function () {
             it('by default, should remove the trailing slash', function () {
                 let result = Autolinker.link('http://google.com/', {
-                    matchers,
-                    stripPrefix: false,
-                    //stripTrailingSlash : true,  -- not providing this cfg
+                    matchers: [
+                        new UrlMatcher({
+                            //stripTrailingSlash : true,  -- not providing this cfg
+                            stripPrefix: false,
+                        }),
+                    ],
                     newWindow: false,
                 });
 
@@ -784,9 +779,12 @@ describe('Autolinker', function () {
 
             it('when provided as `true`, should remove the trailing slash', function () {
                 let result = Autolinker.link('http://google.com/', {
-                    matchers,
-                    stripPrefix: false,
-                    stripTrailingSlash: true,
+                    matchers: [
+                        new UrlMatcher({
+                            stripTrailingSlash: true,
+                            stripPrefix: false,
+                        }),
+                    ],
                     newWindow: false,
                 });
 
@@ -797,9 +795,12 @@ describe('Autolinker', function () {
                 'when provided as `false`, should not remove (i.e. retain) the ' + 'trailing slash',
                 function () {
                     let result = Autolinker.link('http://google.com/', {
-                        matchers,
-                        stripPrefix: false,
-                        stripTrailingSlash: false,
+                        matchers: [
+                            new UrlMatcher({
+                                stripTrailingSlash: false,
+                                stripPrefix: false,
+                            }),
+                        ],
                         newWindow: false,
                     });
 
@@ -811,9 +812,12 @@ describe('Autolinker', function () {
         describe('`decodePercentEncoding` option', function () {
             it('by default, should decode percent-encoding', function () {
                 var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
-                    matchers,
-                    stripPrefix: false,
-                    //decodePercentEncoding : true,  -- not providing this cfg
+                    matchers: [
+                        new UrlMatcher({
+                            //decodePercentEncoding : true,  -- not providing this cfg
+                            stripPrefix: false,
+                        }),
+                    ],
                     newWindow: false,
                 });
 
@@ -824,9 +828,12 @@ describe('Autolinker', function () {
 
             it('when provided as `true`, should decode percent-encoding', function () {
                 var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
-                    matchers,
-                    stripPrefix: false,
-                    decodePercentEncoding: true,
+                    matchers: [
+                        new UrlMatcher({
+                            decodePercentEncoding: true,
+                            stripPrefix: false,
+                        }),
+                    ],
                     newWindow: false,
                 });
 
@@ -837,9 +844,12 @@ describe('Autolinker', function () {
 
             it('when provided as `false`, should not decode percent-encoding', function () {
                 var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
-                    matchers,
-                    stripPrefix: false,
-                    decodePercentEncoding: false,
+                    matchers: [
+                        new UrlMatcher({
+                            decodePercentEncoding: false,
+                            stripPrefix: false,
+                        }),
+                    ],
                     newWindow: false,
                 });
 
@@ -1079,124 +1089,6 @@ describe('Autolinker', function () {
             });
         });
 
-        describe('`urls` option', function () {
-            let str = 'http://google.com www.google.com google.com'; // the 3 types: scheme URL, www URL, and TLD (top level domain) URL
-
-            it('should link all 3 types if the `urls` option is `true`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: true,
-                });
-
-                expect(result).toBe(
-                    [
-                        '<a href="http://google.com">http://google.com</a>',
-                        '<a href="http://www.google.com">www.google.com</a>',
-                        '<a href="http://google.com">google.com</a>',
-                    ].join(' ')
-                );
-            });
-
-            it('should not link any of the 3 types if the `urls` option is `false`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: false,
-                });
-
-                expect(result).toBe(
-                    ['http://google.com', 'www.google.com', 'google.com'].join(' ')
-                );
-            });
-
-            it('should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: {
-                        schemeMatches: true,
-                        wwwMatches: false,
-                        tldMatches: false,
-                    },
-                });
-
-                expect(result).toBe(
-                    [
-                        '<a href="http://google.com">http://google.com</a>',
-                        'www.google.com',
-                        'google.com',
-                    ].join(' ')
-                );
-            });
-
-            it('should only link www URLs if `wwwMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: {
-                        schemeMatches: false,
-                        wwwMatches: true,
-                        tldMatches: false,
-                    },
-                });
-
-                expect(result).toBe(
-                    [
-                        'http://google.com',
-                        '<a href="http://www.google.com">www.google.com</a>',
-                        'google.com',
-                    ].join(' ')
-                );
-            });
-
-            it('should only link TLD URLs if `tldMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: {
-                        schemeMatches: false,
-                        wwwMatches: false,
-                        tldMatches: true,
-                    },
-                });
-
-                expect(result).toBe(
-                    [
-                        'http://google.com',
-                        'www.google.com',
-                        '<a href="http://google.com">google.com</a>',
-                    ].join(' ')
-                );
-            });
-
-            it('should link both scheme and www matches, but not TLD matches when `tldMatches` is the only option that is `false`', function () {
-                let result = Autolinker.link(str, {
-                    matchers,
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: {
-                        schemeMatches: true,
-                        wwwMatches: true,
-                        tldMatches: false,
-                    },
-                });
-
-                expect(result).toBe(
-                    [
-                        '<a href="http://google.com">http://google.com</a>',
-                        '<a href="http://www.google.com">www.google.com</a>',
-                        'google.com',
-                    ].join(' ')
-                );
-            });
-        });
-
         describe('`urls` (as boolean), `email`, `phone`, `twitter`, and `mention` options', function () {
             let inputStr = [
                 'Website: asdf.com',
@@ -1258,8 +1150,7 @@ describe('Autolinker', function () {
 
             it('should not link urls when they are disabled', function () {
                 let result = Autolinker.link(inputStr, {
-                    matchers,
-                    urls: false,
+                    matchers: matchers.filter(m => !(m instanceof UrlMatcher)),
                     newWindow: false,
                 });
 
@@ -1706,7 +1597,9 @@ describe('Autolinker', function () {
             // possible.
             // 7 different settings and two possibilities for each (on or off)
             // is 2^7 == 128 settings possibilities
-            for (let i = 0, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
+            // Note: starting i at 1 so we don't have a config where there are
+            // 0 matchers
+            for (let i = 1, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
                 let testCfg: MatcherTestConfig = {
                     schemeMatches: !!(i & parseInt('00000001', 2)),
                     wwwMatches: !!(i & parseInt('00000010', 2)),
@@ -1722,18 +1615,21 @@ describe('Autolinker', function () {
                     ...(testCfg.email ? [new EmailMatcher()] : []),
                     ...(testCfg.phone ? [new PhoneMatcher()] : []),
                     ...(testCfg.mention ? [new MentionMatcher({ service: 'twitter' })] : []),
+                    ...(testCfg.schemeMatches || testCfg.wwwMatches || testCfg.tldMatches
+                        ? [
+                              new UrlMatcher({
+                                  schemeMatches: testCfg.schemeMatches,
+                                  wwwMatches: testCfg.wwwMatches,
+                                  tldMatches: testCfg.tldMatches,
+                                  stripPrefix: false,
+                              }),
+                          ]
+                        : []),
                 ];
 
                 let autolinker = new Autolinker({
                     matchers,
-                    urls: {
-                        schemeMatches: testCfg.schemeMatches,
-                        wwwMatches: testCfg.wwwMatches,
-                        tldMatches: testCfg.tldMatches,
-                    },
-
                     newWindow: false,
-                    stripPrefix: false,
                 });
 
                 let result = autolinker.link(sourceParagraph),
