@@ -447,7 +447,7 @@ var Autolinker =  (function () {
         // Validate the value of the `hashtag` cfg
         var hashtag = this.hashtag;
         if (hashtag !== false &amp;&amp;
-            [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;].indexOf(hashtag) === -1) {
+            hashtag_matcher_1.hashtagServices.indexOf(hashtag) === -1) {
             throw new Error(&quot;invalid `hashtag` cfg &#39;&quot;.concat(hashtag, &quot;&#39; - see docs&quot;));
         }
         this.truncate = this.normalizeTruncateCfg(cfg.truncate);

@@ -24,7 +24,7 @@
  * regular expressions that are shared between source files.
  */
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
-exports.domainNameCharRegex = exports.domainNameRegex = exports.getDomainNameStr = exports.alphaNumericAndMarksCharsStr = exports.alphaNumericCharsStr = exports.decimalNumbersStr = exports.alphaCharsAndMarksStr = exports.marksStr = exports.emojiStr = exports.alphaCharsStr = exports.controlCharsRe = exports.quoteRe = exports.whitespaceRe = exports.nonDigitRe = exports.digitRe = exports.letterRe = void 0;
+exports.domainNameCharRegex = exports.domainNameRegex = exports.getDomainNameStr = exports.alphaNumericAndMarksCharRe = exports.alphaNumericAndMarksCharsStr = exports.alphaNumericCharsStr = exports.decimalNumbersStr = exports.alphaCharsAndMarksStr = exports.marksStr = exports.emojiStr = exports.alphaCharsStr = exports.controlCharsRe = exports.quoteRe = exports.whitespaceRe = exports.nonDigitRe = exports.digitRe = exports.letterRe = void 0;
 <span id='global-property-letterRe'>/**
 </span> * Regular expression to match upper and lowercase ASCII letters
  */
@@ -164,6 +164,11 @@ exports.alphaNumericCharsStr = exports.alphaCharsAndMarksStr + exports.decimalNu
  * numbers&quot;)
  */
 exports.alphaNumericAndMarksCharsStr = exports.alphaCharsAndMarksStr + exports.decimalNumbersStr;
+<span id='global-property-alphaNumericAndMarksCharRe'>/**
+</span> * The regular expression that will match a single letter of the
+ * {@link #alphaNumericAndMarksCharsStr}.
+ */
+exports.alphaNumericAndMarksCharRe = new RegExp(&quot;[&quot;.concat(exports.alphaNumericAndMarksCharsStr, &quot;]&quot;));
 // Simplified IP regular expression
 var ipStr = &#39;(?:[&#39; + exports.decimalNumbersStr + &#39;]{1,3}\\.){3}[&#39; + exports.decimalNumbersStr + &#39;]{1,3}&#39;;
 // Protected domain label which do not allow &quot;-&quot; or &quot;_&quot; character on the beginning and the end of a single label
@@ -190,7 +195,7 @@ exports.domainNameRegex = new RegExp(&#39;[&#39; + exports.alphaNumericAndMarksC
 </span> * A regular expression that is simply the character class of the characters
  * that may be used in a domain name, minus the &#39;-&#39; or &#39;.&#39;
  */
-exports.domainNameCharRegex = new RegExp(&quot;[&quot;.concat(exports.alphaNumericAndMarksCharsStr, &quot;]&quot;));
+exports.domainNameCharRegex = exports.alphaNumericAndMarksCharRe;
 //# sourceMappingURL=regex-lib.js.map</pre>
 </body>
 </html>

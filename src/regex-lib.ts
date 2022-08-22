@@ -159,6 +159,12 @@ export const alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
  */
 export const alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
 
+/**
+ * The regular expression that will match a single letter of the
+ * {@link #alphaNumericAndMarksCharsStr}.
+ */
+export const alphaNumericAndMarksCharRe = new RegExp(`[${alphaNumericAndMarksCharsStr}]`);
+
 // Simplified IP regular expression
 const ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
 
@@ -191,4 +197,4 @@ export const domainNameRegex = new RegExp(
  * A regular expression that is simply the character class of the characters
  * that may be used in a domain name, minus the '-' or '.'
  */
-export const domainNameCharRegex = new RegExp(`[${alphaNumericAndMarksCharsStr}]`);
+export const domainNameCharRegex = alphaNumericAndMarksCharRe;

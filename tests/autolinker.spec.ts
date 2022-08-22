@@ -1,11 +1,12 @@
 import * as _ from 'lodash';
-import Autolinker, { HashtagServices, MentionServices } from '../src/autolinker';
+import Autolinker, { MentionServices } from '../src/autolinker';
 import { UrlMatch } from '../src/match/url-match';
 import { EmailMatch } from '../src/match/email-match';
 import { HashtagMatch } from '../src/match/hashtag-match';
 import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
+import { HashtagService } from '../src/matcher/hashtag-matcher';
 
 describe('Autolinker', function () {
     describe('instantiating and using as a class', function () {
@@ -419,7 +420,7 @@ describe('Autolinker', function () {
                     'input with a large number of html entities (Issue #171)',
                 function () {
                     let testStr = (function () {
-                        let t = [];
+                        let t: string[] = [];
                         for (let i = 0; i < 50000; i++) {
                             t.push(' /&gt;&lt;br');
                         }
@@ -1705,7 +1706,7 @@ describe('Autolinker', function () {
                 email: boolean;
                 mention: MentionServices | false;
                 phone: boolean;
-                hashtag: HashtagServices | false;
+                hashtag: HashtagService | false;
             }
 
             // We're going to run through every combination of matcher settings
@@ -1787,7 +1788,7 @@ describe('Autolinker', function () {
 
         it('should be able to parse a very long string', function () {
             var testStr = (function () {
-                var t = [];
+                var t: string[] = [];
                 for (var i = 0; i < 50000; i++) {
                     t.push(' foo');
                 }
