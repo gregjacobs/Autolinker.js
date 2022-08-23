@@ -206,13 +206,13 @@ var HtmlTag =  (function () {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     HtmlTag.prototype.addClass = function (cssClass) {
-        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
-        while (newClass = newClasses.shift()) {
+        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
+        while ((newClass = newClasses.shift())) {
             if ((0, utils_1.indexOf)(classes, newClass) === -1) {
                 classes.push(newClass);
             }
         }
-        this.getAttrs()[&#39;class&#39;] = classes.join(&quot; &quot;);
+        this.getAttrs()[&#39;class&#39;] = classes.join(&#39; &#39;);
         return this;
     };
 <span id='Autolinker-HtmlTag-method-removeClass'>    /**
@@ -222,14 +222,14 @@ var HtmlTag =  (function () {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     HtmlTag.prototype.removeClass = function (cssClass) {
-        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = (!classAttr) ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
+        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
         while (classes.length &amp;&amp; (removeClass = removeClasses.shift())) {
             var idx = (0, utils_1.indexOf)(classes, removeClass);
             if (idx !== -1) {
                 classes.splice(idx, 1);
             }
         }
-        this.getAttrs()[&#39;class&#39;] = classes.join(&quot; &quot;);
+        this.getAttrs()[&#39;class&#39;] = classes.join(&#39; &#39;);
         return this;
     };
 <span id='Autolinker-HtmlTag-method-getClass'>    /**
@@ -239,7 +239,7 @@ var HtmlTag =  (function () {
      * @return {String}
      */
     HtmlTag.prototype.getClass = function () {
-        return this.getAttrs()[&#39;class&#39;] || &quot;&quot;;
+        return this.getAttrs()[&#39;class&#39;] || &#39;&#39;;
     };
 <span id='Autolinker-HtmlTag-method-hasClass'>    /**
 </span>     * Convenience method to check if the tag has a CSS class or not.
@@ -275,7 +275,7 @@ var HtmlTag =  (function () {
      * @return {String}
      */
     HtmlTag.prototype.getInnerHTML = function () {
-        return this.innerHTML || &quot;&quot;;
+        return this.innerHTML || &#39;&#39;;
     };
 <span id='Autolinker-HtmlTag-method-getInnerHtml'>    /**
 </span>     * Backward compatibility method name.
@@ -292,8 +292,8 @@ var HtmlTag =  (function () {
      */
     HtmlTag.prototype.toAnchorString = function () {
         var tagName = this.getTagName(), attrsStr = this.buildAttrsStr();
-        attrsStr = (attrsStr) ? &#39; &#39; + attrsStr : &#39;&#39;; // prepend a space if there are actually attributes
-        return [&#39;&lt;&#39;, tagName, attrsStr, &#39;&gt;&#39;, this.getInnerHtml(), &#39;&lt;/&#39;, tagName, &#39;&gt;&#39;].join(&quot;&quot;);
+        attrsStr = attrsStr ? &#39; &#39; + attrsStr : &#39;&#39;; // prepend a space if there are actually attributes
+        return [&#39;&lt;&#39;, tagName, attrsStr, &#39;&gt;&#39;, this.getInnerHtml(), &#39;&lt;/&#39;, tagName, &#39;&gt;&#39;].join(&#39;&#39;);
     };
 <span id='Autolinker-HtmlTag-method-buildAttrsStr'>    /**
 </span>     * Support method for {@link #toAnchorString}, returns the string space-separated key=&quot;value&quot; pairs, used to populate
@@ -304,14 +304,14 @@ var HtmlTag =  (function () {
      */
     HtmlTag.prototype.buildAttrsStr = function () {
         if (!this.attrs)
-            return &quot;&quot;; // no `attrs` Object (map) has been set, return empty string
+            return &#39;&#39;; // no `attrs` Object (map) has been set, return empty string
         var attrs = this.getAttrs(), attrsArr = [];
         for (var prop in attrs) {
             if (attrs.hasOwnProperty(prop)) {
                 attrsArr.push(prop + &#39;=&quot;&#39; + attrs[prop] + &#39;&quot;&#39;);
             }
         }
-        return attrsArr.join(&quot; &quot;);
+        return attrsArr.join(&#39; &#39;);
     };
     return HtmlTag;
 }());

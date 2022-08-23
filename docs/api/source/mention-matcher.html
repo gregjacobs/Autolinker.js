@@ -24,8 +24,8 @@ var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var mention_match_1 = require(&quot;../match/mention-match&quot;);
 // RegExp objects which are shared by all instances of MentionMatcher. These are
 // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-// called multiple times, thus instantiating MentionMatcher and its RegExp 
-// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
+// called multiple times, thus instantiating MentionMatcher and its RegExp
+// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
 // See descriptions of the properties where they are used for details about them
 var twitterRegex = new RegExp(&quot;@[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,50}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 50 characters
 var instagramRegex = new RegExp(&quot;@[_.&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,30}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 30 characters
@@ -66,10 +66,10 @@ var MentionMatcher =  (function (_super) {
          * @property {Object} matcherRegexes
          */
         _this.matcherRegexes = {
-            &#39;twitter&#39;: twitterRegex,
-            &#39;instagram&#39;: instagramRegex,
-            &#39;soundcloud&#39;: soundcloudRegex,
-            &#39;tiktok&#39;: tiktokRegex
+            twitter: twitterRegex,
+            instagram: instagramRegex,
+            soundcloud: soundcloudRegex,
+            tiktok: tiktokRegex,
         };
 <span id='Autolinker-matcher-Mention-property-nonWordCharRegex'>        /**
 </span>         * The regular expression to use to check the character before a username match to
@@ -105,7 +105,7 @@ var MentionMatcher =  (function (_super) {
                     matchedText: matchedText,
                     offset: offset,
                     serviceName: serviceName,
-                    mention: mention
+                    mention: mention,
                 }));
             }
         }

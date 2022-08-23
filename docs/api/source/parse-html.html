@@ -87,8 +87,8 @@ function parseHtml(html, _a) {
         var char = html.charAt(charIdx);
         // For debugging: search for other &quot;For debugging&quot; lines
         // ALSO: Temporarily remove the &#39;const&#39; keyword on the State enum
-        // table.push( 
-        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ] 
+        // table.push(
+        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ]
         // );
         switch (state) {
             case 0 /* Data */:
@@ -159,8 +159,8 @@ function parseHtml(html, _a) {
         }
         // For debugging: search for other &quot;For debugging&quot; lines
         // ALSO: Temporarily remove the &#39;const&#39; keyword on the State enum
-        // table.push( 
-        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ] 
+        // table.push(
+        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? &#39;&#39; : currentTag.type ]
         // );
         charIdx++;
     }
@@ -196,12 +196,12 @@ function parseHtml(html, _a) {
             currentTag = new CurrentTag((0, tslib_1.__assign)((0, tslib_1.__assign)({}, currentTag), { isOpening: true }));
         }
         else {
-            // Any other 
+            // Any other
             state = 0 /* Data */;
             currentTag = noCurrentTag;
         }
     }
-    // After a &#39;&lt;x&#39;, &#39;&lt;/x&#39; sequence is read (where &#39;x&#39; is a letter character), 
+    // After a &#39;&lt;x&#39;, &#39;&lt;/x&#39; sequence is read (where &#39;x&#39; is a letter character),
     // this is to continue reading the tag name
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
     function stateTagName(char) {
@@ -222,7 +222,7 @@ function parseHtml(html, _a) {
             emitTagAndPreviousTextNode(); // resets to Data state as well
         }
         else if (!regex_lib_1.letterRe.test(char) &amp;&amp; !regex_lib_1.digitRe.test(char) &amp;&amp; char !== &#39;:&#39;) {
-            // Anything else that does not form an html tag. Note: the colon 
+            // Anything else that does not form an html tag. Note: the colon
             // character is accepted for XML namespaced tags
             resetToDataState();
         }
@@ -233,7 +233,8 @@ function parseHtml(html, _a) {
     // Called after the &#39;/&#39; is read from a &#39;&lt;/&#39; sequence
     // https://www.w3.org/TR/html51/syntax.html#end-tag-open-state
     function stateEndTagOpen(char) {
-        if (char === &#39;&gt;&#39;) { // parse error. Encountered &quot;&lt;/&gt;&quot;. Skip it without treating as a tag
+        if (char === &#39;&gt;&#39;) {
+            // parse error. Encountered &quot;&lt;/&gt;&quot;. Skip it without treating as a tag
             resetToDataState();
         }
         else if (regex_lib_1.letterRe.test(char)) {
@@ -339,7 +340,7 @@ function parseHtml(html, _a) {
             state = 9 /* AttributeValueSingleQuoted */;
         }
         else if (/[&gt;=`]/.test(char)) {
-            // Invalid chars after an &#39;=&#39; for an attribute value, don&#39;t count 
+            // Invalid chars after an &#39;=&#39; for an attribute value, don&#39;t count
             // the current tag as an HTML tag
             resetToDataState();
         }
@@ -354,7 +355,8 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-double-quoted-state
     function stateAttributeValueDoubleQuoted(char) {
-        if (char === &quot;\&quot;&quot;) { // end the current double-quoted attribute
+        if (char === &quot;\&quot;&quot;) {
+            // end the current double-quoted attribute
             state = 11 /* AfterAttributeValueQuoted */;
         }
         else {
@@ -363,7 +365,8 @@ function parseHtml(html, _a) {
     }
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-single-quoted-state
     function stateAttributeValueSingleQuoted(char) {
-        if (char === &quot;&#39;&quot;) { // end the current single-quoted attribute
+        if (char === &quot;&#39;&quot;) {
+            // end the current single-quoted attribute
             state = 11 /* AfterAttributeValueQuoted */;
         }
         else {
@@ -409,7 +412,7 @@ function parseHtml(html, _a) {
             reconsumeCurrentCharacter();
         }
     }
-    // A &#39;/&#39; has just been read in the current tag (presumably for &#39;/&gt;&#39;), and 
+    // A &#39;/&#39; has just been read in the current tag (presumably for &#39;/&gt;&#39;), and
     // this handles the next character
     // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
     function stateSelfClosingStartTag(char) {
@@ -424,7 +427,8 @@ function parseHtml(html, _a) {
     // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
     // (HTML Comments or !DOCTYPE)
     function stateMarkupDeclarationOpen(char) {
-        if (html.substr(charIdx, 2) === &#39;--&#39;) { // html comment
+        if (html.substr(charIdx, 2) === &#39;--&#39;) {
+            // html comment
             charIdx += 2; // &quot;consume&quot; characters
             currentTag = new CurrentTag((0, tslib_1.__assign)((0, tslib_1.__assign)({}, currentTag), { type: &#39;comment&#39; }));
             state = 14 /* CommentStart */;
@@ -436,7 +440,7 @@ function parseHtml(html, _a) {
         }
         else {
             // At this point, the spec specifies that the state machine should
-            // enter the &quot;bogus comment&quot; state, in which case any character(s) 
+            // enter the &quot;bogus comment&quot; state, in which case any character(s)
             // after the &#39;&lt;!&#39; that were read should become an HTML comment up
             // until the first &#39;&gt;&#39; that is read (or EOF). Instead, we&#39;ll assume
             // that a user just typed &#39;&lt;!&#39; as part of text data
@@ -452,7 +456,7 @@ function parseHtml(html, _a) {
         }
         else if (char === &#39;&gt;&#39;) {
             // At this point, we&#39;ll assume the comment wasn&#39;t a real comment
-            // so we&#39;ll just emit it as data. We basically read the sequence 
+            // so we&#39;ll just emit it as data. We basically read the sequence
             // &#39;&lt;!--&gt;&#39;
             resetToDataState();
         }
@@ -470,7 +474,7 @@ function parseHtml(html, _a) {
         }
         else if (char === &#39;&gt;&#39;) {
             // At this point, we&#39;ll assume the comment wasn&#39;t a real comment
-            // so we&#39;ll just emit it as data. We basically read the sequence 
+            // so we&#39;ll just emit it as data. We basically read the sequence
             // &#39;&lt;!---&gt;&#39;
             resetToDataState();
         }
@@ -501,7 +505,7 @@ function parseHtml(html, _a) {
             state = 16 /* Comment */;
         }
     }
-    // After we&#39;ve read two dashes inside a comment, it may signal the end of 
+    // After we&#39;ve read two dashes inside a comment, it may signal the end of
     // the comment if we then read a &#39;&gt;&#39; char
     // https://www.w3.org/TR/html51/syntax.html#comment-end-state
     function stateCommentEnd(char) {
@@ -533,7 +537,7 @@ function parseHtml(html, _a) {
             emitTagAndPreviousTextNode();
         }
         else {
-            // The &#39;--!&#39; was not followed by a &#39;&gt;&#39;, continue reading the 
+            // The &#39;--!&#39; was not followed by a &#39;&gt;&#39;, continue reading the
             // comment&#39;s text
             state = 16 /* Comment */;
         }
@@ -589,8 +593,8 @@ function parseHtml(html, _a) {
     function emitTagAndPreviousTextNode() {
         var textBeforeTag = html.slice(currentDataIdx, currentTag.idx);
         if (textBeforeTag) {
-            // the html tag was the first element in the html string, or two 
-            // tags next to each other, in which case we should not emit a text 
+            // the html tag was the first element in the html string, or two
+            // tags next to each other, in which case we should not emit a text
             // node
             onText(textBeforeTag, currentDataIdx);
         }
@@ -604,7 +608,8 @@ function parseHtml(html, _a) {
             if (currentTag.isOpening) {
                 onOpenTag(currentTag.name, currentTag.idx);
             }
-            if (currentTag.isClosing) { // note: self-closing tags will emit both opening and closing
+            if (currentTag.isClosing) {
+                // note: self-closing tags will emit both opening and closing
                 onCloseTag(currentTag.name, currentTag.idx);
             }
         }

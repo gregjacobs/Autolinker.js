@@ -17,18 +17,15 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
-exports.HashtagMatcher = void 0;
+exports.hashtagServices = exports.HashtagMatcher = void 0;
 var tslib_1 = require(&quot;tslib&quot;);
 var matcher_1 = require(&quot;./matcher&quot;);
 var regex_lib_1 = require(&quot;../regex-lib&quot;);
 var hashtag_match_1 = require(&quot;../match/hashtag-match&quot;);
-// RegExp objects which are shared by all instances of HashtagMatcher. These are
-// here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-// called multiple times, thus instantiating HashtagMatcher and its RegExp 
-// objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314). 
-// See descriptions of the properties where they are used for details about them
-var matcherRegex = new RegExp(&quot;#[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]{1,139}(?![_&quot;).concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;])&quot;), &#39;g&#39;); // lookahead used to make sure we don&#39;t match something above 139 characters
-var nonWordCharRegex = new RegExp(&#39;[^&#39; + regex_lib_1.alphaNumericAndMarksCharsStr + &#39;]&#39;);
+var utils_1 = require(&quot;../utils&quot;);
+// For debugging: search for other &quot;For debugging&quot; lines
+// import CliTable from &#39;cli-table&#39;;
+var hashtagTextCharRe = new RegExp(&quot;[_&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;]&quot;));
 <span id='Autolinker-matcher-Hashtag'>/**
 </span> * @class Autolinker.matcher.Hashtag
  * @extends Autolinker.matcher.Matcher
@@ -44,32 +41,18 @@ var HashtagMatcher =  (function (_super) {
      */
     function HashtagMatcher(cfg) {
         var _this = _super.call(this, cfg) || this;
-<span id='Autolinker-matcher-Hashtag-cfg-serviceName'>        /**
-</span>         * @cfg {String} serviceName
+<span id='Autolinker-matcher-Hashtag-cfg-service'>        /**
+</span>         * @cfg {String} service
          *
-         * The service to point hashtag matches to. See {@link Autolinker#hashtag}
-         * for available values.
+         * A string for the service name to have hashtags (ex: &quot;#myHashtag&quot;)
+         * auto-linked to. The currently-supported values are:
+         *
+         * - &#39;twitter&#39;
+         * - &#39;facebook&#39;
+         * - &#39;instagram&#39;
+         * - &#39;tiktok&#39;
          */
         _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
-<span id='Autolinker-matcher-Hashtag-property-matcherRegex'>        /**
-</span>         * The regular expression to match Hashtags. Example match:
-         *
-         *     #asdf
-         *
-         * @protected
-         * @property {RegExp} matcherRegex
-         */
-        _this.matcherRegex = matcherRegex;
-<span id='Autolinker-matcher-Hashtag-property-nonWordCharRegex'>        /**
-</span>         * The regular expression to use to check the character before a username match to
-         * make sure we didn&#39;t accidentally match an email address.
-         *
-         * For example, the string &quot;asdf@asdf.com&quot; should not match &quot;@asdf&quot; as a username.
-         *
-         * @protected
-         * @property {RegExp} nonWordCharRegex
-         */
-        _this.nonWordCharRegex = nonWordCharRegex;
         _this.serviceName = cfg.serviceName;
         return _this;
     }
@@ -77,28 +60,124 @@ var HashtagMatcher =  (function (_super) {
 </span>     * @inheritdoc
      */
     HashtagMatcher.prototype.parseMatches = function (text) {
-        var matcherRegex = this.matcherRegex, nonWordCharRegex = this.nonWordCharRegex, serviceName = this.serviceName, tagBuilder = this.tagBuilder, matches = [], match;
-        while ((match = matcherRegex.exec(text)) !== null) {
-            var offset = match.index, prevChar = text.charAt(offset - 1);
-            // If we found the match at the beginning of the string, or we found the match
-            // and there is a whitespace char in front of it (meaning it is not a &#39;#&#39; char
-            // in the middle of a word), then it is a hashtag match.
-            if (offset === 0 || nonWordCharRegex.test(prevChar)) {
-                var matchedText = match[0], hashtag = match[0].slice(1); // strip off the &#39;#&#39; character at the beginning
-                matches.push(new hashtag_match_1.HashtagMatch({
-                    tagBuilder: tagBuilder,
-                    matchedText: matchedText,
-                    offset: offset,
-                    serviceName: serviceName,
-                    hashtag: hashtag
-                }));
+        var tagBuilder = this.tagBuilder;
+        var serviceName = this.serviceName;
+        var matches = [];
+        var len = text.length;
+        var charIdx = 0, hashCharIdx = -1, state = 0 /* None */;
+        // For debugging: search for other &quot;For debugging&quot; lines
+        // const table = new CliTable( {
+        // 	head: [ &#39;charIdx&#39;, &#39;char&#39;, &#39;state&#39;, &#39;charIdx&#39;, &#39;currentEmailAddress.idx&#39;, &#39;hasDomainDot&#39; ]
+        // } );
+        while (charIdx &lt; len) {
+            var char = text.charAt(charIdx);
+            // For debugging: search for other &quot;For debugging&quot; lines
+            // table.push(
+            // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
+            // );
+            switch (state) {
+                case 0 /* None */:
+                    stateNone(char);
+                    break;
+                case 1 /* NonHashtagWordChar */:
+                    stateNonHashtagWordChar(char);
+                    break;
+                case 2 /* HashtagHashChar */:
+                    stateHashtagHashChar(char);
+                    break;
+                case 3 /* HashtagTextChar */:
+                    stateHashtagTextChar(char);
+                    break;
+                default:
+                    (0, utils_1.throwUnhandledCaseError)(state);
+            }
+            // For debugging: search for other &quot;For debugging&quot; lines
+            // table.push(
+            // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
+            // );
+            charIdx++;
+        }
+        // Capture any valid match at the end of the string
+        captureMatchIfValid();
+        // For debugging: search for other &quot;For debugging&quot; lines
+        //console.log( &#39;\n&#39; + table.toString() );
+        return matches;
+        // Handles the state when we&#39;re not in a hashtag or any word
+        function stateNone(char) {
+            if (char === &#39;#&#39;) {
+                state = 2 /* HashtagHashChar */;
+                hashCharIdx = charIdx;
+            }
+            else if (regex_lib_1.alphaNumericAndMarksCharRe.test(char)) {
+                state = 1 /* NonHashtagWordChar */;
+            }
+            else {
+                // not a hashtag character (&#39;#&#39;) or word char, stay in State.None
             }
         }
-        return matches;
+        // Handles the state when we&#39;ve encountered a word character but are not
+        // in a hashtag. This is used to distinguish between a standalone 
+        // hashtag such as &#39;#Stuff&#39; vs a hash char that is part of a word like
+        // &#39;asdf#stuff&#39; (the latter of which would not be a match)
+        function stateNonHashtagWordChar(char) {
+            if (regex_lib_1.alphaNumericAndMarksCharRe.test(char)) {
+                // continue in NonHashtagWordChar state
+            }
+            else {
+                state = 0 /* None */;
+            }
+        }
+        // Handles the state when we&#39;ve just encountered a &#39;#&#39; character
+        function stateHashtagHashChar(char) {
+            if (hashtagTextCharRe.test(char)) {
+                // &#39;#&#39; char with valid hash text char following
+                state = 3 /* HashtagTextChar */;
+            }
+            else if (regex_lib_1.alphaNumericAndMarksCharRe.test(char)) {
+                state = 1 /* NonHashtagWordChar */;
+            }
+            else {
+                state = 0 /* None */;
+            }
+        }
+        // Handles the state when we&#39;re currently in the hash tag&#39;s text chars
+        function stateHashtagTextChar(char) {
+            if (hashtagTextCharRe.test(char)) {
+                // Continue reading characters in the HashtagText state
+            }
+            else {
+                captureMatchIfValid();
+                hashCharIdx = -1;
+                if (regex_lib_1.alphaNumericAndMarksCharRe.test(char)) {
+                    state = 1 /* NonHashtagWordChar */;
+                }
+                else {
+                    state = 0 /* None */;
+                }
+            }
+        }
+        /*
+         * Captures the current hashtag as a HashtagMatch if it&#39;s valid.
+         */
+        function captureMatchIfValid() {
+            if (hashCharIdx &gt; -1 &amp;&amp; charIdx - hashCharIdx &lt;= 140) {
+                // Max length of 140 for a hashtag (&#39;#&#39; char + 139 word chars)
+                var matchedText = text.slice(hashCharIdx, charIdx);
+                var match = new hashtag_match_1.HashtagMatch({
+                    tagBuilder: tagBuilder,
+                    matchedText: matchedText,
+                    offset: hashCharIdx,
+                    serviceName: serviceName,
+                    hashtag: matchedText.slice(1),
+                });
+                matches.push(match);
+            }
+        }
     };
     return HashtagMatcher;
 }(matcher_1.Matcher));
 exports.HashtagMatcher = HashtagMatcher;
+exports.hashtagServices = [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;];
 //# sourceMappingURL=hashtag-matcher.js.map</pre>
 </body>
 </html>

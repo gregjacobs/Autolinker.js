@@ -45,9 +45,9 @@ function truncateMiddle(url, truncateLen, ellipsisChars) {
         ellipsisLength = ellipsisChars.length;
     }
     var availableLength = truncateLen - ellipsisLength;
-    var end = &quot;&quot;;
+    var end = &#39;&#39;;
     if (availableLength &gt; 0) {
-        end = url.substr((-1) * Math.floor(availableLength / 2));
+        end = url.substr(-1 * Math.floor(availableLength / 2));
     }
     return (url.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
 }

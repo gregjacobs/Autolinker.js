@@ -102,6 +102,20 @@ describe(`Autolinker Hashtag Matching -`, () => {
                 expect(result).toBe(`Yay, <a href="${urlPrefix}/Кириллица">#Кириллица</a>`);
             });
 
+            it(`should automatically link a hashtag within parenthesis
+				 when using the ${serviceName} service`, () => {
+                const result = autolinker.link(`Yay (#Things)`);
+                expect(result).toBe(`Yay (<a href="${urlPrefix}/Things">#Things</a>)`);
+            });
+
+            it(`should automatically link multiple hashtags separated by slashes
+				 when using the ${serviceName} service`, () => {
+                const result = autolinker.link(`#Stuff/#Things`);
+                expect(result).toBe(
+                    `<a href="${urlPrefix}/Stuff">#Stuff</a>/<a href="${urlPrefix}/Things">#Things</a>`
+                );
+            });
+
             it(`should NOT automatically link a hashtag when the '#' belongs to 
 				 part of another string when using the ${serviceName} service`, () => {
                 const result = autolinker.link(`test as#df test`);

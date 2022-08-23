@@ -11,7 +11,7 @@ import { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
 import { EmailMatcher } from './matcher/email-matcher';
 import { UrlMatcher } from './matcher/url-matcher';
-import { HashtagMatcher } from './matcher/hashtag-matcher';
+import { HashtagMatcher, HashtagService, hashtagServices } from './matcher/hashtag-matcher';
 import { PhoneMatcher } from './matcher/phone-matcher';
 import { MentionMatcher } from './matcher/mention-matcher';
 import { parseHtml } from './htmlParser/parse-html';
@@ -563,10 +563,7 @@ export default class Autolinker {
 
         // Validate the value of the `hashtag` cfg
         const hashtag = this.hashtag;
-        if (
-            hashtag !== false &&
-            ['twitter', 'facebook', 'instagram', 'tiktok'].indexOf(hashtag) === -1
-        ) {
+        if (hashtag !== false && hashtagServices.indexOf(hashtag) === -1) {
             throw new Error(`invalid \`hashtag\` cfg '${hashtag}' - see docs`);
         }
 
@@ -981,7 +978,7 @@ export default class Autolinker {
             let matchers = [
                 new HashtagMatcher({
                     tagBuilder,
-                    serviceName: this.hashtag as HashtagServices,
+                    serviceName: this.hashtag as HashtagService,
                 }),
                 new EmailMatcher({ tagBuilder }),
                 new PhoneMatcher({ tagBuilder }),
@@ -1063,8 +1060,7 @@ export interface TruncateConfigObj {
     location?: 'end' | 'middle' | 'smart';
 }
 
-export type HashtagConfig = false | HashtagServices;
-export type HashtagServices = 'twitter' | 'facebook' | 'instagram' | 'tiktok';
+export type HashtagConfig = false | HashtagService;
 
 export type MentionConfig = false | MentionServices;
 export type MentionServices = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';

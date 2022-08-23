@@ -82,7 +82,7 @@ var UrlMatchValidator =  (function () {
         if (this.hasFullProtocolRegex.test(urlMatch)) {
             stringBeforeSlash = urlMatch.split(&#39;://&#39;)[1];
         }
-        return stringBeforeSlash.split(&#39;/&#39;)[0].indexOf(&quot;..&quot;) &gt; -1;
+        return stringBeforeSlash.split(&#39;/&#39;)[0].indexOf(&#39;..&#39;) &gt; -1;
     };
 <span id='Autolinker-matcher-UrlMatchValidator-method-isValidUriScheme'>    /**
 </span>     * Determines if the URI scheme is a valid scheme to be autolinked. Returns
@@ -95,7 +95,7 @@ var UrlMatchValidator =  (function () {
      */
     UrlMatchValidator.isValidUriScheme = function (uriSchemeMatch) {
         var uriSchemeMatchArr = uriSchemeMatch.match(this.uriSchemeRegex), uriScheme = uriSchemeMatchArr &amp;&amp; uriSchemeMatchArr[0].toLowerCase();
-        return (uriScheme !== &#39;javascript:&#39; &amp;&amp; uriScheme !== &#39;vbscript:&#39;);
+        return uriScheme !== &#39;javascript:&#39; &amp;&amp; uriScheme !== &#39;vbscript:&#39;;
     };
 <span id='Autolinker-matcher-UrlMatchValidator-method-urlMatchDoesNotHaveProtocolOrDot'>    /**
 </span>     * Determines if a URL match does not have either:
@@ -119,7 +119,9 @@ var UrlMatchValidator =  (function () {
      *   or at least one dot (&#39;.&#39;) in a non-full-protocol match.
      */
     UrlMatchValidator.urlMatchDoesNotHaveProtocolOrDot = function (urlMatch, protocolUrlMatch) {
-        return (!!urlMatch &amp;&amp; (!protocolUrlMatch || !this.hasFullProtocolRegex.test(protocolUrlMatch)) &amp;&amp; urlMatch.indexOf(&#39;.&#39;) === -1);
+        return (!!urlMatch &amp;&amp;
+            (!protocolUrlMatch || !this.hasFullProtocolRegex.test(protocolUrlMatch)) &amp;&amp;
+            urlMatch.indexOf(&#39;.&#39;) === -1);
     };
 <span id='Autolinker-matcher-UrlMatchValidator-method-urlMatchDoesNotHaveAtLeastOneWordChar'>    /**
 </span>     * Determines if a URL match does not have either:
@@ -142,7 +144,8 @@ var UrlMatchValidator =  (function () {
      */
     UrlMatchValidator.urlMatchDoesNotHaveAtLeastOneWordChar = function (urlMatch, protocolUrlMatch) {
         if (urlMatch &amp;&amp; protocolUrlMatch) {
-            return !this.hasFullProtocolRegex.test(protocolUrlMatch) &amp;&amp; !this.hasWordCharAfterProtocolRegex.test(urlMatch);
+            return (!this.hasFullProtocolRegex.test(protocolUrlMatch) &amp;&amp;
+                !this.hasWordCharAfterProtocolRegex.test(urlMatch));
         }
         else {
             return false;
@@ -170,7 +173,7 @@ var UrlMatchValidator =  (function () {
      * @private
      * @property {RegExp} hasWordCharAfterProtocolRegex
      */
-    UrlMatchValidator.hasWordCharAfterProtocolRegex = new RegExp(&quot;:[^\\s]*?[&quot; + regex_lib_1.alphaCharsStr + &quot;]&quot;);
+    UrlMatchValidator.hasWordCharAfterProtocolRegex = new RegExp(&#39;:[^\\s]*?[&#39; + regex_lib_1.alphaCharsStr + &#39;]&#39;);
 <span id='Autolinker-matcher-UrlMatchValidator-property-ipRegex'>    /**
 </span>     * Regex to determine if the string is a valid IP address
      *

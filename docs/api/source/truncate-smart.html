@@ -43,6 +43,7 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
         ellipsisLengthBeforeParsing = ellipsisChars.length;
     }
     var parse_url = function (url) {
+        // Functionality inspired by PHP function of same name
         var urlObj = {};
         var urlSub = url;
         var match = urlSub.match(/^([a-z]+):\/\//i);
@@ -73,26 +74,26 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
         return urlObj;
     };
     var buildUrl = function (urlObj) {
-        var url = &quot;&quot;;
+        var url = &#39;&#39;;
         if (urlObj.scheme &amp;&amp; urlObj.host) {
-            url += urlObj.scheme + &quot;://&quot;;
+            url += urlObj.scheme + &#39;://&#39;;
         }
         if (urlObj.host) {
             url += urlObj.host;
         }
         if (urlObj.path) {
-            url += &quot;/&quot; + urlObj.path;
+            url += &#39;/&#39; + urlObj.path;
         }
         if (urlObj.query) {
-            url += &quot;?&quot; + urlObj.query;
+            url += &#39;?&#39; + urlObj.query;
         }
         if (urlObj.fragment) {
-            url += &quot;#&quot; + urlObj.fragment;
+            url += &#39;#&#39; + urlObj.fragment;
         }
         return url;
     };
     var buildSegment = function (segment, remainingAvailableLength) {
-        var remainingAvailableLengthHalf = remainingAvailableLength / 2, startOffset = Math.ceil(remainingAvailableLengthHalf), endOffset = (-1) * Math.floor(remainingAvailableLengthHalf), end = &quot;&quot;;
+        var remainingAvailableLengthHalf = remainingAvailableLength / 2, startOffset = Math.ceil(remainingAvailableLengthHalf), endOffset = -1 * Math.floor(remainingAvailableLengthHalf), end = &#39;&#39;;
         if (endOffset &lt; 0) {
             end = segment.substr(endOffset);
         }
@@ -116,29 +117,29 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
         return url;
     }
     if (urlObj.host) {
-        urlObj.host = urlObj.host.replace(/^www\./, &quot;&quot;);
+        urlObj.host = urlObj.host.replace(/^www\./, &#39;&#39;);
         url = buildUrl(urlObj);
     }
     if (url.length &lt;= truncateLen) {
         return url;
     }
     // Process and build the URL
-    var str = &quot;&quot;;
+    var str = &#39;&#39;;
     if (urlObj.host) {
         str += urlObj.host;
     }
     if (str.length &gt;= availableLength) {
         if (urlObj.host.length == truncateLen) {
-            return (urlObj.host.substr(0, (truncateLen - ellipsisLength)) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
+            return (urlObj.host.substr(0, truncateLen - ellipsisLength) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
         }
         return buildSegment(str, availableLength).substr(0, availableLength + ellipsisLengthBeforeParsing);
     }
-    var pathAndQuery = &quot;&quot;;
+    var pathAndQuery = &#39;&#39;;
     if (urlObj.path) {
-        pathAndQuery += &quot;/&quot; + urlObj.path;
+        pathAndQuery += &#39;/&#39; + urlObj.path;
     }
     if (urlObj.query) {
-        pathAndQuery += &quot;?&quot; + urlObj.query;
+        pathAndQuery += &#39;?&#39; + urlObj.query;
     }
     if (pathAndQuery) {
         if ((str + pathAndQuery).length &gt;= availableLength) {
@@ -153,7 +154,7 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
         }
     }
     if (urlObj.fragment) {
-        var fragment = &quot;#&quot; + urlObj.fragment;
+        var fragment = &#39;#&#39; + urlObj.fragment;
         if ((str + fragment).length &gt;= availableLength) {
             if ((str + fragment).length == truncateLen) {
                 return (str + fragment).substr(0, truncateLen);
@@ -166,7 +167,7 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
         }
     }
     if (urlObj.scheme &amp;&amp; urlObj.host) {
-        var scheme = urlObj.scheme + &quot;://&quot;;
+        var scheme = urlObj.scheme + &#39;://&#39;;
         if ((str + scheme).length &lt; availableLength) {
             return (scheme + str).substr(0, truncateLen);
         }
@@ -174,9 +175,9 @@ function truncateSmart(url, truncateLen, ellipsisChars) {
     if (str.length &lt;= truncateLen) {
         return str;
     }
-    var end = &quot;&quot;;
+    var end = &#39;&#39;;
     if (availableLength &gt; 0) {
-        end = str.substr((-1) * Math.floor(availableLength / 2));
+        end = str.substr(-1 * Math.floor(availableLength / 2));
     }
     return (str.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
 }

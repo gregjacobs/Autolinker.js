@@ -86,7 +86,7 @@ var AnchorTagBuilder =  (function () {
         return new html_tag_1.HtmlTag({
             tagName: &#39;a&#39;,
             attrs: this.createAttrs(match),
-            innerHtml: this.processAnchorText(match.getAnchorText())
+            innerHtml: this.processAnchorText(match.getAnchorText()),
         });
     };
 <span id='Autolinker-AnchorTagBuilder-method-createAttrs'>    /**
@@ -100,15 +100,15 @@ var AnchorTagBuilder =  (function () {
      */
     AnchorTagBuilder.prototype.createAttrs = function (match) {
         var attrs = {
-            &#39;href&#39;: match.getAnchorHref() // we&#39;ll always have the `href` attribute
+            href: match.getAnchorHref(), // we&#39;ll always have the `href` attribute
         };
         var cssClass = this.createCssClass(match);
         if (cssClass) {
             attrs[&#39;class&#39;] = cssClass;
         }
         if (this.newWindow) {
-            attrs[&#39;target&#39;] = &quot;_blank&quot;;
-            attrs[&#39;rel&#39;] = &quot;noopener noreferrer&quot;; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
+            attrs[&#39;target&#39;] = &#39;_blank&#39;;
+            attrs[&#39;rel&#39;] = &#39;noopener noreferrer&#39;; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
         }
         if (this.truncate) {
             if (this.truncate.length &amp;&amp; this.truncate.length &lt; match.getAnchorText().length) {
@@ -140,7 +140,7 @@ var AnchorTagBuilder =  (function () {
     AnchorTagBuilder.prototype.createCssClass = function (match) {
         var className = this.className;
         if (!className) {
-            return &quot;&quot;;
+            return &#39;&#39;;
         }
         else {
             var returnClasses = [className], cssClassSuffixes = match.getCssClassSuffixes();
