@@ -1267,7 +1267,7 @@ describe('Autolinker Url Matching -', () => {
     });
 
     describe('unicode exploits', () => {
-        it('should strip out character direction override unicodes', () => {
+        it('should strip out character direction override unicodes which could split links into two (https://github.com/gregjacobs/Autolinker.js/issues/377)', () => {
             expect(autolinker.link('foo.combar.com')).toBe(
                 '<a href="http://foo.combar.com">foo.combar.com</a>'
             );

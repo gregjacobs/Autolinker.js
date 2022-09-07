@@ -1030,7 +1030,7 @@ export default class Autolinker {
      * @private
      */
     private stripUnsafeCharacters(text: string) {
-        return text.replace(/[\u202a-\u202e, \u200e-\u200f]/g, '');
+        return text.replace(/[\u202a-\u202e\u200e-\u200f]/g, '');
     }
 }
 
