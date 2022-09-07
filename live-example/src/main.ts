@@ -11,8 +11,8 @@ $(document).ready(function () {
         $outputEl = $('#output'),
         $optionsOutputEl = $('#options-output'),
         urlsSchemeOption: Option,
-        urlsWwwOption: Option,
         urlsTldOption: Option,
+        urlsIpV4Option: Option,
         emailOption: Option,
         phoneOption: Option,
         mentionOption: Option,
@@ -33,15 +33,15 @@ $(document).ready(function () {
             defaultValue: true,
         }).onChange(autolink);
 
-        urlsWwwOption = new CheckboxOption({
-            name: 'urls.wwwMatches',
-            description: "'www' URLS",
-            defaultValue: true,
-        }).onChange(autolink);
-
         urlsTldOption = new CheckboxOption({
             name: 'urls.tldMatches',
             description: 'TLD URLs',
+            defaultValue: true,
+        }).onChange(autolink);
+
+        urlsIpV4Option = new CheckboxOption({
+            name: 'urls.ipV4Matches',
+            description: 'IPv4 URLs',
             defaultValue: true,
         }).onChange(autolink);
 
@@ -102,7 +102,7 @@ $(document).ready(function () {
             options: ['end', 'middle', 'smart'],
             defaultValue: 'end',
         }).onChange(autolink);
-        
+
         classNameOption = new TextOption({
             name: 'className',
             description: 'CSS class(es)',
@@ -131,8 +131,8 @@ $(document).ready(function () {
         return {
             urls: {
                 schemeMatches: urlsSchemeOption.getValue(),
-                wwwMatches: urlsWwwOption.getValue(),
                 tldMatches: urlsTldOption.getValue(),
+                ipV4Matches: urlsIpV4Option.getValue(),
             },
             email: emailOption.getValue(),
             phone: phoneOption.getValue(),
@@ -155,8 +155,8 @@ $(document).ready(function () {
             `var autolinker = new Autolinker( {`,
             `    urls : {`,
             `        schemeMatches : ${optionsObj.urls.schemeMatches},`,
-            `        wwwMatches    : ${optionsObj.urls.wwwMatches},`,
             `        tldMatches    : ${optionsObj.urls.tldMatches}`,
+            `        ipV4Matches   : ${optionsObj.urls.ipV4Matches},`,
             `    },`,
             `    email       : ${optionsObj.email},`,
             `    phone       : ${optionsObj.phone},`,
