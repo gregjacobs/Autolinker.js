@@ -822,7 +822,6 @@ var Autolinker =  (function () {
         if (this.sanitizeHtml) {
             textOrHtml = textOrHtml.replace(/&lt;/g, &#39;&amp;lt;&#39;).replace(/&gt;/g, &#39;&amp;gt;&#39;);
         }
-        textOrHtml = this.stripUnsafeCharacters(textOrHtml);
         var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
         for (var i = 0, len = matches.length; i &lt; len; i++) {
             var match = matches[i];
@@ -918,15 +917,6 @@ var Autolinker =  (function () {
             });
         }
         return tagBuilder;
-    };
-<span id='Autolinker-method-stripUnsafeCharacters'>    /**
-</span>     * Strips characters considered as unsafe
-     * SNYK-AUTOLINKER-2438289
-     * @param text
-     * @private
-     */
-    Autolinker.prototype.stripUnsafeCharacters = function (text) {
-        return text.replace(/[\u202a-\u202e\u200e-\u200f]/g, &#39;&#39;);
     };
     // NOTE: must be &#39;export default&#39; here for UMD module
 <span id='Autolinker-static-property-version'>    /**

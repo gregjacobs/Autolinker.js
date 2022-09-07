@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v3.16.1
+ * v3.16.2
  *
  * Copyright(c) 2022 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -15,7 +15,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '3.16.1';
+    var version = '3.16.2';
 
     /**
      * Assigns (shallow copies) the properties of `src` onto `dest`, if the
@@ -4317,7 +4317,6 @@
             if (this.sanitizeHtml) {
                 textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
-            textOrHtml = this.stripUnsafeCharacters(textOrHtml);
             var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
             for (var i = 0, len = matches.length; i < len; i++) {
                 var match = matches[i];
@@ -4413,15 +4412,6 @@
                 });
             }
             return tagBuilder;
-        };
-        /**
-         * Strips characters considered as unsafe
-         * SNYK-AUTOLINKER-2438289
-         * @param text
-         * @private
-         */
-        Autolinker.prototype.stripUnsafeCharacters = function (text) {
-            return text.replace(/[\u202a-\u202e\u200e-\u200f]/g, '');
         };
         // NOTE: must be 'export default' here for UMD module
         /**
