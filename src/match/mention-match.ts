@@ -1,22 +1,32 @@
-import { Match, MatchConfig } from './match';
-import { MentionServices } from '../autolinker';
+import { MentionService } from '../parser/mention-utils';
+import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
 
 /**
  * @class Autolinker.match.Mention
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Mention match found in an input string which should be Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-export class MentionMatch extends Match {
+export class MentionMatch extends AbstractMatch {
+    /**
+     * @public
+     * @property {'mention'} type
+     *
+     * A string name for the type of match that this class represents. Can be
+     * used in a TypeScript discriminating union to type-narrow from the
+     * `Match` type.
+     */
+    public readonly type: 'mention' = 'mention';
+
     /**
      * @cfg {String} serviceName
      *
      * The service to point mention matches to. See {@link Autolinker#mention}
      * for available values.
      */
-    private readonly serviceName: MentionServices = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly serviceName: MentionService = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {String} mention (required)
@@ -43,7 +53,7 @@ export class MentionMatch extends Match {
      *
      * @return {String}
      */
-    getType() {
+    getType(): 'mention' {
         return 'mention';
     }
 
@@ -52,7 +62,7 @@ export class MentionMatch extends Match {
      *
      * @return {String}
      */
-    getMention() {
+    getMention(): string {
         return this.mention;
     }
 
@@ -62,7 +72,7 @@ export class MentionMatch extends Match {
      *
      * @return {String}
      */
-    getServiceName() {
+    getServiceName(): MentionService {
         return this.serviceName;
     }
 
@@ -71,7 +81,7 @@ export class MentionMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorHref() {
+    getAnchorHref(): string {
         switch (this.serviceName) {
             case 'twitter':
                 return 'https://twitter.com/' + this.mention;
@@ -93,7 +103,7 @@ export class MentionMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorText() {
+    getAnchorText(): string {
         return '@' + this.mention;
     }
 
@@ -104,7 +114,7 @@ export class MentionMatch extends Match {
      *
      * @return {String[]}
      */
-    getCssClassSuffixes() {
+    getCssClassSuffixes(): string[] {
         let cssClassSuffixes = super.getCssClassSuffixes(),
             serviceName = this.getServiceName();
 
@@ -115,7 +125,7 @@ export class MentionMatch extends Match {
     }
 }
 
-export interface MentionMatchConfig extends MatchConfig {
-    serviceName: MentionServices;
+export interface MentionMatchConfig extends AbstractMatchConfig {
+    serviceName: MentionService;
     mention: string;
 }

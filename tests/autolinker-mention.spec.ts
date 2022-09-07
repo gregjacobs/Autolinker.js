@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import Autolinker from '../src/autolinker';
+import { MentionService } from '../src/parser/mention-utils';
+import { generateLinkTests } from './util/generate-link-tests';
 
-describe('Autolinker Mention Matching -', () => {
+describe('Autolinker Mention Matching >', () => {
     const twitterAutolinker = new Autolinker({
         mention: 'twitter',
         newWindow: false,
@@ -19,7 +21,7 @@ describe('Autolinker Mention Matching -', () => {
         newWindow: false,
     });
 
-    const services = [
+    const services: MentionTestService[] = [
         {
             serviceName: 'twitter',
             urlPrefix: 'https://twitter.com/',
@@ -42,144 +44,67 @@ describe('Autolinker Mention Matching -', () => {
         },
     ];
 
+    interface MentionTestService {
+        serviceName: MentionService;
+        urlPrefix: string;
+        autolinker: Autolinker;
+    }
+
     it(`should not autolink mentions by default`, () => {
         let autolinker = new Autolinker({ newWindow: false });
         expect(autolinker.link('@test')).toBe('@test');
     });
 
-    describe('all services mention tests', () => {
-        services.forEach(({ serviceName, urlPrefix, autolinker }) => {
-            it(`should automatically link a ${serviceName} handle which is the 
-				 only thing in the string
-			`, () => {
-                let result = autolinker.link(`@joe`);
+    it(`should not autolink a mentions found as part of an email address`, () => {
+        let autolinker = new Autolinker({ newWindow: false, mention: 'twitter', email: false });
+        expect(autolinker.link('asdf@test.com')).toBe('asdf@test.com');
+    });
 
-                expect(result).toBe(`<a href="${urlPrefix}joe">@joe</a>`);
-            });
+    describe('all service tests >', () => {
+        services.forEach(service => {
+            const { serviceName, urlPrefix, autolinker } = service;
 
-            it(`should automatically link a ${serviceName} handle with underscores 
-				 in it`, () => {
-                let result = autolinker.link(`@joe_the_man12`);
+            describe(`service: ${serviceName} >`, () => {
+                generateLinkTests([
+                    {
+                        input: '@joe',
+                        description: 'basic mention',
+                        expectedHref: `${urlPrefix}joe`,
+                        autolinker,
+                    },
+                    {
+                        input: '@joe_the_man12',
+                        description: 'mention with underscores',
+                        expectedHref: `${urlPrefix}joe_the_man12`,
+                        autolinker,
+                    },
+                ]);
 
-                expect(result).toBe(`<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>`);
-            });
+                it(`should NOT automatically link username handles with accented characters for ${serviceName} because non-ascii-letter characters are not allowed`, () => {
+                    let result = autolinker.link(`Hello @mañana how are you?`);
 
-            it(`should automatically link ${serviceName} handles at the 
-				 beginning of a string`, () => {
-                let result = autolinker.link(`@greg is my ${serviceName} handle`);
+                    expect(result).toBe(`Hello @mañana how are you?`);
+                });
 
-                expect(result).toBe(
-                    `<a href="${urlPrefix}greg">@greg</a> is my ${serviceName} handle`
-                );
-            });
+                it(`should NOT automatically link username handles with cyrillic characters for service ${serviceName} because non-ascii-letter characters are not allowed`, () => {
+                    let result = autolinker.link(`Hello @Кириллица how are you?`);
 
-            it(`should automatically link ${serviceName} handles in the middle 
-				 of a string`, () => {
-                let result = autolinker.link(
-                    `Joe's ${serviceName} is @joe_the_man12 today, but what will it be tomorrow?`
-                );
+                    expect(result).toBe(`Hello @Кириллица how are you?`);
+                });
 
-                expect(result).toBe(
-                    `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a> today, but what will it be tomorrow?`
-                );
-            });
+                it(`should NOT automatically link a mention when the '@' belongs to part of another string`, () => {
+                    let result = autolinker.link(`test as@df test`);
 
-            it(`should automatically link ${serviceName} handles at the end of 
-				 a string`, () => {
-                let result = autolinker.link(`Joe's ${serviceName} is @joe_the_man12`);
-
-                expect(result).toBe(
-                    `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>`
-                );
-            });
-
-            it(`should automatically link ${serviceName} handles at the end of 
-				 a string with a period at the end`, () => {
-                let result = autolinker.link(`Joe's ${serviceName} is @joe_the_man12.`);
-
-                expect(result).toBe(
-                    `Joe's ${serviceName} is <a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>.`
-                );
-            });
-
-            it(`should automatically link ${serviceName} handles surrounded by 
-				 parentheses`, () => {
-                let result = autolinker.link(`Joe's ${serviceName} is (@joe_the_man12)`);
-
-                expect(result).toBe(
-                    `Joe's ${serviceName} is (<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>)`
-                );
-            });
-
-            it(`should automatically link ${serviceName} handles surrounded by 
-			     curly brackets`, () => {
-                let result = autolinker.link(`Joe's ${serviceName} is {@joe_the_man12}`);
-
-                expect(result).toBe(
-                    `Joe's ${serviceName} is {<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>}`
-                );
-            });
-
-            it(`should automatically link ${serviceName} handles surrounded by 
-				 square brackets`, () => {
-                let result = autolinker.link(`Joe's ${serviceName} is [@joe_the_man12]`);
-
-                expect(result).toBe(
-                    `Joe's ${serviceName} is [<a href="${urlPrefix}joe_the_man12">@joe_the_man12</a>]`
-                );
-            });
-
-            it(`should automatically link multiple ${serviceName} handles in a 
-				 string`, () => {
-                let result = autolinker.link(`@greg is tweeting @joe with @josh`);
-
-                expect(result).toBe(
-                    `<a href="${urlPrefix}greg">@greg</a> is tweeting <a href="${urlPrefix}joe">@joe</a> with <a href="${urlPrefix}josh">@josh</a>`
-                );
-            });
-
-            it(`should automatically link fully capitalized ${serviceName} handles`, () => {
-                let result = autolinker.link(`@GREG is tweeting @JOE with @JOSH`);
-
-                expect(result).toBe(
-                    `<a href="${urlPrefix}GREG">@GREG</a> is tweeting <a href="${urlPrefix}JOE">@JOE</a> with <a href="${urlPrefix}JOSH">@JOSH</a>`
-                );
-            });
-
-            // NOTE: Twitter itself does not accept accented characters, but
-            // other services might so linking them anyway
-            it(`should automatically link username handles with accented 
-				 characters for ${serviceName}`, () => {
-                let result = autolinker.link(`Hello @mañana how are you?`);
-
-                expect(result).toBe(`Hello <a href="${urlPrefix}mañana">@mañana</a> how are you?`);
-            });
-
-            // NOTE: Twitter itself does not accept cyrillic characters, but
-            // other services might so linking them anyway
-            it(`should automatically link username handles with cyrillic 
-				 characters for service ${serviceName}
-			`, () => {
-                let result = autolinker.link(`Hello @Кириллица how are you?`);
-
-                expect(result).toBe(
-                    `Hello <a href="${urlPrefix}Кириллица">@Кириллица</a> how are you?`
-                );
-            });
-
-            it(`should NOT automatically link a mention when the '@' belongs to 
-				 part of another string`, () => {
-                let result = autolinker.link(`test as@df test`);
-
-                expect(result).toBe(`test as@df test`);
+                    expect(result).toBe(`test as@df test`);
+                });
             });
         });
     });
 
     describe('twitter-specific tests', () => {
-        it('should link a twitter mention that is up to 50 characters long', () => {
-            const aUsername = _.repeat('a', 50);
-            const bUsername = _.repeat('b', 51); // too long - don't link
+        it('should link a twitter mention that is up to 15 characters long', () => {
+            const aUsername = _.repeat('a', 15);
+            const bUsername = _.repeat('b', 16); // too long - don't link
 
             const result = twitterAutolinker.link(`@${aUsername} and @${bUsername}`);
             expect(result).toBe(
@@ -187,11 +112,18 @@ describe('Autolinker Mention Matching -', () => {
             );
         });
 
-        it(`should link a twitter mention that has a period in it only up until
-			 the period`, () => {
+        it(`should not link a twitter mention that has a period in it`, () => {
             const result = twitterAutolinker.link(`Hello @asdf.defg`);
 
-            expect(result).toBe(`Hello <a href="https://twitter.com/asdf">@asdf</a>.defg`);
+            expect(result).toBe(`Hello @asdf.defg`);
+        });
+
+        it(`should link fully capitalized twitter handles`, () => {
+            let result = twitterAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+
+            expect(result).toBe(
+                `<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>`
+            );
         });
     });
 
@@ -206,17 +138,25 @@ describe('Autolinker Mention Matching -', () => {
             );
         });
 
-        it(`should link an instagram mention that has a period in it`, () => {
-            const result = instagramAutolinker.link(`Hello @asdf.defg`);
+        it(`should link an instagram mention that has an underscore in it`, () => {
+            const result = instagramAutolinker.link(`Hello @asdf_defg`);
 
-            expect(result).toBe(`Hello <a href="https://instagram.com/asdf.defg">@asdf.defg</a>`);
+            expect(result).toBe(`Hello <a href="https://instagram.com/asdf_defg">@asdf_defg</a>`);
+        });
+
+        it(`should link fully capitalized instagram handles`, () => {
+            let result = instagramAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+
+            expect(result).toBe(
+                `<a href="https://instagram.com/GREG">@GREG</a> is tweeting <a href="https://instagram.com/JOE">@JOE</a> with <a href="https://instagram.com/JOSH">@JOSH</a>`
+            );
         });
     });
 
     describe('soundcloud-specific tests', () => {
-        it('should link a soundcloud mention that is up to 50 characters long', () => {
-            const aUsername = _.repeat('a', 50);
-            const bUsername = _.repeat('b', 51); // too long - don't link
+        it('should link a soundcloud mention that is up to 25 characters long', () => {
+            const aUsername = _.repeat('a', 25);
+            const bUsername = _.repeat('b', 26); // too long - don't link
 
             const result = soundcloudAutolinker.link(`@${aUsername} and @${bUsername}`);
             expect(result).toBe(
@@ -224,10 +164,22 @@ describe('Autolinker Mention Matching -', () => {
             );
         });
 
-        it(`should link a soundcloud mention that has a period in it`, () => {
+        it(`should link a soundcloud mention that has dashes in it`, () => {
+            const result = soundcloudAutolinker.link(`Hello @asdf-defg`);
+
+            expect(result).toBe(`Hello <a href="https://soundcloud.com/asdf-defg">@asdf-defg</a>`);
+        });
+
+        it(`should NOT link a soundcloud mention that has a period in it`, () => {
             const result = soundcloudAutolinker.link(`Hello @asdf.defg`);
 
-            expect(result).toBe(`Hello <a href="https://soundcloud.com/asdf.defg">@asdf.defg</a>`);
+            expect(result).toBe(`Hello @asdf.defg`);
+        });
+
+        it(`should NOT link capitalized soundcloud handles (soundcloud must be all lowercase)`, () => {
+            let result = soundcloudAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+
+            expect(result).toBe(`@GREG is tweeting @JOE with @JOSH`);
         });
     });
 
@@ -263,11 +215,17 @@ describe('Autolinker Mention Matching -', () => {
                 `Hello <a href="https://www.tiktok.com/@asdf_fdsa">@asdf_fdsa</a>.`
             );
         });
+
+        it(`should link fully capitalized twitter handles`, () => {
+            let result = tiktokAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+
+            expect(result).toBe(
+                `<a href="https://www.tiktok.com/@GREG">@GREG</a> is tweeting <a href="https://www.tiktok.com/@JOE">@JOE</a> with <a href="https://www.tiktok.com/@JOSH">@JOSH</a>`
+            );
+        });
     });
 
-    it(`should NOT automatically link a username that is actually part of an 
-		 email address when email address linking is turned on
-	`, () => {
+    it(`should NOT automatically link a username that is actually part of an email address when email address linking is turned on`, () => {
         let emailAutolinker = new Autolinker({
             email: true,
             mention: 'twitter',

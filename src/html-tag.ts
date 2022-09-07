@@ -1,4 +1,4 @@
-import { indexOf } from './utils';
+import { whitespaceRe } from './regex-lib';
 
 /**
  * @class Autolinker.HtmlTag
@@ -101,14 +101,6 @@ export class HtmlTag {
     private innerHTML: string = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
-     * @protected
-     * @property {RegExp} whitespaceRegex
-     *
-     * Regular expression used to match whitespace in a string of CSS classes.
-     */
-    protected whitespaceRegex = /\s+/; // default value just to get the above doc comment in the ES5 output and documentation generator
-
-    /**
      * @method constructor
      * @param {Object} [cfg] The configuration properties for this class, in an Object (map)
      */
@@ -124,7 +116,7 @@ export class HtmlTag {
      * @param {String} tagName
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setTagName(tagName: string) {
+    setTagName(tagName: string): this {
         this.tagName = tagName;
         return this;
     }
@@ -134,7 +126,7 @@ export class HtmlTag {
      *
      * @return {String}
      */
-    getTagName() {
+    getTagName(): string {
         return this.tagName || '';
     }
 
@@ -145,7 +137,7 @@ export class HtmlTag {
      * @param {String} attrValue The attribute value to set.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setAttr(attrName: string, attrValue: string) {
+    setAttr(attrName: string, attrValue: string): this {
         let tagAttrs = this.getAttrs();
         tagAttrs[attrName] = attrValue;
 
@@ -158,7 +150,7 @@ export class HtmlTag {
      * @param {String} attrName The attribute name to retrieve.
      * @return {String} The attribute's value, or `undefined` if it does not exist on the HtmlTag.
      */
-    getAttr(attrName: string) {
+    getAttr(attrName: string): string {
         return this.getAttrs()[attrName];
     }
 
@@ -168,7 +160,7 @@ export class HtmlTag {
      * @param {Object.<String, String>} attrs A key/value Object (map) of the attributes to set.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setAttrs(attrs: { [attr: string]: string }) {
+    setAttrs(attrs: { [attr: string]: string }): this {
         Object.assign(this.getAttrs(), attrs);
 
         return this;
@@ -179,7 +171,7 @@ export class HtmlTag {
      *
      * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
      */
-    getAttrs() {
+    getAttrs(): { [key: string]: string } {
         return this.attrs || (this.attrs = {});
     }
 
@@ -189,7 +181,7 @@ export class HtmlTag {
      * @param {String} cssClass One or more space-separated CSS classes to set (overwrite).
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setClass(cssClass: string) {
+    setClass(cssClass: string): this {
         return this.setAttr('class', cssClass);
     }
 
@@ -199,15 +191,14 @@ export class HtmlTag {
      * @param {String} cssClass One or more space-separated CSS classes to add.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    addClass(cssClass: string) {
+    addClass(cssClass: string): this {
         let classAttr = this.getClass(),
-            whitespaceRegex = this.whitespaceRegex,
-            classes = !classAttr ? [] : classAttr.split(whitespaceRegex),
-            newClasses = cssClass.split(whitespaceRegex),
+            classes = !classAttr ? [] : classAttr.split(whitespaceRe),
+            newClasses = cssClass.split(whitespaceRe),
             newClass: string | undefined;
 
         while ((newClass = newClasses.shift())) {
-            if (indexOf(classes, newClass) === -1) {
+            if (classes.indexOf(newClass) === -1) {
                 classes.push(newClass);
             }
         }
@@ -222,15 +213,14 @@ export class HtmlTag {
      * @param {String} cssClass One or more space-separated CSS classes to remove.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    removeClass(cssClass: string) {
+    removeClass(cssClass: string): this {
         let classAttr = this.getClass(),
-            whitespaceRegex = this.whitespaceRegex,
-            classes = !classAttr ? [] : classAttr.split(whitespaceRegex),
-            removeClasses = cssClass.split(whitespaceRegex),
+            classes = !classAttr ? [] : classAttr.split(whitespaceRe),
+            removeClasses = cssClass.split(whitespaceRe),
             removeClass: string | undefined;
 
         while (classes.length && (removeClass = removeClasses.shift())) {
-            let idx = indexOf(classes, removeClass);
+            let idx = classes.indexOf(removeClass);
             if (idx !== -1) {
                 classes.splice(idx, 1);
             }
@@ -246,7 +236,7 @@ export class HtmlTag {
      *
      * @return {String}
      */
-    getClass() {
+    getClass(): string {
         return this.getAttrs()['class'] || '';
     }
 
@@ -256,7 +246,7 @@ export class HtmlTag {
      * @param {String} cssClass The CSS class to check for.
      * @return {Boolean} `true` if the HtmlTag has the CSS class, `false` otherwise.
      */
-    hasClass(cssClass: string) {
+    hasClass(cssClass: string): boolean {
         return (' ' + this.getClass() + ' ').indexOf(' ' + cssClass + ' ') !== -1;
     }
 
@@ -266,7 +256,7 @@ export class HtmlTag {
      * @param {String} html The inner HTML to set.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setInnerHTML(html: string) {
+    setInnerHTML(html: string): this {
         this.innerHTML = html;
 
         return this;
@@ -278,7 +268,7 @@ export class HtmlTag {
      * @param {String} html The inner HTML to set.
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
-    setInnerHtml(html: string) {
+    setInnerHtml(html: string): this {
         return this.setInnerHTML(html);
     }
 
@@ -287,7 +277,7 @@ export class HtmlTag {
      *
      * @return {String}
      */
-    getInnerHTML() {
+    getInnerHTML(): string {
         return this.innerHTML || '';
     }
 
@@ -296,16 +286,16 @@ export class HtmlTag {
      *
      * @return {String}
      */
-    getInnerHtml() {
+    getInnerHtml(): string {
         return this.getInnerHTML();
     }
 
     /**
-     * Override of superclass method used to generate the HTML string for the tag.
+     * Generates the HTML string for the tag.
      *
      * @return {String}
      */
-    toAnchorString() {
+    toAnchorString(): string {
         let tagName = this.getTagName(),
             attrsStr = this.buildAttrsStr();
 
@@ -321,7 +311,7 @@ export class HtmlTag {
      * @protected
      * @return {String} Example return: `attr1="value1" attr2="value2"`
      */
-    protected buildAttrsStr() {
+    protected buildAttrsStr(): string {
         if (!this.attrs) return ''; // no `attrs` Object (map) has been set, return empty string
 
         let attrs = this.getAttrs(),

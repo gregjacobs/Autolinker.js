@@ -1,6 +1,6 @@
 import { State } from './state';
 import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
-import { throwUnhandledCaseError } from '../utils';
+import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -160,7 +160,7 @@ export function parseHtml(
                 break;
 
             default:
-                throwUnhandledCaseError(state);
+                assertNever(state);
         }
 
         // For debugging: search for other "For debugging" lines

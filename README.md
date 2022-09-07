@@ -27,10 +27,9 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/api/](http://gregjacob
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
-## v3.0 released Jan 2019
+## v4.0 released September 2022
 
-See [Upgrading from v2.x -> v3.x (Breaking Changes)](#upgrading-from-v2x---v3x-breaking-changes) at the bottom of this readme
-
+See [Upgrading from v3.x -> v4.x (Breaking Changes)](#upgrading-from-v3x---v4x-breaking-changes) at the bottom of this readme.
 
 ## Installation
 
@@ -72,7 +71,7 @@ import Autolinker from 'autolinker';
 #### Node.js:
 
 ```javascript
-const Autolinker = require( 'autolinker' );
+const Autolinker = require('autolinker');
 // note: npm wants an all-lowercase package name, but the utility is a class and
 // should be aliased with a capital letter
 ```
@@ -92,15 +91,15 @@ Using the static [link()](http://gregjacobs.github.io/Autolinker.js/api/#!/api/A
 method:
 
 ```javascript
-var linkedText = Autolinker.link( textToAutolink[, options] );
+const linkedText = Autolinker.link(textToAutolink[, options]);
 ```
 
 Using as a class:
 
 ```javascript
-var autolinker = new Autolinker( [ options ] );
+const autolinker = new Autolinker([ options ]);
 
-var linkedText = autolinker.link( textToAutoLink );
+const linkedText = autolinker.link(textToAutoLink);
 ```
 
 Note: if using the same options to autolink multiple pieces of html/text, it is
@@ -112,12 +111,12 @@ method repeatedly (i.e. use the "class" form above).
 #### Examples:
 
 ```javascript
-var linkedText = Autolinker.link( "Check out google.com" );
+const linkedText = Autolinker.link("Check out google.com");
 // Produces: "Check out <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>"
 
-var linkedText = Autolinker.link( "Check out google.com", { 
+const linkedText = Autolinker.link("Check out google.com", { 
     newWindow: false 
-} );
+});
 // Produces: "Check out <a href="http://google.com">google.com</a>"
 ```
 
@@ -141,15 +140,15 @@ These include:
     - schemeMatches (boolean): `true` to match URLs found prefixed with a scheme,
       i.e. `http://google.com`, or `other+scheme://google.com`, `false` to
       prevent these types of matches.
-    - wwwMatches (boolean): `true` to match urls found prefixed with `'www.'`,
-      i.e. `www.google.com`. `false` to prevent these types of matches. Note
-      that if the URL had a prefixed scheme, and `schemeMatches` is true, it
-      will still be linked.
     - tldMatches: `true` to match URLs with known top level domains (.com, .net,
-      etc.) that are not prefixed with a scheme or `'www.'`. Ex: `google.com`,
-      `asdf.org/?page=1`, etc. `false` to prevent these types of matches.
+      etc.) that are not prefixed with a scheme (i.e. 'http://'). Ex: `google.com`,
+      `asdf.org/?page=1`, etc. Set to `false` to prevent these types of matches.
+    - ipV4Matches (boolean): `true` to match IPv4 addresses. Ex: `192.168.0.1`.
+      `false` to prevent these types of matches. Note that if the IP address had 
+      a prefixed scheme (such as 'http://'), and `schemeMatches` is true, it 
+      will still be linked.
 
-  Example usage: `urls: { schemeMatches: true, wwwMatches: true, tldMatches: false }`
+  Example usage: `urls: { schemeMatches: true, tldMatches: false, ipV4Matches: true }`
 
 - [email](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-email) : boolean<br />
   `true` to have email addresses auto-linked, `false` to skip auto-linking of
@@ -218,17 +217,20 @@ These include:
   
 - [className](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-className) : string<br />
   A CSS class name to add to the generated anchor tags. This class will be added
-  to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"/"twitter"/"instagram"
+  to all links, as well as this class plus "url"/"email"/"phone"/"hashtag"/"mention"
   suffixes for styling url/email/phone/hashtag/mention links differently.
 
-  For example, if this config is provided as "myLink", then:
+  The name of the hashtag/mention service is also added as a CSS class for those
+  types of matches.
 
-  - URL links will have the CSS classes: "myLink myLink-url"
-  - Email links will have the CSS classes: "myLink myLink-email"
-  - Phone links will have the CSS classes: "myLink myLink-phone"
-  - Twitter mention links will have the CSS classes: "myLink myLink-mention myLink-twitter"
-  - Instagram mention links will have the CSS classes: "myLink myLink-mention myLink-instagram"
-  - Hashtag links will have the CSS classes: "myLink myLink-hashtag"
+  For example, if this config is provided as "my-link", then:
+
+  - URL links will have the CSS classes: "my-link my-link-url"
+  - Email links will have the CSS classes: "my-link my-link-email"
+  - Phone links will have the CSS classes: "my-link my-link-phone"
+  - Twitter mention links will have the CSS classes: "my-link my-link-mention my-link-twitter"
+  - Instagram mention links will have the CSS classes: "my-link my-link-mention my-link-instagram"
+  - Hashtag links will have the CSS classes: "my-link my-link-hashtag my-link-twitter"
 
 - [decodePercentEncoding](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-decodePercentEncoding): boolean<br />
   `true` to decode percent-encoded characters in URL matches, `false` to keep
@@ -263,19 +265,19 @@ These include:
 For example, if you wanted to disable links from opening in [new windows](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-newWindow), you could do:
 
 ```javascript
-var linkedText = Autolinker.link( "Check out google.com", { 
+const linkedText = Autolinker.link("Check out google.com", { 
     newWindow: false 
-} );
+});
 // Produces: "Check out <a href="http://google.com">google.com</a>"
 ```
 
 And if you wanted to truncate the length of URLs (while also not opening in a new window), you could do:
 
 ```javascript
-var linkedText = Autolinker.link( "http://www.yahoo.com/some/long/path/to/a/file", { 
+const linkedText = Autolinker.link("http://www.yahoo.com/some/long/path/to/a/file", { 
     truncate: 25, 
     newWindow: false 
-} );
+});
 // Produces: "<a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
 ```
 
@@ -285,19 +287,19 @@ One could update an entire DOM element that has unlinked text to auto-link them
 as such:
 
 ```javascript
-var myTextEl = document.getElementById( 'text' );
-myTextEl.innerHTML = Autolinker.link( myTextEl.innerHTML );
+const myTextEl = document.getElementById('text');
+myTextEl.innerHTML = Autolinker.link(myTextEl.innerHTML);
 ```
 
 Using the same pre-configured [Autolinker](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker)
 instance in multiple locations of a codebase (usually by dependency injection):
 
 ```javascript
-var autolinker = new Autolinker( { newWindow: false, truncate: 25 } );
+const autolinker = new Autolinker({ newWindow: false, truncate: 25 });
 
 //...
 
-autolinker.link( "Check out http://www.yahoo.com/some/long/path/to/a/file" );
+autolinker.link("Check out http://www.yahoo.com/some/long/path/to/a/file");
 // Produces: "Check out <a href="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pat..</a>"
 
 //...
@@ -314,16 +316,16 @@ If you're just interested in retrieving the list of [Matches](http://greg-jacobs
 For example:
 
 ```
-var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
+const matches = Autolinker.parse("Hello google.com, I am asdf@asdf.com", {
     urls: true,
     email: true
-} );
+});
 
-console.log( matches.length );           // 2
-console.log( matches[ 0 ].getType() );   // 'url'
-console.log( matches[ 0 ].getUrl() );    // 'google.com'
-console.log( matches[ 1 ].getType() );   // 'email'
-console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
+console.log(matches.length);         // 2
+console.log(matches[0].type);        // 'url'
+console.log(matches[0].getUrl());    // 'google.com'
+console.log(matches[1].type);        // 'email'
+console.log(matches[1].getEmail());  // 'asdf@asdf.com'
 ```
 
 
@@ -336,42 +338,42 @@ individual basis, based on the return from this function.
 #### Full example, for purposes of documenting the API:
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
+const input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
-var linkedText = Autolinker.link( input, {
-    replaceFn : function( match ) {
-        console.log( "href = ", match.getAnchorHref() );
-        console.log( "text = ", match.getAnchorText() );
+const linkedText = Autolinker.link(input, {
+    replaceFn : function(match) {
+        console.log("href = ", match.getAnchorHref());
+        console.log("text = ", match.getAnchorText());
 
-        switch( match.getType() ) {
-            case 'url' :
-                console.log( "url: ", match.getUrl() );
+        switch(match.type) {
+            case 'url':
+                console.log("url: ", match.getUrl());
 
                 return true;  // let Autolinker perform its normal anchor tag replacement
 
-            case 'email' :
-                var email = match.getEmail();
-                console.log( "email: ", email );
+            case 'email':
+                const email = match.getEmail();
+                console.log("email: ", email);
 
-                if( email === "my@own.address" ) {
+                if(email === "my@own.address") {
                     return false;  // don't auto-link this particular email address; leave as-is
                 } else {
                     return;  // no return value will have Autolinker perform its normal anchor tag replacement (same as returning `true`)
                 }
 
-            case 'phone' :
-                console.log( "Phone Number: ", match.getPhoneNumber() );
+            case 'phone':
+                console.log("Phone Number: ", match.getPhoneNumber());
 
                 return '<a href="http://newplace.to.link.phone.numbers.to/">' + match.getPhoneNumber() + '</a>';
 
-            case 'mention' :
-                console.log( "Mention: ", match.getMention() );
-                console.log( "Mention Service Name: ", match.getServiceName() );
+            case 'mention':
+                console.log("Mention: ", match.getMention());
+                console.log("Mention Service Name: ", match.getServiceName());
 
                 return '<a href="http://newplace.to.link.mention.handles.to/">' + match.getMention() + '</a>';
 
-            case 'hashtag' :
-                console.log( "Hashtag: ", match.getHashtag() );
+            case 'hashtag':
+                console.log("Hashtag: ", match.getHashtag());
 
                 return '<a href="http://newplace.to.link.hashtag.handles.to/">' + match.getHashtag() + '</a>';
         }
@@ -382,17 +384,17 @@ var linkedText = Autolinker.link( input, {
 #### Modifying the default generated anchor tag
 
 ```javascript
-var input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
+const input = "...";  // string with URLs, Email Addresses, Mentions (Twitter, Instagram), and Hashtags
 
-var linkedText = Autolinker.link( input, {
+const linkedText = Autolinker.link( input, {
     replaceFn : function( match ) {
-        console.log( "href = ", match.getAnchorHref() );
-        console.log( "text = ", match.getAnchorText() );
+        console.log("href = ", match.getAnchorHref());
+        console.log("text = ", match.getAnchorText());
 
-        var tag = match.buildTag();         // returns an `Autolinker.HtmlTag` instance for an <a> tag
-        tag.setAttr( 'rel', 'nofollow' );   // adds a 'rel' attribute
-        tag.addClass( 'external-link' );    // adds a CSS class
-        tag.setInnerHtml( 'Click here!' );  // sets the inner html for the anchor tag
+        const tag = match.buildTag();       // returns an `Autolinker.HtmlTag` instance for an <a> tag
+        tag.setAttr('rel', 'nofollow');   // adds a 'rel' attribute
+        tag.addClass('external-link');    // adds a CSS class
+        tag.setInnerHtml('Click here!');  // sets the inner html for the anchor tag
 
         return tag;
     }
@@ -429,42 +431,22 @@ The full API docs for Autolinker may be referenced at:
 [http://gregjacobs.github.io/Autolinker.js/examples/](http://gregjacobs.github.io/Autolinker.js/examples/)
 
 
-## Users of Internet Explorer 8 and Below
+## Upgrading from v3.x -> 4.x (Breaking Changes)
 
-Autolinker compiles into ES5, and uses ES5 library methods. If you need to run 
-Autolinker on old browsers (i.e. Internet Explorer 8 or below), you will need 
-some polyfills. 
-
-I recommend using the [core-js](https://www.npmjs.com/package/core-js)
-ES5 polyfill. You may also be able to get away with adding the following two
-polyfills, but that may or may not be true in the future:
-
-```js
-if( typeof Array.prototype.forEach !== 'function' ) {
-    Array.prototype.forEach = function( callback, thisArg ) {
-        for( var i = 0; i < this.length; i++ ) {
-            callback.apply( thisArg || this, [ this[ i ], i, this ] );
-        }
-    };
-}
-
-if( typeof Object.assign !== 'function' ) {
-    Object.assign = function( target ) {
-        var srcObjs = Array.prototype.slice.call( arguments, 1 );
-
-        for( var i = 0, len = srcObjs.length; i < len; i++ ) {
-            var currentSrcObj = srcObjs[ i ];
-
-            for( var prop in currentSrcObj ) {
-                if( currentSrcObj.hasOwnProperty( prop ) ) {
-                    target[ prop ] = currentSrcObj[ prop ];
-                }
-            }
-        }
-        return target;
-    };
-}
-```
+1. Internet Explorer support has been removed since its official demise in June
+   2022.
+1. The `urls.wwwMatches` config has been removed. A `www.` prefix is now treated
+   like any other subdomain of a top level domain (TLD) match (such as 
+   'subdomain.google.com'). 
+1. `Match.getType()` should be replaced with `Match.type`. This allows for 
+   TypeScript type narrowing of `Match` objects returned by the `parse()` 
+   method or inside the `replaceFn`.
+1. The `Matcher` classes have been removed in favor of a single finite state
+   machine parser, greatly improving the performance of Autolinker but removing 
+   some of the customizability of the old regular expressions. Will address this customizability in a future release.
+1. `Autolinker.AnchorTagBuilder`, `Autolinker.HtmlTag`, and `Autolinker.match.*`
+   references have been removed. These shouldn't be needed as public APIs, but
+   please raise a GitHub issue if these are for some reason needed.
 
 ## Upgrading from v2.x -> v3.x (Breaking Changes)
 
@@ -497,7 +479,7 @@ if( typeof Object.assign !== 'function' ) {
 
    ```ts
    // Node.js
-   const Autolinker = require( 'autolinker' );
+   const Autolinker = require('autolinker');
    ```
 
 3. You will no longer need the `@types/autolinker` package as this package now
@@ -537,7 +519,6 @@ if( typeof Object.assign !== 'function' ) {
    `MentionMatch.getMention()`
 
 
-
 ## Developing / Contributing
 
 Pull requests definitely welcome. To setup the project, make
@@ -545,23 +526,18 @@ sure you have [Node.js](https://nodejs.org) installed. Then
 open up a command prompt and type the following:
 
 ```
-npm install -g yarn  # if you don't have yarn already
-
 cd Autolinker.js     # where you cloned the project
-yarn install
+npm install
 ```
 
 To run the tests:
 
 ```
-yarn test
+npm run test
 ```
 
-- Make sure to add tests to cover your new functionality/bugfix
-- Run the `yarn test` command to build/test
-- Please use tabs for indents! Tabs are better for everybody 
-  (individuals can set their editors to different tab sizes based on 
-  their visual preferences).
+- Make sure to add tests to check your new functionality/bugfix
+- Run the `npm run test` command to test
 
 
 #### Building the Project Fully

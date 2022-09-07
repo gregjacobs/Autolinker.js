@@ -1,15 +1,38 @@
-import { Match, MatchConfig } from './match';
-import { StripPrefixConfigObj, UrlMatchTypeOptions } from '../autolinker';
+import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
+import { httpSchemePrefixRe } from '../parser/uri-utils';
+import type { StripPrefixConfigObj } from '../autolinker';
+
+/**
+ * A regular expression used to remove the 'www.' from URLs.
+ */
+const wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
+
+/**
+ * The regular expression used to remove the protocol-relative '//' from a URL
+ * string, for purposes of formatting the anchor text. A protocol-relative URL
+ * is, for example, "//yahoo.com"
+ */
+const protocolRelativeRegex = /^\/\//;
 
 /**
  * @class Autolinker.match.Url
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Url match found in an input string which should be Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-export class UrlMatch extends Match {
+export class UrlMatch extends AbstractMatch {
+    /**
+     * @public
+     * @property {'url'} type
+     *
+     * A string name for the type of match that this class represents. Can be
+     * used in a TypeScript discriminating union to type-narrow from the
+     * `Match` type.
+     */
+    public readonly type: 'url' = 'url';
+
     /**
      * @cfg {String} url (required)
      *
@@ -25,15 +48,7 @@ export class UrlMatch extends Match {
      * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
      * was matched by a known top-level domain (ex: 'google.com').
      */
-    private readonly urlMatchType: UrlMatchTypeOptions = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
-
-    /**
-     * @cfg {Boolean} protocolUrlMatch (required)
-     *
-     * `true` if the URL is a match which already has a protocol (i.e.
-     * 'http://'), `false` if the match was from a 'www' or known TLD match.
-     */
-    private readonly protocolUrlMatch: boolean = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly urlMatchType: UrlMatchType = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {Boolean} protocolRelativeMatch (required)
@@ -68,38 +83,12 @@ export class UrlMatch extends Match {
 
     /**
      * @private
-     * @property {RegExp} schemePrefixRegex
-     *
-     * A regular expression used to remove the 'http://' or 'https://' from
-     * URLs.
-     */
-    schemePrefixRegex = /^(https?:\/\/)?/i;
-
-    /**
-     * @private
-     * @property {RegExp} wwwPrefixRegex
-     *
-     * A regular expression used to remove the 'www.' from URLs.
-     */
-    wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
-
-    /**
-     * @private
-     * @property {RegExp} protocolRelativeRegex
-     *
-     * The regular expression used to remove the protocol-relative '//' from the {@link #url} string, for purposes
-     * of {@link #getAnchorText}. A protocol-relative URL is, for example, "//yahoo.com"
-     */
-    protocolRelativeRegex = /^\/\//;
-
-    /**
-     * @private
      * @property {Boolean} protocolPrepended
      *
      * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
      * {@link #url} did not have a protocol)
      */
-    protocolPrepended = false;
+    private protocolPrepended: boolean = false;
 
     /**
      * @method constructor
@@ -111,7 +100,6 @@ export class UrlMatch extends Match {
 
         this.urlMatchType = cfg.urlMatchType;
         this.url = cfg.url;
-        this.protocolUrlMatch = cfg.protocolUrlMatch;
         this.protocolRelativeMatch = cfg.protocolRelativeMatch;
         this.stripPrefix = cfg.stripPrefix;
         this.stripTrailingSlash = cfg.stripTrailingSlash;
@@ -124,7 +112,7 @@ export class UrlMatch extends Match {
      *
      * @return {String}
      */
-    getType() {
+    public getType(): 'url' {
         return 'url';
     }
 
@@ -139,7 +127,7 @@ export class UrlMatch extends Match {
      *
      * @return {"scheme"/"www"/"tld"}
      */
-    getUrlMatchType() {
+    public getUrlMatchType(): UrlMatchType {
         return this.urlMatchType;
     }
 
@@ -149,11 +137,15 @@ export class UrlMatch extends Match {
      *
      * @return {String}
      */
-    getUrl() {
+    public getUrl(): string {
         let url = this.url;
 
-        // if the url string doesn't begin with a protocol, assume 'http://'
-        if (!this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended) {
+        // if the url string doesn't begin with a scheme, assume 'http://'
+        if (
+            !this.protocolRelativeMatch &&
+            this.urlMatchType !== 'scheme' &&
+            !this.protocolPrepended
+        ) {
             url = this.url = 'http://' + url;
 
             this.protocolPrepended = true;
@@ -167,7 +159,7 @@ export class UrlMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorHref() {
+    public getAnchorHref(): string {
         let url = this.getUrl();
 
         return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
@@ -178,122 +170,120 @@ export class UrlMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorText() {
+    getAnchorText(): string {
         let anchorText = this.getMatchedText();
 
         if (this.protocolRelativeMatch) {
             // Strip off any protocol-relative '//' from the anchor text
-            anchorText = this.stripProtocolRelativePrefix(anchorText);
+            anchorText = stripProtocolRelativePrefix(anchorText);
         }
         if (this.stripPrefix.scheme) {
-            anchorText = this.stripSchemePrefix(anchorText);
+            anchorText = stripSchemePrefix(anchorText);
         }
         if (this.stripPrefix.www) {
-            anchorText = this.stripWwwPrefix(anchorText);
+            anchorText = stripWwwPrefix(anchorText);
         }
         if (this.stripTrailingSlash) {
-            anchorText = this.removeTrailingSlash(anchorText); // remove trailing slash, if there is one
+            anchorText = removeTrailingSlash(anchorText); // remove trailing slash, if there is one
         }
         if (this.decodePercentEncoding) {
-            anchorText = this.removePercentEncoding(anchorText);
-        }
-
-        return anchorText;
-    }
-
-    // ---------------------------------------
-
-    // Utility Functionality
-
-    /**
-     * Strips the scheme prefix (such as "http://" or "https://") from the given
-     * `url`.
-     *
-     * @private
-     * @param {String} url The text of the anchor that is being generated, for
-     *   which to strip off the url scheme.
-     * @return {String} The `url`, with the scheme stripped.
-     */
-    private stripSchemePrefix(url: string) {
-        return url.replace(this.schemePrefixRegex, '');
-    }
-
-    /**
-     * Strips the 'www' prefix from the given `url`.
-     *
-     * @private
-     * @param {String} url The text of the anchor that is being generated, for
-     *   which to strip off the 'www' if it exists.
-     * @return {String} The `url`, with the 'www' stripped.
-     */
-    private stripWwwPrefix(url: string) {
-        return url.replace(this.wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
-    }
-
-    /**
-     * Strips any protocol-relative '//' from the anchor text.
-     *
-     * @private
-     * @param {String} text The text of the anchor that is being generated, for which to strip off the
-     *   protocol-relative prefix (such as stripping off "//")
-     * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
-     */
-    private stripProtocolRelativePrefix(text: string) {
-        return text.replace(this.protocolRelativeRegex, '');
-    }
-
-    /**
-     * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
-     *
-     * @private
-     * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
-     *   slash ('/') that may exist.
-     * @return {String} The `anchorText`, with the trailing slash removed.
-     */
-    private removeTrailingSlash(anchorText: string) {
-        if (anchorText.charAt(anchorText.length - 1) === '/') {
-            anchorText = anchorText.slice(0, -1);
+            anchorText = removePercentEncoding(anchorText);
         }
         return anchorText;
-    }
-
-    /**
-     * Decodes percent-encoded characters from the given `anchorText`, in
-     * preparation for the text to be displayed.
-     *
-     * @private
-     * @param {String} anchorText The text of the anchor that is being
-     *   generated, for which to decode any percent-encoded characters.
-     * @return {String} The `anchorText`, with the percent-encoded characters
-     *   decoded.
-     */
-    private removePercentEncoding(anchorText: string) {
-        // First, convert a few of the known % encodings to the corresponding
-        // HTML entities that could accidentally be interpretted as special
-        // HTML characters
-        const preProcessedEntityAnchorText = anchorText
-            .replace(/%22/gi, '&quot;') // " char
-            .replace(/%26/gi, '&amp;') // & char
-            .replace(/%27/gi, '&#39;') // ' char
-            .replace(/%3C/gi, '&lt;') // < char
-            .replace(/%3E/gi, '&gt;'); // > char
-
-        try {
-            // Now attempt to decode the rest of the anchor text
-            return decodeURIComponent(preProcessedEntityAnchorText);
-        } catch (e) {
-            // Invalid % escape sequence in the anchor text
-            return preProcessedEntityAnchorText;
-        }
     }
 }
 
-export interface UrlMatchConfig extends MatchConfig {
+export interface UrlMatchConfig extends AbstractMatchConfig {
     url: string;
-    urlMatchType: UrlMatchTypeOptions;
-    protocolUrlMatch: boolean;
+    urlMatchType: UrlMatchType;
     protocolRelativeMatch: boolean;
     stripPrefix: Required<StripPrefixConfigObj>;
     stripTrailingSlash: boolean;
     decodePercentEncoding: boolean;
+}
+
+export type UrlMatchType = 'scheme' | 'tld' | 'ipV4';
+
+// Utility Functionality
+
+/**
+ * Strips the scheme prefix (such as "http://" or "https://") from the given
+ * `url`.
+ *
+ * @private
+ * @param {String} url The text of the anchor that is being generated, for
+ *   which to strip off the url scheme.
+ * @return {String} The `url`, with the scheme stripped.
+ */
+function stripSchemePrefix(url: string): string {
+    return url.replace(httpSchemePrefixRe, '');
+}
+
+/**
+ * Strips the 'www' prefix from the given `url`.
+ *
+ * @private
+ * @param {String} url The text of the anchor that is being generated, for
+ *   which to strip off the 'www' if it exists.
+ * @return {String} The `url`, with the 'www' stripped.
+ */
+function stripWwwPrefix(url: string): string {
+    return url.replace(wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
+}
+
+/**
+ * Strips any protocol-relative '//' from the anchor text.
+ *
+ * @private
+ * @param {String} text The text of the anchor that is being generated, for which to strip off the
+ *   protocol-relative prefix (such as stripping off "//")
+ * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
+ */
+function stripProtocolRelativePrefix(text: string): string {
+    return text.replace(protocolRelativeRegex, '');
+}
+
+/**
+ * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
+ *
+ * @private
+ * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
+ *   slash ('/') that may exist.
+ * @return {String} The `anchorText`, with the trailing slash removed.
+ */
+function removeTrailingSlash(anchorText: string): string {
+    if (anchorText.charAt(anchorText.length - 1) === '/') {
+        anchorText = anchorText.slice(0, -1);
+    }
+    return anchorText;
+}
+
+/**
+ * Decodes percent-encoded characters from the given `anchorText`, in
+ * preparation for the text to be displayed.
+ *
+ * @private
+ * @param {String} anchorText The text of the anchor that is being
+ *   generated, for which to decode any percent-encoded characters.
+ * @return {String} The `anchorText`, with the percent-encoded characters
+ *   decoded.
+ */
+function removePercentEncoding(anchorText: string): string {
+    // First, convert a few of the known % encodings to the corresponding
+    // HTML entities that could accidentally be interpretted as special
+    // HTML characters
+    const preProcessedEntityAnchorText = anchorText
+        .replace(/%22/gi, '&quot;') // " char
+        .replace(/%26/gi, '&amp;') // & char
+        .replace(/%27/gi, '&#39;') // ' char
+        .replace(/%3C/gi, '&lt;') // < char
+        .replace(/%3E/gi, '&gt;'); // > char
+
+    try {
+        // Now attempt to decode the rest of the anchor text
+        return decodeURIComponent(preProcessedEntityAnchorText);
+    } catch (e) {
+        // Invalid % escape sequence in the anchor text
+        return preProcessedEntityAnchorText;
+    }
 }

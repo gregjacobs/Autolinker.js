@@ -1,9 +1,9 @@
-import { Match } from './match/match';
 import { HtmlTag } from './html-tag';
 import { TruncateConfigObj } from './autolinker';
 import { truncateSmart } from './truncate/truncate-smart';
 import { truncateMiddle } from './truncate/truncate-middle';
 import { truncateEnd } from './truncate/truncate-end';
+import { AbstractMatch } from './match/abstract-match';
 
 /**
  * @protected
@@ -64,11 +64,10 @@ export class AnchorTagBuilder {
      * Generates the actual anchor (&lt;a&gt;) tag to use in place of the
      * matched text, via its `match` object.
      *
-     * @param {Autolinker.match.Match} match The Match instance to generate an
-     *   anchor tag from.
-     * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
+     * @param match The Match instance to generate an anchor tag from.
+     * @return The HtmlTag instance for the anchor tag.
      */
-    build(match: Match) {
+    public build(match: AbstractMatch) {
         return new HtmlTag({
             tagName: 'a',
             attrs: this.createAttrs(match),
@@ -81,11 +80,10 @@ export class AnchorTagBuilder {
      *   tag being generated.
      *
      * @protected
-     * @param {Autolinker.match.Match} match The Match instance to generate an
-     *   anchor tag from.
-     * @return {Object} A key/value Object (map) of the anchor tag's attributes.
+     * @param match The Match instance to generate an anchor tag from.
+     * @return A key/value Object (map) of the anchor tag's attributes.
      */
-    protected createAttrs(match: Match) {
+    protected createAttrs(match: AbstractMatch) {
         let attrs: { [attrName: string]: string } = {
             href: match.getAnchorHref(), // we'll always have the `href` attribute
         };
@@ -122,13 +120,13 @@ export class AnchorTagBuilder {
      * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
      *
      * @protected
-     * @param {Autolinker.match.Match} match The Match instance to generate an
+     * @param match The Match instance to generate an
      *   anchor tag from.
-     * @return {String} The CSS class string for the link. Example return:
+     * @return The CSS class string for the link. Example return:
      *   "myLink myLink-url". If no {@link #className} was configured, returns
      *   an empty string.
      */
-    protected createCssClass(match: Match) {
+    protected createCssClass(match: AbstractMatch): string {
         let className = this.className;
 
         if (!className) {
@@ -149,11 +147,11 @@ export class AnchorTagBuilder {
      * {@link #truncate} config.
      *
      * @private
-     * @param {String} anchorText The anchor tag's text (i.e. what will be
+     * @param anchorText The anchor tag's text (i.e. what will be
      *   displayed).
-     * @return {String} The processed `anchorText`.
+     * @return The processed `anchorText`.
      */
-    private processAnchorText(anchorText: string) {
+    private processAnchorText(anchorText: string): string {
         anchorText = this.doTruncate(anchorText);
 
         return anchorText;
@@ -166,11 +164,11 @@ export class AnchorTagBuilder {
      * `location` property. See {@link #truncate} for details.
      *
      * @private
-     * @param {String} anchorText The anchor tag's text (i.e. what will be
+     * @param anchorText The anchor tag's text (i.e. what will be
      *   displayed).
-     * @return {String} The truncated anchor text.
+     * @return The truncated anchor text.
      */
-    private doTruncate(anchorText: string) {
+    private doTruncate(anchorText: string): string {
         let truncate = this.truncate;
         if (!truncate || !truncate.length) return anchorText;
 

@@ -1,20 +1,13 @@
 import { version } from './version';
-import { defaults, remove, splitAndCapture } from './utils';
+import { defaults, isBoolean, removeWithPredicate } from './utils';
 import { AnchorTagBuilder } from './anchor-tag-builder';
 import { Match } from './match/match';
-import { EmailMatch } from './match/email-match';
-import { HashtagMatch } from './match/hashtag-match';
-import { MentionMatch } from './match/mention-match';
-import { PhoneMatch } from './match/phone-match';
 import { UrlMatch } from './match/url-match';
-import { Matcher } from './matcher/matcher';
 import { HtmlTag } from './html-tag';
-import { EmailMatcher } from './matcher/email-matcher';
-import { UrlMatcher } from './matcher/url-matcher';
-import { HashtagMatcher, HashtagService, hashtagServices } from './matcher/hashtag-matcher';
-import { PhoneMatcher } from './matcher/phone-matcher';
-import { MentionMatcher } from './matcher/mention-matcher';
+import { parseMatches } from './parser/parse-matches';
 import { parseHtml } from './htmlParser/parse-html';
+import { MentionService, mentionServices } from './parser/mention-utils';
+import { HashtagService, hashtagServices } from './parser/hashtag-utils';
 
 /**
  * @class Autolinker
@@ -136,44 +129,6 @@ export default class Autolinker {
     static readonly version = version;
 
     /**
-     * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
-     * class is provided as a static on the Autolinker class.
-     */
-    static readonly AnchorTagBuilder = AnchorTagBuilder;
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the HtmlTag class is
-     * provided as a static on the Autolinker class.
-     */
-    static readonly HtmlTag = HtmlTag;
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the Matcher classes are
-     * provided as statics on the Autolinker class.
-     */
-    static readonly matcher = {
-        Email: EmailMatcher,
-        Hashtag: HashtagMatcher,
-        Matcher: Matcher,
-        Mention: MentionMatcher,
-        Phone: PhoneMatcher,
-        Url: UrlMatcher,
-    };
-
-    /**
-     * For backwards compatibility with Autolinker 1.x, the Match classes are
-     * provided as statics on the Autolinker class.
-     */
-    static readonly match = {
-        Email: EmailMatch,
-        Hashtag: HashtagMatch,
-        Match: Match,
-        Mention: MentionMatch,
-        Phone: PhoneMatch,
-        Url: UrlMatch,
-    };
-
-    /**
      * Automatically links URLs, Email addresses, Phone Numbers, Twitter handles,
      * Hashtags, and Mentions found in the given chunk of HTML. Does not link URLs
      * found within HTML tags.
@@ -242,6 +197,8 @@ export default class Autolinker {
      * The Autolinker version number exposed on the instance itself.
      *
      * Ex: 0.25.1
+     *
+     * @property {String} version
      */
     readonly version = Autolinker.version;
 
@@ -259,8 +216,8 @@ export default class Autolinker {
      *
      *     urls: {
      *         schemeMatches : true,
-     *         wwwMatches    : true,
-     *         tldMatches    : true
+     *         tldMatches    : true,
+     *         ipV4Matches   : true
      *     }
      *
      * As shown above, this option also accepts an Object form with 3 properties
@@ -270,15 +227,16 @@ export default class Autolinker {
      * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
      *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
      *   `false` to prevent these types of matches.
-     * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
-     *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
-     *   matches. Note that if the URL had a prefixed scheme, and
-     *   `schemeMatches` is true, it will still be linked.
      * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
-     *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
-     *   `'www.'`. This option attempts to match anything that looks like a URL
-     *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
-     *   to prevent these types of matches.
+     *   level domains (.com, .net, etc.) that are not prefixed with a scheme
+     *   (such as 'http://'). This option attempts to match anything that looks
+     *   like a URL in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc.
+     *   `false` to prevent these types of matches.
+     * @cfg {Boolean} [urls.ipV4Matches] `true` to match IPv4 addresses in text
+     *   that are not prefixed with a scheme (such as 'http://'). This option
+     *   attempts to match anything that looks like an IPv4 address in text. Ex:
+     *   `192.168.0.1`, `10.0.0.1/?page=1`, etc. `false` to prevent these types
+     *   of matches.
      */
     private readonly urls: UrlsConfigObj = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
 
@@ -321,6 +279,7 @@ export default class Autolinker {
      * - 'twitter'
      * - 'instagram'
      * - 'soundcloud'
+     * - 'tiktok'
      *
      * Defaults to `false` to skip auto-linking of mentions.
      */
@@ -509,17 +468,6 @@ export default class Autolinker {
 
     /**
      * @private
-     * @property {Autolinker.matcher.Matcher[]} matchers
-     *
-     * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
-     * instance.
-     *
-     * This is lazily created in {@link #getMatchers}.
-     */
-    private matchers: Matcher[] | null = null;
-
-    /**
-     * @private
      * @property {Autolinker.AnchorTagBuilder} tagBuilder
      *
      * The AnchorTagBuilder instance used to build match replacement anchor tags.
@@ -535,29 +483,24 @@ export default class Autolinker {
     constructor(cfg: AutolinkerConfig = {}) {
         // Note: when `this.something` is used in the rhs of these assignments,
         //       it refers to the default values set above the constructor
-        this.urls = this.normalizeUrlsCfg(cfg.urls);
-        this.email = typeof cfg.email === 'boolean' ? cfg.email : this.email;
-        this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : this.phone;
+        this.urls = normalizeUrlsCfg(cfg.urls);
+        this.email = isBoolean(cfg.email) ? cfg.email : this.email;
+        this.phone = isBoolean(cfg.phone) ? cfg.phone : this.phone;
         this.hashtag = cfg.hashtag || this.hashtag;
         this.mention = cfg.mention || this.mention;
-        this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
-        this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-        this.stripTrailingSlash =
-            typeof cfg.stripTrailingSlash === 'boolean'
-                ? cfg.stripTrailingSlash
-                : this.stripTrailingSlash;
-        this.decodePercentEncoding =
-            typeof cfg.decodePercentEncoding === 'boolean'
-                ? cfg.decodePercentEncoding
-                : this.decodePercentEncoding;
+        this.newWindow = isBoolean(cfg.newWindow) ? cfg.newWindow : this.newWindow;
+        this.stripPrefix = normalizeStripPrefixCfg(cfg.stripPrefix);
+        this.stripTrailingSlash = isBoolean(cfg.stripTrailingSlash)
+            ? cfg.stripTrailingSlash
+            : this.stripTrailingSlash;
+        this.decodePercentEncoding = isBoolean(cfg.decodePercentEncoding)
+            ? cfg.decodePercentEncoding
+            : this.decodePercentEncoding;
         this.sanitizeHtml = cfg.sanitizeHtml || false;
 
         // Validate the value of the `mention` cfg
         const mention = this.mention;
-        if (
-            mention !== false &&
-            ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1
-        ) {
+        if (mention !== false && mentionServices.indexOf(mention) === -1) {
             throw new Error(`invalid \`mention\` cfg '${mention}' - see docs`);
         }
 
@@ -567,85 +510,10 @@ export default class Autolinker {
             throw new Error(`invalid \`hashtag\` cfg '${hashtag}' - see docs`);
         }
 
-        this.truncate = this.normalizeTruncateCfg(cfg.truncate);
+        this.truncate = normalizeTruncateCfg(cfg.truncate);
         this.className = cfg.className || this.className;
         this.replaceFn = cfg.replaceFn || this.replaceFn;
         this.context = cfg.context || this;
-    }
-
-    /**
-     * Normalizes the {@link #urls} config into an Object with 3 properties:
-     * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
-     *
-     * See {@link #urls} config for details.
-     *
-     * @private
-     * @param {Boolean/Object} urls
-     * @return {Object}
-     */
-    private normalizeUrlsCfg(urls: UrlsConfig | undefined): Required<UrlsConfigObj> {
-        if (urls == null) urls = true; // default to `true`
-
-        if (typeof urls === 'boolean') {
-            return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
-        } else {
-            // object form
-            return {
-                schemeMatches: typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
-                wwwMatches: typeof urls.wwwMatches === 'boolean' ? urls.wwwMatches : true,
-                tldMatches: typeof urls.tldMatches === 'boolean' ? urls.tldMatches : true,
-            };
-        }
-    }
-
-    /**
-     * Normalizes the {@link #stripPrefix} config into an Object with 2
-     * properties: `scheme`, and `www` - both Booleans.
-     *
-     * See {@link #stripPrefix} config for details.
-     *
-     * @private
-     * @param {Boolean/Object} stripPrefix
-     * @return {Object}
-     */
-    private normalizeStripPrefixCfg(
-        stripPrefix: StripPrefixConfig | undefined
-    ): Required<StripPrefixConfigObj> {
-        if (stripPrefix == null) stripPrefix = true; // default to `true`
-
-        if (typeof stripPrefix === 'boolean') {
-            return { scheme: stripPrefix, www: stripPrefix };
-        } else {
-            // object form
-            return {
-                scheme: typeof stripPrefix.scheme === 'boolean' ? stripPrefix.scheme : true,
-                www: typeof stripPrefix.www === 'boolean' ? stripPrefix.www : true,
-            };
-        }
-    }
-
-    /**
-     * Normalizes the {@link #truncate} config into an Object with 2 properties:
-     * `length` (Number), and `location` (String).
-     *
-     * See {@link #truncate} config for details.
-     *
-     * @private
-     * @param {Number/Object} truncate
-     * @return {Object}
-     */
-    private normalizeTruncateCfg(
-        truncate: TruncateConfig | undefined
-    ): Required<TruncateConfigObj> {
-        if (typeof truncate === 'number') {
-            return { length: truncate, location: 'end' };
-        } else {
-            // object, or undefined/null
-            return defaults(truncate || {}, {
-                length: Number.POSITIVE_INFINITY,
-                location: 'end',
-            });
-        }
     }
 
     /**
@@ -701,8 +569,8 @@ export default class Autolinker {
                     // TODO: Handle HTML entities separately in parseHtml() and
                     // don't emit them as "text" except for &amp; entities
                     const htmlCharacterEntitiesRegex =
-                        /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
-                    const textSplit = splitAndCapture(text, htmlCharacterEntitiesRegex);
+                        /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi; // NOTE: capturing group is significant to include the split characters in the .split() call below
+                    const textSplit = text.split(htmlCharacterEntitiesRegex);
 
                     let currentOffset = offset;
                     textSplit.forEach((splitText, i) => {
@@ -720,8 +588,8 @@ export default class Autolinker {
                     skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                 }
             },
-            onComment: (offset: number) => {}, // no need to process comment nodes
-            onDoctype: (offset: number) => {}, // no need to process doctype nodes
+            onComment: (_offset: number) => {}, // no need to process comment nodes
+            onDoctype: (_offset: number) => {}, // no need to process doctype nodes
         });
 
         // After we have found all matches, remove subsequent matches that
@@ -751,9 +619,10 @@ export default class Autolinker {
      */
     private compactMatches(matches: Match[]) {
         // First, the matches need to be sorted in order of offset
-        matches.sort(function (a, b) {
+        matches.sort((a, b) => {
             return a.getOffset() - b.getOffset();
         });
+
         let i = 0;
         while (i < matches.length - 1) {
             let match = matches[i],
@@ -802,38 +671,38 @@ export default class Autolinker {
      */
     private removeUnwantedMatches(matches: Match[]) {
         if (!this.hashtag)
-            remove(matches, (match: Match) => {
+            removeWithPredicate(matches, (match: Match) => {
                 return match.getType() === 'hashtag';
             });
         if (!this.email)
-            remove(matches, (match: Match) => {
+            removeWithPredicate(matches, (match: Match) => {
                 return match.getType() === 'email';
             });
         if (!this.phone)
-            remove(matches, (match: Match) => {
+            removeWithPredicate(matches, (match: Match) => {
                 return match.getType() === 'phone';
             });
         if (!this.mention)
-            remove(matches, (match: Match) => {
+            removeWithPredicate(matches, (match: Match) => {
                 return match.getType() === 'mention';
             });
         if (!this.urls.schemeMatches) {
-            remove(
+            removeWithPredicate(
                 matches,
                 (m: Match) =>
                     m.getType() === 'url' && (m as UrlMatch).getUrlMatchType() === 'scheme'
             );
         }
-        if (!this.urls.wwwMatches) {
-            remove(
-                matches,
-                (m: Match) => m.getType() === 'url' && (m as UrlMatch).getUrlMatchType() === 'www'
-            );
-        }
         if (!this.urls.tldMatches) {
-            remove(
+            removeWithPredicate(
                 matches,
                 (m: Match) => m.getType() === 'url' && (m as UrlMatch).getUrlMatchType() === 'tld'
+            );
+        }
+        if (!this.urls.ipV4Matches) {
+            removeWithPredicate(
+                matches,
+                (m: Match) => m.getType() === 'url' && (m as UrlMatch).getUrlMatchType() === 'ipV4'
             );
         }
 
@@ -863,22 +732,23 @@ export default class Autolinker {
      */
     private parseText(text: string, offset = 0) {
         offset = offset || 0;
-        let matchers = this.getMatchers(),
-            matches: Match[] = [];
+        const matches: Match[] = parseMatches(text, {
+            tagBuilder: this.getTagBuilder(),
+            stripPrefix: this.stripPrefix,
+            stripTrailingSlash: this.stripTrailingSlash,
+            decodePercentEncoding: this.decodePercentEncoding,
+            hashtagServiceName: this.hashtag as HashtagService,
+            mentionServiceName: (this.mention as MentionService) || 'twitter',
+        });
 
-        for (let i = 0, numMatchers = matchers.length; i < numMatchers; i++) {
-            let textMatches = matchers[i].parseMatches(text);
-
-            // Correct the offset of each of the matches. They are originally
-            // the offset of the match within the provided text node, but we
-            // need to correct them to be relative to the original HTML input
-            // string (i.e. the one provided to #parse).
-            for (let j = 0, numTextMatches = textMatches.length; j < numTextMatches; j++) {
-                textMatches[j].setOffset(offset + textMatches[j].getOffset());
-            }
-
-            matches.push.apply(matches, textMatches);
+        // Correct the offset of each of the matches. They are originally
+        // the offset of the match within the provided text node, but we
+        // need to correct them to be relative to the original HTML input
+        // string (i.e. the one provided to #parse).
+        for (let i = 0, numTextMatches = matches.length; i < numTextMatches; i++) {
+            matches[i].setOffset(offset + matches[i].getOffset());
         }
+
         return matches;
     }
 
@@ -965,42 +835,6 @@ export default class Autolinker {
     }
 
     /**
-     * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
-     * instances for this Autolinker instance.
-     *
-     * @private
-     * @return {Autolinker.matcher.Matcher[]}
-     */
-    private getMatchers() {
-        if (!this.matchers) {
-            let tagBuilder = this.getTagBuilder();
-
-            let matchers = [
-                new HashtagMatcher({
-                    tagBuilder,
-                    serviceName: this.hashtag as HashtagService,
-                }),
-                new EmailMatcher({ tagBuilder }),
-                new PhoneMatcher({ tagBuilder }),
-                new MentionMatcher({
-                    tagBuilder,
-                    serviceName: this.mention as MentionServices,
-                }),
-                new UrlMatcher({
-                    tagBuilder,
-                    stripPrefix: this.stripPrefix,
-                    stripTrailingSlash: this.stripTrailingSlash,
-                    decodePercentEncoding: this.decodePercentEncoding,
-                }),
-            ];
-
-            return (this.matchers = matchers);
-        } else {
-            return this.matchers;
-        }
-    }
-
-    /**
      * Returns the {@link #tagBuilder} instance for this Autolinker instance,
      * lazily instantiating it if it does not yet exist.
      *
@@ -1019,6 +853,79 @@ export default class Autolinker {
         }
 
         return tagBuilder;
+    }
+}
+
+/**
+ * Normalizes the {@link #urls} config into an Object with its 2 properties:
+ * `schemeMatches` and `tldMatches`, both booleans.
+ *
+ * See {@link #urls} config for details.
+ *
+ * @private
+ * @param {Boolean/Object} urls
+ * @return {Object}
+ */
+function normalizeUrlsCfg(urls: UrlsConfig | undefined): Required<UrlsConfigObj> {
+    if (urls == null) urls = true; // default to `true`
+
+    if (isBoolean(urls)) {
+        return { schemeMatches: urls, tldMatches: urls, ipV4Matches: urls };
+    } else {
+        // object form
+        return {
+            schemeMatches: isBoolean(urls.schemeMatches) ? urls.schemeMatches : true,
+            tldMatches: isBoolean(urls.tldMatches) ? urls.tldMatches : true,
+            ipV4Matches: isBoolean(urls.ipV4Matches) ? urls.ipV4Matches : true,
+        };
+    }
+}
+
+/**
+ * Normalizes the {@link #stripPrefix} config into an Object with 2
+ * properties: `scheme`, and `www` - both Booleans.
+ *
+ * See {@link #stripPrefix} config for details.
+ *
+ * @private
+ * @param {Boolean/Object} stripPrefix
+ * @return {Object}
+ */
+function normalizeStripPrefixCfg(
+    stripPrefix: StripPrefixConfig | undefined
+): Required<StripPrefixConfigObj> {
+    if (stripPrefix == null) stripPrefix = true; // default to `true`
+
+    if (isBoolean(stripPrefix)) {
+        return { scheme: stripPrefix, www: stripPrefix };
+    } else {
+        // object form
+        return {
+            scheme: isBoolean(stripPrefix.scheme) ? stripPrefix.scheme : true,
+            www: isBoolean(stripPrefix.www) ? stripPrefix.www : true,
+        };
+    }
+}
+
+/**
+ * Normalizes the {@link #truncate} config into an Object with 2 properties:
+ * `length` (Number), and `location` (String).
+ *
+ * See {@link #truncate} config for details.
+ *
+ * @private
+ * @param {Number/Object} truncate
+ * @return {Object}
+ */
+function normalizeTruncateCfg(truncate: TruncateConfig | undefined): Required<TruncateConfigObj> {
+    if (typeof truncate === 'number') {
+        return { length: truncate, location: 'end' };
+    } else {
+        // object, or undefined/null
+        return defaults(truncate || {}, {
+            length: Number.POSITIVE_INFINITY,
+            location: 'end',
+        });
     }
 }
 
@@ -1042,11 +949,9 @@ export interface AutolinkerConfig {
 export type UrlsConfig = boolean | UrlsConfigObj;
 export interface UrlsConfigObj {
     schemeMatches?: boolean;
-    wwwMatches?: boolean;
     tldMatches?: boolean;
+    ipV4Matches?: boolean;
 }
-
-export type UrlMatchTypeOptions = 'scheme' | 'www' | 'tld';
 
 export type StripPrefixConfig = boolean | StripPrefixConfigObj;
 export interface StripPrefixConfigObj {
@@ -1061,9 +966,7 @@ export interface TruncateConfigObj {
 }
 
 export type HashtagConfig = false | HashtagService;
-
-export type MentionConfig = false | MentionServices;
-export type MentionServices = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';
+export type MentionConfig = false | MentionService;
 
 export type ReplaceFn = (match: Match) => ReplaceFnReturn;
 export type ReplaceFnReturn = boolean | string | HtmlTag | null | undefined | void;

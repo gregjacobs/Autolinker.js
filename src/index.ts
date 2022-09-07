@@ -12,4 +12,4 @@ export * from './autolinker';
 export * from './anchor-tag-builder';
 export * from './html-tag';
 export * from './match/index';
-export * from './matcher/index';
+export * from './parser/index';
