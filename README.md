@@ -431,7 +431,7 @@ The full API docs for Autolinker may be referenced at:
 [http://gregjacobs.github.io/Autolinker.js/examples/](http://gregjacobs.github.io/Autolinker.js/examples/)
 
 
-## Upgrading from v3.x -> 4.x (Breaking Changes)
+## Upgrading from v3.x -> v4.x (Breaking Changes)
 
 1. Internet Explorer support has been removed since its official demise in June
    2022.
