@@ -426,7 +426,7 @@ The full API docs for Autolinker may be referenced at:
 
 ## Live Example
 
-[http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
+[http://gregjacobs.github.io/Autolinker.js/examples/](http://gregjacobs.github.io/Autolinker.js/examples/)
 
 
 ## Users of Internet Explorer 8 and Below
