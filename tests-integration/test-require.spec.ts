@@ -7,7 +7,7 @@
 const Autolinker = require('autolinker');
 const NamedAutolinker = require('autolinker').Autolinker;
 
-describe('Autolinker require() tests - ', () => {
+describe('Autolinker require() tests >', () => {
     it(`Autolinker should be the default export of 'autolinker'`, () => {
         expect(Autolinker).toEqual(jasmine.any(Function)); // constructor function
         expect(Autolinker.name).toBe('Autolinker'); // function name

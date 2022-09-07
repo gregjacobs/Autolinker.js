@@ -18,6 +18,7 @@ describe('Autolinker Url Matching >', () => {
                     'yahoo.com',
                     'subdomain1.subdomain2.yahoo.com',
                     'subdomain_with_underscores.yahoo.com',
+                    'subdomain-with-dashes.some-domain.com',
                     'localhost',
                     '66.102.7.147',
                 ],

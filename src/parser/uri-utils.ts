@@ -107,7 +107,7 @@ export function isDomainLabelStartChar(char: string): boolean {
  * A domain label is a segment of a hostname such as subdomain.google.com.
  */
 export function isDomainLabelChar(char: string): boolean {
-    return alphaNumericAndMarksRe.test(char) || char === '_';
+    return char === '_' || isDomainLabelStartChar(char);
 }
 
 /**
