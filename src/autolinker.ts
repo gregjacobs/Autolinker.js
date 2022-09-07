@@ -913,6 +913,8 @@ export default class Autolinker {
             textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        textOrHtml = this.stripUnsafeCharacters(textOrHtml);
+
         let matches = this.parse(textOrHtml),
             newHtml: string[] = [],
             lastIndex = 0;
@@ -1019,6 +1021,16 @@ export default class Autolinker {
         }
 
         return tagBuilder;
+    }
+
+    /**
+     * Strips characters considered as unsafe
+     * SNYK-AUTOLINKER-2438289
+     * @param text
+     * @private
+     */
+    private stripUnsafeCharacters(text: string) {
+        return text.replace(/[\u202a-\u202e, \u200e-\u200f]/g, '');
     }
 }
 

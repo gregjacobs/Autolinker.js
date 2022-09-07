@@ -1265,4 +1265,30 @@ describe('Autolinker Url Matching -', () => {
             );
         });
     });
+
+    describe('unicode exploits', () => {
+        it('should strip out character direction override unicodes', () => {
+            expect(autolinker.link('foo.combar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202Ebar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202abar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202bbar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202cbar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202dbar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202ebar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+        });
+    });
 });
