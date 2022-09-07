@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.isValidIpV4Address = exports.isValidTldMatch = exports.isValidSchemeUrl = exports.isKnownTld = exports.isUrlSuffixStartChar = exports.isPathChar = exports.isDomainLabelChar = exports.isDomainLabelStartChar = exports.isSchemeChar = exports.isSchemeStartChar = exports.tldUrlHostRe = exports.schemeUrlRe = exports.invalidSchemeRe = exports.urlSuffixedCharsNotAllowedAtEndRe = exports.httpSchemePrefixRe = exports.httpSchemeRe = exports.urlSuffixNotAllowedAsLastCharRe = exports.urlSuffixAllowedSpecialCharsRe = exports.urlSuffixStartCharsRe = exports.domainNameCharRegex = void 0;
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+var tld_regex_1 = require(&quot;./tld-regex&quot;);
+<span id='global-property-domainNameCharRegex'>/**
+</span> * A regular expression that is simply the character class of the characters
+ * that may be used in a domain name, minus the &#39;-&#39; or &#39;.&#39;
+ */
+exports.domainNameCharRegex = regex_lib_1.alphaNumericAndMarksRe;
+<span id='global-property-urlSuffixStartCharsRe'>/**
+</span> * The set of characters that will start a URL suffix (i.e. the path, query, and
+ * hash part of the URL)
+ */
+exports.urlSuffixStartCharsRe = /[\/?#]/;
+<span id='global-property-urlSuffixAllowedSpecialCharsRe'>/**
+</span> * The set of characters that are allowed in the URL suffix (i.e. the path,
+ * query, and hash part of the URL) which may also form the ending character of
+ * the URL.
+ *
+ * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL
+ * suffix characters, but (generally) should not be the last character of a URL.
+ */
+exports.urlSuffixAllowedSpecialCharsRe = /[-+&amp;@#/%=~_()|&#39;$*\[\]{}\u2713]/;
+<span id='global-property-urlSuffixNotAllowedAsLastCharRe'>/**
+</span> * URL suffix characters (i.e. path, query, and has part of the URL) that are
+ * not allowed as the *last character* in the URL suffix as they would normally
+ * form the end of a sentence.
+ *
+ * The {@link #urlSuffixAllowedSpecialCharsRe} contains additional allowed URL
+ * suffix characters which are allowed as the last character.
+ */
+exports.urlSuffixNotAllowedAsLastCharRe = /[?!:,.;^]/;
+<span id='global-property-httpSchemeRe'>/**
+</span> * Regular expression to match an http:// or https:// scheme.
+ */
+exports.httpSchemeRe = /https?:\/\//i;
+<span id='global-property-httpSchemePrefixRe'>/**
+</span> * Regular expression to match an http:// or https:// scheme as the prefix of
+ * a string.
+ */
+exports.httpSchemePrefixRe = new RegExp(&#39;^&#39; + exports.httpSchemeRe.source, &#39;i&#39;);
+exports.urlSuffixedCharsNotAllowedAtEndRe = new RegExp(exports.urlSuffixNotAllowedAsLastCharRe.source + &#39;$&#39;);
+<span id='global-property-invalidSchemeRe'>/**
+</span> * A regular expression used to determine the schemes we should not autolink
+ */
+exports.invalidSchemeRe = /^(javascript|vbscript):/i;
+// A regular expression used to determine if the URL is a scheme match (such as
+// &#39;http://google.com&#39;, and as opposed to a &quot;TLD match&quot;). This regular
+// expression is used to parse out the host along with if the URL has an
+// authority component (i.e. &#39;//&#39;)
+//
+// Capturing groups:
+//    1. &#39;//&#39; if the URL has an authority component, empty string otherwise
+//    2. The host (if one exists). Ex: &#39;google.com&#39;
+//
+// See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
+exports.schemeUrlRe = /^[A-Za-z][-.+A-Za-z0-9]*:(\/\/)?([^:/]*)/;
+// A regular expression used to determine if the URL is a TLD match (such as
+// &#39;google.com&#39;, and as opposed to a &quot;scheme match&quot;). This regular
+// expression is used to help parse out the TLD (top-level domain) of the host.
+//
+// See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
+exports.tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative &#39;//&#39; chars
+<span id='global-method-isSchemeStartChar'>/**
+</span> * Determines if the given character may start a scheme (ex: &#39;http&#39;).
+ */
+function isSchemeStartChar(char) {
+    return regex_lib_1.letterRe.test(char);
+}
+exports.isSchemeStartChar = isSchemeStartChar;
+<span id='global-method-isSchemeChar'>/**
+</span> * Determines if the given character is a valid character in a scheme (such as
+ * &#39;http&#39; or &#39;ssh+git&#39;), but only after the start char (which is handled by
+ * {@link isSchemeStartChar}.
+ */
+function isSchemeChar(char) {
+    return (regex_lib_1.letterRe.test(char) || regex_lib_1.digitRe.test(char) || char === &#39;+&#39; || char === &#39;-&#39; || char === &#39;.&#39;);
+}
+exports.isSchemeChar = isSchemeChar;
+<span id='global-method-isDomainLabelStartChar'>/**
+</span> * Determines if the character can begin a domain label, which must be an
+ * alphanumeric character and not an underscore or dash.
+ *
+ * A domain label is a segment of a hostname such as subdomain.google.com.
+ */
+function isDomainLabelStartChar(char) {
+    return regex_lib_1.alphaNumericAndMarksRe.test(char);
+}
+exports.isDomainLabelStartChar = isDomainLabelStartChar;
+<span id='global-method-isDomainLabelChar'>/**
+</span> * Determines if the character is part of a domain label (but not a domain label
+ * start character).
+ *
+ * A domain label is a segment of a hostname such as subdomain.google.com.
+ */
+function isDomainLabelChar(char) {
+    return regex_lib_1.alphaNumericAndMarksRe.test(char) || char === &#39;_&#39;;
+}
+exports.isDomainLabelChar = isDomainLabelChar;
+<span id='global-method-isPathChar'>/**
+</span> * Determines if the character is a path character (&quot;pchar&quot;) as defined by
+ * https://tools.ietf.org/html/rfc3986#appendix-A
+ *
+ *     pchar         = unreserved / pct-encoded / sub-delims / &quot;:&quot; / &quot;@&quot;
+ *
+ *     unreserved    = ALPHA / DIGIT / &quot;-&quot; / &quot;.&quot; / &quot;_&quot; / &quot;~&quot;
+ *     pct-encoded   = &quot;%&quot; HEXDIG HEXDIG
+ *     sub-delims    = &quot;!&quot; / &quot;$&quot; / &quot;&amp;&quot; / &quot;&#39;&quot; / &quot;(&quot; / &quot;)&quot;
+ *                   / &quot;*&quot; / &quot;+&quot; / &quot;,&quot; / &quot;;&quot; / &quot;=&quot;
+ *
+ * Note that this implementation doesn&#39;t follow the spec exactly, but rather
+ * follows URL path characters found out in the wild (spec might be out of date?)
+ */
+function isPathChar(char) {
+    return (regex_lib_1.alphaNumericAndMarksRe.test(char) ||
+        exports.urlSuffixAllowedSpecialCharsRe.test(char) ||
+        exports.urlSuffixNotAllowedAsLastCharRe.test(char));
+}
+exports.isPathChar = isPathChar;
+<span id='global-method-isUrlSuffixStartChar'>/**
+</span> * Determines if the character given may begin the &quot;URL Suffix&quot; section of a
+ * URI (i.e. the path, query, or hash section). These are the &#39;/&#39;, &#39;?&#39; and &#39;#&#39;
+ * characters.
+ *
+ * See https://tools.ietf.org/html/rfc3986#appendix-A
+ */
+function isUrlSuffixStartChar(char) {
+    return exports.urlSuffixStartCharsRe.test(char);
+}
+exports.isUrlSuffixStartChar = isUrlSuffixStartChar;
+<span id='global-method-isKnownTld'>/**
+</span> * Determines if the TLD read in the host is a known TLD (Top-Level Domain).
+ *
+ * Example: &#39;com&#39; would be a known TLD (for a host of &#39;google.com&#39;), but
+ * &#39;local&#39; would not (for a domain name of &#39;my-computer.local&#39;).
+ */
+function isKnownTld(tld) {
+    return tld_regex_1.tldRegex.test(tld.toLowerCase()); // make sure the tld is lowercase for the regex
+}
+exports.isKnownTld = isKnownTld;
+<span id='global-method-isValidSchemeUrl'>/**
+</span> * Determines if the given `url` is a valid scheme-prefixed URL.
+ */
+function isValidSchemeUrl(url) {
+    // If the scheme is &#39;javascript:&#39; or &#39;vbscript:&#39;, these link
+    // types can be dangerous. Don&#39;t link them.
+    if (exports.invalidSchemeRe.test(url)) {
+        return false;
+    }
+    var schemeMatch = url.match(exports.schemeUrlRe);
+    if (!schemeMatch) {
+        return false;
+    }
+    var isAuthorityMatch = !!schemeMatch[1];
+    var host = schemeMatch[2];
+    if (isAuthorityMatch) {
+        // Any match that has an authority (&#39;//&#39; chars) after the scheme is
+        // valid, such as &#39;http://anything&#39;
+        return true;
+    }
+    // If there&#39;s no authority (&#39;//&#39; chars), check that we have a hostname
+    // that looks valid.
+    //
+    // The host must contain at least one &#39;.&#39; char and have a domain label
+    // with at least one letter to be considered valid.
+    //
+    // Accept:
+    //   - git:domain.com (scheme followed by a host
+    // Do not accept:
+    //   - git:something (&#39;something&#39; doesn&#39;t look like a host)
+    //   - version:1.0   (&#39;1.0&#39; doesn&#39;t look like a host)
+    if (host.indexOf(&#39;.&#39;) === -1 || !regex_lib_1.letterRe.test(host)) {
+        return false;
+    }
+    return true;
+}
+exports.isValidSchemeUrl = isValidSchemeUrl;
+<span id='global-method-isValidTldMatch'>/**
+</span> * Determines if the given `url` is a match with a valid TLD.
+ */
+function isValidTldMatch(url) {
+    // TLD URL such as &#39;google.com&#39;, we need to confirm that we have a valid
+    // top-level domain
+    var tldUrlHostMatch = url.match(exports.tldUrlHostRe);
+    if (!tldUrlHostMatch) {
+        // At this point, if the URL didn&#39;t match our TLD re, it must be invalid
+        // (highly unlikely to happen, but just in case)
+        return false;
+    }
+    var host = tldUrlHostMatch[0];
+    var hostLabels = host.split(&#39;.&#39;);
+    if (hostLabels.length &lt; 2) {
+        // 0 or 1 host label, there&#39;s no TLD. Ex: &#39;localhost&#39;
+        return false;
+    }
+    var tld = hostLabels[hostLabels.length - 1];
+    if (!isKnownTld(tld)) {
+        return false;
+    }
+    // TODO: Implement these conditions for TLD matcher:
+    // (
+    //     this.longestDomainLabelLength &lt;= 63 &amp;&amp;
+    //     this.domainNameLength &lt;= 255
+    // );
+    return true;
+}
+exports.isValidTldMatch = isValidTldMatch;
+// Regular expression to confirm a valid IPv4 address (ex: &#39;192.168.0.1&#39;)
+var ipV4Re = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+// Regular expression used to split the IPv4 address itself from any port/path/query/hash
+var ipV4PartRe = /[:/?#]/;
+<span id='global-method-isValidIpV4Address'>/**
+</span> * Determines if the given URL is a valid IPv4-prefixed URL.
+ */
+function isValidIpV4Address(url) {
+    // Grab just the IP address
+    var ipV4Part = url.split(ipV4PartRe, 1)[0]; // only 1 result needed
+    return ipV4Re.test(ipV4Part);
+}
+exports.isValidIpV4Address = isValidIpV4Address;
+//# sourceMappingURL=uri-utils.js.map</pre>
+</body>
+</html>

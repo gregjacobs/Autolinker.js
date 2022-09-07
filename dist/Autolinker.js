@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v3.16.2
+ * v4.0.0
  *
  * Copyright(c) 2022 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -15,8 +15,24 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '3.16.2';
+    var version = '4.0.0';
 
+    /**
+     * Simpler helper method to check for undefined simply for the benefit of
+     * gaining better compression when minified by not needing to have multiple
+     * comparisons to the `undefined` keyword in the codebase.
+     */
+    function isUndefined(value) {
+        return value === undefined;
+    }
+    /**
+     * Simpler helper method to check for a boolean type simply for the benefit of
+     * gaining better compression when minified by not needing to have multiple
+     * `typeof` comparisons in the codebase.
+     */
+    function isBoolean(value) {
+        return typeof value === 'boolean';
+    }
     /**
      * Assigns (shallow copies) the properties of `src` onto `dest`, if the
      * corresponding property on `dest` === `undefined`.
@@ -27,7 +43,7 @@
      */
     function defaults(dest, src) {
         for (var prop in src) {
-            if (src.hasOwnProperty(prop) && dest[prop] === undefined) {
+            if (src.hasOwnProperty(prop) && isUndefined(dest[prop])) {
                 dest[prop] = src[prop];
             }
         }
@@ -58,42 +74,33 @@
         return str;
     }
     /**
-     * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
+     * Removes array elements by value. Mutates the input array.
      *
-     * @param {Array} arr The array to find an element of.
-     * @param {*} element The element to find in the array, and return the index of.
-     * @return {Number} The index of the `element`, or -1 if it was not found.
+     * Using this instead of the ES5 Array.prototype.filter() function to prevent
+     * creating many new arrays in memory for removing an element.
+     *
+     * @param arr The array to remove elements from. This array is mutated.
+     * @param fn The element to remove.
      */
-    function indexOf(arr, element) {
-        // @ts-ignore - As far as TypeScript is concerned, this method will always
-        // exist (lowest "lib" in TS is "ES5"). Hence we need to ignore this error
-        // to support IE8 which only implements ES3 and doesn't have this method
-        if (Array.prototype.indexOf) {
-            return arr.indexOf(element);
-        }
-        else {
-            for (var i = 0, len = arr.length; i < len; i++) {
-                if (arr[i] === element)
-                    return i;
+    function remove(arr, item) {
+        for (var i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] === item) {
+                arr.splice(i, 1);
             }
-            return -1;
         }
     }
     /**
      * Removes array elements based on a filtering function. Mutates the input
      * array.
      *
-     * Using this instead of the ES5 Array.prototype.filter() function, to allow
-     * Autolinker compatibility with IE8, and also to prevent creating many new
-     * arrays in memory for filtering.
+     * Using this instead of the ES5 Array.prototype.filter() function to prevent
+     * creating many new arrays in memory for filtering.
      *
-     * @param {Array} arr The array to remove elements from. This array is
-     *   mutated.
-     * @param {Function} fn A function which should return `true` to
-     *   remove an element.
-     * @return {Array} The mutated input `arr`.
+     * @param arr The array to remove elements from. This array is mutated.
+     * @param fn The predicate function which should return `true` to remove an
+     *   element.
      */
-    function remove(arr, fn) {
+    function removeWithPredicate(arr, fn) {
         for (var i = arr.length - 1; i >= 0; i--) {
             if (fn(arr[i]) === true) {
                 arr.splice(i, 1);
@@ -101,47 +108,151 @@
         }
     }
     /**
-     * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
-     * with a regular expression that contains capturing parenthesis.
-     *
-     * For example:
-     *
-     *     // Modern browsers:
-     *     "a,b,c".split( /(,)/ );  // --> [ 'a', ',', 'b', ',', 'c' ]
-     *
-     *     // Old IE (including IE8):
-     *     "a,b,c".split( /(,)/ );  // --> [ 'a', 'b', 'c' ]
-     *
-     * This method emulates the functionality of modern browsers for the old IE case.
-     *
-     * @param {String} str The string to split.
-     * @param {RegExp} splitRegex The regular expression to split the input `str` on. The splitting
-     *   character(s) will be spliced into the array, as in the "modern browsers" example in the
-     *   description of this method.
-     *   Note #1: the supplied regular expression **must** have the 'g' flag specified.
-     *   Note #2: for simplicity's sake, the regular expression does not need
-     *   to contain capturing parenthesis - it will be assumed that any match has them.
-     * @return {String[]} The split array of strings, with the splitting character(s) included.
-     */
-    function splitAndCapture(str, splitRegex) {
-        if (!splitRegex.global)
-            throw new Error("`splitRegex` must have the 'g' flag set");
-        var result = [], lastIdx = 0, match;
-        while ((match = splitRegex.exec(str))) {
-            result.push(str.substring(lastIdx, match.index));
-            result.push(match[0]); // push the splitting char(s)
-            lastIdx = match.index + match[0].length;
-        }
-        result.push(str.substring(lastIdx));
-        return result;
-    }
-    /**
      * Function that should never be called but is used to check that every
      * enum value is handled using TypeScript's 'never' type.
      */
-    function throwUnhandledCaseError(theValue) {
+    function assertNever(theValue) {
         throw new Error("Unhandled case for value: '".concat(theValue, "'"));
     }
+
+    /*
+     * This file builds and stores a library of the common regular expressions used
+     * by the Autolinker utility.
+     *
+     * Other regular expressions may exist ad-hoc, but these are generally the
+     * regular expressions that are shared between source files.
+     */
+    /**
+     * Regular expression to match upper and lowercase ASCII letters
+     */
+    var letterRe = /[A-Za-z]/;
+    /**
+     * Regular expression to match ASCII digits
+     */
+    var digitRe = /[\d]/;
+    /**
+     * Regular expression to match whitespace
+     */
+    var whitespaceRe = /\s/;
+    /**
+     * Regular expression to match quote characters
+     */
+    var quoteRe = /['"]/;
+    /**
+     * Regular expression to match the range of ASCII control characters (0-31), and
+     * the backspace char (127)
+     */
+    var controlCharsRe = /[\x00-\x1F\x7F]/;
+    /**
+     * The string form of a regular expression that would match all of the
+     * alphabetic ("letter") chars in the unicode character set when placed in a
+     * RegExp character class (`[]`). This includes all international alphabetic
+     * characters.
+     *
+     * These would be the characters matched by unicode regex engines `\p{L}`
+     * escape ("all letters").
+     *
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
+     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Letter'
+     *   regex's bmp
+     *
+     * VERY IMPORTANT: This set of characters is defined inside of a Regular
+     *   Expression literal rather than a string literal to prevent UglifyJS from
+     *   compressing the unicode escape sequences into their actual unicode
+     *   characters. If Uglify compresses these into the unicode characters
+     *   themselves, this results in the error "Range out of order in character
+     *   class" when these characters are used inside of a Regular Expression
+     *   character class (`[]`). See usages of this const. Alternatively, we can set
+     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
+     *   help others who are pulling in Autolinker into their own build and running
+     *   UglifyJS themselves.
+     */
+    // prettier-ignore
+    var alphaCharsStr = /A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC/
+        .source; // see note in above variable description
+    /**
+     * The string form of a regular expression that would match all emoji characters
+     * Based on the emoji regex defined in this article: https://thekevinscott.com/emojis-in-javascript/
+     */
+    var emojiStr = /\u2700-\u27bf\udde6-\uddff\ud800-\udbff\udc00-\udfff\ufe0e\ufe0f\u0300-\u036f\ufe20-\ufe23\u20d0-\u20f0\ud83c\udffb-\udfff\u200d\u3299\u3297\u303d\u3030\u24c2\ud83c\udd70-\udd71\udd7e-\udd7f\udd8e\udd91-\udd9a\udde6-\uddff\ude01-\ude02\ude1a\ude2f\ude32-\ude3a\ude50-\ude51\u203c\u2049\u25aa-\u25ab\u25b6\u25c0\u25fb-\u25fe\u00a9\u00ae\u2122\u2139\udc04\u2600-\u26FF\u2b05\u2b06\u2b07\u2b1b\u2b1c\u2b50\u2b55\u231a\u231b\u2328\u23cf\u23e9-\u23f3\u23f8-\u23fa\udccf\u2935\u2934\u2190-\u21ff/
+        .source;
+    /**
+     * The string form of a regular expression that would match all of the
+     * combining mark characters in the unicode character set when placed in a
+     * RegExp character class (`[]`).
+     *
+     * These would be the characters matched by unicode regex engines `\p{M}`
+     * escape ("all marks").
+     *
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
+     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Mark'
+     *   regex's bmp
+     *
+     * VERY IMPORTANT: This set of characters is defined inside of a Regular
+     *   Expression literal rather than a string literal to prevent UglifyJS from
+     *   compressing the unicode escape sequences into their actual unicode
+     *   characters. If Uglify compresses these into the unicode characters
+     *   themselves, this results in the error "Range out of order in character
+     *   class" when these characters are used inside of a Regular Expression
+     *   character class (`[]`). See usages of this const. Alternatively, we can set
+     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
+     *   help others who are pulling in Autolinker into their own build and running
+     *   UglifyJS themselves.
+     */
+    // prettier-ignore
+    var marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0711\u0730-\u074A\u07A6-\u07B0\u07EB-\u07F3\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D4-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A70\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0C00-\u0C03\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0D01-\u0D03\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D\u135D-\u135F\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u180B-\u180D\u1885\u1886\u18A9\u1920-\u192B\u1930-\u193B\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F\u1AB0-\u1ABE\u1B00-\u1B04\u1B34-\u1B44\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BE6-\u1BF3\u1C24-\u1C37\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF2-\u1CF4\u1CF8\u1CF9\u1DC0-\u1DF5\u1DFB-\u1DFF\u20D0-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA66F-\uA672\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8E0-\uA8F1\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9E5\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F/
+        .source; // see note in above variable description
+    /**
+     * The string form of a regular expression that would match all of the
+     * alphabetic ("letter") chars, emoji, and combining marks in the unicode character set
+     * when placed in a RegExp character class (`[]`). This includes all
+     * international alphabetic characters.
+     *
+     * These would be the characters matched by unicode regex engines `\p{L}\p{M}`
+     * escapes and emoji characters.
+     */
+    var alphaCharsAndMarksStr = alphaCharsStr + emojiStr + marksStr;
+    /**
+     * The string form of a regular expression that would match all of the
+     * decimal number chars in the unicode character set when placed in a RegExp
+     * character class (`[]`).
+     *
+     * These would be the characters matched by unicode regex engines `\p{Nd}`
+     * escape ("all decimal numbers")
+     *
+     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
+     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Decimal_Number'
+     *   regex's bmp
+     *
+     * VERY IMPORTANT: This set of characters is defined inside of a Regular
+     *   Expression literal rather than a string literal to prevent UglifyJS from
+     *   compressing the unicode escape sequences into their actual unicode
+     *   characters. If Uglify compresses these into the unicode characters
+     *   themselves, this results in the error "Range out of order in character
+     *   class" when these characters are used inside of a Regular Expression
+     *   character class (`[]`). See usages of this const. Alternatively, we can set
+     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
+     *   help others who are pulling in Autolinker into their own build and running
+     *   UglifyJS themselves.
+     */
+    // prettier-ignore
+    var decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\u1040-\u1049\u1090-\u1099\u17E0-\u17E9\u1810-\u1819\u1946-\u194F\u19D0-\u19D9\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\uA620-\uA629\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19/
+        .source; // see note in above variable description
+    /**
+     * The string form of a regular expression that would match all of the
+     * letters, combining marks, and decimal number chars in the unicode character
+     * set when placed in a RegExp character class (`[]`).
+     *
+     * These would be the characters matched by unicode regex engines
+     * `[\p{L}\p{M}\p{Nd}]` escape ("all letters, combining marks, and decimal
+     * numbers")
+     */
+    var alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
+    /**
+     * The regular expression that will match a single letter of the
+     * {@link #alphaNumericAndMarksCharsStr}.
+     */
+    var alphaNumericAndMarksRe = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "]"));
 
     /**
      * @class Autolinker.HtmlTag
@@ -246,13 +357,6 @@
              * The inner HTML for the tag.
              */
             this.innerHTML = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @protected
-             * @property {RegExp} whitespaceRegex
-             *
-             * Regular expression used to match whitespace in a string of CSS classes.
-             */
-            this.whitespaceRegex = /\s+/; // default value just to get the above doc comment in the ES5 output and documentation generator
             this.tagName = cfg.tagName || '';
             this.attrs = cfg.attrs || {};
             this.innerHTML = cfg.innerHtml || cfg.innerHTML || ''; // accept either the camelCased form or the fully capitalized acronym as in the DOM
@@ -330,9 +434,9 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.addClass = function (cssClass) {
-            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
+            var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(whitespaceRe), newClasses = cssClass.split(whitespaceRe), newClass;
             while ((newClass = newClasses.shift())) {
-                if (indexOf(classes, newClass) === -1) {
+                if (classes.indexOf(newClass) === -1) {
                     classes.push(newClass);
                 }
             }
@@ -346,9 +450,9 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.removeClass = function (cssClass) {
-            var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
+            var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(whitespaceRe), removeClasses = cssClass.split(whitespaceRe), removeClass;
             while (classes.length && (removeClass = removeClasses.shift())) {
-                var idx = indexOf(classes, removeClass);
+                var idx = classes.indexOf(removeClass);
                 if (idx !== -1) {
                     classes.splice(idx, 1);
                 }
@@ -410,7 +514,7 @@
             return this.getInnerHTML();
         };
         /**
-         * Override of superclass method used to generate the HTML string for the tag.
+         * Generates the HTML string for the tag.
          *
          * @return {String}
          */
@@ -706,9 +810,8 @@
          * Generates the actual anchor (&lt;a&gt;) tag to use in place of the
          * matched text, via its `match` object.
          *
-         * @param {Autolinker.match.Match} match The Match instance to generate an
-         *   anchor tag from.
-         * @return {Autolinker.HtmlTag} The HtmlTag instance for the anchor tag.
+         * @param match The Match instance to generate an anchor tag from.
+         * @return The HtmlTag instance for the anchor tag.
          */
         AnchorTagBuilder.prototype.build = function (match) {
             return new HtmlTag({
@@ -722,9 +825,8 @@
          *   tag being generated.
          *
          * @protected
-         * @param {Autolinker.match.Match} match The Match instance to generate an
-         *   anchor tag from.
-         * @return {Object} A key/value Object (map) of the anchor tag's attributes.
+         * @param match The Match instance to generate an anchor tag from.
+         * @return A key/value Object (map) of the anchor tag's attributes.
          */
         AnchorTagBuilder.prototype.createAttrs = function (match) {
             var attrs = {
@@ -759,9 +861,9 @@
          * - "myLink myLink-mention myLink-twitter"  // mention match with Twitter service
          *
          * @protected
-         * @param {Autolinker.match.Match} match The Match instance to generate an
+         * @param match The Match instance to generate an
          *   anchor tag from.
-         * @return {String} The CSS class string for the link. Example return:
+         * @return The CSS class string for the link. Example return:
          *   "myLink myLink-url". If no {@link #className} was configured, returns
          *   an empty string.
          */
@@ -783,9 +885,9 @@
          * {@link #truncate} config.
          *
          * @private
-         * @param {String} anchorText The anchor tag's text (i.e. what will be
+         * @param anchorText The anchor tag's text (i.e. what will be
          *   displayed).
-         * @return {String} The processed `anchorText`.
+         * @return The processed `anchorText`.
          */
         AnchorTagBuilder.prototype.processAnchorText = function (anchorText) {
             anchorText = this.doTruncate(anchorText);
@@ -798,9 +900,9 @@
          * `location` property. See {@link #truncate} for details.
          *
          * @private
-         * @param {String} anchorText The anchor tag's text (i.e. what will be
+         * @param anchorText The anchor tag's text (i.e. what will be
          *   displayed).
-         * @return {String} The truncated anchor text.
+         * @return The truncated anchor text.
          */
         AnchorTagBuilder.prototype.doTruncate = function (anchorText) {
             var truncate = this.truncate;
@@ -818,160 +920,6 @@
             }
         };
         return AnchorTagBuilder;
-    }());
-
-    /**
-     * @abstract
-     * @class Autolinker.match.Match
-     *
-     * Represents a match found in an input string which should be Autolinked. A Match object is what is provided in a
-     * {@link Autolinker#replaceFn replaceFn}, and may be used to query for details about the match.
-     *
-     * For example:
-     *
-     *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram, Soundcloud)
-     *
-     *     var linkedText = Autolinker.link( input, {
-     *         replaceFn : function( match ) {
-     *             console.log( "href = ", match.getAnchorHref() );
-     *             console.log( "text = ", match.getAnchorText() );
-     *
-     *             switch( match.getType() ) {
-     *                 case 'url' :
-     *                     console.log( "url: ", match.getUrl() );
-     *
-     *                 case 'email' :
-     *                     console.log( "email: ", match.getEmail() );
-     *
-     *                 case 'mention' :
-     *                     console.log( "mention: ", match.getMention() );
-     *             }
-     *         }
-     *     } );
-     *
-     * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
-     */
-    var Match = /** @class */ (function () {
-        /**
-         * @member Autolinker.match.Match
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match
-         *   instance, specified in an Object (map).
-         */
-        function Match(cfg) {
-            /**
-             * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
-             *
-             * Reference to the AnchorTagBuilder instance to use to generate an anchor
-             * tag for the Match.
-             */
-            // @ts-ignore
-            this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
-            /**
-             * @cfg {String} matchedText (required)
-             *
-             * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
-             */
-            this.matchedText = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Number} offset (required)
-             *
-             * The offset of where the match was made in the input string.
-             */
-            this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
-            this.tagBuilder = cfg.tagBuilder;
-            this.matchedText = cfg.matchedText;
-            this.offset = cfg.offset;
-        }
-        /**
-         * Returns the original text that was matched.
-         *
-         * @return {String}
-         */
-        Match.prototype.getMatchedText = function () {
-            return this.matchedText;
-        };
-        /**
-         * Sets the {@link #offset} of where the match was made in the input string.
-         *
-         * A {@link Autolinker.matcher.Matcher} will be fed only HTML text nodes,
-         * and will therefore set an original offset that is relative to the HTML
-         * text node itself. However, we want this offset to be relative to the full
-         * HTML input string, and thus if using {@link Autolinker#parse} (rather
-         * than calling a {@link Autolinker.matcher.Matcher} directly), then this
-         * offset is corrected after the Matcher itself has done its job.
-         *
-         * @param {Number} offset
-         */
-        Match.prototype.setOffset = function (offset) {
-            this.offset = offset;
-        };
-        /**
-         * Returns the offset of where the match was made in the input string. This
-         * is the 0-based index of the match.
-         *
-         * @return {Number}
-         */
-        Match.prototype.getOffset = function () {
-            return this.offset;
-        };
-        /**
-         * Returns the CSS class suffix(es) for this match.
-         *
-         * A CSS class suffix is appended to the {@link Autolinker#className} in
-         * the {@link Autolinker.AnchorTagBuilder} when a match is translated into
-         * an anchor tag.
-         *
-         * For example, if {@link Autolinker#className} was configured as 'myLink',
-         * and this method returns `[ 'url' ]`, the final class name of the element
-         * will become: 'myLink myLink-url'.
-         *
-         * The match may provide multiple CSS class suffixes to be appended to the
-         * {@link Autolinker#className} in order to facilitate better styling
-         * options for different match criteria. See {@link Autolinker.match.Mention}
-         * for an example.
-         *
-         * By default, this method returns a single array with the match's
-         * {@link #getType type} name, but may be overridden by subclasses.
-         *
-         * @return {String[]}
-         */
-        Match.prototype.getCssClassSuffixes = function () {
-            return [this.getType()];
-        };
-        /**
-         * Builds and returns an {@link Autolinker.HtmlTag} instance based on the
-         * Match.
-         *
-         * This can be used to easily generate anchor tags from matches, and either
-         * return their HTML string, or modify them before doing so.
-         *
-         * Example Usage:
-         *
-         *     var tag = match.buildTag();
-         *     tag.addClass( 'cordova-link' );
-         *     tag.setAttr( 'target', '_system' );
-         *
-         *     tag.toAnchorString();  // <a href="http://google.com" class="cordova-link" target="_system">Google</a>
-         *
-         * Example Usage in {@link Autolinker#replaceFn}:
-         *
-         *     var html = Autolinker.link( "Test google.com", {
-         *         replaceFn : function( match ) {
-         *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
-         *             tag.setAttr( 'rel', 'nofollow' );
-         *
-         *             return tag;
-         *         }
-         *     } );
-         *
-         *     // generated html:
-         *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
-         */
-        Match.prototype.buildTag = function () {
-            return this.tagBuilder.build(this);
-        };
-        return Match;
     }());
 
     /*! *****************************************************************************
@@ -1017,8 +965,661 @@
     };
 
     /**
+     * @abstract
+     * @class Autolinker.match.AbstractMatch
+     *
+     * Represents a match found in an input string which should be Autolinked. A Match object is what is provided in a
+     * {@link Autolinker#replaceFn replaceFn}, and may be used to query for details about the match.
+     *
+     * For example:
+     *
+     *     var input = "...";  // string with URLs, Email Addresses, and Mentions (Twitter, Instagram, Soundcloud)
+     *
+     *     var linkedText = Autolinker.link( input, {
+     *         replaceFn : function( match ) {
+     *             console.log( "href = ", match.getAnchorHref() );
+     *             console.log( "text = ", match.getAnchorText() );
+     *
+     *             switch( match.getType() ) {
+     *                 case 'url' :
+     *                     console.log( "url: ", match.getUrl() );
+     *
+     *                 case 'email' :
+     *                     console.log( "email: ", match.getEmail() );
+     *
+     *                 case 'mention' :
+     *                     console.log( "mention: ", match.getMention() );
+     *             }
+     *         }
+     *     } );
+     *
+     * See the {@link Autolinker} class for more details on using the {@link Autolinker#replaceFn replaceFn}.
+     */
+    var AbstractMatch = /** @class */ (function () {
+        /**
+         * @member Autolinker.match.Match
+         * @method constructor
+         * @param {Object} cfg The configuration properties for the Match
+         *   instance, specified in an Object (map).
+         */
+        function AbstractMatch(cfg) {
+            /**
+             * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
+             *
+             * Reference to the AnchorTagBuilder instance to use to generate an anchor
+             * tag for the Match.
+             */
+            // @ts-ignore
+            this._ = null; // property used just to get the above doc comment into the ES5 output and documentation generator
+            /**
+             * @cfg {String} matchedText (required)
+             *
+             * The original text that was matched by the {@link Autolinker.matcher.Matcher}.
+             */
+            this.matchedText = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Number} offset (required)
+             *
+             * The offset of where the match was made in the input string.
+             */
+            this.offset = 0; // default value just to get the above doc comment in the ES5 output and documentation generator
+            this.tagBuilder = cfg.tagBuilder;
+            this.matchedText = cfg.matchedText;
+            this.offset = cfg.offset;
+        }
+        /**
+         * Returns the original text that was matched.
+         *
+         * @return {String}
+         */
+        AbstractMatch.prototype.getMatchedText = function () {
+            return this.matchedText;
+        };
+        /**
+         * Sets the {@link #offset} of where the match was made in the input string.
+         *
+         * A {@link Autolinker.matcher.Matcher} will be fed only HTML text nodes,
+         * and will therefore set an original offset that is relative to the HTML
+         * text node itself. However, we want this offset to be relative to the full
+         * HTML input string, and thus if using {@link Autolinker#parse} (rather
+         * than calling a {@link Autolinker.matcher.Matcher} directly), then this
+         * offset is corrected after the Matcher itself has done its job.
+         *
+         * @private
+         * @param {Number} offset
+         */
+        AbstractMatch.prototype.setOffset = function (offset) {
+            this.offset = offset;
+        };
+        /**
+         * Returns the offset of where the match was made in the input string. This
+         * is the 0-based index of the match.
+         *
+         * @return {Number}
+         */
+        AbstractMatch.prototype.getOffset = function () {
+            return this.offset;
+        };
+        /**
+         * Returns the CSS class suffix(es) for this match.
+         *
+         * A CSS class suffix is appended to the {@link Autolinker#className} in
+         * the {@link Autolinker.AnchorTagBuilder} when a match is translated into
+         * an anchor tag.
+         *
+         * For example, if {@link Autolinker#className} was configured as 'myLink',
+         * and this method returns `[ 'url' ]`, the final class name of the element
+         * will become: 'myLink myLink-url'.
+         *
+         * The match may provide multiple CSS class suffixes to be appended to the
+         * {@link Autolinker#className} in order to facilitate better styling
+         * options for different match criteria. See {@link Autolinker.match.Mention}
+         * for an example.
+         *
+         * By default, this method returns a single array with the match's
+         * {@link #getType type} name, but may be overridden by subclasses.
+         *
+         * @return {String[]}
+         */
+        AbstractMatch.prototype.getCssClassSuffixes = function () {
+            return [this.type];
+        };
+        /**
+         * Builds and returns an {@link Autolinker.HtmlTag} instance based on the
+         * Match.
+         *
+         * This can be used to easily generate anchor tags from matches, and either
+         * return their HTML string, or modify them before doing so.
+         *
+         * Example Usage:
+         *
+         *     var tag = match.buildTag();
+         *     tag.addClass( 'cordova-link' );
+         *     tag.setAttr( 'target', '_system' );
+         *
+         *     tag.toAnchorString();  // <a href="http://google.com" class="cordova-link" target="_system">Google</a>
+         *
+         * Example Usage in {@link Autolinker#replaceFn}:
+         *
+         *     var html = Autolinker.link( "Test google.com", {
+         *         replaceFn : function( match ) {
+         *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
+         *             tag.setAttr( 'rel', 'nofollow' );
+         *
+         *             return tag;
+         *         }
+         *     } );
+         *
+         *     // generated html:
+         *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
+         */
+        AbstractMatch.prototype.buildTag = function () {
+            return this.tagBuilder.build(this);
+        };
+        return AbstractMatch;
+    }());
+
+    // NOTE: THIS IS A GENERATED FILE
+    // To update with the latest TLD list, run `npm run update-tld-regex`
+    var tldRegexStr = '(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|northwesternmutual|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbaakc7dvf|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|bananarepublic|cancerresearch|cookingchannel|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--jlq61u9w7b|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|travelchannel|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|foodnetwork|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|volkswagen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|alfaromeo|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|frontdoor|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|passagens|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cityeats|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|etisalat|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|guardian|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|maserati|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|showtime|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|avianca|banamex|bauhaus|bentley|bestbuy|booking|brother|bugatti|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|comcast|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hoteles|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|oldnavy|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|tiffany|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|xfinity|yamaxun|youtube|zuerich|католик|اتصالات|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abarth|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kinder|kindle|kosher|lancia|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|mutual|nagoya|natura|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rocher|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|vuelos|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dabur|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|linde|lipsy|loans|locus|lotte|lotto|macys|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|adac|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fiat|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|hgtv|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|loft|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shaw|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|cbs|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|sca|scb|ses|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|诺基亚|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)';
+    var tldRegex = new RegExp('^' + tldRegexStr + '$');
+
+    /**
+     * The set of characters that will start a URL suffix (i.e. the path, query, and
+     * hash part of the URL)
+     */
+    var urlSuffixStartCharsRe = /[\/?#]/;
+    /**
+     * The set of characters that are allowed in the URL suffix (i.e. the path,
+     * query, and hash part of the URL) which may also form the ending character of
+     * the URL.
+     *
+     * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL
+     * suffix characters, but (generally) should not be the last character of a URL.
+     */
+    var urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*\[\]{}\u2713]/;
+    /**
+     * URL suffix characters (i.e. path, query, and has part of the URL) that are
+     * not allowed as the *last character* in the URL suffix as they would normally
+     * form the end of a sentence.
+     *
+     * The {@link #urlSuffixAllowedSpecialCharsRe} contains additional allowed URL
+     * suffix characters which are allowed as the last character.
+     */
+    var urlSuffixNotAllowedAsLastCharRe = /[?!:,.;^]/;
+    /**
+     * Regular expression to match an http:// or https:// scheme.
+     */
+    var httpSchemeRe = /https?:\/\//i;
+    /**
+     * Regular expression to match an http:// or https:// scheme as the prefix of
+     * a string.
+     */
+    var httpSchemePrefixRe = new RegExp('^' + httpSchemeRe.source, 'i');
+    var urlSuffixedCharsNotAllowedAtEndRe = new RegExp(urlSuffixNotAllowedAsLastCharRe.source + '$');
+    /**
+     * A regular expression used to determine the schemes we should not autolink
+     */
+    var invalidSchemeRe = /^(javascript|vbscript):/i;
+    // A regular expression used to determine if the URL is a scheme match (such as
+    // 'http://google.com', and as opposed to a "TLD match"). This regular
+    // expression is used to parse out the host along with if the URL has an
+    // authority component (i.e. '//')
+    //
+    // Capturing groups:
+    //    1. '//' if the URL has an authority component, empty string otherwise
+    //    2. The host (if one exists). Ex: 'google.com'
+    //
+    // See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
+    var schemeUrlRe = /^[A-Za-z][-.+A-Za-z0-9]*:(\/\/)?([^:/]*)/;
+    // A regular expression used to determine if the URL is a TLD match (such as
+    // 'google.com', and as opposed to a "scheme match"). This regular
+    // expression is used to help parse out the TLD (top-level domain) of the host.
+    //
+    // See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
+    var tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative '//' chars
+    /**
+     * Determines if the given character may start a scheme (ex: 'http').
+     */
+    function isSchemeStartChar(char) {
+        return letterRe.test(char);
+    }
+    /**
+     * Determines if the given character is a valid character in a scheme (such as
+     * 'http' or 'ssh+git'), but only after the start char (which is handled by
+     * {@link isSchemeStartChar}.
+     */
+    function isSchemeChar(char) {
+        return (letterRe.test(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.');
+    }
+    /**
+     * Determines if the character can begin a domain label, which must be an
+     * alphanumeric character and not an underscore or dash.
+     *
+     * A domain label is a segment of a hostname such as subdomain.google.com.
+     */
+    function isDomainLabelStartChar(char) {
+        return alphaNumericAndMarksRe.test(char);
+    }
+    /**
+     * Determines if the character is part of a domain label (but not a domain label
+     * start character).
+     *
+     * A domain label is a segment of a hostname such as subdomain.google.com.
+     */
+    function isDomainLabelChar(char) {
+        return char === '_' || isDomainLabelStartChar(char);
+    }
+    /**
+     * Determines if the character is a path character ("pchar") as defined by
+     * https://tools.ietf.org/html/rfc3986#appendix-A
+     *
+     *     pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+     *
+     *     unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+     *     pct-encoded   = "%" HEXDIG HEXDIG
+     *     sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+     *                   / "*" / "+" / "," / ";" / "="
+     *
+     * Note that this implementation doesn't follow the spec exactly, but rather
+     * follows URL path characters found out in the wild (spec might be out of date?)
+     */
+    function isPathChar(char) {
+        return (alphaNumericAndMarksRe.test(char) ||
+            urlSuffixAllowedSpecialCharsRe.test(char) ||
+            urlSuffixNotAllowedAsLastCharRe.test(char));
+    }
+    /**
+     * Determines if the character given may begin the "URL Suffix" section of a
+     * URI (i.e. the path, query, or hash section). These are the '/', '?' and '#'
+     * characters.
+     *
+     * See https://tools.ietf.org/html/rfc3986#appendix-A
+     */
+    function isUrlSuffixStartChar(char) {
+        return urlSuffixStartCharsRe.test(char);
+    }
+    /**
+     * Determines if the TLD read in the host is a known TLD (Top-Level Domain).
+     *
+     * Example: 'com' would be a known TLD (for a host of 'google.com'), but
+     * 'local' would not (for a domain name of 'my-computer.local').
+     */
+    function isKnownTld(tld) {
+        return tldRegex.test(tld.toLowerCase()); // make sure the tld is lowercase for the regex
+    }
+    /**
+     * Determines if the given `url` is a valid scheme-prefixed URL.
+     */
+    function isValidSchemeUrl(url) {
+        // If the scheme is 'javascript:' or 'vbscript:', these link
+        // types can be dangerous. Don't link them.
+        if (invalidSchemeRe.test(url)) {
+            return false;
+        }
+        var schemeMatch = url.match(schemeUrlRe);
+        if (!schemeMatch) {
+            return false;
+        }
+        var isAuthorityMatch = !!schemeMatch[1];
+        var host = schemeMatch[2];
+        if (isAuthorityMatch) {
+            // Any match that has an authority ('//' chars) after the scheme is
+            // valid, such as 'http://anything'
+            return true;
+        }
+        // If there's no authority ('//' chars), check that we have a hostname
+        // that looks valid.
+        //
+        // The host must contain at least one '.' char and have a domain label
+        // with at least one letter to be considered valid.
+        //
+        // Accept:
+        //   - git:domain.com (scheme followed by a host
+        // Do not accept:
+        //   - git:something ('something' doesn't look like a host)
+        //   - version:1.0   ('1.0' doesn't look like a host)
+        if (host.indexOf('.') === -1 || !letterRe.test(host)) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Determines if the given `url` is a match with a valid TLD.
+     */
+    function isValidTldMatch(url) {
+        // TLD URL such as 'google.com', we need to confirm that we have a valid
+        // top-level domain
+        var tldUrlHostMatch = url.match(tldUrlHostRe);
+        if (!tldUrlHostMatch) {
+            // At this point, if the URL didn't match our TLD re, it must be invalid
+            // (highly unlikely to happen, but just in case)
+            return false;
+        }
+        var host = tldUrlHostMatch[0];
+        var hostLabels = host.split('.');
+        if (hostLabels.length < 2) {
+            // 0 or 1 host label, there's no TLD. Ex: 'localhost'
+            return false;
+        }
+        var tld = hostLabels[hostLabels.length - 1];
+        if (!isKnownTld(tld)) {
+            return false;
+        }
+        // TODO: Implement these conditions for TLD matcher:
+        // (
+        //     this.longestDomainLabelLength <= 63 &&
+        //     this.domainNameLength <= 255
+        // );
+        return true;
+    }
+    // Regular expression to confirm a valid IPv4 address (ex: '192.168.0.1')
+    var ipV4Re = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    // Regular expression used to split the IPv4 address itself from any port/path/query/hash
+    var ipV4PartRe = /[:/?#]/;
+    /**
+     * Determines if the given URL is a valid IPv4-prefixed URL.
+     */
+    function isValidIpV4Address(url) {
+        // Grab just the IP address
+        var ipV4Part = url.split(ipV4PartRe, 1)[0]; // only 1 result needed
+        return ipV4Re.test(ipV4Part);
+    }
+
+    /**
+     * A regular expression used to remove the 'www.' from URLs.
+     */
+    var wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
+    /**
+     * The regular expression used to remove the protocol-relative '//' from a URL
+     * string, for purposes of formatting the anchor text. A protocol-relative URL
+     * is, for example, "//yahoo.com"
+     */
+    var protocolRelativeRegex = /^\/\//;
+    /**
+     * @class Autolinker.match.Url
+     * @extends Autolinker.match.AbstractMatch
+     *
+     * Represents a Url match found in an input string which should be Autolinked.
+     *
+     * See this class's superclass ({@link Autolinker.match.Match}) for more details.
+     */
+    var UrlMatch = /** @class */ (function (_super) {
+        __extends(UrlMatch, _super);
+        /**
+         * @method constructor
+         * @param {Object} cfg The configuration properties for the Match
+         *   instance, specified in an Object (map).
+         */
+        function UrlMatch(cfg) {
+            var _this = _super.call(this, cfg) || this;
+            /**
+             * @public
+             * @property {'url'} type
+             *
+             * A string name for the type of match that this class represents. Can be
+             * used in a TypeScript discriminating union to type-narrow from the
+             * `Match` type.
+             */
+            _this.type = 'url';
+            /**
+             * @cfg {String} url (required)
+             *
+             * The url that was matched.
+             */
+            _this.url = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
+             *
+             * The type of URL match that this class represents. This helps to determine
+             * if the match was made in the original text with a prefixed scheme (ex:
+             * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
+             * was matched by a known top-level domain (ex: 'google.com').
+             */
+            _this.urlMatchType = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} protocolRelativeMatch (required)
+             *
+             * `true` if the URL is a protocol-relative match. A protocol-relative match
+             * is a URL that starts with '//', and will be either http:// or https://
+             * based on the protocol that the site is loaded under.
+             */
+            _this.protocolRelativeMatch = false; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Object} stripPrefix (required)
+             *
+             * The Object form of {@link Autolinker#cfg-stripPrefix}.
+             */
+            _this.stripPrefix = {
+                scheme: true,
+                www: true,
+            }; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} stripTrailingSlash (required)
+             * @inheritdoc Autolinker#cfg-stripTrailingSlash
+             */
+            _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @cfg {Boolean} decodePercentEncoding (required)
+             * @inheritdoc Autolinker#cfg-decodePercentEncoding
+             */
+            _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
+            /**
+             * @private
+             * @property {Boolean} protocolPrepended
+             *
+             * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
+             * {@link #url} did not have a protocol)
+             */
+            _this.protocolPrepended = false;
+            _this.urlMatchType = cfg.urlMatchType;
+            _this.url = cfg.url;
+            _this.protocolRelativeMatch = cfg.protocolRelativeMatch;
+            _this.stripPrefix = cfg.stripPrefix;
+            _this.stripTrailingSlash = cfg.stripTrailingSlash;
+            _this.decodePercentEncoding = cfg.decodePercentEncoding;
+            return _this;
+        }
+        /**
+         * Returns a string name for the type of match that this class represents.
+         * For the case of UrlMatch, returns 'url'.
+         *
+         * @return {String}
+         */
+        UrlMatch.prototype.getType = function () {
+            return 'url';
+        };
+        /**
+         * Returns a string name for the type of URL match that this class
+         * represents.
+         *
+         * This helps to determine if the match was made in the original text with a
+         * prefixed scheme (ex: 'http://www.google.com'), a prefixed 'www' (ex:
+         * 'www.google.com'), or was matched by a known top-level domain (ex:
+         * 'google.com').
+         *
+         * @return {"scheme"/"www"/"tld"}
+         */
+        UrlMatch.prototype.getUrlMatchType = function () {
+            return this.urlMatchType;
+        };
+        /**
+         * Returns the url that was matched, assuming the protocol to be 'http://' if the original
+         * match was missing a protocol.
+         *
+         * @return {String}
+         */
+        UrlMatch.prototype.getUrl = function () {
+            var url = this.url;
+            // if the url string doesn't begin with a scheme, assume 'http://'
+            if (!this.protocolRelativeMatch &&
+                this.urlMatchType !== 'scheme' &&
+                !this.protocolPrepended) {
+                url = this.url = 'http://' + url;
+                this.protocolPrepended = true;
+            }
+            return url;
+        };
+        /**
+         * Returns the anchor href that should be generated for the match.
+         *
+         * @return {String}
+         */
+        UrlMatch.prototype.getAnchorHref = function () {
+            var url = this.getUrl();
+            return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
+        };
+        /**
+         * Returns the anchor text that should be generated for the match.
+         *
+         * @return {String}
+         */
+        UrlMatch.prototype.getAnchorText = function () {
+            var anchorText = this.getMatchedText();
+            if (this.protocolRelativeMatch) {
+                // Strip off any protocol-relative '//' from the anchor text
+                anchorText = stripProtocolRelativePrefix(anchorText);
+            }
+            if (this.stripPrefix.scheme) {
+                anchorText = stripSchemePrefix(anchorText);
+            }
+            if (this.stripPrefix.www) {
+                anchorText = stripWwwPrefix(anchorText);
+            }
+            if (this.stripTrailingSlash) {
+                anchorText = removeTrailingSlash(anchorText); // remove trailing slash, if there is one
+            }
+            if (this.decodePercentEncoding) {
+                anchorText = removePercentEncoding(anchorText);
+            }
+            return anchorText;
+        };
+        return UrlMatch;
+    }(AbstractMatch));
+    // Utility Functionality
+    /**
+     * Strips the scheme prefix (such as "http://" or "https://") from the given
+     * `url`.
+     *
+     * @private
+     * @param {String} url The text of the anchor that is being generated, for
+     *   which to strip off the url scheme.
+     * @return {String} The `url`, with the scheme stripped.
+     */
+    function stripSchemePrefix(url) {
+        return url.replace(httpSchemePrefixRe, '');
+    }
+    /**
+     * Strips the 'www' prefix from the given `url`.
+     *
+     * @private
+     * @param {String} url The text of the anchor that is being generated, for
+     *   which to strip off the 'www' if it exists.
+     * @return {String} The `url`, with the 'www' stripped.
+     */
+    function stripWwwPrefix(url) {
+        return url.replace(wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
+    }
+    /**
+     * Strips any protocol-relative '//' from the anchor text.
+     *
+     * @private
+     * @param {String} text The text of the anchor that is being generated, for which to strip off the
+     *   protocol-relative prefix (such as stripping off "//")
+     * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
+     */
+    function stripProtocolRelativePrefix(text) {
+        return text.replace(protocolRelativeRegex, '');
+    }
+    /**
+     * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
+     *
+     * @private
+     * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
+     *   slash ('/') that may exist.
+     * @return {String} The `anchorText`, with the trailing slash removed.
+     */
+    function removeTrailingSlash(anchorText) {
+        if (anchorText.charAt(anchorText.length - 1) === '/') {
+            anchorText = anchorText.slice(0, -1);
+        }
+        return anchorText;
+    }
+    /**
+     * Decodes percent-encoded characters from the given `anchorText`, in
+     * preparation for the text to be displayed.
+     *
+     * @private
+     * @param {String} anchorText The text of the anchor that is being
+     *   generated, for which to decode any percent-encoded characters.
+     * @return {String} The `anchorText`, with the percent-encoded characters
+     *   decoded.
+     */
+    function removePercentEncoding(anchorText) {
+        // First, convert a few of the known % encodings to the corresponding
+        // HTML entities that could accidentally be interpretted as special
+        // HTML characters
+        var preProcessedEntityAnchorText = anchorText
+            .replace(/%22/gi, '&quot;') // " char
+            .replace(/%26/gi, '&amp;') // & char
+            .replace(/%27/gi, '&#39;') // ' char
+            .replace(/%3C/gi, '&lt;') // < char
+            .replace(/%3E/gi, '&gt;'); // > char
+        try {
+            // Now attempt to decode the rest of the anchor text
+            return decodeURIComponent(preProcessedEntityAnchorText);
+        }
+        catch (e) {
+            // Invalid % escape sequence in the anchor text
+            return preProcessedEntityAnchorText;
+        }
+    }
+
+    /**
+     * A regular expression to match a 'mailto:' prefix on an email address.
+     */
+    var mailtoSchemePrefixRe = /^mailto:/i;
+    /**
+     * Regular expression for all of the valid characters of the local part of an
+     * email address.
+     */
+    var emailLocalPartCharRegex = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "!#$%&'*+/=?^_`{|}~-]"));
+    /**
+     * Determines if the given character may start the "local part" of an email
+     * address. The local part is the part to the left of the '@' sign.
+     *
+     * Technically according to the email spec, any of the characters in the
+     * {@link emailLocalPartCharRegex} can start an email address (including any of
+     * the special characters), but this is so rare in the wild and the
+     * implementation is much simpler by only starting an email address with a word
+     * character. This is especially important when matching the '{' character which
+     * generally starts a brace that isn't part of the email address.
+     */
+    function isEmailLocalPartStartChar(char) {
+        return alphaNumericAndMarksRe.test(char);
+    }
+    /**
+     * Determines if the given character can be part of the "local part" of an email
+     * address. The local part is the part to the left of the '@' sign.
+     */
+    function isEmailLocalPartChar(char) {
+        return emailLocalPartCharRegex.test(char);
+    }
+    /**
+     * Determines if the given email address is valid. We consider it valid if it
+     * has a valid TLD in its host.
+     *
+     * @param emailAddress email address
+     * @return true is email have valid TLD, false otherwise
+     */
+    function isValidEmail(emailAddress) {
+        var emailAddressTld = emailAddress.split('.').pop() || '';
+        return isKnownTld(emailAddressTld);
+    }
+
+    /**
      * @class Autolinker.match.Email
-     * @extends Autolinker.match.Match
+     * @extends Autolinker.match.AbstractMatch
      *
      * Represents a Email match found in an input string which should be Autolinked.
      *
@@ -1033,6 +1634,15 @@
          */
         function EmailMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @public
+             * @property {'email'} type
+             *
+             * A string name for the type of match that this class represents. Can be
+             * used in a TypeScript discriminating union to type-narrow from the
+             * `Match` type.
+             */
+            _this.type = 'email';
             /**
              * @cfg {String} email (required)
              *
@@ -1076,11 +1686,27 @@
             return this.email;
         };
         return EmailMatch;
-    }(Match));
+    }(AbstractMatch));
+
+    /**
+     * Determines if the given `char` is a an allowed character in a hashtag. These
+     * are underscores or any alphanumeric char.
+     */
+    function isHashtagTextChar(char) {
+        return char === '_' || alphaNumericAndMarksRe.test(char);
+    }
+    /**
+     * Determines if a hashtag match is valid.
+     */
+    function isValidHashtag(hashtag) {
+        // Max length of 140 for a hashtag ('#' char + 139 word chars)
+        return hashtag.length <= 140;
+    }
+    var hashtagServices = ['twitter', 'facebook', 'instagram', 'tiktok'];
 
     /**
      * @class Autolinker.match.Hashtag
-     * @extends Autolinker.match.Match
+     * @extends Autolinker.match.AbstractMatch
      *
      * Represents a Hashtag match found in an input string which should be
      * Autolinked.
@@ -1098,12 +1724,21 @@
         function HashtagMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
             /**
+             * @public
+             * @property {'hashtag'} type
+             *
+             * A string name for the type of match that this class represents. Can be
+             * used in a TypeScript discriminating union to type-narrow from the
+             * `Match` type.
+             */
+            _this.type = 'hashtag';
+            /**
              * @cfg {String} serviceName
              *
              * The service to point hashtag matches to. See {@link Autolinker#hashtag}
              * for available values.
              */
-            _this.serviceName = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @cfg {String} hashtag (required)
              *
@@ -1157,8 +1792,9 @@
                 case 'tiktok':
                     return 'https://www.tiktok.com/tag/' + hashtag;
                 default:
-                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
-                    throw new Error('Unknown service name to point hashtag to: ' + serviceName);
+                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
+                    assertNever(serviceName);
+                    throw new Error("Invalid hashtag service: ".concat(serviceName));
             }
         };
         /**
@@ -1169,12 +1805,53 @@
         HashtagMatch.prototype.getAnchorText = function () {
             return '#' + this.hashtag;
         };
+        /**
+         * Returns the CSS class suffixes that should be used on a tag built with
+         * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+         * details.
+         *
+         * @return {String[]}
+         */
+        HashtagMatch.prototype.getCssClassSuffixes = function () {
+            var cssClassSuffixes = _super.prototype.getCssClassSuffixes.call(this), serviceName = this.getServiceName();
+            if (serviceName) {
+                cssClassSuffixes.push(serviceName);
+            }
+            return cssClassSuffixes;
+        };
         return HashtagMatch;
-    }(Match));
+    }(AbstractMatch));
+
+    var mentionRegexes = {
+        twitter: /^@\w{1,15}$/,
+        instagram: /^@[_\w]{1,30}$/,
+        soundcloud: /^@[-a-z0-9_]{3,25}$/,
+        // TikTok usernames are 1-24 characters containing letters, numbers, underscores
+        // and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
+        tiktok: /^@[.\w]{1,23}[\w]$/,
+    };
+    // Regex that allows for all possible mention characters for any service. We'll
+    // confirm the match based on the user-configured service name after a match is
+    // found.
+    var mentionTextCharRe = /[-\w.]/;
+    /**
+     * Determines if the given character can be part of a mention's text characters.
+     */
+    function isMentionTextChar(char) {
+        return mentionTextCharRe.test(char);
+    }
+    /**
+     * Determines if the given `mention` text is valid.
+     */
+    function isValidMention(mention, serviceName) {
+        var re = mentionRegexes[serviceName];
+        return re.test(mention);
+    }
+    var mentionServices = ['twitter', 'instagram', 'soundcloud', 'tiktok'];
 
     /**
      * @class Autolinker.match.Mention
-     * @extends Autolinker.match.Match
+     * @extends Autolinker.match.AbstractMatch
      *
      * Represents a Mention match found in an input string which should be Autolinked.
      *
@@ -1189,6 +1866,15 @@
          */
         function MentionMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @public
+             * @property {'mention'} type
+             *
+             * A string name for the type of match that this class represents. Can be
+             * used in a TypeScript discriminating union to type-narrow from the
+             * `Match` type.
+             */
+            _this.type = 'mention';
             /**
              * @cfg {String} serviceName
              *
@@ -1275,11 +1961,62 @@
             return cssClassSuffixes;
         };
         return MentionMatch;
-    }(Match));
+    }(AbstractMatch));
+
+    // Regex that holds the characters used to separate segments of a phone number
+    var separatorCharRe = /[-. ]/;
+    // Regex that specifies any delimiter char that allows us to treat the number as
+    // a phone number rather than just any other number that could appear in text.
+    var hasDelimCharsRe = /[-. ()]/;
+    // "Pause" and "Wait" control chars
+    var controlCharRe = /[,;]/;
+    // Over the years, many people have added to this regex, but it should have been
+    // split up by country. Maybe one day we can break this down.
+    var mostPhoneNumbers = /(?:(?:(?:(\+)?\d{1,3}[-. ]?)?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-. ]?(?:\d[-. ]?){6,12}\d+))([,;]+[0-9]+#?)*/;
+    // Regex for Japanese phone numbers
+    var japanesePhoneRe = /(0([1-9]-?[1-9]\d{3}|[1-9]{2}-?\d{3}|[1-9]{2}\d{1}-?\d{2}|[1-9]{2}\d{2}-?\d{1})-?\d{4}|0[789]0-?\d{4}-?\d{4}|050-?\d{4}-?\d{4})/;
+    // Combined regex
+    var validPhoneNumberRe = new RegExp("^".concat(mostPhoneNumbers.source, "|").concat(japanesePhoneRe.source, "$"));
+    /**
+     * Determines if the character is a phone number separator character (i.e.
+     * '-', '.', or ' ' (space))
+     */
+    function isPhoneNumberSeparatorChar(char) {
+        return separatorCharRe.test(char);
+    }
+    /**
+     * Determines if the character is a control character in a phone number. Control
+     * characters are as follows:
+     *
+     * - ',': A 1 second pause. Useful for dialing extensions once the main phone number has been reached
+     * - ';': A "wait" that waits for the user to take action (tap something, for instance on a smart phone)
+     */
+    function isPhoneNumberControlChar(char) {
+        return controlCharRe.test(char);
+    }
+    /**
+     * Determines if the given phone number text found in a string is a valid phone
+     * number.
+     *
+     * Our state machine parser is simplified to grab anything that looks like a
+     * phone number, and this function confirms the match.
+     */
+    function isValidPhoneNumber(phoneNumberText) {
+        // We'll only consider the match as a phone number if there is some kind of
+        // delimiter character (a prefixed '+' sign, or separator chars).
+        //
+        // Accepts:
+        //     (123) 456-7890
+        //     +38755233976
+        // Does not accept:
+        //     1234567890  (no delimiter chars - may just be a random number that's not a phone number)
+        var hasDelimiters = phoneNumberText.charAt(0) === '+' || hasDelimCharsRe.test(phoneNumberText);
+        return hasDelimiters && validPhoneNumberRe.test(phoneNumberText);
+    }
 
     /**
      * @class Autolinker.match.Phone
-     * @extends Autolinker.match.Match
+     * @extends Autolinker.match.AbstractMatch
      *
      * Represents a Phone number match found in an input string which should be
      * Autolinked.
@@ -1296,6 +2033,15 @@
          */
         function PhoneMatch(cfg) {
             var _this = _super.call(this, cfg) || this;
+            /**
+             * @public
+             * @property {'phone'} type
+             *
+             * A string name for the type of match that this class represents. Can be
+             * used in a TypeScript discriminating union to type-narrow from the
+             * `Match` type.
+             */
+            _this.type = 'phone';
             /**
              * @protected
              * @property {String} number (required)
@@ -1367,1562 +2113,1056 @@
             return this.matchedText;
         };
         return PhoneMatch;
-    }(Match));
+    }(AbstractMatch));
 
-    /**
-     * @class Autolinker.match.Url
-     * @extends Autolinker.match.Match
-     *
-     * Represents a Url match found in an input string which should be Autolinked.
-     *
-     * See this class's superclass ({@link Autolinker.match.Match}) for more details.
-     */
-    var UrlMatch = /** @class */ (function (_super) {
-        __extends(UrlMatch, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match
-         *   instance, specified in an Object (map).
-         */
-        function UrlMatch(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {String} url (required)
-             *
-             * The url that was matched.
-             */
-            _this.url = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {"scheme"/"www"/"tld"} urlMatchType (required)
-             *
-             * The type of URL match that this class represents. This helps to determine
-             * if the match was made in the original text with a prefixed scheme (ex:
-             * 'http://www.google.com'), a prefixed 'www' (ex: 'www.google.com'), or
-             * was matched by a known top-level domain (ex: 'google.com').
-             */
-            _this.urlMatchType = 'scheme'; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} protocolUrlMatch (required)
-             *
-             * `true` if the URL is a match which already has a protocol (i.e.
-             * 'http://'), `false` if the match was from a 'www' or known TLD match.
-             */
-            _this.protocolUrlMatch = false; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} protocolRelativeMatch (required)
-             *
-             * `true` if the URL is a protocol-relative match. A protocol-relative match
-             * is a URL that starts with '//', and will be either http:// or https://
-             * based on the protocol that the site is loaded under.
-             */
-            _this.protocolRelativeMatch = false; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Object} stripPrefix (required)
-             *
-             * The Object form of {@link Autolinker#cfg-stripPrefix}.
-             */
-            _this.stripPrefix = {
-                scheme: true,
-                www: true,
-            }; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} stripTrailingSlash (required)
-             * @inheritdoc Autolinker#cfg-stripTrailingSlash
-             */
-            _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} decodePercentEncoding (required)
-             * @inheritdoc Autolinker#cfg-decodePercentEncoding
-             */
-            _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @private
-             * @property {RegExp} schemePrefixRegex
-             *
-             * A regular expression used to remove the 'http://' or 'https://' from
-             * URLs.
-             */
-            _this.schemePrefixRegex = /^(https?:\/\/)?/i;
-            /**
-             * @private
-             * @property {RegExp} wwwPrefixRegex
-             *
-             * A regular expression used to remove the 'www.' from URLs.
-             */
-            _this.wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
-            /**
-             * @private
-             * @property {RegExp} protocolRelativeRegex
-             *
-             * The regular expression used to remove the protocol-relative '//' from the {@link #url} string, for purposes
-             * of {@link #getAnchorText}. A protocol-relative URL is, for example, "//yahoo.com"
-             */
-            _this.protocolRelativeRegex = /^\/\//;
-            /**
-             * @private
-             * @property {Boolean} protocolPrepended
-             *
-             * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
-             * {@link #url} did not have a protocol)
-             */
-            _this.protocolPrepended = false;
-            _this.urlMatchType = cfg.urlMatchType;
-            _this.url = cfg.url;
-            _this.protocolUrlMatch = cfg.protocolUrlMatch;
-            _this.protocolRelativeMatch = cfg.protocolRelativeMatch;
-            _this.stripPrefix = cfg.stripPrefix;
-            _this.stripTrailingSlash = cfg.stripTrailingSlash;
-            _this.decodePercentEncoding = cfg.decodePercentEncoding;
-            return _this;
-        }
-        /**
-         * Returns a string name for the type of match that this class represents.
-         * For the case of UrlMatch, returns 'url'.
-         *
-         * @return {String}
-         */
-        UrlMatch.prototype.getType = function () {
-            return 'url';
-        };
-        /**
-         * Returns a string name for the type of URL match that this class
-         * represents.
-         *
-         * This helps to determine if the match was made in the original text with a
-         * prefixed scheme (ex: 'http://www.google.com'), a prefixed 'www' (ex:
-         * 'www.google.com'), or was matched by a known top-level domain (ex:
-         * 'google.com').
-         *
-         * @return {"scheme"/"www"/"tld"}
-         */
-        UrlMatch.prototype.getUrlMatchType = function () {
-            return this.urlMatchType;
-        };
-        /**
-         * Returns the url that was matched, assuming the protocol to be 'http://' if the original
-         * match was missing a protocol.
-         *
-         * @return {String}
-         */
-        UrlMatch.prototype.getUrl = function () {
-            var url = this.url;
-            // if the url string doesn't begin with a protocol, assume 'http://'
-            if (!this.protocolRelativeMatch && !this.protocolUrlMatch && !this.protocolPrepended) {
-                url = this.url = 'http://' + url;
-                this.protocolPrepended = true;
-            }
-            return url;
-        };
-        /**
-         * Returns the anchor href that should be generated for the match.
-         *
-         * @return {String}
-         */
-        UrlMatch.prototype.getAnchorHref = function () {
-            var url = this.getUrl();
-            return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
-        };
-        /**
-         * Returns the anchor text that should be generated for the match.
-         *
-         * @return {String}
-         */
-        UrlMatch.prototype.getAnchorText = function () {
-            var anchorText = this.getMatchedText();
-            if (this.protocolRelativeMatch) {
-                // Strip off any protocol-relative '//' from the anchor text
-                anchorText = this.stripProtocolRelativePrefix(anchorText);
-            }
-            if (this.stripPrefix.scheme) {
-                anchorText = this.stripSchemePrefix(anchorText);
-            }
-            if (this.stripPrefix.www) {
-                anchorText = this.stripWwwPrefix(anchorText);
-            }
-            if (this.stripTrailingSlash) {
-                anchorText = this.removeTrailingSlash(anchorText); // remove trailing slash, if there is one
-            }
-            if (this.decodePercentEncoding) {
-                anchorText = this.removePercentEncoding(anchorText);
-            }
-            return anchorText;
-        };
-        // ---------------------------------------
-        // Utility Functionality
-        /**
-         * Strips the scheme prefix (such as "http://" or "https://") from the given
-         * `url`.
-         *
-         * @private
-         * @param {String} url The text of the anchor that is being generated, for
-         *   which to strip off the url scheme.
-         * @return {String} The `url`, with the scheme stripped.
-         */
-        UrlMatch.prototype.stripSchemePrefix = function (url) {
-            return url.replace(this.schemePrefixRegex, '');
-        };
-        /**
-         * Strips the 'www' prefix from the given `url`.
-         *
-         * @private
-         * @param {String} url The text of the anchor that is being generated, for
-         *   which to strip off the 'www' if it exists.
-         * @return {String} The `url`, with the 'www' stripped.
-         */
-        UrlMatch.prototype.stripWwwPrefix = function (url) {
-            return url.replace(this.wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
-        };
-        /**
-         * Strips any protocol-relative '//' from the anchor text.
-         *
-         * @private
-         * @param {String} text The text of the anchor that is being generated, for which to strip off the
-         *   protocol-relative prefix (such as stripping off "//")
-         * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
-         */
-        UrlMatch.prototype.stripProtocolRelativePrefix = function (text) {
-            return text.replace(this.protocolRelativeRegex, '');
-        };
-        /**
-         * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
-         *
-         * @private
-         * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
-         *   slash ('/') that may exist.
-         * @return {String} The `anchorText`, with the trailing slash removed.
-         */
-        UrlMatch.prototype.removeTrailingSlash = function (anchorText) {
-            if (anchorText.charAt(anchorText.length - 1) === '/') {
-                anchorText = anchorText.slice(0, -1);
-            }
-            return anchorText;
-        };
-        /**
-         * Decodes percent-encoded characters from the given `anchorText`, in
-         * preparation for the text to be displayed.
-         *
-         * @private
-         * @param {String} anchorText The text of the anchor that is being
-         *   generated, for which to decode any percent-encoded characters.
-         * @return {String} The `anchorText`, with the percent-encoded characters
-         *   decoded.
-         */
-        UrlMatch.prototype.removePercentEncoding = function (anchorText) {
-            // First, convert a few of the known % encodings to the corresponding
-            // HTML entities that could accidentally be interpretted as special
-            // HTML characters
-            var preProcessedEntityAnchorText = anchorText
-                .replace(/%22/gi, '&quot;') // " char
-                .replace(/%26/gi, '&amp;') // & char
-                .replace(/%27/gi, '&#39;') // ' char
-                .replace(/%3C/gi, '&lt;') // < char
-                .replace(/%3E/gi, '&gt;'); // > char
-            try {
-                // Now attempt to decode the rest of the anchor text
-                return decodeURIComponent(preProcessedEntityAnchorText);
-            }
-            catch (e) {
-                // Invalid % escape sequence in the anchor text
-                return preProcessedEntityAnchorText;
-            }
-        };
-        return UrlMatch;
-    }(Match));
-
-    /**
-     * @abstract
-     * @class Autolinker.matcher.Matcher
-     *
-     * An abstract class and interface for individual matchers to find matches in
-     * an input string with linkified versions of them.
-     *
-     * Note that Matchers do not take HTML into account - they must be fed the text
-     * nodes of any HTML string, which is handled by {@link Autolinker#parse}.
-     */
-    var Matcher = /** @class */ (function () {
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Matcher
-         *   instance, specified in an Object (map).
-         */
-        function Matcher(cfg) {
-            /**
-             * @cfg {Autolinker.AnchorTagBuilder} tagBuilder (required)
-             *
-             * Reference to the AnchorTagBuilder instance to use to generate HTML tags
-             * for {@link Autolinker.match.Match Matches}.
-             */
-            // @ts-ignore
-            this.__jsduckDummyDocProp = null; // property used just to get the above doc comment into the ES5 output and documentation generator
-            this.tagBuilder = cfg.tagBuilder;
-        }
-        return Matcher;
-    }());
-
-    /*
-     * This file builds and stores a library of the common regular expressions used
-     * by the Autolinker utility.
-     *
-     * Other regular expressions may exist ad-hoc, but these are generally the
-     * regular expressions that are shared between source files.
-     */
-    /**
-     * Regular expression to match upper and lowercase ASCII letters
-     */
-    var letterRe = /[A-Za-z]/;
-    /**
-     * Regular expression to match ASCII digits
-     */
-    var digitRe = /[\d]/;
-    /**
-     * Regular expression to match everything *except* ASCII digits
-     */
-    var nonDigitRe = /[\D]/;
-    /**
-     * Regular expression to match whitespace
-     */
-    var whitespaceRe = /\s/;
-    /**
-     * Regular expression to match quote characters
-     */
-    var quoteRe = /['"]/;
-    /**
-     * Regular expression to match the range of ASCII control characters (0-31), and
-     * the backspace char (127)
-     */
-    var controlCharsRe = /[\x00-\x1F\x7F]/;
-    /**
-     * The string form of a regular expression that would match all of the
-     * alphabetic ("letter") chars in the unicode character set when placed in a
-     * RegExp character class (`[]`). This includes all international alphabetic
-     * characters.
-     *
-     * These would be the characters matched by unicode regex engines `\p{L}`
-     * escape ("all letters").
-     *
-     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
-     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Letter'
-     *   regex's bmp
-     *
-     * VERY IMPORTANT: This set of characters is defined inside of a Regular
-     *   Expression literal rather than a string literal to prevent UglifyJS from
-     *   compressing the unicode escape sequences into their actual unicode
-     *   characters. If Uglify compresses these into the unicode characters
-     *   themselves, this results in the error "Range out of order in character
-     *   class" when these characters are used inside of a Regular Expression
-     *   character class (`[]`). See usages of this const. Alternatively, we can set
-     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
-     *   help others who are pulling in Autolinker into their own build and running
-     *   UglifyJS themselves.
-     */
-    // prettier-ignore
-    var alphaCharsStr = /A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC/
-        .source; // see note in above variable description
-    /**
-     * The string form of a regular expression that would match all emoji characters
-     * Based on the emoji regex defined in this article: https://thekevinscott.com/emojis-in-javascript/
-     */
-    var emojiStr = /\u2700-\u27bf\udde6-\uddff\ud800-\udbff\udc00-\udfff\ufe0e\ufe0f\u0300-\u036f\ufe20-\ufe23\u20d0-\u20f0\ud83c\udffb-\udfff\u200d\u3299\u3297\u303d\u3030\u24c2\ud83c\udd70-\udd71\udd7e-\udd7f\udd8e\udd91-\udd9a\udde6-\uddff\ude01-\ude02\ude1a\ude2f\ude32-\ude3a\ude50-\ude51\u203c\u2049\u25aa-\u25ab\u25b6\u25c0\u25fb-\u25fe\u00a9\u00ae\u2122\u2139\udc04\u2600-\u26FF\u2b05\u2b06\u2b07\u2b1b\u2b1c\u2b50\u2b55\u231a\u231b\u2328\u23cf\u23e9-\u23f3\u23f8-\u23fa\udccf\u2935\u2934\u2190-\u21ff/
-        .source;
-    /**
-     * The string form of a regular expression that would match all of the
-     * combining mark characters in the unicode character set when placed in a
-     * RegExp character class (`[]`).
-     *
-     * These would be the characters matched by unicode regex engines `\p{M}`
-     * escape ("all marks").
-     *
-     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
-     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Mark'
-     *   regex's bmp
-     *
-     * VERY IMPORTANT: This set of characters is defined inside of a Regular
-     *   Expression literal rather than a string literal to prevent UglifyJS from
-     *   compressing the unicode escape sequences into their actual unicode
-     *   characters. If Uglify compresses these into the unicode characters
-     *   themselves, this results in the error "Range out of order in character
-     *   class" when these characters are used inside of a Regular Expression
-     *   character class (`[]`). See usages of this const. Alternatively, we can set
-     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
-     *   help others who are pulling in Autolinker into their own build and running
-     *   UglifyJS themselves.
-     */
-    // prettier-ignore
-    var marksStr = /\u0300-\u036F\u0483-\u0489\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0711\u0730-\u074A\u07A6-\u07B0\u07EB-\u07F3\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u08D4-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A70\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B62\u0B63\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0C00-\u0C03\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0D01-\u0D03\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D82\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F\u109A-\u109D\u135D-\u135F\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u180B-\u180D\u1885\u1886\u18A9\u1920-\u192B\u1930-\u193B\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F\u1AB0-\u1ABE\u1B00-\u1B04\u1B34-\u1B44\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BE6-\u1BF3\u1C24-\u1C37\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF2-\u1CF4\u1CF8\u1CF9\u1DC0-\u1DF5\u1DFB-\u1DFF\u20D0-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\uA66F-\uA672\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA880\uA881\uA8B4-\uA8C5\uA8E0-\uA8F1\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9E5\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F/
-        .source; // see note in above variable description
-    /**
-     * The string form of a regular expression that would match all of the
-     * alphabetic ("letter") chars, emoji, and combining marks in the unicode character set
-     * when placed in a RegExp character class (`[]`). This includes all
-     * international alphabetic characters.
-     *
-     * These would be the characters matched by unicode regex engines `\p{L}\p{M}`
-     * escapes and emoji characters.
-     */
-    var alphaCharsAndMarksStr = alphaCharsStr + emojiStr + marksStr;
-    /**
-     * The string form of a regular expression that would match all of the
-     * decimal number chars in the unicode character set when placed in a RegExp
-     * character class (`[]`).
-     *
-     * These would be the characters matched by unicode regex engines `\p{Nd}`
-     * escape ("all decimal numbers")
-     *
-     * Taken from the XRegExp library: http://xregexp.com/ (thanks @https://github.com/slevithan)
-     * Specifically: http://xregexp.com/v/3.2.0/xregexp-all.js, the 'Decimal_Number'
-     *   regex's bmp
-     *
-     * VERY IMPORTANT: This set of characters is defined inside of a Regular
-     *   Expression literal rather than a string literal to prevent UglifyJS from
-     *   compressing the unicode escape sequences into their actual unicode
-     *   characters. If Uglify compresses these into the unicode characters
-     *   themselves, this results in the error "Range out of order in character
-     *   class" when these characters are used inside of a Regular Expression
-     *   character class (`[]`). See usages of this const. Alternatively, we can set
-     *   the UglifyJS option `ascii_only` to true for the build, but that doesn't
-     *   help others who are pulling in Autolinker into their own build and running
-     *   UglifyJS themselves.
-     */
-    // prettier-ignore
-    var decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\u1040-\u1049\u1090-\u1099\u17E0-\u17E9\u1810-\u1819\u1946-\u194F\u19D0-\u19D9\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\uA620-\uA629\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19/
-        .source; // see note in above variable description
-    /**
-     * The string form of a regular expression that would match all of the
-     * letters and decimal number chars in the unicode character set when placed in
-     * a RegExp character class (`[]`).
-     *
-     * These would be the characters matched by unicode regex engines
-     * `[\p{L}\p{Nd}]` escape ("all letters and decimal numbers")
-     */
-    var alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
-    /**
-     * The string form of a regular expression that would match all of the
-     * letters, combining marks, and decimal number chars in the unicode character
-     * set when placed in a RegExp character class (`[]`).
-     *
-     * These would be the characters matched by unicode regex engines
-     * `[\p{L}\p{M}\p{Nd}]` escape ("all letters, combining marks, and decimal
-     * numbers")
-     */
-    var alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
-    /**
-     * The regular expression that will match a single letter of the
-     * {@link #alphaNumericAndMarksCharsStr}.
-     */
-    var alphaNumericAndMarksCharRe = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "]"));
-    // Simplified IP regular expression
-    var ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
-    // Protected domain label which do not allow "-" or "_" character on the beginning and the end of a single label
-    // prettier-ignore
-    var domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-_]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
-    var getDomainLabelStr = function (group) {
-        return '(?=(' + domainLabelStr + '))\\' + group;
-    };
-    /**
-     * A function to match domain names of a URL or email address.
-     * Ex: 'google', 'yahoo', 'some-other-company', etc.
-     */
-    // prettier-ignore
-    var getDomainNameStr = function (group) {
-        return '(?:' + getDomainLabelStr(group) + '(?:\\.' + getDomainLabelStr(group + 1) + '){0,126}|' + ipStr + ')';
-    };
-    /**
-     * A regular expression that is simply the character class of the characters
-     * that may be used in a domain name, minus the '-' or '.'
-     */
-    var domainNameCharRegex = alphaNumericAndMarksCharRe;
-
-    // NOTE: THIS IS A GENERATED FILE
-    // To update with the latest TLD list, run `npm run update-tld-regex`
-    var tldRegex = /(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|northwesternmutual|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbaakc7dvf|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|bananarepublic|cancerresearch|cookingchannel|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--jlq61u9w7b|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|travelchannel|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|foodnetwork|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|volkswagen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|alfaromeo|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|frontdoor|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|passagens|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cityeats|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|etisalat|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|guardian|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|maserati|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|showtime|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|avianca|banamex|bauhaus|bentley|bestbuy|booking|brother|bugatti|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|comcast|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hoteles|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|oldnavy|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|tiffany|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|xfinity|yamaxun|youtube|zuerich|католик|اتصالات|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abarth|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kinder|kindle|kosher|lancia|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|mutual|nagoya|natura|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rocher|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|vuelos|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dabur|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|linde|lipsy|loans|locus|lotte|lotto|macys|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|adac|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fiat|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|hgtv|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|loft|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shaw|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|cbs|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|sca|scb|ses|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|诺基亚|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)/;
-
-    // For debugging: search for other "For debugging" lines
+    // For debugging: search for and uncomment other "For debugging" lines
     // import CliTable from 'cli-table';
-    // RegExp objects which are shared by all instances of EmailMatcher. These are
-    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating EmailMatcher and its RegExp
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
-    // See descriptions of the properties where they are used for details about them
-    var localPartCharRegex = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "!#$%&'*+/=?^_`{|}~-]"));
-    var strictTldRegex = new RegExp("^".concat(tldRegex.source, "$"));
     /**
-     * @class Autolinker.matcher.Email
-     * @extends Autolinker.matcher.Matcher
-     *
-     * Matcher to find email matches in an input string.
-     *
-     * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more details.
+     * Parses URL, email, twitter, mention, and hashtag matches from the given
+     * `text`.
      */
-    var EmailMatcher = /** @class */ (function (_super) {
-        __extends(EmailMatcher, _super);
-        function EmailMatcher() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * Valid characters that can be used in the "local" part of an email address,
-             * i.e. the "name" part of "name@site.com"
-             */
-            _this.localPartCharRegex = localPartCharRegex;
-            /**
-             * Stricter TLD regex which adds a beginning and end check to ensure
-             * the string is a valid TLD
-             */
-            _this.strictTldRegex = strictTldRegex;
-            return _this;
-        }
-        /**
-         * @inheritdoc
-         */
-        EmailMatcher.prototype.parseMatches = function (text) {
-            var tagBuilder = this.tagBuilder, localPartCharRegex = this.localPartCharRegex, strictTldRegex = this.strictTldRegex, matches = [], len = text.length, noCurrentEmailMatch = new CurrentEmailMatch();
-            // for matching a 'mailto:' prefix
-            var mailtoTransitions = {
-                m: 'a',
-                a: 'i',
-                i: 'l',
-                l: 't',
-                t: 'o',
-                o: ':',
-            };
-            var charIdx = 0, state = 0 /* NonEmailMatch */, currentEmailMatch = noCurrentEmailMatch;
-            // For debugging: search for other "For debugging" lines
-            // const table = new CliTable( {
-            // 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentEmailAddress.idx', 'hasDomainDot' ]
-            // } );
-            while (charIdx < len) {
-                var char = text.charAt(charIdx);
-                // For debugging: search for other "For debugging" lines
-                // table.push(
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
-                // );
-                switch (state) {
-                    case 0 /* NonEmailMatch */:
-                        stateNonEmailAddress(char);
-                        break;
-                    case 1 /* Mailto */:
-                        stateMailTo(text.charAt(charIdx - 1), char);
-                        break;
-                    case 2 /* LocalPart */:
-                        stateLocalPart(char);
-                        break;
-                    case 3 /* LocalPartDot */:
-                        stateLocalPartDot(char);
-                        break;
-                    case 4 /* AtSign */:
-                        stateAtSign(char);
-                        break;
-                    case 5 /* DomainChar */:
-                        stateDomainChar(char);
-                        break;
-                    case 6 /* DomainHyphen */:
-                        stateDomainHyphen(char);
-                        break;
-                    case 7 /* DomainDot */:
-                        stateDomainDot(char);
-                        break;
-                    default:
-                        throwUnhandledCaseError(state);
-                }
-                // For debugging: search for other "For debugging" lines
-                // table.push(
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
-                // );
-                charIdx++;
-            }
-            // Capture any valid match at the end of the string
-            captureMatchIfValidAndReset();
-            // For debugging: search for other "For debugging" lines
-            //console.log( '\n' + table.toString() );
-            return matches;
-            // Handles the state when we're not in an email address
-            function stateNonEmailAddress(char) {
-                if (char === 'm') {
-                    beginEmailMatch(1 /* Mailto */);
-                }
-                else if (localPartCharRegex.test(char)) {
-                    beginEmailMatch();
-                }
-                else ;
-            }
-            // Handles if we're reading a 'mailto:' prefix on the string
-            function stateMailTo(prevChar, char) {
-                if (prevChar === ':') {
-                    // We've reached the end of the 'mailto:' prefix
-                    if (localPartCharRegex.test(char)) {
-                        state = 2 /* LocalPart */;
-                        currentEmailMatch = new CurrentEmailMatch(__assign(__assign({}, currentEmailMatch), { hasMailtoPrefix: true }));
-                    }
-                    else {
-                        // we've matched 'mailto:' but didn't get anything meaningful
-                        // immediately afterwards (for example, we encountered a
-                        // space character, or an '@' character which formed 'mailto:@'
-                        resetToNonEmailMatchState();
-                    }
-                }
-                else if (mailtoTransitions[prevChar] === char) ;
-                else if (localPartCharRegex.test(char)) {
-                    // We we're reading a prefix of 'mailto:', but encountered a
-                    // different character that didn't continue the prefix
-                    state = 2 /* LocalPart */;
-                }
-                else if (char === '.') {
-                    // We we're reading a prefix of 'mailto:', but encountered a
-                    // dot character
-                    state = 3 /* LocalPartDot */;
-                }
-                else if (char === '@') {
-                    // We we're reading a prefix of 'mailto:', but encountered a
-                    // an @ character
-                    state = 4 /* AtSign */;
-                }
-                else {
-                    // not an email address character, return to "NonEmailAddress" state
-                    resetToNonEmailMatchState();
-                }
-            }
-            // Handles the state when we're currently in the "local part" of an
-            // email address (as opposed to the "domain part")
-            function stateLocalPart(char) {
-                if (char === '.') {
-                    state = 3 /* LocalPartDot */;
-                }
-                else if (char === '@') {
-                    state = 4 /* AtSign */;
-                }
-                else if (localPartCharRegex.test(char)) ;
-                else {
-                    // not an email address character, return to "NonEmailAddress" state
-                    resetToNonEmailMatchState();
-                }
-            }
-            // Handles the state where we've read
-            function stateLocalPartDot(char) {
-                if (char === '.') {
-                    // We read a second '.' in a row, not a valid email address
-                    // local part
-                    resetToNonEmailMatchState();
-                }
-                else if (char === '@') {
-                    // We read the '@' character immediately after a dot ('.'), not
-                    // an email address
-                    resetToNonEmailMatchState();
-                }
-                else if (localPartCharRegex.test(char)) {
-                    state = 2 /* LocalPart */;
-                }
-                else {
-                    // Anything else, not an email address
-                    resetToNonEmailMatchState();
-                }
-            }
-            function stateAtSign(char) {
-                if (domainNameCharRegex.test(char)) {
-                    state = 5 /* DomainChar */;
-                }
-                else {
-                    // Anything else, not an email address
-                    resetToNonEmailMatchState();
-                }
-            }
-            function stateDomainChar(char) {
-                if (char === '.') {
-                    state = 7 /* DomainDot */;
-                }
-                else if (char === '-') {
-                    state = 6 /* DomainHyphen */;
-                }
-                else if (domainNameCharRegex.test(char)) ;
-                else {
-                    // Anything else, we potentially matched if the criteria has
-                    // been met
-                    captureMatchIfValidAndReset();
-                }
-            }
-            function stateDomainHyphen(char) {
-                if (char === '-' || char === '.') {
-                    // Not valid to have two hyphens ("--") or hypen+dot ("-.")
-                    captureMatchIfValidAndReset();
-                }
-                else if (domainNameCharRegex.test(char)) {
-                    state = 5 /* DomainChar */;
-                }
-                else {
-                    // Anything else
-                    captureMatchIfValidAndReset();
-                }
-            }
-            function stateDomainDot(char) {
-                if (char === '.' || char === '-') {
-                    // not valid to have two dots ("..") or dot+hypen (".-")
-                    captureMatchIfValidAndReset();
-                }
-                else if (domainNameCharRegex.test(char)) {
-                    state = 5 /* DomainChar */;
-                    // After having read a '.' and then a valid domain character,
-                    // we now know that the domain part of the email is valid, and
-                    // we have found at least a partial EmailMatch (however, the
-                    // email address may have additional characters from this point)
-                    currentEmailMatch = new CurrentEmailMatch(__assign(__assign({}, currentEmailMatch), { hasDomainDot: true }));
-                }
-                else {
-                    // Anything else
-                    captureMatchIfValidAndReset();
-                }
-            }
-            function beginEmailMatch(newState) {
-                if (newState === void 0) { newState = 2 /* LocalPart */; }
-                state = newState;
-                currentEmailMatch = new CurrentEmailMatch({ idx: charIdx });
-            }
-            function resetToNonEmailMatchState() {
-                state = 0 /* NonEmailMatch */;
-                currentEmailMatch = noCurrentEmailMatch;
-            }
-            /*
-             * Captures the current email address as an EmailMatch if it's valid,
-             * and resets the state to read another email address.
-             */
-            function captureMatchIfValidAndReset() {
-                if (currentEmailMatch.hasDomainDot) {
-                    // we need at least one dot in the domain to be considered a valid email address
-                    var matchedText = text.slice(currentEmailMatch.idx, charIdx);
-                    // If we read a '.' or '-' char that ended the email address
-                    // (valid domain name characters, but only valid email address
-                    // characters if they are followed by something else), strip
-                    // it off now
-                    if (/[-.]$/.test(matchedText)) {
-                        matchedText = matchedText.slice(0, -1);
-                    }
-                    var emailAddress = currentEmailMatch.hasMailtoPrefix
-                        ? matchedText.slice('mailto:'.length)
-                        : matchedText;
-                    // if the email address has a valid TLD, add it to the list of matches
-                    if (doesEmailHaveValidTld(emailAddress)) {
-                        matches.push(new EmailMatch({
-                            tagBuilder: tagBuilder,
-                            matchedText: matchedText,
-                            offset: currentEmailMatch.idx,
-                            email: emailAddress,
-                        }));
-                    }
-                }
-                resetToNonEmailMatchState();
-                /**
-                 * Determines if the given email address has a valid TLD or not
-                 * @param {string} emailAddress - email address
-                 * @return {Boolean} - true is email have valid TLD, false otherwise
-                 */
-                function doesEmailHaveValidTld(emailAddress) {
-                    var emailAddressTld = emailAddress.split('.').pop() || '';
-                    var emailAddressNormalized = emailAddressTld.toLowerCase();
-                    var isValidTld = strictTldRegex.test(emailAddressNormalized);
-                    return isValidTld;
-                }
-            }
-        };
-        return EmailMatcher;
-    }(Matcher));
-    var CurrentEmailMatch = /** @class */ (function () {
-        function CurrentEmailMatch(cfg) {
-            if (cfg === void 0) { cfg = {}; }
-            this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-            this.hasMailtoPrefix = !!cfg.hasMailtoPrefix;
-            this.hasDomainDot = !!cfg.hasDomainDot;
-        }
-        return CurrentEmailMatch;
-    }());
-
-    /**
-     * @private
-     * @class Autolinker.matcher.UrlMatchValidator
-     * @singleton
-     *
-     * Used by Autolinker to filter out false URL positives from the
-     * {@link Autolinker.matcher.Url UrlMatcher}.
-     *
-     * Due to the limitations of regular expressions (including the missing feature
-     * of look-behinds in JS regular expressions), we cannot always determine the
-     * validity of a given match. This class applies a bit of additional logic to
-     * filter out any false positives that have been matched by the
-     * {@link Autolinker.matcher.Url UrlMatcher}.
-     */
-    var UrlMatchValidator = /** @class */ (function () {
-        function UrlMatchValidator() {
-        }
-        /**
-         * Determines if a given URL match found by the {@link Autolinker.matcher.Url UrlMatcher}
-         * is valid. Will return `false` for:
-         *
-         * 1) URL matches which do not have at least have one period ('.') in the
-         *    domain name (effectively skipping over matches like "abc:def").
-         *    However, URL matches with a protocol will be allowed (ex: 'http://localhost')
-         * 2) URL matches which do not have at least one word character in the
-         *    domain name (effectively skipping over matches like "git:1.0").
-         *    However, URL matches with a protocol will be allowed (ex: 'intra-net://271219.76')
-         * 3) A protocol-relative url match (a URL beginning with '//') whose
-         *    previous character is a word character (effectively skipping over
-         *    strings like "abc//google.com")
-         *
-         * Otherwise, returns `true`.
-         *
-         * @param {String} urlMatch The matched URL, if there was one. Will be an
-         *   empty string if the match is not a URL match.
-         * @param {String} protocolUrlMatch The match URL string for a protocol
-         *   match. Ex: 'http://yahoo.com'. This is used to match something like
-         *   'http://localhost', where we won't double check that the domain name
-         *   has at least one '.' in it.
-         * @return {Boolean} `true` if the match given is valid and should be
-         *   processed, or `false` if the match is invalid and/or should just not be
-         *   processed.
-         */
-        UrlMatchValidator.isValid = function (urlMatch, protocolUrlMatch) {
-            if ((protocolUrlMatch && !this.isValidUriScheme(protocolUrlMatch)) ||
-                this.urlMatchDoesNotHaveProtocolOrDot(urlMatch, protocolUrlMatch) || // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
-                (this.urlMatchDoesNotHaveAtLeastOneWordChar(urlMatch, protocolUrlMatch) && // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
-                    !this.isValidIpAddress(urlMatch)) || // Except if it's an IP address
-                this.containsMultipleDots(urlMatch)) {
-                return false;
-            }
-            return true;
-        };
-        UrlMatchValidator.isValidIpAddress = function (uriSchemeMatch) {
-            var newRegex = new RegExp(this.hasFullProtocolRegex.source + this.ipRegex.source);
-            var uriScheme = uriSchemeMatch.match(newRegex);
-            return uriScheme !== null;
-        };
-        UrlMatchValidator.containsMultipleDots = function (urlMatch) {
-            var stringBeforeSlash = urlMatch;
-            if (this.hasFullProtocolRegex.test(urlMatch)) {
-                stringBeforeSlash = urlMatch.split('://')[1];
-            }
-            return stringBeforeSlash.split('/')[0].indexOf('..') > -1;
-        };
-        /**
-         * Determines if the URI scheme is a valid scheme to be autolinked. Returns
-         * `false` if the scheme is 'javascript:' or 'vbscript:'
-         *
-         * @private
-         * @param {String} uriSchemeMatch The match URL string for a full URI scheme
-         *   match. Ex: 'http://yahoo.com' or 'mailto:a@a.com'.
-         * @return {Boolean} `true` if the scheme is a valid one, `false` otherwise.
-         */
-        UrlMatchValidator.isValidUriScheme = function (uriSchemeMatch) {
-            var uriSchemeMatchArr = uriSchemeMatch.match(this.uriSchemeRegex), uriScheme = uriSchemeMatchArr && uriSchemeMatchArr[0].toLowerCase();
-            return uriScheme !== 'javascript:' && uriScheme !== 'vbscript:';
-        };
-        /**
-         * Determines if a URL match does not have either:
-         *
-         * a) a full protocol (i.e. 'http://'), or
-         * b) at least one dot ('.') in the domain name (for a non-full-protocol
-         *    match).
-         *
-         * Either situation is considered an invalid URL (ex: 'git:d' does not have
-         * either the '://' part, or at least one dot in the domain name. If the
-         * match was 'git:abc.com', we would consider this valid.)
-         *
-         * @private
-         * @param {String} urlMatch The matched URL, if there was one. Will be an
-         *   empty string if the match is not a URL match.
-         * @param {String} protocolUrlMatch The match URL string for a protocol
-         *   match. Ex: 'http://yahoo.com'. This is used to match something like
-         *   'http://localhost', where we won't double check that the domain name
-         *   has at least one '.' in it.
-         * @return {Boolean} `true` if the URL match does not have a full protocol,
-         *   or at least one dot ('.') in a non-full-protocol match.
-         */
-        UrlMatchValidator.urlMatchDoesNotHaveProtocolOrDot = function (urlMatch, protocolUrlMatch) {
-            return (!!urlMatch &&
-                (!protocolUrlMatch || !this.hasFullProtocolRegex.test(protocolUrlMatch)) &&
-                urlMatch.indexOf('.') === -1);
-        };
-        /**
-         * Determines if a URL match does not have either:
-         *
-         * a) a full protocol (i.e. 'http://'), or
-         * b) at least one word character after the protocol (i.e. in the domain name)
-         *
-         * At least one letter character must exist in the domain name after a
-         * protocol match. Ex: skip over something like "git:1.0"
-         *
-         * @private
-         * @param {String} urlMatch The matched URL, if there was one. Will be an
-         *   empty string if the match is not a URL match.
-         * @param {String} protocolUrlMatch The match URL string for a protocol
-         *   match. Ex: 'http://yahoo.com'. This is used to know whether or not we
-         *   have a protocol in the URL string, in order to check for a word
-         *   character after the protocol separator (':').
-         * @return {Boolean} `true` if the URL match does not have a full protocol, or
-         * at least one word character in it, `false` otherwise.
-         */
-        UrlMatchValidator.urlMatchDoesNotHaveAtLeastOneWordChar = function (urlMatch, protocolUrlMatch) {
-            if (urlMatch && protocolUrlMatch) {
-                return (!this.hasFullProtocolRegex.test(protocolUrlMatch) &&
-                    !this.hasWordCharAfterProtocolRegex.test(urlMatch));
+    function parseMatches(text, args) {
+        var tagBuilder = args.tagBuilder;
+        var stripPrefix = args.stripPrefix;
+        var stripTrailingSlash = args.stripTrailingSlash;
+        var decodePercentEncoding = args.decodePercentEncoding;
+        var hashtagServiceName = args.hashtagServiceName;
+        var mentionServiceName = args.mentionServiceName;
+        var matches = [];
+        var textLen = text.length;
+        // An array of all active state machines. Empty array means we're in the
+        // "no url" state
+        var stateMachines = [];
+        // For debugging: search for and uncomment other "For debugging" lines
+        // const table = new CliTable({
+        //     head: ['charIdx', 'char', 'states', 'charIdx', 'startIdx', 'reached accept state'],
+        // });
+        var charIdx = 0;
+        for (; charIdx < textLen; charIdx++) {
+            var char = text.charAt(charIdx);
+            if (stateMachines.length === 0) {
+                stateNoMatch(char);
             }
             else {
-                return false;
-            }
-        };
-        /**
-         * Regex to test for a full protocol, with the two trailing slashes. Ex: 'http://'
-         *
-         * @private
-         * @property {RegExp} hasFullProtocolRegex
-         */
-        UrlMatchValidator.hasFullProtocolRegex = /^[A-Za-z][-.+A-Za-z0-9]*:\/\//;
-        /**
-         * Regex to find the URI scheme, such as 'mailto:'.
-         *
-         * This is used to filter out 'javascript:' and 'vbscript:' schemes.
-         *
-         * @private
-         * @property {RegExp} uriSchemeRegex
-         */
-        UrlMatchValidator.uriSchemeRegex = /^[A-Za-z][-.+A-Za-z0-9]*:/;
-        /**
-         * Regex to determine if at least one word char exists after the protocol (i.e. after the ':')
-         *
-         * @private
-         * @property {RegExp} hasWordCharAfterProtocolRegex
-         */
-        UrlMatchValidator.hasWordCharAfterProtocolRegex = new RegExp(':[^\\s]*?[' + alphaCharsStr + ']');
-        /**
-         * Regex to determine if the string is a valid IP address
-         *
-         * @private
-         * @property {RegExp} ipRegex
-         */
-        UrlMatchValidator.ipRegex = /[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?\.[0-9][0-9]?[0-9]?(:[0-9]*)?\/?$/;
-        return UrlMatchValidator;
-    }());
-
-    // RegExp objects which are shared by all instances of UrlMatcher. These are
-    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating UrlMatcher and its RegExp
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
-    // See descriptions of the properties where they are used for details about them
-    // prettier-ignore
-    var matcherRegex = (function () {
-        var schemeRegex = /(?:[A-Za-z][-.+A-Za-z0-9]{0,63}:(?![A-Za-z][-.+A-Za-z0-9]{0,63}:\/\/)(?!\d+\/?)(?:\/\/)?)/, // match protocol, allow in format "http://" or "mailto:". However, do not match the first part of something like 'link:http://www.google.com' (i.e. don't match "link:"). Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a protocol here (i.e. ignore a trailing port number in this regex)
-        wwwRegex = /(?:www\.)/, // starting with 'www.'
-        // Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
-        // http://blog.codinghorror.com/the-problem-with-urls/
-        urlSuffixRegex = new RegExp('[/?#](?:[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}?!:,.;^\u2713]*[' + alphaNumericAndMarksCharsStr + '\\-+&@#/%=~_()|\'$*\\[\\]{}\u2713])?');
-        return new RegExp([
-            '(?:',
-            '(',
-            schemeRegex.source,
-            getDomainNameStr(2),
-            ')',
-            '|',
-            '(',
-            '(//)?',
-            wwwRegex.source,
-            getDomainNameStr(6),
-            ')',
-            '|',
-            '(',
-            '(//)?',
-            getDomainNameStr(10) + '\\.',
-            tldRegex.source,
-            '(?![-' + alphaNumericCharsStr + '])',
-            ')',
-            ')',
-            '(?::[0-9]+)?',
-            '(?:' + urlSuffixRegex.source + ')?' // match for path, query string, and/or hash anchor - optional
-        ].join(""), 'gi');
-    })();
-    var wordCharRegExp = new RegExp('[' + alphaNumericAndMarksCharsStr + ']');
-    /**
-     * @class Autolinker.matcher.Url
-     * @extends Autolinker.matcher.Matcher
-     *
-     * Matcher to find URL matches in an input string.
-     *
-     * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more details.
-     */
-    var UrlMatcher = /** @class */ (function (_super) {
-        __extends(UrlMatcher, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match instance,
-         *   specified in an Object (map).
-         */
-        function UrlMatcher(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {Object} stripPrefix (required)
-             *
-             * The Object form of {@link Autolinker#cfg-stripPrefix}.
-             */
-            _this.stripPrefix = {
-                scheme: true,
-                www: true,
-            }; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} stripTrailingSlash (required)
-             * @inheritdoc Autolinker#stripTrailingSlash
-             */
-            _this.stripTrailingSlash = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @cfg {Boolean} decodePercentEncoding (required)
-             * @inheritdoc Autolinker#decodePercentEncoding
-             */
-            _this.decodePercentEncoding = true; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * @protected
-             * @property {RegExp} matcherRegex
-             *
-             * The regular expression to match URLs with an optional scheme, port
-             * number, path, query string, and hash anchor.
-             *
-             * Example matches:
-             *
-             *     http://google.com
-             *     www.google.com
-             *     google.com/path/to/file?q1=1&q2=2#myAnchor
-             *
-             *
-             * This regular expression will have the following capturing groups:
-             *
-             * 1.  Group that matches a scheme-prefixed URL (i.e. 'http://google.com').
-             *     This is used to match scheme URLs with just a single word, such as
-             *     'http://localhost', where we won't double check that the domain name
-             *     has at least one dot ('.') in it.
-             * 2.  Group that matches a 'www.' prefixed URL. This is only matched if the
-             *     'www.' text was not prefixed by a scheme (i.e.: not prefixed by
-             *     'http://', 'ftp:', etc.)
-             * 3.  A protocol-relative ('//') match for the case of a 'www.' prefixed
-             *     URL. Will be an empty string if it is not a protocol-relative match.
-             *     We need to know the character before the '//' in order to determine
-             *     if it is a valid match or the // was in a string we don't want to
-             *     auto-link.
-             * 4.  Group that matches a known TLD (top level domain), when a scheme
-             *     or 'www.'-prefixed domain is not matched.
-             * 5.  A protocol-relative ('//') match for the case of a known TLD prefixed
-             *     URL. Will be an empty string if it is not a protocol-relative match.
-             *     See #3 for more info.
-             */
-            _this.matcherRegex = matcherRegex;
-            /**
-             * A regular expression to use to check the character before a protocol-relative
-             * URL match. We don't want to match a protocol-relative URL if it is part
-             * of another word.
-             *
-             * For example, we want to match something like "Go to: //google.com",
-             * but we don't want to match something like "abc//google.com"
-             *
-             * This regular expression is used to test the character before the '//'.
-             *
-             * @protected
-             * @type {RegExp} wordCharRegExp
-             */
-            _this.wordCharRegExp = wordCharRegExp;
-            _this.stripPrefix = cfg.stripPrefix;
-            _this.stripTrailingSlash = cfg.stripTrailingSlash;
-            _this.decodePercentEncoding = cfg.decodePercentEncoding;
-            return _this;
-        }
-        /**
-         * @inheritdoc
-         */
-        UrlMatcher.prototype.parseMatches = function (text) {
-            var matcherRegex = this.matcherRegex, stripPrefix = this.stripPrefix, stripTrailingSlash = this.stripTrailingSlash, decodePercentEncoding = this.decodePercentEncoding, tagBuilder = this.tagBuilder, matches = [], match;
-            var _loop_1 = function () {
-                var matchStr = match[0], schemeUrlMatch = match[1], wwwUrlMatch = match[4], wwwProtocolRelativeMatch = match[5], 
-                //tldUrlMatch = match[ 8 ],  -- not needed at the moment
-                tldProtocolRelativeMatch = match[9], offset = match.index, protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch, prevChar = text.charAt(offset - 1);
-                if (!UrlMatchValidator.isValid(matchStr, schemeUrlMatch)) {
-                    return "continue";
-                }
-                // If the match is preceded by an '@' character, then it is either
-                // an email address or a username. Skip these types of matches.
-                if (offset > 0 && prevChar === '@') {
-                    return "continue";
-                }
-                // If it's a protocol-relative '//' match, but the character before the '//'
-                // was a word character (i.e. a letter/number), then we found the '//' in the
-                // middle of another word (such as "asdf//asdf.com"). In this case, skip the
-                // match.
-                if (offset > 0 && protocolRelativeMatch && this_1.wordCharRegExp.test(prevChar)) {
-                    return "continue";
-                }
-                // If the URL ends with a question mark, don't include the question
-                // mark as part of the URL. We'll assume the question mark was the
-                // end of a sentence, such as: "Going to google.com?"
-                if (/\?$/.test(matchStr)) {
-                    matchStr = matchStr.substr(0, matchStr.length - 1);
-                }
-                // Handle a closing parenthesis or square bracket at the end of the
-                // match, and exclude it if there is not a matching open parenthesis
-                // or square bracket in the match itself.
-                if (this_1.matchHasUnbalancedClosingParen(matchStr)) {
-                    matchStr = matchStr.substr(0, matchStr.length - 1); // remove the trailing ")"
-                }
-                else {
-                    // Handle an invalid character after the TLD
-                    var pos = this_1.matchHasInvalidCharAfterTld(matchStr, schemeUrlMatch);
-                    if (pos > -1) {
-                        matchStr = matchStr.substr(0, pos); // remove the trailing invalid chars
+                // Must loop through the state machines backwards for when one
+                // is removed
+                for (var stateIdx = stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
+                    var stateMachine = stateMachines[stateIdx];
+                    switch (stateMachine.state) {
+                        // Protocol-relative URL states
+                        case 11 /* ProtocolRelativeSlash1 */:
+                            stateProtocolRelativeSlash1(stateMachine, char);
+                            break;
+                        case 12 /* ProtocolRelativeSlash2 */:
+                            stateProtocolRelativeSlash2(stateMachine, char);
+                            break;
+                        case 0 /* SchemeChar */:
+                            stateSchemeChar(stateMachine, char);
+                            break;
+                        case 1 /* SchemeHyphen */:
+                            stateSchemeHyphen(stateMachine, char);
+                            break;
+                        case 2 /* SchemeColon */:
+                            stateSchemeColon(stateMachine, char);
+                            break;
+                        case 3 /* SchemeSlash1 */:
+                            stateSchemeSlash1(stateMachine, char);
+                            break;
+                        case 4 /* SchemeSlash2 */:
+                            stateSchemeSlash2(stateMachine, char);
+                            break;
+                        case 5 /* DomainLabelChar */:
+                            stateDomainLabelChar(stateMachine, char);
+                            break;
+                        case 6 /* DomainHyphen */:
+                            stateDomainHyphen(stateMachine, char);
+                            break;
+                        case 7 /* DomainDot */:
+                            stateDomainDot(stateMachine, char);
+                            break;
+                        case 13 /* IpV4Digit */:
+                            stateIpV4Digit(stateMachine, char);
+                            break;
+                        case 14 /* IpV4Dot */:
+                            stateIPv4Dot(stateMachine, char);
+                            break;
+                        case 8 /* PortColon */:
+                            statePortColon(stateMachine, char);
+                            break;
+                        case 9 /* PortNumber */:
+                            statePortNumber(stateMachine, char);
+                            break;
+                        case 10 /* Path */:
+                            statePath(stateMachine, char);
+                            break;
+                        // Email States
+                        case 15 /* EmailMailto_M */:
+                            stateEmailMailto_M(stateMachine, char);
+                            break;
+                        case 16 /* EmailMailto_A */:
+                            stateEmailMailto_A(stateMachine, char);
+                            break;
+                        case 17 /* EmailMailto_I */:
+                            stateEmailMailto_I(stateMachine, char);
+                            break;
+                        case 18 /* EmailMailto_L */:
+                            stateEmailMailto_L(stateMachine, char);
+                            break;
+                        case 19 /* EmailMailto_T */:
+                            stateEmailMailto_T(stateMachine, char);
+                            break;
+                        case 20 /* EmailMailto_O */:
+                            stateEmailMailto_O(stateMachine, char);
+                            break;
+                        case 21 /* EmailMailto_Colon */:
+                            stateEmailMailtoColon(stateMachine, char);
+                            break;
+                        case 22 /* EmailLocalPart */:
+                            stateEmailLocalPart(stateMachine, char);
+                            break;
+                        case 23 /* EmailLocalPartDot */:
+                            stateEmailLocalPartDot(stateMachine, char);
+                            break;
+                        case 24 /* EmailAtSign */:
+                            stateEmailAtSign(stateMachine, char);
+                            break;
+                        case 25 /* EmailDomainChar */:
+                            stateEmailDomainChar(stateMachine, char);
+                            break;
+                        case 26 /* EmailDomainHyphen */:
+                            stateEmailDomainHyphen(stateMachine, char);
+                            break;
+                        case 27 /* EmailDomainDot */:
+                            stateEmailDomainDot(stateMachine, char);
+                            break;
+                        // Hashtag states
+                        case 28 /* HashtagHashChar */:
+                            stateHashtagHashChar(stateMachine, char);
+                            break;
+                        case 29 /* HashtagTextChar */:
+                            stateHashtagTextChar(stateMachine, char);
+                            break;
+                        // Mention states
+                        case 30 /* MentionAtChar */:
+                            stateMentionAtChar(stateMachine, char);
+                            break;
+                        case 31 /* MentionTextChar */:
+                            stateMentionTextChar(stateMachine, char);
+                            break;
+                        // Phone number states
+                        case 32 /* PhoneNumberOpenParen */:
+                            statePhoneNumberOpenParen(stateMachine, char);
+                            break;
+                        case 33 /* PhoneNumberAreaCodeDigit1 */:
+                            statePhoneNumberAreaCodeDigit1(stateMachine, char);
+                            break;
+                        case 34 /* PhoneNumberAreaCodeDigit2 */:
+                            statePhoneNumberAreaCodeDigit2(stateMachine, char);
+                            break;
+                        case 35 /* PhoneNumberAreaCodeDigit3 */:
+                            statePhoneNumberAreaCodeDigit3(stateMachine, char);
+                            break;
+                        case 36 /* PhoneNumberCloseParen */:
+                            statePhoneNumberCloseParen(stateMachine, char);
+                            break;
+                        case 37 /* PhoneNumberPlus */:
+                            statePhoneNumberPlus(stateMachine, char);
+                            break;
+                        case 38 /* PhoneNumberDigit */:
+                            statePhoneNumberDigit(stateMachine, char);
+                            break;
+                        case 39 /* PhoneNumberSeparator */:
+                            statePhoneNumberSeparator(stateMachine, char);
+                            break;
+                        case 40 /* PhoneNumberControlChar */:
+                            statePhoneNumberControlChar(stateMachine, char);
+                            break;
+                        case 41 /* PhoneNumberPoundChar */:
+                            statePhoneNumberPoundChar(stateMachine, char);
+                            break;
+                        default:
+                            assertNever(stateMachine.state);
                     }
                 }
-                // The autolinker accepts many characters in a url's scheme (like `fake://test.com`).
-                // However, in cases where a URL is missing whitespace before an obvious link,
-                // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
-                // at the http:// part. We will check if the match contains a common scheme and then
-                // shift the match to start from there.
-                var foundCommonScheme = ['http://', 'https://'].find(function (commonScheme) { return !!schemeUrlMatch && schemeUrlMatch.indexOf(commonScheme) !== -1; });
-                if (foundCommonScheme) {
-                    // If we found an overmatched URL, we want to find the index
-                    // of where the match should start and shift the match to
-                    // start from the beginning of the common scheme
-                    var indexOfSchemeStart = matchStr.indexOf(foundCommonScheme);
-                    matchStr = matchStr.substr(indexOfSchemeStart);
-                    schemeUrlMatch = schemeUrlMatch.substr(indexOfSchemeStart);
-                    offset = offset + indexOfSchemeStart;
+            }
+            // For debugging: search for and uncomment other "For debugging" lines
+            // table.push([
+            //     charIdx,
+            //     char,
+            //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
+            //     charIdx,
+            //     stateMachines.map(m => m.startIdx).join('\n'),
+            //     stateMachines.map(m => m.acceptStateReached).join('\n'),
+            // ]);
+        }
+        // Capture any valid match at the end of the string
+        // Note: this loop must happen in reverse because
+        // captureMatchIfValidAndRemove() removes state machines from the array
+        // and we'll end up skipping every other one if we remove while looping
+        // forward
+        for (var i = stateMachines.length - 1; i >= 0; i--) {
+            stateMachines.forEach(function (stateMachine) { return captureMatchIfValidAndRemove(stateMachine); });
+        }
+        // For debugging: search for and uncomment other "For debugging" lines
+        // console.log(`\nRead string:\n  ${text}`);
+        // console.log(table.toString());
+        return matches;
+        // Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
+        function stateNoMatch(char) {
+            if (char === '#') {
+                // Hash char, start a Hashtag match
+                stateMachines.push(createHashtagStateMachine(charIdx, 28 /* HashtagHashChar */));
+            }
+            else if (char === '@') {
+                // '@' char, start a Mention match
+                stateMachines.push(createMentionStateMachine(charIdx, 30 /* MentionAtChar */));
+            }
+            else if (char === '/') {
+                // A slash could begin a protocol-relative URL
+                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* ProtocolRelativeSlash1 */));
+            }
+            else if (char === '+') {
+                // A '+' char can start a Phone number
+                stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* PhoneNumberPlus */));
+            }
+            else if (char === '(') {
+                stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* PhoneNumberOpenParen */));
+            }
+            else {
+                if (digitRe.test(char)) {
+                    // A digit could start a phone number
+                    stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* PhoneNumberDigit */));
+                    // A digit could start an IP address
+                    stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* IpV4Digit */));
                 }
-                var urlMatchType = schemeUrlMatch
-                    ? 'scheme'
-                    : wwwUrlMatch
-                        ? 'www'
-                        : 'tld', protocolUrlMatch = !!schemeUrlMatch;
+                if (isEmailLocalPartStartChar(char)) {
+                    // Any email local part. An 'm' character in particular could
+                    // start a 'mailto:' match
+                    var startState = char.toLowerCase() === 'm' ? 15 /* EmailMailto_M */ : 22 /* EmailLocalPart */;
+                    stateMachines.push(createEmailStateMachine(charIdx, startState));
+                }
+                if (isSchemeStartChar(char)) {
+                    // An uppercase or lowercase letter may start a scheme match
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                }
+                if (alphaNumericAndMarksRe.test(char)) {
+                    // A unicode alpha character or digit could start a domain name
+                    // label for a TLD match
+                    stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* DomainLabelChar */));
+                }
+            }
+            // Anything else, remain in the "non-url" state by not creating any
+            // state machines
+        }
+        // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+        function stateSchemeChar(stateMachine, char) {
+            if (char === ':') {
+                stateMachine.state = 2 /* SchemeColon */;
+            }
+            else if (char === '-') {
+                stateMachine.state = 1 /* SchemeHyphen */;
+            }
+            else if (isSchemeChar(char)) ;
+            else {
+                // Any other character, not a scheme
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function stateSchemeHyphen(stateMachine, char) {
+            if (char === '-') ;
+            else if (char === '/') {
+                // Not a valid scheme match, but may be the start of a
+                // protocol-relative match (such as //google.com)
+                remove(stateMachines, stateMachine);
+                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* ProtocolRelativeSlash1 */));
+            }
+            else if (isSchemeChar(char)) {
+                stateMachine.state = 0 /* SchemeChar */;
+            }
+            else {
+                // Any other character, not a scheme
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function stateSchemeColon(stateMachine, char) {
+            if (char === '/') {
+                stateMachine.state = 3 /* SchemeSlash1 */;
+            }
+            else if (char === '.') {
+                // We've read something like 'hello:.' - don't capture
+                remove(stateMachines, stateMachine);
+            }
+            else if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 5 /* DomainLabelChar */;
+                // It's possible that we read an "introduction" piece of text,
+                // and the character after the current colon actually starts an
+                // actual scheme. An example of this is:
+                //     "The link:http://google.com"
+                // Hence, start a new machine to capture this match if so
+                if (isSchemeStartChar(char)) {
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                }
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function stateSchemeSlash1(stateMachine, char) {
+            if (char === '/') {
+                stateMachine.state = 4 /* SchemeSlash2 */;
+            }
+            else if (isPathChar(char)) {
+                stateMachine.state = 10 /* Path */;
+                stateMachine.acceptStateReached = true;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateSchemeSlash2(stateMachine, char) {
+            if (char === '/') {
+                // 3rd slash, must be an absolute path (path-absolute in the
+                // ABNF), such as in a file:///c:/windows/etc. See
+                // https://tools.ietf.org/html/rfc3986#appendix-A
+                stateMachine.state = 10 /* Path */;
+            }
+            else if (isDomainLabelStartChar(char)) {
+                // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
+                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.acceptStateReached = true;
+            }
+            else {
+                // not valid
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles reading a '/' from the NonUrl state
+        function stateProtocolRelativeSlash1(stateMachine, char) {
+            if (char === '/') {
+                stateMachine.state = 12 /* ProtocolRelativeSlash2 */;
+            }
+            else {
+                // Anything else, cannot be the start of a protocol-relative
+                // URL.
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles reading a second '/', which could start a protocol-relative URL
+        function stateProtocolRelativeSlash2(stateMachine, char) {
+            if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 5 /* DomainLabelChar */;
+            }
+            else {
+                // Anything else, not a URL
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles when we have read a domain label character
+        function stateDomainLabelChar(stateMachine, char) {
+            if (char === '.') {
+                stateMachine.state = 7 /* DomainDot */;
+            }
+            else if (char === '-') {
+                stateMachine.state = 6 /* DomainHyphen */;
+            }
+            else if (char === ':') {
+                // Beginning of a port number, end the domain name
+                stateMachine.state = 8 /* PortColon */;
+            }
+            else if (isUrlSuffixStartChar(char)) {
+                // '/', '?', or '#'
+                stateMachine.state = 10 /* Path */;
+            }
+            else if (isDomainLabelChar(char)) ;
+            else {
+                // Anything else, end the domain name
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateDomainHyphen(stateMachine, char) {
+            if (char === '-') ;
+            else if (char === '.') {
+                // Not valid to have a '-.' in a domain label
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+            else if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 5 /* DomainLabelChar */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateDomainDot(stateMachine, char) {
+            if (char === '.') {
+                // domain names cannot have multiple '.'s next to each other.
+                // It's possible we've already read a valid domain name though,
+                // and that the '..' sequence just forms an ellipsis at the end
+                // of a sentence
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+            else if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.acceptStateReached = true; // after hitting a dot, and then another domain label, we've reached an accept state
+            }
+            else {
+                // Anything else, end the domain name
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateIpV4Digit(stateMachine, char) {
+            if (char === '.') {
+                stateMachine.state = 14 /* IpV4Dot */;
+            }
+            else if (char === ':') {
+                // Beginning of a port number
+                stateMachine.state = 8 /* PortColon */;
+            }
+            else if (digitRe.test(char)) ;
+            else if (isUrlSuffixStartChar(char)) {
+                stateMachine.state = 10 /* Path */;
+            }
+            else if (alphaNumericAndMarksRe.test(char)) {
+                // If we hit an alpha character, must not be an IPv4
+                // Example of this: 1.2.3.4abc
+                remove(stateMachines, stateMachine);
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateIPv4Dot(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.octetsEncountered++;
+                // Once we have encountered 4 octets, it's *potentially* a valid
+                // IPv4 address. Our IPv4 regex will confirm the match later
+                // though to make sure each octet is in the 0-255 range, and
+                // there's exactly 4 octets (not 5 or more)
+                if (stateMachine.octetsEncountered === 4) {
+                    stateMachine.acceptStateReached = true;
+                }
+                stateMachine.state = 13 /* IpV4Digit */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function statePortColon(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 9 /* PortNumber */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function statePortNumber(stateMachine, char) {
+            if (digitRe.test(char)) ;
+            else if (isUrlSuffixStartChar(char)) {
+                // '/', '?', or '#'
+                stateMachine.state = 10 /* Path */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function statePath(stateMachine, char) {
+            if (isPathChar(char)) ;
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        // Handles if we're reading a 'mailto:' prefix on the string
+        function stateEmailMailto_M(stateMachine, char) {
+            if (char.toLowerCase() === 'a') {
+                stateMachine.state = 16 /* EmailMailto_A */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailto_A(stateMachine, char) {
+            if (char.toLowerCase() === 'i') {
+                stateMachine.state = 17 /* EmailMailto_I */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailto_I(stateMachine, char) {
+            if (char.toLowerCase() === 'l') {
+                stateMachine.state = 18 /* EmailMailto_L */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailto_L(stateMachine, char) {
+            if (char.toLowerCase() === 't') {
+                stateMachine.state = 19 /* EmailMailto_T */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailto_T(stateMachine, char) {
+            if (char.toLowerCase() === 'o') {
+                stateMachine.state = 20 /* EmailMailto_O */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailto_O(stateMachine, char) {
+            if (char.toLowerCase() === ':') {
+                stateMachine.state = 21 /* EmailMailto_Colon */;
+            }
+            else {
+                stateEmailLocalPart(stateMachine, char);
+            }
+        }
+        function stateEmailMailtoColon(stateMachine, char) {
+            if (isEmailLocalPartChar(char)) {
+                stateMachine.state = 22 /* EmailLocalPart */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles the state when we're currently in the "local part" of an
+        // email address (as opposed to the "domain part")
+        function stateEmailLocalPart(stateMachine, char) {
+            if (char === '.') {
+                stateMachine.state = 23 /* EmailLocalPartDot */;
+            }
+            else if (char === '@') {
+                stateMachine.state = 24 /* EmailAtSign */;
+            }
+            else if (isEmailLocalPartChar(char)) {
+                // stay in the "local part" of the email address
+                // Note: because stateEmailLocalPart() is called from the
+                // 'mailto' states (when the 'mailto' prefix itself has been
+                // broken), make sure to set the state to EmailLocalPart
+                stateMachine.state = 22 /* EmailLocalPart */;
+            }
+            else {
+                // not an email address character
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles the state where we've read
+        function stateEmailLocalPartDot(stateMachine, char) {
+            if (char === '.') {
+                // We read a second '.' in a row, not a valid email address
+                // local part
+                remove(stateMachines, stateMachine);
+            }
+            else if (char === '@') {
+                // We read the '@' character immediately after a dot ('.'), not
+                // an email address
+                remove(stateMachines, stateMachine);
+            }
+            else if (isEmailLocalPartChar(char)) {
+                stateMachine.state = 22 /* EmailLocalPart */;
+            }
+            else {
+                // Anything else, not an email address
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function stateEmailAtSign(stateMachine, char) {
+            if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 25 /* EmailDomainChar */;
+            }
+            else {
+                // Anything else, not an email address
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function stateEmailDomainChar(stateMachine, char) {
+            if (char === '.') {
+                stateMachine.state = 27 /* EmailDomainDot */;
+            }
+            else if (char === '-') {
+                stateMachine.state = 26 /* EmailDomainHyphen */;
+            }
+            else if (isDomainLabelChar(char)) ;
+            else {
+                // Anything else, we potentially matched if the criteria has
+                // been met
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateEmailDomainHyphen(stateMachine, char) {
+            if (char === '-' || char === '.') {
+                // Not valid to have two hyphens ("--") or hypen+dot ("-.")
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+            else if (isDomainLabelChar(char)) {
+                stateMachine.state = 25 /* EmailDomainChar */;
+            }
+            else {
+                // Anything else
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function stateEmailDomainDot(stateMachine, char) {
+            if (char === '.' || char === '-') {
+                // not valid to have two dots ("..") or dot+hypen (".-")
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+            else if (isDomainLabelStartChar(char)) {
+                stateMachine.state = 25 /* EmailDomainChar */;
+                // After having read a '.' and then a valid domain character,
+                // we now know that the domain part of the email is valid, and
+                // we have found at least a partial EmailMatch (however, the
+                // email address may have additional characters from this point)
+                stateMachine.acceptStateReached = true;
+            }
+            else {
+                // Anything else
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        // Handles the state when we've just encountered a '#' character
+        function stateHashtagHashChar(stateMachine, char) {
+            if (isHashtagTextChar(char)) {
+                // '#' char with valid hash text char following
+                stateMachine.state = 29 /* HashtagTextChar */;
+                stateMachine.acceptStateReached = true;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles the state when we're currently in the hash tag's text chars
+        function stateHashtagTextChar(stateMachine, char) {
+            if (isHashtagTextChar(char)) ;
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        // Handles the state when we've just encountered a '@' character
+        function stateMentionAtChar(stateMachine, char) {
+            if (isMentionTextChar(char)) {
+                // '@' char with valid mention text char following
+                stateMachine.state = 31 /* MentionTextChar */;
+                stateMachine.acceptStateReached = true;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        // Handles the state when we're currently in the mention's text chars
+        function stateMentionTextChar(stateMachine, char) {
+            if (isMentionTextChar(char)) ;
+            else if (alphaNumericAndMarksRe.test(char)) {
+                // Char is invalid for a mention text char, not a valid match.
+                // Note that ascii alphanumeric chars are okay (which are tested
+                // in the previous 'if' statement, but others are not)
+                remove(stateMachines, stateMachine);
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        function statePhoneNumberPlus(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 38 /* PhoneNumberDigit */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+                // This character may start a new match. Add states for it
+                stateNoMatch(char);
+            }
+        }
+        function statePhoneNumberOpenParen(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 33 /* PhoneNumberAreaCodeDigit1 */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+            // It's also possible that the paren was just an open brace for
+            // a piece of text. Start other machines
+            stateNoMatch(char);
+        }
+        function statePhoneNumberAreaCodeDigit1(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 34 /* PhoneNumberAreaCodeDigit2 */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function statePhoneNumberAreaCodeDigit2(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 35 /* PhoneNumberAreaCodeDigit3 */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function statePhoneNumberAreaCodeDigit3(stateMachine, char) {
+            if (char === ')') {
+                stateMachine.state = 36 /* PhoneNumberCloseParen */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function statePhoneNumberCloseParen(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 38 /* PhoneNumberDigit */;
+            }
+            else if (isPhoneNumberSeparatorChar(char)) {
+                stateMachine.state = 39 /* PhoneNumberSeparator */;
+            }
+            else {
+                remove(stateMachines, stateMachine);
+            }
+        }
+        function statePhoneNumberDigit(stateMachine, char) {
+            // For now, if we've reached any digits, we'll say that the machine
+            // has reached its accept state. The phone regex will confirm the
+            // match later.
+            // Alternatively, we could count the number of digits to avoid
+            // invoking the phone number regex
+            stateMachine.acceptStateReached = true;
+            if (isPhoneNumberControlChar(char)) {
+                stateMachine.state = 40 /* PhoneNumberControlChar */;
+            }
+            else if (char === '#') {
+                stateMachine.state = 41 /* PhoneNumberPoundChar */;
+            }
+            else if (digitRe.test(char)) ;
+            else if (char === '(') {
+                stateMachine.state = 32 /* PhoneNumberOpenParen */;
+            }
+            else if (isPhoneNumberSeparatorChar(char)) {
+                stateMachine.state = 39 /* PhoneNumberSeparator */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+                // The transition from a digit character to a letter can be the
+                // start of a new scheme URL match
+                if (isSchemeStartChar(char)) {
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                }
+            }
+        }
+        function statePhoneNumberSeparator(stateMachine, char) {
+            if (digitRe.test(char)) {
+                stateMachine.state = 38 /* PhoneNumberDigit */;
+            }
+            else if (char === '(') {
+                stateMachine.state = 32 /* PhoneNumberOpenParen */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+                // This character may start a new match. Add states for it
+                stateNoMatch(char);
+            }
+        }
+        // The ";" characters is "wait" in a phone number
+        // The "," characters is "pause" in a phone number
+        function statePhoneNumberControlChar(stateMachine, char) {
+            if (isPhoneNumberControlChar(char)) ;
+            else if (char === '#') {
+                stateMachine.state = 41 /* PhoneNumberPoundChar */;
+            }
+            else if (digitRe.test(char)) {
+                stateMachine.state = 38 /* PhoneNumberDigit */;
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        // The "#" characters is "pound" in a phone number
+        function statePhoneNumberPoundChar(stateMachine, char) {
+            if (isPhoneNumberControlChar(char)) {
+                stateMachine.state = 40 /* PhoneNumberControlChar */;
+            }
+            else if (digitRe.test(char)) {
+                // According to some of the older tests, if there's a digit
+                // after a '#' sign, the match is invalid. TODO: Revisit if this is true
+                remove(stateMachines, stateMachine);
+            }
+            else {
+                captureMatchIfValidAndRemove(stateMachine);
+            }
+        }
+        /*
+         * Captures a match if it is valid (i.e. has a full domain name for a
+         * TLD match). If a match is not valid, it is possible that we want to
+         * keep reading characters in order to make a full match.
+         */
+        function captureMatchIfValidAndRemove(stateMachine) {
+            // Remove the state machine first. There are a number of code paths
+            // which return out of this function early, so make sure we have
+            // this done
+            remove(stateMachines, stateMachine);
+            // Make sure the state machine being checked has actually reached an
+            // "accept" state. If it hasn't reach one, it can't be a match
+            if (!stateMachine.acceptStateReached) {
+                return;
+            }
+            var startIdx = stateMachine.startIdx;
+            var matchedText = text.slice(stateMachine.startIdx, charIdx);
+            // Handle any unbalanced braces (parens, square brackets, or curly
+            // brackets) inside the URL. This handles situations like:
+            //     The link (google.com)
+            // and
+            //     Check out this link here (en.wikipedia.org/wiki/IANA_(disambiguation))
+            //
+            // And also remove any punctuation chars at the end such as:
+            //     '?', ',', ':', '.', etc.
+            matchedText = excludeUnbalancedTrailingBracesAndPunctuation(matchedText);
+            if (stateMachine.type === 'url') {
+                // We don't want to accidentally match a URL that is preceded by an
+                // '@' character, which would be an email address
+                var charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
+                if (charBeforeUrlMatch === '@') {
+                    return;
+                }
+                // For the purpose of this parser, we've generalized 'www'
+                // matches as part of 'tld' matches. However, for backward
+                // compatibility, we distinguish beween TLD matches and matches
+                // that begin with 'www.' so that users may turn off 'www'
+                // matches. As such, we need to correct for that now if the
+                // URL begins with 'www.'
+                var urlMatchType = stateMachine.matchType;
+                if (urlMatchType === 'scheme') {
+                    // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
+                    // However, in cases where a URL is missing whitespace before an obvious link,
+                    // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
+                    // at the http:// part. We will check if the match contains a common scheme and then
+                    // shift the match to start from there.
+                    var httpSchemeMatch = httpSchemeRe.exec(matchedText);
+                    if (httpSchemeMatch) {
+                        // If we found an overmatched URL, we want to find the index
+                        // of where the match should start and shift the match to
+                        // start from the beginning of the common scheme
+                        startIdx = startIdx + httpSchemeMatch.index;
+                        matchedText = matchedText.slice(httpSchemeMatch.index);
+                    }
+                    if (!isValidSchemeUrl(matchedText)) {
+                        return; // not a valid match
+                    }
+                }
+                else if (urlMatchType === 'tld') {
+                    if (!isValidTldMatch(matchedText)) {
+                        return; // not a valid match
+                    }
+                }
+                else if (urlMatchType === 'ipV4') {
+                    if (!isValidIpV4Address(matchedText)) {
+                        return; // not a valid match
+                    }
+                }
+                else {
+                    assertNever(urlMatchType);
+                }
                 matches.push(new UrlMatch({
                     tagBuilder: tagBuilder,
-                    matchedText: matchStr,
-                    offset: offset,
+                    matchedText: matchedText,
+                    offset: startIdx,
                     urlMatchType: urlMatchType,
-                    url: matchStr,
-                    protocolUrlMatch: protocolUrlMatch,
-                    protocolRelativeMatch: !!protocolRelativeMatch,
+                    url: matchedText,
+                    protocolRelativeMatch: matchedText.slice(0, 2) === '//',
+                    // TODO: Do these settings need to be passed to the match,
+                    // or should we handle them here in UrlMatcher?
                     stripPrefix: stripPrefix,
                     stripTrailingSlash: stripTrailingSlash,
                     decodePercentEncoding: decodePercentEncoding,
                 }));
-            };
-            var this_1 = this;
-            while ((match = matcherRegex.exec(text)) !== null) {
-                _loop_1();
             }
-            return matches;
-        };
-        /**
-         * Determines if a match found has an unmatched closing parenthesis,
-         * square bracket or curly bracket. If so, the symbol will be removed
-         * from the match itself, and appended after the generated anchor tag.
-         *
-         * A match may have an extra closing parenthesis at the end of the match
-         * because the regular expression must include parenthesis for URLs such as
-         * "wikipedia.com/something_(disambiguation)", which should be auto-linked.
-         *
-         * However, an extra parenthesis *will* be included when the URL itself is
-         * wrapped in parenthesis, such as in the case of:
-         *     "(wikipedia.com/something_(disambiguation))"
-         * In this case, the last closing parenthesis should *not* be part of the
-         * URL itself, and this method will return `true`.
-         *
-         * For square brackets in URLs such as in PHP arrays, the same behavior as
-         * parenthesis discussed above should happen:
-         *     "[http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
-         * The closing square bracket should not be part of the URL itself, and this
-         * method will return `true`.
-         *
-         * @protected
-         * @param {String} matchStr The full match string from the {@link #matcherRegex}.
-         * @return {Boolean} `true` if there is an unbalanced closing parenthesis or
-         *   square bracket at the end of the `matchStr`, `false` otherwise.
-         */
-        UrlMatcher.prototype.matchHasUnbalancedClosingParen = function (matchStr) {
-            var endChar = matchStr.charAt(matchStr.length - 1);
-            var startChar;
-            if (endChar === ')') {
-                startChar = '(';
-            }
-            else if (endChar === ']') {
-                startChar = '[';
-            }
-            else if (endChar === '}') {
-                startChar = '{';
-            }
-            else {
-                return false; // not a close parenthesis or square bracket
-            }
-            // Find if there are the same number of open braces as close braces in
-            // the URL string, minus the last character (which we have already
-            // determined to be either ')', ']' or '}'
-            var numOpenBraces = 0;
-            for (var i = 0, len = matchStr.length - 1; i < len; i++) {
-                var char = matchStr.charAt(i);
-                if (char === startChar) {
-                    numOpenBraces++;
-                }
-                else if (char === endChar) {
-                    numOpenBraces = Math.max(numOpenBraces - 1, 0);
-                }
-            }
-            // If the number of open braces matches the number of close braces in
-            // the URL minus the last character, then the match has *unbalanced*
-            // braces because of the last character. Example of unbalanced braces
-            // from the regex match:
-            //     "http://example.com?a[]=1]"
-            if (numOpenBraces === 0) {
-                return true;
-            }
-            return false;
-        };
-        /**
-         * Determine if there's an invalid character after the TLD in a URL. Valid
-         * characters after TLD are ':/?#'. Exclude scheme matched URLs from this
-         * check.
-         *
-         * @protected
-         * @param {String} urlMatch The matched URL, if there was one. Will be an
-         *   empty string if the match is not a URL match.
-         * @param {String} schemeUrlMatch The match URL string for a scheme
-         *   match. Ex: 'http://yahoo.com'. This is used to match something like
-         *   'http://localhost', where we won't double check that the domain name
-         *   has at least one '.' in it.
-         * @return {Number} the position where the invalid character was found. If
-         *   no such character was found, returns -1
-         */
-        UrlMatcher.prototype.matchHasInvalidCharAfterTld = function (urlMatch, schemeUrlMatch) {
-            if (!urlMatch) {
-                return -1;
-            }
-            var offset = 0;
-            if (schemeUrlMatch) {
-                offset = urlMatch.indexOf(':');
-                urlMatch = urlMatch.slice(offset);
-            }
-            // prettier-ignore
-            var re = new RegExp("^((.?\/\/)?[-." + alphaNumericAndMarksCharsStr + "]*[-" + alphaNumericAndMarksCharsStr + "]\\.[-" + alphaNumericAndMarksCharsStr + "]+)");
-            var res = re.exec(urlMatch);
-            if (res === null) {
-                return -1;
-            }
-            offset += res[1].length;
-            urlMatch = urlMatch.slice(res[1].length);
-            if (/^[^-.A-Za-z0-9:\/?#]/.test(urlMatch)) {
-                return offset;
-            }
-            return -1;
-        };
-        return UrlMatcher;
-    }(Matcher));
-
-    // For debugging: search for other "For debugging" lines
-    // import CliTable from 'cli-table';
-    var hashtagTextCharRe = new RegExp("[_".concat(alphaNumericAndMarksCharsStr, "]"));
-    /**
-     * @class Autolinker.matcher.Hashtag
-     * @extends Autolinker.matcher.Matcher
-     *
-     * Matcher to find HashtagMatch matches in an input string.
-     */
-    var HashtagMatcher = /** @class */ (function (_super) {
-        __extends(HashtagMatcher, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match instance,
-         *   specified in an Object (map).
-         */
-        function HashtagMatcher(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {String} service
-             *
-             * A string for the service name to have hashtags (ex: "#myHashtag")
-             * auto-linked to. The currently-supported values are:
-             *
-             * - 'twitter'
-             * - 'facebook'
-             * - 'instagram'
-             * - 'tiktok'
-             */
-            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
-            _this.serviceName = cfg.serviceName;
-            return _this;
-        }
-        /**
-         * @inheritdoc
-         */
-        HashtagMatcher.prototype.parseMatches = function (text) {
-            var tagBuilder = this.tagBuilder;
-            var serviceName = this.serviceName;
-            var matches = [];
-            var len = text.length;
-            var charIdx = 0, hashCharIdx = -1, state = 0 /* None */;
-            // For debugging: search for other "For debugging" lines
-            // const table = new CliTable( {
-            // 	head: [ 'charIdx', 'char', 'state', 'charIdx', 'currentEmailAddress.idx', 'hasDomainDot' ]
-            // } );
-            while (charIdx < len) {
-                var char = text.charAt(charIdx);
-                // For debugging: search for other "For debugging" lines
-                // table.push(
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
-                // );
-                switch (state) {
-                    case 0 /* None */:
-                        stateNone(char);
-                        break;
-                    case 1 /* NonHashtagWordChar */:
-                        stateNonHashtagWordChar(char);
-                        break;
-                    case 2 /* HashtagHashChar */:
-                        stateHashtagHashChar(char);
-                        break;
-                    case 3 /* HashtagTextChar */:
-                        stateHashtagTextChar(char);
-                        break;
-                    default:
-                        throwUnhandledCaseError(state);
-                }
-                // For debugging: search for other "For debugging" lines
-                // table.push(
-                // 	[ charIdx, char, State[ state ], charIdx, currentEmailAddress.idx, currentEmailAddress.hasDomainDot ]
-                // );
-                charIdx++;
-            }
-            // Capture any valid match at the end of the string
-            captureMatchIfValid();
-            // For debugging: search for other "For debugging" lines
-            //console.log( '\n' + table.toString() );
-            return matches;
-            // Handles the state when we're not in a hashtag or any word
-            function stateNone(char) {
-                if (char === '#') {
-                    state = 2 /* HashtagHashChar */;
-                    hashCharIdx = charIdx;
-                }
-                else if (alphaNumericAndMarksCharRe.test(char)) {
-                    state = 1 /* NonHashtagWordChar */;
-                }
-                else ;
-            }
-            // Handles the state when we've encountered a word character but are not
-            // in a hashtag. This is used to distinguish between a standalone
-            // hashtag such as '#Stuff' vs a hash char that is part of a word like
-            // 'asdf#stuff' (the latter of which would not be a match)
-            function stateNonHashtagWordChar(char) {
-                if (alphaNumericAndMarksCharRe.test(char)) ;
-                else {
-                    state = 0 /* None */;
-                }
-            }
-            // Handles the state when we've just encountered a '#' character
-            function stateHashtagHashChar(char) {
-                if (hashtagTextCharRe.test(char)) {
-                    // '#' char with valid hash text char following
-                    state = 3 /* HashtagTextChar */;
-                }
-                else if (alphaNumericAndMarksCharRe.test(char)) {
-                    state = 1 /* NonHashtagWordChar */;
-                }
-                else {
-                    state = 0 /* None */;
-                }
-            }
-            // Handles the state when we're currently in the hash tag's text chars
-            function stateHashtagTextChar(char) {
-                if (hashtagTextCharRe.test(char)) ;
-                else {
-                    captureMatchIfValid();
-                    hashCharIdx = -1;
-                    if (alphaNumericAndMarksCharRe.test(char)) {
-                        state = 1 /* NonHashtagWordChar */;
-                    }
-                    else {
-                        state = 0 /* None */;
-                    }
-                }
-            }
-            /*
-             * Captures the current hashtag as a HashtagMatch if it's valid.
-             */
-            function captureMatchIfValid() {
-                if (hashCharIdx > -1 && charIdx - hashCharIdx <= 140) {
-                    // Max length of 140 for a hashtag ('#' char + 139 word chars)
-                    var matchedText = text.slice(hashCharIdx, charIdx);
-                    var match = new HashtagMatch({
+            else if (stateMachine.type === 'email') {
+                // if the email address has a valid TLD, add it to the list of matches
+                if (isValidEmail(matchedText)) {
+                    matches.push(new EmailMatch({
                         tagBuilder: tagBuilder,
                         matchedText: matchedText,
-                        offset: hashCharIdx,
-                        serviceName: serviceName,
-                        hashtag: matchedText.slice(1),
-                    });
-                    matches.push(match);
-                }
-            }
-        };
-        return HashtagMatcher;
-    }(Matcher));
-    var hashtagServices = ['twitter', 'facebook', 'instagram', 'tiktok'];
-
-    // RegExp objects which are shared by all instances of PhoneMatcher. These are
-    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating PhoneMatcher and its RegExp
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
-    // See descriptions of the properties where they are used for details about them
-    // Over the years, many people have added to this regex, but it should have been
-    // split up by country. Maybe one day we can break this down.
-    var mostPhoneNumbers = /(?:(?:(?:(\+)?\d{1,3}[-\040.]?)?\(?\d{3}\)?[-\040.]?\d{3}[-\040.]?\d{4})|(?:(\+)(?:9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)[-\040.]?(?:\d[-\040.]?){6,12}\d+))([,;]+[0-9]+#?)*/;
-    // Regex for Japanese phone numbers
-    var japanesePhoneRe = /(0([1-9]{1}-?[1-9]\d{3}|[1-9]{2}-?\d{3}|[1-9]{2}\d{1}-?\d{2}|[1-9]{2}\d{2}-?\d{1})-?\d{4}|0[789]0-?\d{4}-?\d{4}|050-?\d{4}-?\d{4})/;
-    // Combined regex
-    var phoneMatcherRegex = new RegExp("".concat(mostPhoneNumbers.source, "|").concat(japanesePhoneRe.source), 'g');
-    /**
-     * @class Autolinker.matcher.Phone
-     * @extends Autolinker.matcher.Matcher
-     *
-     * Matcher to find Phone number matches in an input string.
-     *
-     * See this class's superclass ({@link Autolinker.matcher.Matcher}) for more
-     * details.
-     */
-    var PhoneMatcher = /** @class */ (function (_super) {
-        __extends(PhoneMatcher, _super);
-        function PhoneMatcher() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * The regular expression to match Phone numbers. Example matches:
-             *
-             *     (123) 456-7890
-             *     123 456 7890
-             *     123-456-7890
-             *     +18004441234,,;,10226420346#
-             *     +1 (800) 444 1234
-             *     10226420346#
-             *     1-800-444-1234,1022,64,20346#
-             *
-             * This regular expression has the following capturing groups:
-             *
-             * 1 or 2. The prefixed '+' sign, if there is one.
-             *
-             * @protected
-             * @property {RegExp} matcherRegex
-             */
-            _this.matcherRegex = phoneMatcherRegex;
-            return _this;
-        }
-        /**
-         * @inheritdoc
-         */
-        PhoneMatcher.prototype.parseMatches = function (text) {
-            var matcherRegex = this.matcherRegex, tagBuilder = this.tagBuilder, matches = [], match;
-            while ((match = matcherRegex.exec(text)) !== null) {
-                // Remove non-numeric values from phone number string
-                var matchedText = match[0], cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''), // strip out non-digit characters exclude comma semicolon and #
-                plusSign = !!(match[1] || match[2]), // match[ 1 ] or match[ 2 ] is the prefixed plus sign, if there is one
-                before = match.index == 0 ? '' : text.substr(match.index - 1, 1), after = text.substr(match.index + matchedText.length, 1), contextClear = !before.match(/\d/) && !after.match(/\d/);
-                if (this.testMatch(match[3]) && this.testMatch(matchedText) && contextClear) {
-                    matches.push(new PhoneMatch({
-                        tagBuilder: tagBuilder,
-                        matchedText: matchedText,
-                        offset: match.index,
-                        number: cleanNumber,
-                        plusSign: plusSign,
+                        offset: startIdx,
+                        email: matchedText.replace(mailtoSchemePrefixRe, ''),
                     }));
                 }
             }
-            return matches;
-        };
-        PhoneMatcher.prototype.testMatch = function (text) {
-            return nonDigitRe.test(text);
-        };
-        return PhoneMatcher;
-    }(Matcher));
-
-    // RegExp objects which are shared by all instances of MentionMatcher. These are
-    // here to avoid re-instantiating the RegExp objects if `Autolinker.link()` is
-    // called multiple times, thus instantiating MentionMatcher and its RegExp
-    // objects each time (which is very expensive - see https://github.com/gregjacobs/Autolinker.js/issues/314).
-    // See descriptions of the properties where they are used for details about them
-    var twitterRegex = new RegExp("@[_".concat(alphaNumericAndMarksCharsStr, "]{1,50}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 50 characters
-    var instagramRegex = new RegExp("@[_.".concat(alphaNumericAndMarksCharsStr, "]{1,30}(?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 30 characters
-    var soundcloudRegex = new RegExp("@[-_.".concat(alphaNumericAndMarksCharsStr, "]{1,50}(?![-_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 50 characters
-    // TikTok usernames are 1-24 characters containing letters, numbers, underscores
-    // and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
-    var tiktokRegex = new RegExp("@[_.".concat(alphaNumericAndMarksCharsStr, "]{1,23}[_").concat(alphaNumericAndMarksCharsStr, "](?![_").concat(alphaNumericAndMarksCharsStr, "])"), 'g'); // lookahead used to make sure we don't match something above 24 characters
-    var nonWordCharRegex = new RegExp('[^' + alphaNumericAndMarksCharsStr + ']');
-    /**
-     * @class Autolinker.matcher.Mention
-     * @extends Autolinker.matcher.Matcher
-     *
-     * Matcher to find/replace username matches in an input string.
-     */
-    var MentionMatcher = /** @class */ (function (_super) {
-        __extends(MentionMatcher, _super);
-        /**
-         * @method constructor
-         * @param {Object} cfg The configuration properties for the Match instance,
-         *   specified in an Object (map).
-         */
-        function MentionMatcher(cfg) {
-            var _this = _super.call(this, cfg) || this;
-            /**
-             * @cfg {'twitter'/'instagram'/'soundcloud'} protected
-             *
-             * The name of service to link @mentions to.
-             *
-             * Valid values are: 'twitter', 'instagram', 'soundcloud', or 'tiktok'
-             */
-            _this.serviceName = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
-            /**
-             * Hash of regular expression to match username handles. Example match:
-             *
-             *     @asdf
-             *
-             * @private
-             * @property {Object} matcherRegexes
-             */
-            _this.matcherRegexes = {
-                twitter: twitterRegex,
-                instagram: instagramRegex,
-                soundcloud: soundcloudRegex,
-                tiktok: tiktokRegex,
-            };
-            /**
-             * The regular expression to use to check the character before a username match to
-             * make sure we didn't accidentally match an email address.
-             *
-             * For example, the string "asdf@asdf.com" should not match "@asdf" as a username.
-             *
-             * @private
-             * @property {RegExp} nonWordCharRegex
-             */
-            _this.nonWordCharRegex = nonWordCharRegex;
-            _this.serviceName = cfg.serviceName;
-            return _this;
-        }
-        /**
-         * @inheritdoc
-         */
-        MentionMatcher.prototype.parseMatches = function (text) {
-            var serviceName = this.serviceName, matcherRegex = this.matcherRegexes[this.serviceName], nonWordCharRegex = this.nonWordCharRegex, tagBuilder = this.tagBuilder, matches = [], match;
-            if (!matcherRegex) {
-                return matches;
+            else if (stateMachine.type === 'hashtag') {
+                if (isValidHashtag(matchedText)) {
+                    matches.push(new HashtagMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: startIdx,
+                        serviceName: hashtagServiceName,
+                        hashtag: matchedText.slice(1),
+                    }));
+                }
             }
-            while ((match = matcherRegex.exec(text)) !== null) {
-                var offset = match.index, prevChar = text.charAt(offset - 1);
-                // If we found the match at the beginning of the string, or we found the match
-                // and there is a whitespace char in front of it (meaning it is not an email
-                // address), then it is a username match.
-                if (offset === 0 || nonWordCharRegex.test(prevChar)) {
-                    var matchedText = match[0].replace(/\.+$/g, ''), // strip off trailing .
-                    mention = matchedText.slice(1); // strip off the '@' character at the beginning
+            else if (stateMachine.type === 'mention') {
+                if (isValidMention(matchedText, mentionServiceName)) {
                     matches.push(new MentionMatch({
                         tagBuilder: tagBuilder,
                         matchedText: matchedText,
-                        offset: offset,
-                        serviceName: serviceName,
-                        mention: mention,
+                        offset: startIdx,
+                        serviceName: mentionServiceName,
+                        mention: matchedText.slice(1), // strip off the '@' character at the beginning
                     }));
                 }
             }
-            return matches;
+            else if (stateMachine.type === 'phone') {
+                // remove any trailing spaces that were considered as "separator"
+                // chars by the state machine
+                matchedText = matchedText.replace(/ +$/g, '');
+                if (isValidPhoneNumber(matchedText)) {
+                    var cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''); // strip out non-digit characters exclude comma semicolon and #
+                    matches.push(new PhoneMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: startIdx,
+                        number: cleanNumber,
+                        plusSign: matchedText.charAt(0) === '+',
+                    }));
+                }
+            }
+            else {
+                assertNever(stateMachine);
+            }
+        }
+    }
+    var openBraceRe = /[\(\{\[]/;
+    var closeBraceRe = /[\)\}\]]/;
+    var oppositeBrace = {
+        ')': '(',
+        '}': '{',
+        ']': '[',
+    };
+    /**
+     * Determines if a match found has unmatched closing parenthesis,
+     * square brackets or curly brackets. If so, these unbalanced symbol(s) will be
+     * removed from the URL match itself.
+     *
+     * A match may have an extra closing parenthesis/square brackets/curly brackets
+     * at the end of the match because these are valid URL path characters. For
+     * example, "wikipedia.com/something_(disambiguation)" should be auto-linked.
+     *
+     * However, an extra parenthesis *will* be included when the URL itself is
+     * wrapped in parenthesis, such as in the case of:
+     *
+     *     "(wikipedia.com/something_(disambiguation))"
+     *
+     * In this case, the last closing parenthesis should *not* be part of the
+     * URL itself, and this method will exclude it from the returned URL.
+     *
+     * For square brackets in URLs such as in PHP arrays, the same behavior as
+     * parenthesis discussed above should happen:
+     *
+     *     "[http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
+     *
+     * The very last closing square bracket should not be part of the URL itself,
+     * and therefore this method will remove it.
+     *
+     * @param matchedText The full matched URL/email/hashtag/etc. from the state
+     *   machine parser.
+     * @return The updated matched text with extraneous suffix characters removed.
+     */
+    function excludeUnbalancedTrailingBracesAndPunctuation(matchedText) {
+        var braceCounts = {
+            '(': 0,
+            '{': 0,
+            '[': 0,
         };
-        return MentionMatcher;
-    }(Matcher));
+        for (var i = 0; i < matchedText.length; i++) {
+            var char_1 = matchedText.charAt(i);
+            if (openBraceRe.test(char_1)) {
+                braceCounts[char_1]++;
+            }
+            else if (closeBraceRe.test(char_1)) {
+                braceCounts[oppositeBrace[char_1]]--;
+            }
+        }
+        var endIdx = matchedText.length - 1;
+        var char;
+        while (endIdx >= 0) {
+            char = matchedText.charAt(endIdx);
+            if (closeBraceRe.test(char)) {
+                var oppositeBraceChar = oppositeBrace[char];
+                if (braceCounts[oppositeBraceChar] < 0) {
+                    braceCounts[oppositeBraceChar]++;
+                    endIdx--;
+                }
+                else {
+                    break;
+                }
+            }
+            else if (urlSuffixedCharsNotAllowedAtEndRe.test(char)) {
+                // Walk back a punctuation char like '?', ',', ':', '.', etc.
+                endIdx--;
+            }
+            else {
+                break;
+            }
+        }
+        return matchedText.slice(0, endIdx + 1);
+    }
+    function createSchemeUrlStateMachine(startIdx, state) {
+        return {
+            type: 'url',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+            matchType: 'scheme',
+        };
+    }
+    function createTldUrlStateMachine(startIdx, state) {
+        return {
+            type: 'url',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+            matchType: 'tld',
+        };
+    }
+    function createIpV4UrlStateMachine(startIdx, state) {
+        return {
+            type: 'url',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+            matchType: 'ipV4',
+            octetsEncountered: 1, // starts at 1 because we create this machine when encountering the first octet
+        };
+    }
+    function createEmailStateMachine(startIdx, state) {
+        return {
+            type: 'email',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+        };
+    }
+    function createHashtagStateMachine(startIdx, state) {
+        return {
+            type: 'hashtag',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+        };
+    }
+    function createMentionStateMachine(startIdx, state) {
+        return {
+            type: 'mention',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+        };
+    }
+    function createPhoneNumberStateMachine(startIdx, state) {
+        return {
+            type: 'phone',
+            startIdx: startIdx,
+            state: state,
+            acceptStateReached: false,
+        };
+    }
 
     // For debugging: search for other "For debugging" lines
     // import CliTable from 'cli-table';
@@ -3058,7 +3298,7 @@
                     stateDoctype(char);
                     break;
                 default:
-                    throwUnhandledCaseError(state);
+                    assertNever(state);
             }
             // For debugging: search for other "For debugging" lines
             // ALSO: Temporarily remove the 'const' keyword on the State enum
@@ -3647,6 +3887,8 @@
              * The Autolinker version number exposed on the instance itself.
              *
              * Ex: 0.25.1
+             *
+             * @property {String} version
              */
             this.version = Autolinker.version;
             /**
@@ -3663,8 +3905,8 @@
              *
              *     urls: {
              *         schemeMatches : true,
-             *         wwwMatches    : true,
-             *         tldMatches    : true
+             *         tldMatches    : true,
+             *         ipV4Matches   : true
              *     }
              *
              * As shown above, this option also accepts an Object form with 3 properties
@@ -3674,15 +3916,16 @@
              * @cfg {Boolean} [urls.schemeMatches] `true` to match URLs found prefixed
              *   with a scheme, i.e. `http://google.com`, or `other+scheme://google.com`,
              *   `false` to prevent these types of matches.
-             * @cfg {Boolean} [urls.wwwMatches] `true` to match urls found prefixed with
-             *   `'www.'`, i.e. `www.google.com`. `false` to prevent these types of
-             *   matches. Note that if the URL had a prefixed scheme, and
-             *   `schemeMatches` is true, it will still be linked.
              * @cfg {Boolean} [urls.tldMatches] `true` to match URLs with known top
-             *   level domains (.com, .net, etc.) that are not prefixed with a scheme or
-             *   `'www.'`. This option attempts to match anything that looks like a URL
-             *   in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc. `false`
-             *   to prevent these types of matches.
+             *   level domains (.com, .net, etc.) that are not prefixed with a scheme
+             *   (such as 'http://'). This option attempts to match anything that looks
+             *   like a URL in the given text. Ex: `google.com`, `asdf.org/?page=1`, etc.
+             *   `false` to prevent these types of matches.
+             * @cfg {Boolean} [urls.ipV4Matches] `true` to match IPv4 addresses in text
+             *   that are not prefixed with a scheme (such as 'http://'). This option
+             *   attempts to match anything that looks like an IPv4 address in text. Ex:
+             *   `192.168.0.1`, `10.0.0.1/?page=1`, etc. `false` to prevent these types
+             *   of matches.
              */
             this.urls = {}; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
@@ -3721,6 +3964,7 @@
              * - 'twitter'
              * - 'instagram'
              * - 'soundcloud'
+             * - 'tiktok'
              *
              * Defaults to `false` to skip auto-linking of mentions.
              */
@@ -3899,16 +4143,6 @@
             this.sanitizeHtml = false; // default value just to get the above doc comment in the ES5 output and documentation generator
             /**
              * @private
-             * @property {Autolinker.matcher.Matcher[]} matchers
-             *
-             * The {@link Autolinker.matcher.Matcher} instances for this Autolinker
-             * instance.
-             *
-             * This is lazily created in {@link #getMatchers}.
-             */
-            this.matchers = null;
-            /**
-             * @private
              * @property {Autolinker.AnchorTagBuilder} tagBuilder
              *
              * The AnchorTagBuilder instance used to build match replacement anchor tags.
@@ -3917,26 +4151,23 @@
             this.tagBuilder = null;
             // Note: when `this.something` is used in the rhs of these assignments,
             //       it refers to the default values set above the constructor
-            this.urls = this.normalizeUrlsCfg(cfg.urls);
-            this.email = typeof cfg.email === 'boolean' ? cfg.email : this.email;
-            this.phone = typeof cfg.phone === 'boolean' ? cfg.phone : this.phone;
+            this.urls = normalizeUrlsCfg(cfg.urls);
+            this.email = isBoolean(cfg.email) ? cfg.email : this.email;
+            this.phone = isBoolean(cfg.phone) ? cfg.phone : this.phone;
             this.hashtag = cfg.hashtag || this.hashtag;
             this.mention = cfg.mention || this.mention;
-            this.newWindow = typeof cfg.newWindow === 'boolean' ? cfg.newWindow : this.newWindow;
-            this.stripPrefix = this.normalizeStripPrefixCfg(cfg.stripPrefix);
-            this.stripTrailingSlash =
-                typeof cfg.stripTrailingSlash === 'boolean'
-                    ? cfg.stripTrailingSlash
-                    : this.stripTrailingSlash;
-            this.decodePercentEncoding =
-                typeof cfg.decodePercentEncoding === 'boolean'
-                    ? cfg.decodePercentEncoding
-                    : this.decodePercentEncoding;
+            this.newWindow = isBoolean(cfg.newWindow) ? cfg.newWindow : this.newWindow;
+            this.stripPrefix = normalizeStripPrefixCfg(cfg.stripPrefix);
+            this.stripTrailingSlash = isBoolean(cfg.stripTrailingSlash)
+                ? cfg.stripTrailingSlash
+                : this.stripTrailingSlash;
+            this.decodePercentEncoding = isBoolean(cfg.decodePercentEncoding)
+                ? cfg.decodePercentEncoding
+                : this.decodePercentEncoding;
             this.sanitizeHtml = cfg.sanitizeHtml || false;
             // Validate the value of the `mention` cfg
             var mention = this.mention;
-            if (mention !== false &&
-                ['twitter', 'instagram', 'soundcloud', 'tiktok'].indexOf(mention) === -1) {
+            if (mention !== false && mentionServices.indexOf(mention) === -1) {
                 throw new Error("invalid `mention` cfg '".concat(mention, "' - see docs"));
             }
             // Validate the value of the `hashtag` cfg
@@ -3944,7 +4175,7 @@
             if (hashtag !== false && hashtagServices.indexOf(hashtag) === -1) {
                 throw new Error("invalid `hashtag` cfg '".concat(hashtag, "' - see docs"));
             }
-            this.truncate = this.normalizeTruncateCfg(cfg.truncate);
+            this.truncate = normalizeTruncateCfg(cfg.truncate);
             this.className = cfg.className || this.className;
             this.replaceFn = cfg.replaceFn || this.replaceFn;
             this.context = cfg.context || this;
@@ -4013,77 +4244,6 @@
             return autolinker.parse(textOrHtml);
         };
         /**
-         * Normalizes the {@link #urls} config into an Object with 3 properties:
-         * `schemeMatches`, `wwwMatches`, and `tldMatches`, all Booleans.
-         *
-         * See {@link #urls} config for details.
-         *
-         * @private
-         * @param {Boolean/Object} urls
-         * @return {Object}
-         */
-        Autolinker.prototype.normalizeUrlsCfg = function (urls) {
-            if (urls == null)
-                urls = true; // default to `true`
-            if (typeof urls === 'boolean') {
-                return { schemeMatches: urls, wwwMatches: urls, tldMatches: urls };
-            }
-            else {
-                // object form
-                return {
-                    schemeMatches: typeof urls.schemeMatches === 'boolean' ? urls.schemeMatches : true,
-                    wwwMatches: typeof urls.wwwMatches === 'boolean' ? urls.wwwMatches : true,
-                    tldMatches: typeof urls.tldMatches === 'boolean' ? urls.tldMatches : true,
-                };
-            }
-        };
-        /**
-         * Normalizes the {@link #stripPrefix} config into an Object with 2
-         * properties: `scheme`, and `www` - both Booleans.
-         *
-         * See {@link #stripPrefix} config for details.
-         *
-         * @private
-         * @param {Boolean/Object} stripPrefix
-         * @return {Object}
-         */
-        Autolinker.prototype.normalizeStripPrefixCfg = function (stripPrefix) {
-            if (stripPrefix == null)
-                stripPrefix = true; // default to `true`
-            if (typeof stripPrefix === 'boolean') {
-                return { scheme: stripPrefix, www: stripPrefix };
-            }
-            else {
-                // object form
-                return {
-                    scheme: typeof stripPrefix.scheme === 'boolean' ? stripPrefix.scheme : true,
-                    www: typeof stripPrefix.www === 'boolean' ? stripPrefix.www : true,
-                };
-            }
-        };
-        /**
-         * Normalizes the {@link #truncate} config into an Object with 2 properties:
-         * `length` (Number), and `location` (String).
-         *
-         * See {@link #truncate} config for details.
-         *
-         * @private
-         * @param {Number/Object} truncate
-         * @return {Object}
-         */
-        Autolinker.prototype.normalizeTruncateCfg = function (truncate) {
-            if (typeof truncate === 'number') {
-                return { length: truncate, location: 'end' };
-            }
-            else {
-                // object, or undefined/null
-                return defaults(truncate || {}, {
-                    length: Number.POSITIVE_INFINITY,
-                    location: 'end',
-                });
-            }
-        };
-        /**
          * Parses the input `textOrHtml` looking for URLs, email addresses, phone
          * numbers, username handles, and hashtags (depending on the configuration
          * of the Autolinker instance), and returns an array of {@link Autolinker.match.Match}
@@ -4134,8 +4294,8 @@
                         // include the trailing '&' in the URL. See issue #76
                         // TODO: Handle HTML entities separately in parseHtml() and
                         // don't emit them as "text" except for &amp; entities
-                        var htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi;
-                        var textSplit = splitAndCapture(text, htmlCharacterEntitiesRegex);
+                        var htmlCharacterEntitiesRegex = /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi; // NOTE: capturing group is significant to include the split characters in the .split() call below
+                        var textSplit = text.split(htmlCharacterEntitiesRegex);
                         var currentOffset_1 = offset;
                         textSplit.forEach(function (splitText, i) {
                             // even number matches are text, odd numbers are html entities
@@ -4152,8 +4312,8 @@
                         skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                     }
                 },
-                onComment: function (offset) { },
-                onDoctype: function (offset) { }, // no need to process doctype nodes
+                onComment: function (_offset) { },
+                onDoctype: function (_offset) { }, // no need to process doctype nodes
             });
             // After we have found all matches, remove subsequent matches that
             // overlap with a previous match. This can happen for instance with URLs,
@@ -4222,31 +4382,31 @@
          */
         Autolinker.prototype.removeUnwantedMatches = function (matches) {
             if (!this.hashtag)
-                remove(matches, function (match) {
+                removeWithPredicate(matches, function (match) {
                     return match.getType() === 'hashtag';
                 });
             if (!this.email)
-                remove(matches, function (match) {
+                removeWithPredicate(matches, function (match) {
                     return match.getType() === 'email';
                 });
             if (!this.phone)
-                remove(matches, function (match) {
+                removeWithPredicate(matches, function (match) {
                     return match.getType() === 'phone';
                 });
             if (!this.mention)
-                remove(matches, function (match) {
+                removeWithPredicate(matches, function (match) {
                     return match.getType() === 'mention';
                 });
             if (!this.urls.schemeMatches) {
-                remove(matches, function (m) {
+                removeWithPredicate(matches, function (m) {
                     return m.getType() === 'url' && m.getUrlMatchType() === 'scheme';
                 });
             }
-            if (!this.urls.wwwMatches) {
-                remove(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'www'; });
-            }
             if (!this.urls.tldMatches) {
-                remove(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'tld'; });
+                removeWithPredicate(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'tld'; });
+            }
+            if (!this.urls.ipV4Matches) {
+                removeWithPredicate(matches, function (m) { return m.getType() === 'url' && m.getUrlMatchType() === 'ipV4'; });
             }
             return matches;
         };
@@ -4274,17 +4434,20 @@
         Autolinker.prototype.parseText = function (text, offset) {
             if (offset === void 0) { offset = 0; }
             offset = offset || 0;
-            var matchers = this.getMatchers(), matches = [];
-            for (var i = 0, numMatchers = matchers.length; i < numMatchers; i++) {
-                var textMatches = matchers[i].parseMatches(text);
-                // Correct the offset of each of the matches. They are originally
-                // the offset of the match within the provided text node, but we
-                // need to correct them to be relative to the original HTML input
-                // string (i.e. the one provided to #parse).
-                for (var j = 0, numTextMatches = textMatches.length; j < numTextMatches; j++) {
-                    textMatches[j].setOffset(offset + textMatches[j].getOffset());
-                }
-                matches.push.apply(matches, textMatches);
+            var matches = parseMatches(text, {
+                tagBuilder: this.getTagBuilder(),
+                stripPrefix: this.stripPrefix,
+                stripTrailingSlash: this.stripTrailingSlash,
+                decodePercentEncoding: this.decodePercentEncoding,
+                hashtagServiceName: this.hashtag,
+                mentionServiceName: this.mention || 'twitter',
+            });
+            // Correct the offset of each of the matches. They are originally
+            // the offset of the match within the provided text node, but we
+            // need to correct them to be relative to the original HTML input
+            // string (i.e. the one provided to #parse).
+            for (var i = 0, numTextMatches = matches.length; i < numTextMatches; i++) {
+                matches[i].setOffset(offset + matches[i].getOffset());
             }
             return matches;
         };
@@ -4362,40 +4525,6 @@
             }
         };
         /**
-         * Lazily instantiates and returns the {@link Autolinker.matcher.Matcher}
-         * instances for this Autolinker instance.
-         *
-         * @private
-         * @return {Autolinker.matcher.Matcher[]}
-         */
-        Autolinker.prototype.getMatchers = function () {
-            if (!this.matchers) {
-                var tagBuilder = this.getTagBuilder();
-                var matchers = [
-                    new HashtagMatcher({
-                        tagBuilder: tagBuilder,
-                        serviceName: this.hashtag,
-                    }),
-                    new EmailMatcher({ tagBuilder: tagBuilder }),
-                    new PhoneMatcher({ tagBuilder: tagBuilder }),
-                    new MentionMatcher({
-                        tagBuilder: tagBuilder,
-                        serviceName: this.mention,
-                    }),
-                    new UrlMatcher({
-                        tagBuilder: tagBuilder,
-                        stripPrefix: this.stripPrefix,
-                        stripTrailingSlash: this.stripTrailingSlash,
-                        decodePercentEncoding: this.decodePercentEncoding,
-                    }),
-                ];
-                return (this.matchers = matchers);
-            }
-            else {
-                return this.matchers;
-            }
-        };
-        /**
          * Returns the {@link #tagBuilder} instance for this Autolinker instance,
          * lazily instantiating it if it does not yet exist.
          *
@@ -4423,42 +4552,79 @@
          * Ex: 3.15.0
          */
         Autolinker.version = version;
-        /**
-         * For backwards compatibility with Autolinker 1.x, the AnchorTagBuilder
-         * class is provided as a static on the Autolinker class.
-         */
-        Autolinker.AnchorTagBuilder = AnchorTagBuilder;
-        /**
-         * For backwards compatibility with Autolinker 1.x, the HtmlTag class is
-         * provided as a static on the Autolinker class.
-         */
-        Autolinker.HtmlTag = HtmlTag;
-        /**
-         * For backwards compatibility with Autolinker 1.x, the Matcher classes are
-         * provided as statics on the Autolinker class.
-         */
-        Autolinker.matcher = {
-            Email: EmailMatcher,
-            Hashtag: HashtagMatcher,
-            Matcher: Matcher,
-            Mention: MentionMatcher,
-            Phone: PhoneMatcher,
-            Url: UrlMatcher,
-        };
-        /**
-         * For backwards compatibility with Autolinker 1.x, the Match classes are
-         * provided as statics on the Autolinker class.
-         */
-        Autolinker.match = {
-            Email: EmailMatch,
-            Hashtag: HashtagMatch,
-            Match: Match,
-            Mention: MentionMatch,
-            Phone: PhoneMatch,
-            Url: UrlMatch,
-        };
         return Autolinker;
     }());
+    /**
+     * Normalizes the {@link #urls} config into an Object with its 2 properties:
+     * `schemeMatches` and `tldMatches`, both booleans.
+     *
+     * See {@link #urls} config for details.
+     *
+     * @private
+     * @param {Boolean/Object} urls
+     * @return {Object}
+     */
+    function normalizeUrlsCfg(urls) {
+        if (urls == null)
+            urls = true; // default to `true`
+        if (isBoolean(urls)) {
+            return { schemeMatches: urls, tldMatches: urls, ipV4Matches: urls };
+        }
+        else {
+            // object form
+            return {
+                schemeMatches: isBoolean(urls.schemeMatches) ? urls.schemeMatches : true,
+                tldMatches: isBoolean(urls.tldMatches) ? urls.tldMatches : true,
+                ipV4Matches: isBoolean(urls.ipV4Matches) ? urls.ipV4Matches : true,
+            };
+        }
+    }
+    /**
+     * Normalizes the {@link #stripPrefix} config into an Object with 2
+     * properties: `scheme`, and `www` - both Booleans.
+     *
+     * See {@link #stripPrefix} config for details.
+     *
+     * @private
+     * @param {Boolean/Object} stripPrefix
+     * @return {Object}
+     */
+    function normalizeStripPrefixCfg(stripPrefix) {
+        if (stripPrefix == null)
+            stripPrefix = true; // default to `true`
+        if (isBoolean(stripPrefix)) {
+            return { scheme: stripPrefix, www: stripPrefix };
+        }
+        else {
+            // object form
+            return {
+                scheme: isBoolean(stripPrefix.scheme) ? stripPrefix.scheme : true,
+                www: isBoolean(stripPrefix.www) ? stripPrefix.www : true,
+            };
+        }
+    }
+    /**
+     * Normalizes the {@link #truncate} config into an Object with 2 properties:
+     * `length` (Number), and `location` (String).
+     *
+     * See {@link #truncate} config for details.
+     *
+     * @private
+     * @param {Number/Object} truncate
+     * @return {Object}
+     */
+    function normalizeTruncateCfg(truncate) {
+        if (typeof truncate === 'number') {
+            return { length: truncate, location: 'end' };
+        }
+        else {
+            // object, or undefined/null
+            return defaults(truncate || {}, {
+                length: Number.POSITIVE_INFINITY,
+                location: 'end',
+            });
+        }
+    }
 
     return Autolinker;
 

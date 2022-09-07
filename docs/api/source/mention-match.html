@@ -19,10 +19,10 @@
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 exports.MentionMatch = void 0;
 var tslib_1 = require(&quot;tslib&quot;);
-var match_1 = require(&quot;./match&quot;);
+var abstract_match_1 = require(&quot;./abstract-match&quot;);
 <span id='Autolinker-match-Mention'>/**
 </span> * @class Autolinker.match.Mention
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Mention match found in an input string which should be Autolinked.
  *
@@ -37,6 +37,15 @@ var MentionMatch =  (function (_super) {
      */
     function MentionMatch(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-match-Mention-property-type'>        /**
+</span>         * @public
+         * @property {&#39;mention&#39;} type
+         *
+         * A string name for the type of match that this class represents. Can be
+         * used in a TypeScript discriminating union to type-narrow from the
+         * `Match` type.
+         */
+        _this.type = &#39;mention&#39;;
 <span id='Autolinker-match-Mention-cfg-serviceName'>        /**
 </span>         * @cfg {String} serviceName
          *
@@ -123,7 +132,7 @@ var MentionMatch =  (function (_super) {
         return cssClassSuffixes;
     };
     return MentionMatch;
-}(match_1.Match));
+}(abstract_match_1.AbstractMatch));
 exports.MentionMatch = MentionMatch;
 //# sourceMappingURL=mention-match.js.map</pre>
 </body>

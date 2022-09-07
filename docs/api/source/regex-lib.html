@@ -24,7 +24,7 @@
  * regular expressions that are shared between source files.
  */
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
-exports.domainNameCharRegex = exports.domainNameRegex = exports.getDomainNameStr = exports.alphaNumericAndMarksCharRe = exports.alphaNumericAndMarksCharsStr = exports.alphaNumericCharsStr = exports.decimalNumbersStr = exports.alphaCharsAndMarksStr = exports.marksStr = exports.emojiStr = exports.alphaCharsStr = exports.controlCharsRe = exports.quoteRe = exports.whitespaceRe = exports.nonDigitRe = exports.digitRe = exports.letterRe = void 0;
+exports.alphaNumericAndMarksRe = exports.alphaNumericAndMarksCharsStr = exports.alphaNumericCharsRe = exports.decimalNumbersStr = exports.alphaCharsAndMarksStr = exports.marksStr = exports.emojiStr = exports.alphaCharsStr = exports.controlCharsRe = exports.quoteRe = exports.whitespaceRe = exports.nonDigitRe = exports.digitRe = exports.letterRe = void 0;
 <span id='global-property-letterRe'>/**
 </span> * Regular expression to match upper and lowercase ASCII letters
  */
@@ -145,15 +145,15 @@ exports.alphaCharsAndMarksStr = exports.alphaCharsStr + exports.emojiStr + expor
 // prettier-ignore
 exports.decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\u1040-\u1049\u1090-\u1099\u17E0-\u17E9\u1810-\u1819\u1946-\u194F\u19D0-\u19D9\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\uA620-\uA629\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19/
     .source; // see note in above variable description
-<span id='global-property-alphaNumericCharsStr'>/**
-</span> * The string form of a regular expression that would match all of the
- * letters and decimal number chars in the unicode character set when placed in
- * a RegExp character class (`[]`).
+<span id='global-property-alphaNumericCharsRe'>/**
+</span> * The regular expression that will match all of the letters and decimal number
+ * chars in the unicode character set when placed in a RegExp character class
+ * (`[]`).
  *
  * These would be the characters matched by unicode regex engines
  * `[\p{L}\p{Nd}]` escape (&quot;all letters and decimal numbers&quot;)
  */
-exports.alphaNumericCharsStr = exports.alphaCharsAndMarksStr + exports.decimalNumbersStr;
+exports.alphaNumericCharsRe = new RegExp(&quot;[&quot;.concat(exports.alphaCharsStr + exports.decimalNumbersStr, &quot;]&quot;));
 <span id='global-property-alphaNumericAndMarksCharsStr'>/**
 </span> * The string form of a regular expression that would match all of the
  * letters, combining marks, and decimal number chars in the unicode character
@@ -164,38 +164,11 @@ exports.alphaNumericCharsStr = exports.alphaCharsAndMarksStr + exports.decimalNu
  * numbers&quot;)
  */
 exports.alphaNumericAndMarksCharsStr = exports.alphaCharsAndMarksStr + exports.decimalNumbersStr;
-<span id='global-property-alphaNumericAndMarksCharRe'>/**
+<span id='global-property-alphaNumericAndMarksRe'>/**
 </span> * The regular expression that will match a single letter of the
  * {@link #alphaNumericAndMarksCharsStr}.
  */
-exports.alphaNumericAndMarksCharRe = new RegExp(&quot;[&quot;.concat(exports.alphaNumericAndMarksCharsStr, &quot;]&quot;));
-// Simplified IP regular expression
-var ipStr = &#39;(?:[&#39; + exports.decimalNumbersStr + &#39;]{1,3}\\.){3}[&#39; + exports.decimalNumbersStr + &#39;]{1,3}&#39;;
-// Protected domain label which do not allow &quot;-&quot; or &quot;_&quot; character on the beginning and the end of a single label
-// prettier-ignore
-var domainLabelStr = &#39;[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;](?:[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;\\-_]{0,61}[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;])?&#39;;
-var getDomainLabelStr = function (group) {
-    return &#39;(?=(&#39; + domainLabelStr + &#39;))\\&#39; + group;
-};
-<span id='global-property-'>/**
-</span> * A function to match domain names of a URL or email address.
- * Ex: &#39;google&#39;, &#39;yahoo&#39;, &#39;some-other-company&#39;, etc.
- */
-// prettier-ignore
-var getDomainNameStr = function (group) {
-    return &#39;(?:&#39; + getDomainLabelStr(group) + &#39;(?:\\.&#39; + getDomainLabelStr(group + 1) + &#39;){0,126}|&#39; + ipStr + &#39;)&#39;;
-};
-exports.getDomainNameStr = getDomainNameStr;
-<span id='global-property-domainNameRegex'>/**
-</span> * A regular expression to match domain names of a URL or email address.
- * Ex: &#39;google&#39;, &#39;yahoo&#39;, &#39;some-other-company&#39;, etc.
- */
-exports.domainNameRegex = new RegExp(&#39;[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;.\\-]*[&#39; + exports.alphaNumericAndMarksCharsStr + &#39;\\-]&#39;);
-<span id='global-property-domainNameCharRegex'>/**
-</span> * A regular expression that is simply the character class of the characters
- * that may be used in a domain name, minus the &#39;-&#39; or &#39;.&#39;
- */
-exports.domainNameCharRegex = exports.alphaNumericAndMarksCharRe;
+exports.alphaNumericAndMarksRe = new RegExp(&quot;[&quot;.concat(exports.alphaNumericAndMarksCharsStr, &quot;]&quot;));
 //# sourceMappingURL=regex-lib.js.map</pre>
 </body>
 </html>

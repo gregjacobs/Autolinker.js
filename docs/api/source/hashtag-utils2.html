@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.hashtagServices = exports.isValidHashtag = exports.isHashtagTextChar = void 0;
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+<span id='global-method-isHashtagTextChar'>/**
+</span> * Determines if the given `char` is a an allowed character in a hashtag. These
+ * are underscores or any alphanumeric char.
+ */
+function isHashtagTextChar(char) {
+    return char === &#39;_&#39; || regex_lib_1.alphaNumericAndMarksRe.test(char);
+}
+exports.isHashtagTextChar = isHashtagTextChar;
+<span id='global-method-isValidHashtag'>/**
+</span> * Determines if a hashtag match is valid.
+ */
+function isValidHashtag(hashtag) {
+    // Max length of 140 for a hashtag (&#39;#&#39; char + 139 word chars)
+    return hashtag.length &lt;= 140;
+}
+exports.isValidHashtag = isValidHashtag;
+exports.hashtagServices = [&#39;twitter&#39;, &#39;facebook&#39;, &#39;instagram&#39;, &#39;tiktok&#39;];
+//# sourceMappingURL=hashtag-utils.js.map</pre>
+</body>
+</html>

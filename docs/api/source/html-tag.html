@@ -18,7 +18,7 @@
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 exports.HtmlTag = void 0;
-var utils_1 = require(&quot;./utils&quot;);
+var regex_lib_1 = require(&quot;./regex-lib&quot;);
 <span id='Autolinker-HtmlTag'>/**
 </span> * @class Autolinker.HtmlTag
  * @extends Object
@@ -122,13 +122,6 @@ var HtmlTag =  (function () {
          * The inner HTML for the tag.
          */
         this.innerHTML = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
-<span id='Autolinker-HtmlTag-property-whitespaceRegex'>        /**
-</span>         * @protected
-         * @property {RegExp} whitespaceRegex
-         *
-         * Regular expression used to match whitespace in a string of CSS classes.
-         */
-        this.whitespaceRegex = /\s+/; // default value just to get the above doc comment in the ES5 output and documentation generator
         this.tagName = cfg.tagName || &#39;&#39;;
         this.attrs = cfg.attrs || {};
         this.innerHTML = cfg.innerHtml || cfg.innerHTML || &#39;&#39;; // accept either the camelCased form or the fully capitalized acronym as in the DOM
@@ -206,9 +199,9 @@ var HtmlTag =  (function () {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     HtmlTag.prototype.addClass = function (cssClass) {
-        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), newClasses = cssClass.split(whitespaceRegex), newClass;
+        var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(regex_lib_1.whitespaceRe), newClasses = cssClass.split(regex_lib_1.whitespaceRe), newClass;
         while ((newClass = newClasses.shift())) {
-            if ((0, utils_1.indexOf)(classes, newClass) === -1) {
+            if (classes.indexOf(newClass) === -1) {
                 classes.push(newClass);
             }
         }
@@ -222,9 +215,9 @@ var HtmlTag =  (function () {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     HtmlTag.prototype.removeClass = function (cssClass) {
-        var classAttr = this.getClass(), whitespaceRegex = this.whitespaceRegex, classes = !classAttr ? [] : classAttr.split(whitespaceRegex), removeClasses = cssClass.split(whitespaceRegex), removeClass;
+        var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(regex_lib_1.whitespaceRe), removeClasses = cssClass.split(regex_lib_1.whitespaceRe), removeClass;
         while (classes.length &amp;&amp; (removeClass = removeClasses.shift())) {
-            var idx = (0, utils_1.indexOf)(classes, removeClass);
+            var idx = classes.indexOf(removeClass);
             if (idx !== -1) {
                 classes.splice(idx, 1);
             }
@@ -286,7 +279,7 @@ var HtmlTag =  (function () {
         return this.getInnerHTML();
     };
 <span id='Autolinker-HtmlTag-method-toAnchorString'>    /**
-</span>     * Override of superclass method used to generate the HTML string for the tag.
+</span>     * Generates the HTML string for the tag.
      *
      * @return {String}
      */

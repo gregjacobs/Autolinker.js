@@ -155,7 +155,7 @@ function parseHtml(html, _a) {
                 stateDoctype(char);
                 break;
             default:
-                (0, utils_1.throwUnhandledCaseError)(state);
+                (0, utils_1.assertNever)(state);
         }
         // For debugging: search for other &quot;For debugging&quot; lines
         // ALSO: Temporarily remove the &#39;const&#39; keyword on the State enum

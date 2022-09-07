@@ -19,10 +19,11 @@
 Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
 exports.HashtagMatch = void 0;
 var tslib_1 = require(&quot;tslib&quot;);
-var match_1 = require(&quot;./match&quot;);
+var utils_1 = require(&quot;../utils&quot;);
+var abstract_match_1 = require(&quot;./abstract-match&quot;);
 <span id='Autolinker-match-Hashtag'>/**
 </span> * @class Autolinker.match.Hashtag
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Hashtag match found in an input string which should be
  * Autolinked.
@@ -39,13 +40,22 @@ var HashtagMatch =  (function (_super) {
      */
     function HashtagMatch(cfg) {
         var _this = _super.call(this, cfg) || this;
+<span id='Autolinker-match-Hashtag-property-type'>        /**
+</span>         * @public
+         * @property {&#39;hashtag&#39;} type
+         *
+         * A string name for the type of match that this class represents. Can be
+         * used in a TypeScript discriminating union to type-narrow from the
+         * `Match` type.
+         */
+        _this.type = &#39;hashtag&#39;;
 <span id='Autolinker-match-Hashtag-cfg-serviceName'>        /**
 </span>         * @cfg {String} serviceName
          *
          * The service to point hashtag matches to. See {@link Autolinker#hashtag}
          * for available values.
          */
-        _this.serviceName = &#39;&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
+        _this.serviceName = &#39;twitter&#39;; // default value just to get the above doc comment in the ES5 output and documentation generator
 <span id='Autolinker-match-Hashtag-cfg-hashtag'>        /**
 </span>         * @cfg {String} hashtag (required)
          *
@@ -99,8 +109,9 @@ var HashtagMatch =  (function (_super) {
             case &#39;tiktok&#39;:
                 return &#39;https://www.tiktok.com/tag/&#39; + hashtag;
             default:
-                // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case.
-                throw new Error(&#39;Unknown service name to point hashtag to: &#39; + serviceName);
+                // Shouldn&#39;t happen because Autolinker&#39;s constructor should block any invalid values, but just in case
+                (0, utils_1.assertNever)(serviceName);
+                throw new Error(&quot;Invalid hashtag service: &quot;.concat(serviceName));
         }
     };
 <span id='Autolinker-match-Hashtag-method-getAnchorText'>    /**
@@ -111,8 +122,22 @@ var HashtagMatch =  (function (_super) {
     HashtagMatch.prototype.getAnchorText = function () {
         return &#39;#&#39; + this.hashtag;
     };
+<span id='Autolinker-match-Hashtag-method-getCssClassSuffixes'>    /**
+</span>     * Returns the CSS class suffixes that should be used on a tag built with
+     * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+     * details.
+     *
+     * @return {String[]}
+     */
+    HashtagMatch.prototype.getCssClassSuffixes = function () {
+        var cssClassSuffixes = _super.prototype.getCssClassSuffixes.call(this), serviceName = this.getServiceName();
+        if (serviceName) {
+            cssClassSuffixes.push(serviceName);
+        }
+        return cssClassSuffixes;
+    };
     return HashtagMatch;
-}(match_1.Match));
+}(abstract_match_1.AbstractMatch));
 exports.HashtagMatch = HashtagMatch;
 //# sourceMappingURL=hashtag-match.js.map</pre>
 </body>

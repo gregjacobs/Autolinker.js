@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+Object.defineProperty(exports, &quot;__esModule&quot;, { value: true });
+exports.isValidEmail = exports.isEmailLocalPartChar = exports.isEmailLocalPartStartChar = exports.mailtoSchemePrefixRe = void 0;
+var regex_lib_1 = require(&quot;../regex-lib&quot;);
+var uri_utils_1 = require(&quot;./uri-utils&quot;);
+<span id='global-property-mailtoSchemePrefixRe'>/**
+</span> * A regular expression to match a &#39;mailto:&#39; prefix on an email address.
+ */
+exports.mailtoSchemePrefixRe = /^mailto:/i;
+<span id='global-property-emailLocalPartCharRegex'>/**
+</span> * Regular expression for all of the valid characters of the local part of an
+ * email address.
+ */
+var emailLocalPartCharRegex = new RegExp(&quot;[&quot;.concat(regex_lib_1.alphaNumericAndMarksCharsStr, &quot;!#$%&amp;&#39;*+/=?^_`{|}~-]&quot;));
+<span id='global-method-isEmailLocalPartStartChar'>/**
+</span> * Determines if the given character may start the &quot;local part&quot; of an email
+ * address. The local part is the part to the left of the &#39;@&#39; sign.
+ *
+ * Technically according to the email spec, any of the characters in the
+ * {@link emailLocalPartCharRegex} can start an email address (including any of
+ * the special characters), but this is so rare in the wild and the
+ * implementation is much simpler by only starting an email address with a word
+ * character. This is especially important when matching the &#39;{&#39; character which
+ * generally starts a brace that isn&#39;t part of the email address.
+ */
+function isEmailLocalPartStartChar(char) {
+    return regex_lib_1.alphaNumericAndMarksRe.test(char);
+}
+exports.isEmailLocalPartStartChar = isEmailLocalPartStartChar;
+<span id='global-method-isEmailLocalPartChar'>/**
+</span> * Determines if the given character can be part of the &quot;local part&quot; of an email
+ * address. The local part is the part to the left of the &#39;@&#39; sign.
+ */
+function isEmailLocalPartChar(char) {
+    return emailLocalPartCharRegex.test(char);
+}
+exports.isEmailLocalPartChar = isEmailLocalPartChar;
+<span id='global-method-isValidEmail'>/**
+</span> * Determines if the given email address is valid. We consider it valid if it
+ * has a valid TLD in its host.
+ *
+ * @param emailAddress email address
+ * @return true is email have valid TLD, false otherwise
+ */
+function isValidEmail(emailAddress) {
+    var emailAddressTld = emailAddress.split(&#39;.&#39;).pop() || &#39;&#39;;
+    return (0, uri_utils_1.isKnownTld)(emailAddressTld);
+}
+exports.isValidEmail = isValidEmail;
+//# sourceMappingURL=email-utils.js.map</pre>
+</body>
+</html>
