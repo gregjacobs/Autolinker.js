@@ -1,14 +1,24 @@
-import { Match, MatchConfig } from './match';
+import { AbstractMatchConfig, AbstractMatch } from './abstract-match';
 
 /**
  * @class Autolinker.match.Email
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Email match found in an input string which should be Autolinked.
  *
  * See this class's superclass ({@link Autolinker.match.Match}) for more details.
  */
-export class EmailMatch extends Match {
+export class EmailMatch extends AbstractMatch {
+    /**
+     * @public
+     * @property {'email'} type
+     *
+     * A string name for the type of match that this class represents. Can be
+     * used in a TypeScript discriminating union to type-narrow from the
+     * `Match` type.
+     */
+    public readonly type: 'email' = 'email';
+
     /**
      * @cfg {String} email (required)
      *
@@ -33,7 +43,7 @@ export class EmailMatch extends Match {
      *
      * @return {String}
      */
-    getType() {
+    getType(): 'email' {
         return 'email';
     }
 
@@ -65,6 +75,6 @@ export class EmailMatch extends Match {
     }
 }
 
-export interface EmailMatchConfig extends MatchConfig {
+export interface EmailMatchConfig extends AbstractMatchConfig {
     email: string;
 }

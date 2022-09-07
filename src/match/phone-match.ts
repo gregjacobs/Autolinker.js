@@ -1,8 +1,8 @@
-import { Match, MatchConfig } from './match';
+import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
 
 /**
  * @class Autolinker.match.Phone
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Phone number match found in an input string which should be
  * Autolinked.
@@ -10,7 +10,17 @@ import { Match, MatchConfig } from './match';
  * See this class's superclass ({@link Autolinker.match.Match}) for more
  * details.
  */
-export class PhoneMatch extends Match {
+export class PhoneMatch extends AbstractMatch {
+    /**
+     * @public
+     * @property {'phone'} type
+     *
+     * A string name for the type of match that this class represents. Can be
+     * used in a TypeScript discriminating union to type-narrow from the
+     * `Match` type.
+     */
+    public readonly type: 'phone' = 'phone';
+
     /**
      * @protected
      * @property {String} number (required)
@@ -50,7 +60,7 @@ export class PhoneMatch extends Match {
      *
      * @return {String}
      */
-    getType() {
+    getType(): 'phone' {
         return 'phone';
     }
 
@@ -62,7 +72,7 @@ export class PhoneMatch extends Match {
      *
      * @return {String}
      */
-    getPhoneNumber() {
+    getPhoneNumber(): string {
         return this.number;
     }
 
@@ -74,7 +84,7 @@ export class PhoneMatch extends Match {
      *
      * @return {String}
      */
-    getNumber() {
+    getNumber(): string {
         return this.getPhoneNumber();
     }
 
@@ -83,7 +93,7 @@ export class PhoneMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorHref() {
+    getAnchorHref(): string {
         return 'tel:' + (this.plusSign ? '+' : '') + this.number;
     }
 
@@ -92,12 +102,12 @@ export class PhoneMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorText() {
+    getAnchorText(): string {
         return this.matchedText;
     }
 }
 
-export interface PhoneMatchConfig extends MatchConfig {
+export interface PhoneMatchConfig extends AbstractMatchConfig {
     number: string;
     plusSign: boolean;
 }

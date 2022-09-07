@@ -30,12 +30,4 @@ describe('Autolinker.js UMD file in browser', function () {
 
         expect(innerHTML).toBe('Go to <a href="http://google.com">google.com</a>');
     });
-
-    it('should expose `Autolinker.matcher.Matcher` so that it can be extended', async () => {
-        const typeofMatcher = await page.evaluate(() => {
-            return typeof (window as any).Autolinker.matcher.Matcher;
-        });
-
-        expect(typeofMatcher).toBe('function'); // constructor function
-    });
 });

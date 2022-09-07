@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
-import Autolinker, { MentionServices } from '../src/autolinker';
+import Autolinker from '../src/autolinker';
 import { UrlMatch } from '../src/match/url-match';
 import { EmailMatch } from '../src/match/email-match';
 import { HashtagMatch } from '../src/match/hashtag-match';
 import { MentionMatch } from '../src/match/mention-match';
 import { PhoneMatch } from '../src/match/phone-match';
 import { Match } from '../src/match/match';
-import { HashtagService } from '../src/matcher/hashtag-matcher';
+import { MentionService } from '../src/parser/mention-utils';
+import { HashtagService } from '../src/parser/hashtag-utils';
 
 describe('Autolinker', function () {
     describe('instantiating and using as a class', function () {
@@ -108,6 +109,7 @@ describe('Autolinker', function () {
         beforeEach(function () {
             autolinker = new Autolinker({ newWindow: false }); // so that target="_blank" is not added to resulting autolinked URLs
             twitterAutolinker = new Autolinker({
+                hashtag: 'twitter',
                 mention: 'twitter',
                 newWindow: false,
             });
@@ -617,15 +619,6 @@ describe('Autolinker', function () {
                 let result = autolinker.link(html);
                 expect(result).toBe(tobe);
             });
-
-            it('should parse joined matchers', function () {
-                var html = '+1123123123http://google.com';
-                var tobe =
-                    '<a href="tel:+1123123123">+1123123123</a><a href="http://google.com">google.com</a>';
-
-                var result = autolinker.link(html);
-                expect(result).toBe(tobe);
-            });
         });
 
         describe('HTML entity character handling', () => {
@@ -1103,7 +1096,7 @@ describe('Autolinker', function () {
         });
 
         describe('`urls` option', function () {
-            let str = 'http://google.com www.google.com google.com'; // the 3 types: scheme URL, www URL, and TLD (top level domain) URL
+            let str = 'http://google.com google.com 192.168.0.1'; // the 3 types: scheme URL, TLD (top level domain) URL, IPv4 address
 
             it('should link all 3 types if the `urls` option is `true`', function () {
                 let result = Autolinker.link(str, {
@@ -1115,8 +1108,8 @@ describe('Autolinker', function () {
                 expect(result).toBe(
                     [
                         '<a href="http://google.com">http://google.com</a>',
-                        '<a href="http://www.google.com">www.google.com</a>',
                         '<a href="http://google.com">google.com</a>',
+                        '<a href="http://192.168.0.1">192.168.0.1</a>',
                     ].join(' ')
                 );
             });
@@ -1128,9 +1121,7 @@ describe('Autolinker', function () {
                     urls: false,
                 });
 
-                expect(result).toBe(
-                    ['http://google.com', 'www.google.com', 'google.com'].join(' ')
-                );
+                expect(result).toBe(['http://google.com', 'google.com', '192.168.0.1'].join(' '));
             });
 
             it('should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function () {
@@ -1139,36 +1130,16 @@ describe('Autolinker', function () {
                     stripPrefix: false,
                     urls: {
                         schemeMatches: true,
-                        wwwMatches: false,
                         tldMatches: false,
+                        ipV4Matches: false,
                     },
                 });
 
                 expect(result).toBe(
                     [
                         '<a href="http://google.com">http://google.com</a>',
-                        'www.google.com',
                         'google.com',
-                    ].join(' ')
-                );
-            });
-
-            it('should only link www URLs if `wwwMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
-                    newWindow: false,
-                    stripPrefix: false,
-                    urls: {
-                        schemeMatches: false,
-                        wwwMatches: true,
-                        tldMatches: false,
-                    },
-                });
-
-                expect(result).toBe(
-                    [
-                        'http://google.com',
-                        '<a href="http://www.google.com">www.google.com</a>',
-                        'google.com',
+                        '192.168.0.1',
                     ].join(' ')
                 );
             });
@@ -1179,38 +1150,112 @@ describe('Autolinker', function () {
                     stripPrefix: false,
                     urls: {
                         schemeMatches: false,
-                        wwwMatches: false,
                         tldMatches: true,
+                        ipV4Matches: false,
                     },
                 });
 
                 expect(result).toBe(
                     [
                         'http://google.com',
-                        'www.google.com',
                         '<a href="http://google.com">google.com</a>',
+                        '192.168.0.1',
                     ].join(' ')
                 );
             });
 
-            it('should link both scheme and www matches, but not TLD matches when `tldMatches` is the only option that is `false`', function () {
+            it('should only link IPv4 addresses if `ipV4Matches` is the only `urls` option that is `true`', function () {
+                let result = Autolinker.link(str, {
+                    newWindow: false,
+                    stripPrefix: false,
+                    urls: {
+                        schemeMatches: false,
+                        tldMatches: false,
+                        ipV4Matches: true,
+                    },
+                });
+
+                expect(result).toBe(
+                    [
+                        'http://google.com',
+                        'google.com',
+                        '<a href="http://192.168.0.1">192.168.0.1</a>',
+                    ].join(' ')
+                );
+            });
+
+            it('should link both scheme and IPv4 matches, but not TLD matches when `tldMatches` is the only option that is `false`', function () {
                 let result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
                         schemeMatches: true,
-                        wwwMatches: true,
                         tldMatches: false,
+                        ipV4Matches: true,
                     },
                 });
 
                 expect(result).toBe(
                     [
                         '<a href="http://google.com">http://google.com</a>',
-                        '<a href="http://www.google.com">www.google.com</a>',
                         'google.com',
+                        '<a href="http://192.168.0.1">192.168.0.1</a>',
                     ].join(' ')
                 );
+            });
+
+            it('should link both scheme and TLD matches, but not IPv4 matches when `ipV4Matches` is the only option that is `false`', function () {
+                let result = Autolinker.link(str, {
+                    newWindow: false,
+                    stripPrefix: false,
+                    urls: {
+                        schemeMatches: true,
+                        tldMatches: true,
+                        ipV4Matches: false,
+                    },
+                });
+
+                expect(result).toBe(
+                    [
+                        '<a href="http://google.com">http://google.com</a>',
+                        '<a href="http://google.com">google.com</a>',
+                        '192.168.0.1',
+                    ].join(' ')
+                );
+            });
+
+            it('should link both TLD and IPv4 matches, but not scheme matches when `schemeMatches` is the only option that is `false`', function () {
+                let result = Autolinker.link(str, {
+                    newWindow: false,
+                    stripPrefix: false,
+                    urls: {
+                        schemeMatches: false,
+                        tldMatches: true,
+                        ipV4Matches: true,
+                    },
+                });
+
+                expect(result).toBe(
+                    [
+                        'http://google.com',
+                        '<a href="http://google.com">google.com</a>',
+                        '<a href="http://192.168.0.1">192.168.0.1</a>',
+                    ].join(' ')
+                );
+            });
+
+            it('should link nothing when all 3 urls options are set to `false`', function () {
+                let result = Autolinker.link(str, {
+                    newWindow: false,
+                    stripPrefix: false,
+                    urls: {
+                        schemeMatches: false,
+                        tldMatches: false,
+                        ipV4Matches: false,
+                    },
+                });
+
+                expect(result).toBe(['http://google.com', 'google.com', '192.168.0.1'].join(' '));
             });
         });
 
@@ -1640,163 +1685,346 @@ describe('Autolinker', function () {
                 });
             });
         });
-    });
 
-    describe('all match types tests', function () {
-        let testCases = {
-            schemeUrl: {
-                unlinked: 'http://google.com/path?param1=value1&param2=value2#hash',
-                linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&param2=value2#hash</a>',
-            },
-            wwwUrl: {
-                unlinked: 'www.google.com/path?param1=value1&param2=value2#hash',
-                linked: '<a href="http://www.google.com/path?param1=value1&param2=value2#hash">www.google.com/path?param1=value1&param2=value2#hash</a>',
-            },
-            tldUrl: {
-                unlinked: 'google.com/path?param1=value1&param2=value2#hash',
-                linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">google.com/path?param1=value1&param2=value2#hash</a>',
-            },
-            email: {
-                unlinked: 'asdf@asdf.com',
-                linked: '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
-            },
-            mention: {
-                unlinked: '@asdf',
-                linked: '<a href="https://twitter.com/asdf">@asdf</a>',
-            },
-            phone: {
-                unlinked: '123-456-7890',
-                linked: '<a href="tel:1234567890">123-456-7890</a>',
-            },
-            hashtag: {
-                unlinked: '#Winning',
-                linked: '<a href="https://twitter.com/hashtag/Winning">#Winning</a>',
-            },
-        };
+        describe('all match types tests', function () {
+            let testCases = {
+                schemeUrl: {
+                    unlinked: 'http://google.com/path?param1=value1&param2=value2#hash',
+                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&param2=value2#hash</a>',
+                },
+                tldUrl: {
+                    unlinked: 'google.com/path?param1=value1&param2=value2#hash',
+                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">google.com/path?param1=value1&param2=value2#hash</a>',
+                },
+                ipV4Url: {
+                    unlinked: '192.168.0.1/path?param1=value1&param2=value2#hash',
+                    linked: '<a href="http://192.168.0.1/path?param1=value1&param2=value2#hash">192.168.0.1/path?param1=value1&param2=value2#hash</a>',
+                },
+                email: {
+                    unlinked: 'asdf@asdf.com',
+                    linked: '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
+                },
+                mention: {
+                    unlinked: '@asdf',
+                    linked: '<a href="https://twitter.com/asdf">@asdf</a>',
+                },
+                phone: {
+                    unlinked: '123-456-7890',
+                    linked: '<a href="tel:1234567890">123-456-7890</a>',
+                },
+                hashtag: {
+                    unlinked: '#Winning',
+                    linked: '<a href="https://twitter.com/hashtag/Winning">#Winning</a>',
+                },
+            };
 
-        let numTestCaseKeys = Object.keys(testCases).length;
+            let numTestCaseKeys = Object.keys(testCases).length;
 
-        let paragraphTpl = _.template(
-            [
-                'Check link 1: <%= schemeUrl %>.',
-                'Check link 2: <%= wwwUrl %>.',
-                'Check link 3: <%= tldUrl %>.',
-                'My email is: <%= email %>.',
-                'My mention (twitter) username is <%= mention %>.',
-                'My phone number is <%= phone %>.',
-                'HashtagMatch <%= hashtag %>.',
-            ].join('\n')
-        );
+            let paragraphTpl = _.template(
+                [
+                    'Check link 1: <%= schemeUrl %>.',
+                    'Check link 2: <%= tldUrl %>.',
+                    'Check link 3: <%= ipV4Url %>.',
+                    'My email is: <%= email %>.',
+                    'My mention (twitter) username is <%= mention %>.',
+                    'My phone number is <%= phone %>.',
+                    'HashtagMatch <%= hashtag %>.',
+                ].join('\n')
+            );
 
-        let sourceParagraph = paragraphTpl({
-            schemeUrl: testCases.schemeUrl.unlinked,
-            wwwUrl: testCases.wwwUrl.unlinked,
-            tldUrl: testCases.tldUrl.unlinked,
-            email: testCases.email.unlinked,
-            mention: testCases.mention.unlinked,
-            phone: testCases.phone.unlinked,
-            hashtag: testCases.hashtag.unlinked,
-        });
+            let sourceParagraph = paragraphTpl({
+                schemeUrl: testCases.schemeUrl.unlinked,
+                tldUrl: testCases.tldUrl.unlinked,
+                ipV4Url: testCases.ipV4Url.unlinked,
+                email: testCases.email.unlinked,
+                mention: testCases.mention.unlinked,
+                phone: testCases.phone.unlinked,
+                hashtag: testCases.hashtag.unlinked,
+            });
 
-        it("should replace matches appropriately in a paragraph of text, using a variety of enabled matchers. Want to make sure that when one match type is disabled (such as emails), that other ones don't accidentally link part of them (such as from the url matcher)", function () {
-            interface MatcherTestConfig {
-                schemeMatches: boolean;
-                wwwMatches: boolean;
-                tldMatches: boolean;
-                email: boolean;
-                mention: MentionServices | false;
-                phone: boolean;
-                hashtag: HashtagService | false;
-            }
+            it("should replace matches appropriately in a paragraph of text, using a variety of enabled matchers. Want to make sure that when one match type is disabled (such as emails), that other ones don't accidentally link part of them (such as from the url matcher)", function () {
+                interface MatcherTestConfig {
+                    schemeMatches: boolean;
+                    tldMatches: boolean;
+                    ipV4Matches: boolean;
+                    email: boolean;
+                    mention: MentionService | false;
+                    phone: boolean;
+                    hashtag: HashtagService | false;
+                }
 
-            // We're going to run through every combination of matcher settings
-            // possible.
-            // 7 different settings and two possibilities for each (on or off)
-            // is 2^7 == 128 settings possibilities
-            for (let i = 0, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
-                let cfg: MatcherTestConfig = {
-                    schemeMatches: !!(i & parseInt('00000001', 2)),
-                    wwwMatches: !!(i & parseInt('00000010', 2)),
-                    tldMatches: !!(i & parseInt('00000100', 2)),
-                    email: !!(i & parseInt('00001000', 2)),
-                    mention: !!(i & parseInt('00010000', 2)) ? 'twitter' : false,
-                    phone: !!(i & parseInt('00100000', 2)),
-                    hashtag: !!(i & parseInt('01000000', 2)) ? 'twitter' : false,
-                };
+                // We're going to run through every combination of matcher settings
+                // possible.
+                // 7 different settings and two possibilities for each (on or off)
+                // is 2^7 == 128 settings possibilities
+                for (let i = 0, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
+                    let cfg: MatcherTestConfig = {
+                        schemeMatches: !!(i & parseInt('00000001', 2)),
+                        tldMatches: !!(i & parseInt('00000010', 2)),
+                        ipV4Matches: !!(i & parseInt('00000100', 2)),
+                        email: !!(i & parseInt('00001000', 2)),
+                        mention: !!(i & parseInt('00010000', 2)) ? 'twitter' : false,
+                        phone: !!(i & parseInt('00100000', 2)),
+                        hashtag: !!(i & parseInt('01000000', 2)) ? 'twitter' : false,
+                    };
 
-                let autolinker = new Autolinker({
-                    urls: {
-                        schemeMatches: cfg.schemeMatches,
-                        wwwMatches: cfg.wwwMatches,
-                        tldMatches: cfg.tldMatches,
-                    },
-                    email: cfg.email,
-                    mention: cfg.mention,
-                    phone: cfg.phone,
-                    hashtag: cfg.hashtag,
+                    let autolinker = new Autolinker({
+                        urls: {
+                            schemeMatches: cfg.schemeMatches,
+                            tldMatches: cfg.tldMatches,
+                            ipV4Matches: cfg.ipV4Matches,
+                        },
+                        email: cfg.email,
+                        mention: cfg.mention,
+                        phone: cfg.phone,
+                        hashtag: cfg.hashtag,
 
-                    newWindow: false,
-                    stripPrefix: false,
-                });
+                        newWindow: false,
+                        stripPrefix: false,
+                    });
 
-                let result = autolinker.link(sourceParagraph),
-                    resultLines = result.split('\n'), // splitting line-by-line to make it easier to see where a failure is
-                    expectedLines = generateExpectedLines(cfg);
+                    let result = autolinker.link(sourceParagraph),
+                        resultLines = result.split('\n'), // splitting line-by-line to make it easier to see where a failure is
+                        expectedLines = generateExpectedLines(cfg);
 
-                expect(resultLines.length).toBe(expectedLines.length); // just in case
+                    expect(resultLines.length).toBe(expectedLines.length); // just in case
 
-                for (let j = 0, jlen = expectedLines.length; j < jlen; j++) {
-                    if (resultLines[j] !== expectedLines[j]) {
-                        let errorMsg = generateErrMsg(resultLines[j], expectedLines[j], cfg);
-                        throw new Error(errorMsg);
+                    for (let j = 0, jlen = expectedLines.length; j < jlen; j++) {
+                        if (resultLines[j] !== expectedLines[j]) {
+                            let errorMsg = generateErrMsg(resultLines[j], expectedLines[j], cfg);
+                            throw new Error(errorMsg);
+                        }
                     }
                 }
-            }
 
-            function generateExpectedLines(cfg: MatcherTestConfig) {
-                let expectedLines = paragraphTpl({
-                    schemeUrl: cfg.schemeMatches
-                        ? testCases.schemeUrl.linked
-                        : testCases.schemeUrl.unlinked,
-                    wwwUrl: cfg.wwwMatches ? testCases.wwwUrl.linked : testCases.wwwUrl.unlinked,
-                    tldUrl: cfg.tldMatches ? testCases.tldUrl.linked : testCases.tldUrl.unlinked,
-                    email: cfg.email ? testCases.email.linked : testCases.email.unlinked,
-                    mention: cfg.mention ? testCases.mention.linked : testCases.mention.unlinked,
-                    phone: cfg.phone ? testCases.phone.linked : testCases.phone.unlinked,
-                    hashtag: cfg.hashtag ? testCases.hashtag.linked : testCases.hashtag.unlinked,
-                });
+                function generateExpectedLines(cfg: MatcherTestConfig) {
+                    let expectedLines = paragraphTpl({
+                        schemeUrl: cfg.schemeMatches
+                            ? testCases.schemeUrl.linked
+                            : testCases.schemeUrl.unlinked,
+                        tldUrl: cfg.tldMatches
+                            ? testCases.tldUrl.linked
+                            : testCases.tldUrl.unlinked,
+                        ipV4Url: cfg.ipV4Matches
+                            ? testCases.ipV4Url.linked
+                            : testCases.ipV4Url.unlinked,
+                        email: cfg.email ? testCases.email.linked : testCases.email.unlinked,
+                        mention: cfg.mention
+                            ? testCases.mention.linked
+                            : testCases.mention.unlinked,
+                        phone: cfg.phone ? testCases.phone.linked : testCases.phone.unlinked,
+                        hashtag: cfg.hashtag
+                            ? testCases.hashtag.linked
+                            : testCases.hashtag.unlinked,
+                    });
 
-                return expectedLines.split('\n'); // splitting line-by-line to make it easier to see where a failure is
-            }
+                    return expectedLines.split('\n'); // splitting line-by-line to make it easier to see where a failure is
+                }
 
-            function generateErrMsg(
-                resultLine: string,
-                expectedLine: string,
-                cfg: MatcherTestConfig
-            ) {
-                let errorMsg = ["Expected: '" + resultLine + "' to be '" + expectedLine + "'\n"];
+                function generateErrMsg(
+                    resultLine: string,
+                    expectedLine: string,
+                    cfg: MatcherTestConfig
+                ) {
+                    let errorMsg = [
+                        "Expected: '" + resultLine + "' to be '" + expectedLine + "'\n",
+                    ];
 
-                errorMsg.push('{');
-                _.forOwn(cfg, (value: any, key: string) => {
-                    errorMsg.push('\t' + key + ': ' + value);
-                });
-                errorMsg.push('}');
+                    errorMsg.push('{');
+                    _.forOwn(cfg, (value: any, key: string) => {
+                        errorMsg.push('\t' + key + ': ' + value);
+                    });
+                    errorMsg.push('}');
 
-                return errorMsg.join('\n');
-            }
+                    return errorMsg.join('\n');
+                }
+            });
+
+            it('should be able to parse a very long string', function () {
+                var testStr = (function () {
+                    var t: string[] = [];
+                    for (var i = 0; i < 50000; i++) {
+                        t.push(' foo');
+                    }
+                    return t.join('');
+                })();
+
+                var result = Autolinker.link(testStr);
+                expect(result).toBe(testStr);
+            });
         });
 
-        it('should be able to parse a very long string', function () {
-            var testStr = (function () {
-                var t: string[] = [];
-                for (var i = 0; i < 50000; i++) {
-                    t.push(' foo');
-                }
-                return t.join('');
-            })();
+        describe('combination matches (matches right next to each other) >', () => {
+            describe('starting with an email >', () => {
+                it(`followed by a URL if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('stuff@stuff.com/http://google.com');
+                    expect(result).toBe(
+                        '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="http://google.com">google.com</a>'
+                    );
+                });
 
-            var result = Autolinker.link(testStr);
-            expect(result).toBe(testStr);
+                it(`followed by an email if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('stuff@stuff.com/things@things.com');
+                    expect(result).toBe(
+                        '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="mailto:things@things.com">things@things.com</a>'
+                    );
+                });
+
+                it(`followed by a hashtag if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('stuff@stuff.com/#Stuff');
+                    expect(result).toBe(
+                        '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>'
+                    );
+                });
+
+                it(`followed by a mention if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('stuff@stuff.com/@stuff');
+                    expect(result).toBe(
+                        '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="https://twitter.com/stuff">@stuff</a>'
+                    );
+                });
+
+                it(`followed by a phone number if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('stuff@stuff.com/123-456-7890');
+                    expect(result).toBe(
+                        '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="tel:1234567890">123-456-7890</a>'
+                    );
+                });
+            });
+
+            describe('starting with phone number >', () => {
+                it('should parse a phone number directly next to a scheme-prefixed URL', function () {
+                    const result = autolinker.link('+1123123123http://google.com');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a><a href="http://google.com">google.com</a>'
+                    );
+                });
+
+                it(`should parse a phone number followed by a URL if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/http://google.com');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="http://google.com">google.com</a>'
+                    );
+                });
+
+                // Don't link a TLD next to a phone number. Could be weird in that a
+                // domain label could look like a phone number but is really just
+                // part of the domain label
+                // TODO: Should this definitely be the case?
+                it('should parse a phone number directly next to a TLD URL', function () {
+                    const result = autolinker.link('+1123123123google.com');
+                    expect(result).toBe('<a href="tel:+1123123123">+1123123123</a>google.com');
+                });
+
+                it(`followed by a URL if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/http://google.com');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="http://google.com">google.com</a>'
+                    );
+                });
+
+                it(`followed by an email if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/things@things.com');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="mailto:things@things.com">things@things.com</a>'
+                    );
+                });
+
+                it(`followed by a hashtag if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/#Stuff');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>'
+                    );
+                });
+
+                it(`followed by a mention if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/@stuff');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="https://twitter.com/stuff">@stuff</a>'
+                    );
+                });
+
+                it(`followed by a phone number if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('+1123123123/123-456-7890');
+                    expect(result).toBe(
+                        '<a href="tel:+1123123123">+1123123123</a>/<a href="tel:1234567890">123-456-7890</a>'
+                    );
+                });
+            });
+
+            describe('starting with a hashtag >', () => {
+                it(`followed by a URL if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('#Stuff/http://google.com');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="http://google.com">google.com</a>'
+                    );
+                });
+
+                it(`followed by an email if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('#Stuff/things@things.com');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="mailto:things@things.com">things@things.com</a>'
+                    );
+                });
+
+                it(`followed by a hashtag if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('#Stuff/#Things');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="https://twitter.com/hashtag/Things">#Things</a>'
+                    );
+                });
+
+                it(`followed by a mention if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('#Stuff/@things');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="https://twitter.com/things">@things</a>'
+                    );
+                });
+
+                it(`followed by a phone number if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('#Stuff/123-456-7890');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="tel:1234567890">123-456-7890</a>'
+                    );
+                });
+            });
+
+            describe('starting with a mention', () => {
+                it(`followed by a URL if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('@stuff/http://google.com');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/stuff">@stuff</a>/<a href="http://google.com">google.com</a>'
+                    );
+                });
+
+                it(`followed by an email if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('@stuff/things@things.com');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/stuff">@stuff</a>/<a href="mailto:things@things.com">things@things.com</a>'
+                    );
+                });
+
+                it(`followed by a hashtag if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('@stuff/#Things');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/stuff">@stuff</a>/<a href="https://twitter.com/hashtag/Things">#Things</a>'
+                    );
+                });
+
+                it(`followed by a mention if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('@stuff/@things');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/stuff">@stuff</a>/<a href="https://twitter.com/things">@things</a>'
+                    );
+                });
+
+                it(`followed by a phone number if separated by a '/'`, () => {
+                    const result = twitterAutolinker.link('@stuff/123-456-7890');
+                    expect(result).toBe(
+                        '<a href="https://twitter.com/stuff">@stuff</a>/<a href="tel:1234567890">123-456-7890</a>'
+                    );
+                });
+            });
         });
     });
 
@@ -1832,89 +2060,177 @@ describe('Autolinker', function () {
             expect(matches[4].getType()).toBe('hashtag');
             expect((matches[4] as HashtagMatch).getHashtag()).toBe('asdf2');
         });
-
-        // TODO: This will no longer work in the TypeScript version of the codebase (2.0)
-        // Need to implement providing a custom PhoneMatcher
-        xdescribe('custom Phone.prototype.matcherRegex', function () {
-            // const matcherRegexOriginal = PhoneMatcher.prototype.matcherRegex;
-            // const testMatchOriginal = PhoneMatcher.prototype.testMatch;
-
-            beforeEach(function () {
-                // const phoneInTextRegex = /(\+?852\-?)?[569]\d{3}\-?\d{4}/g;
-                // PhoneMatcher.prototype.matcherRegex = phoneInTextRegex;
-                // PhoneMatcher.prototype.testMatch = () => true;
-            });
-
-            afterEach(function () {
-                // PhoneMatcher.prototype.matcherRegex = matcherRegexOriginal;
-                // PhoneMatcher.prototype.testMatch = testMatchOriginal;
-            });
-
-            it('should match custom matcherRegex', function () {
-                let text = [
-                    '91234567',
-                    '9123-4567',
-                    '61234567',
-                    '51234567',
-                    '+85291234567',
-                    '+852-91234567',
-                    '+852-9123-4567',
-                    '852-91234567',
-                    // invalid
-                    '999',
-                    '+852-912345678',
-                    '123456789',
-                    '+852-1234-56789',
-                ].join(' / ');
-
-                let matches = Autolinker.parse(text, {
-                    hashtag: 'twitter',
-                    mention: 'twitter',
-                });
-
-                expect(matches.length).toBe(8);
-
-                expect(matches[0].getType()).toBe('phone');
-                expect((matches[0] as PhoneMatch).getNumber()).toBe('91234567');
-
-                expect(matches[2].getType()).toBe('phone');
-                expect((matches[2] as PhoneMatch).getNumber()).toBe('61234567');
-            });
-        });
     });
 
     describe('parse()', function () {
         it('should return an array of Match objects for the input', function () {
             let autolinker = new Autolinker({
-                hashtag: 'twitter',
-                mention: 'twitter',
+                mention: 'instagram',
+                hashtag: 'tiktok',
+                newWindow: false,
             });
 
             let text = [
-                'Website: asdf.com',
+                '<div>', // html tag to make sure that the 'offset' property is assigned correctly in the presence of them
+                'Website1: http://asdf.com',
+                'Website2: asdf.com',
+                'Website3: subdomain.asdf.com',
+                'Website4: //asdf.com',
+                'Website5: 192.168.0.1',
                 'EmailMatch: asdf@asdf.com',
                 'Phone: (123) 456-7890',
                 'Mention: @asdf1',
                 'HashtagMatch: #asdf2',
+                '</div>',
             ].join(' ');
             let matches = autolinker.parse(text);
 
-            expect(matches.length).toBe(5);
+            expect(matches.length).toBe(9);
 
-            expect(matches[0].getType()).toBe('url');
-            expect((matches[0] as UrlMatch).getUrl()).toBe('http://asdf.com');
+            const [
+                schemeMatch,
+                tldMatch,
+                subdomainTldMatch,
+                protocolRelativeMatch,
+                ipV4Match,
+                emailMatch,
+                phoneMatch,
+                mentionMatch,
+                hashtagMatch,
+            ] = matches;
 
-            expect(matches[1].getType()).toBe('email');
-            expect((matches[1] as EmailMatch).getEmail()).toBe('asdf@asdf.com');
+            if (schemeMatch.type !== 'url') {
+                throw new Error('matches[0] should be a url match');
+            }
+            if (tldMatch.type !== 'url') {
+                throw new Error('matches[1] should be a url match');
+            }
+            if (subdomainTldMatch.type !== 'url') {
+                throw new Error('matches[2] should be a url match');
+            }
+            if (protocolRelativeMatch.type !== 'url') {
+                throw new Error('matches[3] should be a url match');
+            }
+            if (ipV4Match.type !== 'url') {
+                throw new Error('matches[4] should be a url match');
+            }
+            if (emailMatch.type !== 'email') {
+                throw new Error('matches[5] should be an email match');
+            }
+            if (phoneMatch.type !== 'phone') {
+                throw new Error('matches[6] should be a phone match');
+            }
+            if (mentionMatch.type !== 'mention') {
+                throw new Error('matches[7] should be a mention match');
+            }
+            if (hashtagMatch.type !== 'hashtag') {
+                throw new Error('matches[8] should be a hashtag match');
+            }
 
-            expect(matches[2].getType()).toBe('phone');
-            expect((matches[2] as PhoneMatch).getNumber()).toBe('1234567890');
+            expect(schemeMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(schemeMatch.getMatchedText()).toBe('http://asdf.com');
+            expect(schemeMatch.getOffset()).toBe(16);
+            expect(schemeMatch.getAnchorHref()).toBe('http://asdf.com');
+            expect(schemeMatch.getAnchorText()).toBe('asdf.com');
+            expect(schemeMatch.getCssClassSuffixes()).toEqual(['url']);
+            expect(schemeMatch.getUrlMatchType()).toBe('scheme');
+            expect(schemeMatch.getUrl()).toBe('http://asdf.com');
+            expect(schemeMatch.buildTag().toAnchorString()).toBe(
+                '<a href="http://asdf.com">asdf.com</a>'
+            );
 
-            expect(matches[3].getType()).toBe('mention');
-            expect((matches[3] as MentionMatch).getMention()).toBe('asdf1');
+            expect(tldMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(tldMatch.getMatchedText()).toBe('asdf.com');
+            expect(tldMatch.getOffset()).toBe(42);
+            expect(tldMatch.getAnchorHref()).toBe('http://asdf.com');
+            expect(tldMatch.getAnchorText()).toBe('asdf.com');
+            expect(tldMatch.getCssClassSuffixes()).toEqual(['url']);
+            expect(tldMatch.getUrlMatchType()).toBe('tld');
+            expect(tldMatch.getUrl()).toBe('http://asdf.com');
+            expect(tldMatch.buildTag().toAnchorString()).toBe(
+                '<a href="http://asdf.com">asdf.com</a>'
+            );
 
-            expect(matches[4].getType()).toBe('hashtag');
-            expect((matches[4] as HashtagMatch).getHashtag()).toBe('asdf2');
+            expect(subdomainTldMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(subdomainTldMatch.getMatchedText()).toBe('subdomain.asdf.com');
+            expect(subdomainTldMatch.getOffset()).toBe(61);
+            expect(subdomainTldMatch.getAnchorHref()).toBe('http://subdomain.asdf.com');
+            expect(subdomainTldMatch.getAnchorText()).toBe('subdomain.asdf.com');
+            expect(subdomainTldMatch.getCssClassSuffixes()).toEqual(['url']);
+            expect(subdomainTldMatch.getUrlMatchType()).toBe('tld');
+            expect(subdomainTldMatch.getUrl()).toBe('http://subdomain.asdf.com');
+            expect(subdomainTldMatch.buildTag().toAnchorString()).toBe(
+                '<a href="http://subdomain.asdf.com">subdomain.asdf.com</a>'
+            );
+
+            expect(protocolRelativeMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(protocolRelativeMatch.getMatchedText()).toBe('//asdf.com');
+            expect(protocolRelativeMatch.getOffset()).toBe(90);
+            expect(protocolRelativeMatch.getAnchorHref()).toBe('//asdf.com');
+            expect(protocolRelativeMatch.getAnchorText()).toBe('asdf.com');
+            expect(protocolRelativeMatch.getCssClassSuffixes()).toEqual(['url']);
+            expect(protocolRelativeMatch.getUrlMatchType()).toBe('tld');
+            expect(protocolRelativeMatch.getUrl()).toBe('//asdf.com');
+            expect(protocolRelativeMatch.buildTag().toAnchorString()).toBe(
+                '<a href="//asdf.com">asdf.com</a>'
+            );
+
+            expect(ipV4Match.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(ipV4Match.getMatchedText()).toBe('192.168.0.1');
+            expect(ipV4Match.getOffset()).toBe(111);
+            expect(ipV4Match.getAnchorHref()).toBe('http://192.168.0.1');
+            expect(ipV4Match.getAnchorText()).toBe('192.168.0.1');
+            expect(ipV4Match.getCssClassSuffixes()).toEqual(['url']);
+            expect(ipV4Match.getUrlMatchType()).toBe('ipV4');
+            expect(ipV4Match.getUrl()).toBe('http://192.168.0.1');
+            expect(ipV4Match.buildTag().toAnchorString()).toBe(
+                '<a href="http://192.168.0.1">192.168.0.1</a>'
+            );
+
+            expect(emailMatch.getType()).toBe('email'); // backward compatibility method - 'type' property replaces getType()
+            expect(emailMatch.getMatchedText()).toBe('asdf@asdf.com');
+            expect(emailMatch.getOffset()).toBe(135);
+            expect(emailMatch.getAnchorHref()).toBe('mailto:asdf@asdf.com');
+            expect(emailMatch.getAnchorText()).toBe('asdf@asdf.com');
+            expect(emailMatch.getCssClassSuffixes()).toEqual(['email']);
+            expect(emailMatch.getEmail()).toBe('asdf@asdf.com');
+            expect(emailMatch.buildTag().toAnchorString()).toBe(
+                '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>'
+            );
+
+            expect(phoneMatch.getType()).toBe('phone'); // backward compatibility method - 'type' property replaces getType()
+            expect(phoneMatch.getMatchedText()).toBe('(123) 456-7890');
+            expect(phoneMatch.getOffset()).toBe(156);
+            expect(phoneMatch.getAnchorHref()).toBe('tel:1234567890');
+            expect(phoneMatch.getAnchorText()).toBe('(123) 456-7890');
+            expect(phoneMatch.getCssClassSuffixes()).toEqual(['phone']);
+            expect(phoneMatch.getPhoneNumber()).toBe('1234567890');
+            expect(phoneMatch.getNumber()).toBe('1234567890');
+            expect(phoneMatch.buildTag().toAnchorString()).toBe(
+                '<a href="tel:1234567890">(123) 456-7890</a>'
+            );
+
+            expect(mentionMatch.getType()).toBe('mention'); // backward compatibility method - 'type' property replaces getType()
+            expect(mentionMatch.getMatchedText()).toBe('@asdf1');
+            expect(mentionMatch.getOffset()).toBe(180);
+            expect(mentionMatch.getAnchorHref()).toBe('https://instagram.com/asdf1');
+            expect(mentionMatch.getAnchorText()).toBe('@asdf1');
+            expect(mentionMatch.getCssClassSuffixes()).toEqual(['mention', 'instagram']);
+            expect(mentionMatch.getServiceName()).toBe('instagram');
+            expect(mentionMatch.buildTag().toAnchorString()).toBe(
+                '<a href="https://instagram.com/asdf1">@asdf1</a>'
+            );
+
+            expect(hashtagMatch.getType()).toBe('hashtag'); // backward compatibility method - 'type' property replaces getType()
+            expect(hashtagMatch.getMatchedText()).toBe('#asdf2');
+            expect(hashtagMatch.getOffset()).toBe(201);
+            expect(hashtagMatch.getAnchorHref()).toBe('https://www.tiktok.com/tag/asdf2');
+            expect(hashtagMatch.getAnchorText()).toBe('#asdf2');
+            expect(hashtagMatch.getCssClassSuffixes()).toEqual(['hashtag', 'tiktok']);
+            expect(hashtagMatch.getServiceName()).toBe('tiktok');
+            expect(hashtagMatch.buildTag().toAnchorString()).toBe(
+                '<a href="https://www.tiktok.com/tag/asdf2">#asdf2</a>'
+            );
         });
     });
 });

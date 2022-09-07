@@ -139,14 +139,14 @@ export const decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u09
     .source; // see note in above variable description
 
 /**
- * The string form of a regular expression that would match all of the
- * letters and decimal number chars in the unicode character set when placed in
- * a RegExp character class (`[]`).
+ * The regular expression that will match all of the letters and decimal number
+ * chars in the unicode character set when placed in a RegExp character class
+ * (`[]`).
  *
  * These would be the characters matched by unicode regex engines
  * `[\p{L}\p{Nd}]` escape ("all letters and decimal numbers")
  */
-export const alphaNumericCharsStr = alphaCharsAndMarksStr + decimalNumbersStr;
+export const alphaNumericCharsRe = new RegExp(`[${alphaCharsStr + decimalNumbersStr}]`);
 
 /**
  * The string form of a regular expression that would match all of the
@@ -163,38 +163,4 @@ export const alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbe
  * The regular expression that will match a single letter of the
  * {@link #alphaNumericAndMarksCharsStr}.
  */
-export const alphaNumericAndMarksCharRe = new RegExp(`[${alphaNumericAndMarksCharsStr}]`);
-
-// Simplified IP regular expression
-const ipStr = '(?:[' + decimalNumbersStr + ']{1,3}\\.){3}[' + decimalNumbersStr + ']{1,3}';
-
-// Protected domain label which do not allow "-" or "_" character on the beginning and the end of a single label
-// prettier-ignore
-const domainLabelStr = '[' + alphaNumericAndMarksCharsStr + '](?:[' + alphaNumericAndMarksCharsStr + '\\-_]{0,61}[' + alphaNumericAndMarksCharsStr + '])?';
-
-const getDomainLabelStr = (group: number) => {
-    return '(?=(' + domainLabelStr + '))\\' + group;
-};
-
-/**
- * A function to match domain names of a URL or email address.
- * Ex: 'google', 'yahoo', 'some-other-company', etc.
- */
-// prettier-ignore
-export const getDomainNameStr = ( group: number ) => {
-	return '(?:' + getDomainLabelStr( group ) + '(?:\\.' + getDomainLabelStr( group + 1 ) + '){0,126}|' + ipStr + ')';
-};
-
-/**
- * A regular expression to match domain names of a URL or email address.
- * Ex: 'google', 'yahoo', 'some-other-company', etc.
- */
-export const domainNameRegex = new RegExp(
-    '[' + alphaNumericAndMarksCharsStr + '.\\-]*[' + alphaNumericAndMarksCharsStr + '\\-]'
-);
-
-/**
- * A regular expression that is simply the character class of the characters
- * that may be used in a domain name, minus the '-' or '.'
- */
-export const domainNameCharRegex = alphaNumericAndMarksCharRe;
+export const alphaNumericAndMarksRe = new RegExp(`[${alphaNumericAndMarksCharsStr}]`);

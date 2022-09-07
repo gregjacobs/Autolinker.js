@@ -16,12 +16,16 @@ export async function updateTldRegex() {
         responseType: 'text',
     });
 
-    const tldRegex = domainsToRegex(tldsFile.data);
-    let outputFile = dedent`
-        // NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run \`npm run update-tld-regex\`\n\n
-        ${tldRegex}
-    `;
-    fse.writeFile('./src/matcher/tld-regex.ts', outputFile);
+    const tldRegexStr = domainsToRegex(tldsFile.data);
+    let outputFile =
+        dedent`
+        // NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run \`npm run update-tld-regex\`
+        
+        export const tldRegexStr = '(?:${tldRegexStr})';\n
+
+        export const tldRegex = new RegExp('^' + tldRegexStr + '$');
+    ` + '\n';
+    await fse.outputFile('./src/parser/tld-regex.ts', outputFile);
 }
 
 function domainsToRegex(contents: string): string {
@@ -33,8 +37,7 @@ function domainsToRegex(contents: string): string {
         .filter(s => !!s) // remove empty elements;
         .sort(compareLengthLongestFirst);
 
-    const domainsRegexStr = `export const tldRegex = /(?:${domains.join('|')})/;\n`;
-    return domainsRegexStr;
+    return domains.join('|');
 }
 
 function notCommentLine(line: string): boolean {

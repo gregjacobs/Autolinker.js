@@ -22,8 +22,6 @@ import { execSync } from './util/exec-sync';
     fse.copySync(testsSrcDir, testsOutputDir);
 
     // Create a .tar.gz output file like the one that would be downloaded from npm
-    // TODO: Was using 'yarn' - does npm have a --filename arg?
-    //await exec( `./node_modules/.bin/yarn pack --filename ./.tmp/tests-integration/autolinker.tar.gz`, {
     execSync(`${pkgRoot}/node_modules/.bin/npm pack --pack-destination ${testsOutputDir}`, {
         cwd: pkgRoot,
     });

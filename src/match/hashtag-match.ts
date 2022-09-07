@@ -1,8 +1,10 @@
-import { Match, MatchConfig } from './match';
+import { HashtagService } from '../parser/hashtag-utils';
+import { assertNever } from '../utils';
+import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
 
 /**
  * @class Autolinker.match.Hashtag
- * @extends Autolinker.match.Match
+ * @extends Autolinker.match.AbstractMatch
  *
  * Represents a Hashtag match found in an input string which should be
  * Autolinked.
@@ -10,14 +12,24 @@ import { Match, MatchConfig } from './match';
  * See this class's superclass ({@link Autolinker.match.Match}) for more
  * details.
  */
-export class HashtagMatch extends Match {
+export class HashtagMatch extends AbstractMatch {
+    /**
+     * @public
+     * @property {'hashtag'} type
+     *
+     * A string name for the type of match that this class represents. Can be
+     * used in a TypeScript discriminating union to type-narrow from the
+     * `Match` type.
+     */
+    public readonly type: 'hashtag' = 'hashtag';
+
     /**
      * @cfg {String} serviceName
      *
      * The service to point hashtag matches to. See {@link Autolinker#hashtag}
      * for available values.
      */
-    private readonly serviceName: string = ''; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly serviceName: HashtagService = 'twitter'; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {String} hashtag (required)
@@ -44,7 +56,7 @@ export class HashtagMatch extends Match {
      *
      * @return {String}
      */
-    getType() {
+    getType(): 'hashtag' {
         return 'hashtag';
     }
 
@@ -54,7 +66,7 @@ export class HashtagMatch extends Match {
      *
      * @return {String}
      */
-    getServiceName() {
+    getServiceName(): HashtagService {
         return this.serviceName;
     }
 
@@ -63,7 +75,7 @@ export class HashtagMatch extends Match {
      *
      * @return {String}
      */
-    getHashtag() {
+    getHashtag(): string {
         return this.hashtag;
     }
 
@@ -72,7 +84,7 @@ export class HashtagMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorHref() {
+    getAnchorHref(): string {
         let serviceName = this.serviceName,
             hashtag = this.hashtag;
 
@@ -87,8 +99,9 @@ export class HashtagMatch extends Match {
                 return 'https://www.tiktok.com/tag/' + hashtag;
 
             default:
-                // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
-                throw new Error('Unknown service name to point hashtag to: ' + serviceName);
+                // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
+                assertNever(serviceName);
+                throw new Error(`Invalid hashtag service: ${serviceName}`);
         }
     }
 
@@ -97,12 +110,29 @@ export class HashtagMatch extends Match {
      *
      * @return {String}
      */
-    getAnchorText() {
+    getAnchorText(): string {
         return '#' + this.hashtag;
+    }
+
+    /**
+     * Returns the CSS class suffixes that should be used on a tag built with
+     * the match. See {@link Autolinker.match.Match#getCssClassSuffixes} for
+     * details.
+     *
+     * @return {String[]}
+     */
+    getCssClassSuffixes(): string[] {
+        let cssClassSuffixes = super.getCssClassSuffixes(),
+            serviceName = this.getServiceName();
+
+        if (serviceName) {
+            cssClassSuffixes.push(serviceName);
+        }
+        return cssClassSuffixes;
     }
 }
 
-export interface HashtagMatchConfig extends MatchConfig {
-    serviceName: string;
+export interface HashtagMatchConfig extends AbstractMatchConfig {
+    serviceName: HashtagService;
     hashtag: string;
 }

@@ -1,4 +1,22 @@
 /**
+ * Simpler helper method to check for undefined simply for the benefit of
+ * gaining better compression when minified by not needing to have multiple
+ * comparisons to the `undefined` keyword in the codebase.
+ */
+export function isUndefined(value: any): value is undefined {
+    return value === undefined;
+}
+
+/**
+ * Simpler helper method to check for a boolean type simply for the benefit of
+ * gaining better compression when minified by not needing to have multiple
+ * `typeof` comparisons in the codebase.
+ */
+export function isBoolean(value: any): value is boolean {
+    return typeof value === 'boolean';
+}
+
+/**
  * Assigns (shallow copies) the properties of `src` onto `dest`, if the
  * corresponding property on `dest` === `undefined`.
  *
@@ -8,7 +26,7 @@
  */
 export function defaults(dest: any, src: any) {
     for (let prop in src) {
-        if (src.hasOwnProperty(prop) && dest[prop] === undefined) {
+        if (src.hasOwnProperty(prop) && isUndefined(dest[prop])) {
             dest[prop] = src[prop];
         }
     }
@@ -43,23 +61,19 @@ export function ellipsis(str: string, truncateLen: number, ellipsisChars?: strin
 }
 
 /**
- * Supports `Array.prototype.indexOf()` functionality for old IE (IE8 and below).
+ * Removes array elements by value. Mutates the input array.
  *
- * @param {Array} arr The array to find an element of.
- * @param {*} element The element to find in the array, and return the index of.
- * @return {Number} The index of the `element`, or -1 if it was not found.
+ * Using this instead of the ES5 Array.prototype.filter() function to prevent
+ * creating many new arrays in memory for removing an element.
+ *
+ * @param arr The array to remove elements from. This array is mutated.
+ * @param fn The element to remove.
  */
-export function indexOf<T>(arr: T[], element: T) {
-    // @ts-ignore - As far as TypeScript is concerned, this method will always
-    // exist (lowest "lib" in TS is "ES5"). Hence we need to ignore this error
-    // to support IE8 which only implements ES3 and doesn't have this method
-    if (Array.prototype.indexOf) {
-        return arr.indexOf(element);
-    } else {
-        for (let i = 0, len = arr.length; i < len; i++) {
-            if (arr[i] === element) return i;
+export function remove<T>(arr: T[], item: T) {
+    for (let i = arr.length - 1; i >= 0; i--) {
+        if (arr[i] === item) {
+            arr.splice(i, 1);
         }
-        return -1;
     }
 }
 
@@ -67,17 +81,14 @@ export function indexOf<T>(arr: T[], element: T) {
  * Removes array elements based on a filtering function. Mutates the input
  * array.
  *
- * Using this instead of the ES5 Array.prototype.filter() function, to allow
- * Autolinker compatibility with IE8, and also to prevent creating many new
- * arrays in memory for filtering.
+ * Using this instead of the ES5 Array.prototype.filter() function to prevent
+ * creating many new arrays in memory for filtering.
  *
- * @param {Array} arr The array to remove elements from. This array is
- *   mutated.
- * @param {Function} fn A function which should return `true` to
- *   remove an element.
- * @return {Array} The mutated input `arr`.
+ * @param arr The array to remove elements from. This array is mutated.
+ * @param fn The predicate function which should return `true` to remove an
+ *   element.
  */
-export function remove<T>(arr: T[], fn: (item: T) => boolean) {
+export function removeWithPredicate<T>(arr: T[], fn: (item: T) => boolean) {
     for (let i = arr.length - 1; i >= 0; i--) {
         if (fn(arr[i]) === true) {
             arr.splice(i, 1);
@@ -86,50 +97,9 @@ export function remove<T>(arr: T[], fn: (item: T) => boolean) {
 }
 
 /**
- * Performs the functionality of what modern browsers do when `String.prototype.split()` is called
- * with a regular expression that contains capturing parenthesis.
- *
- * For example:
- *
- *     // Modern browsers:
- *     "a,b,c".split( /(,)/ );  // --> [ 'a', ',', 'b', ',', 'c' ]
- *
- *     // Old IE (including IE8):
- *     "a,b,c".split( /(,)/ );  // --> [ 'a', 'b', 'c' ]
- *
- * This method emulates the functionality of modern browsers for the old IE case.
- *
- * @param {String} str The string to split.
- * @param {RegExp} splitRegex The regular expression to split the input `str` on. The splitting
- *   character(s) will be spliced into the array, as in the "modern browsers" example in the
- *   description of this method.
- *   Note #1: the supplied regular expression **must** have the 'g' flag specified.
- *   Note #2: for simplicity's sake, the regular expression does not need
- *   to contain capturing parenthesis - it will be assumed that any match has them.
- * @return {String[]} The split array of strings, with the splitting character(s) included.
- */
-export function splitAndCapture(str: string, splitRegex: RegExp) {
-    if (!splitRegex.global) throw new Error("`splitRegex` must have the 'g' flag set");
-
-    let result: string[] = [],
-        lastIdx = 0,
-        match: RegExpExecArray | null;
-
-    while ((match = splitRegex.exec(str))) {
-        result.push(str.substring(lastIdx, match.index));
-        result.push(match[0]); // push the splitting char(s)
-
-        lastIdx = match.index + match[0].length;
-    }
-    result.push(str.substring(lastIdx));
-
-    return result;
-}
-
-/**
  * Function that should never be called but is used to check that every
  * enum value is handled using TypeScript's 'never' type.
  */
-export function throwUnhandledCaseError(theValue: never) {
+export function assertNever(theValue: never) {
     throw new Error(`Unhandled case for value: '${theValue}'`);
 }

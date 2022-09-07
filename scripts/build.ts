@@ -15,10 +15,10 @@ const es2015OutputDir = './dist/es2015';
 fse.outputFileSync(
     `${pkgDir}/src/version.ts`,
     dedent`
-		// Important: this file is generated from the 'build' script and should not be
-		// edited directly
-		export const version = '${pkg.version}';
-	`,
+        // Important: this file is generated from the 'build' script and should not be
+        // edited directly
+        export const version = '${pkg.version}';
+    ` + '\n',
     'utf-8'
 );
 
@@ -119,15 +119,17 @@ async function checkMinifiedFileSize() {
     const sizeInKb = stats.size / 1000;
     const maxExpectedSizeInKb = 47;
 
+    console.log(`dist/autolinker.min.js size: ${sizeInKb}kb`);
+
     if (sizeInKb > maxExpectedSizeInKb) {
         throw new Error(dedent`
-			Minified file size of ${sizeInKb.toFixed(2)}kb is greater than max 
-			expected minified size of ${maxExpectedSizeInKb}kb
-			
-			This check is to make sure that a dependency is not accidentally 
-			added which significantly inflates the size of Autolinker. If 
-			additions to the codebase have been made though and a higher size 
-			is expected, bump the 'maxExpectedSizeInKb' number in ${__filename}
-		`);
+            Minified file size of ${sizeInKb.toFixed(2)}kb is greater than max 
+            expected minified size of ${maxExpectedSizeInKb}kb
+            
+            This check is to make sure that a dependency is not accidentally 
+            added which significantly inflates the size of Autolinker. If 
+            additions to the codebase have been made though and a higher size 
+            is expected, bump the 'maxExpectedSizeInKb' number in ${__filename}
+        `);
     }
 }
