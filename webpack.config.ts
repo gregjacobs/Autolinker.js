@@ -7,7 +7,7 @@ const config: webpack.Configuration = {
     context: path.normalize(`${__dirname}/live-example`),
     entry: ['./main.ts', './main.css'],
     output: {
-        path: path.resolve(__dirname, 'docs/examples'),
+        path: path.resolve(__dirname, 'docs/examples/live-example'),
         filename: 'live-example.[contenthash].js',
         clean: true,
     },
