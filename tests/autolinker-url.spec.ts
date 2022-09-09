@@ -1033,9 +1033,34 @@ describe('Autolinker Url Matching >', () => {
     });
 
     describe('unicode exploits', () => {
-        fit('text with directional change characters should not be linked', () => {
-            expect(autolinker.link('foo.com\u202Ebar.com')).toBe('foo.com\u202Ebar.com');
-            expect(autolinker.link('foo.com\u202Emoc.rab')).toBe('foo.com\u202Emoc.rab');
+        it('text with directional change characters should not be linked', () => {
+            expect(autolinker.link('foo.combar.com')).toBe(
+                '<a href="http://foo.combar.com">foo.combar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202Ebar.com')).toBe(
+                '<a href="http://foo.com%E2%80%AEbar.com">foo.com%E2%80%AEbar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202abar.com')).toBe(
+                '<a href="http://foo.com%E2%80%AAbar.com">foo.com%E2%80%AAbar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202bbar.com')).toBe(
+                '<a href="http://foo.com%E2%80%ABbar.com">foo.com%E2%80%ABbar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202cbar.com')).toBe(
+                '<a href="http://foo.com%E2%80%ACbar.com">foo.com%E2%80%ACbar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202dbar.com')).toBe(
+                '<a href="http://foo.com%E2%80%ADbar.com">foo.com%E2%80%ADbar.com</a>'
+            );
+            expect(autolinker.link('foo.com\u202ebar.com')).toBe(
+                '<a href="http://foo.com%E2%80%AEbar.com">foo.com%E2%80%AEbar.com</a>'
+            );
+            expect(autolinker.link('foo.com/?query\u202etest')).toBe(
+                '<a href="http://foo.com/?query">foo.com/?query</a>\u202Etest'
+            );
+            expect(autolinker.link('foo.com/#query\u202etest')).toBe(
+                '<a href="http://foo.com/#query">foo.com/#query</a>\u202Etest'
+            );
         });
     });
 

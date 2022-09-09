@@ -3,7 +3,7 @@ import { UrlMatch, UrlMatchType } from '../match/url-match';
 import { Match } from '../match/match';
 import { remove, assertNever } from '../utils';
 import {
-    hasDirectionalChar,
+    isDirectionalChar,
     httpSchemeRe,
     isDomainLabelChar,
     isDomainLabelStartChar,
@@ -412,7 +412,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         } else if (isUrlSuffixStartChar(char)) {
             // '/', '?', or '#'
             stateMachine.state = State.Path;
-        } else if (isDomainLabelChar(char) || hasDirectionalChar(char)) {
+        } else if (isDomainLabelChar(char) || isDirectionalChar(char)) {
             // Stay in the DomainLabelChar state
         } else {
             // Anything else, end the domain name
