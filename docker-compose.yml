@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  autolinker:
+    image: autolinker
+    entrypoint: gulp
+    build:
+      context: .
+    volumes:
+     - ${PWD}:/app
