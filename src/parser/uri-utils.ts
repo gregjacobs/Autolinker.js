@@ -76,7 +76,7 @@ export const tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with 
  * Determines if the given character may start a scheme (ex: 'http').
  */
 export function isSchemeStartChar(char: string): boolean {
-    return letterRe.test(char);
+    return alphaNumericAndMarksRe.test(char);
 }
 
 /**
@@ -86,7 +86,11 @@ export function isSchemeStartChar(char: string): boolean {
  */
 export function isSchemeChar(char: string): boolean {
     return (
-        letterRe.test(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.'
+        alphaNumericAndMarksRe.test(char) ||
+        digitRe.test(char) ||
+        char === '+' ||
+        char === '-' ||
+        char === '.'
     );
 }
 
