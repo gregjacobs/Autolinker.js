@@ -1195,7 +1195,11 @@
      * {@link isSchemeStartChar}.
      */
     function isSchemeChar(char) {
-        return (alphaNumericAndMarksRe.test(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.');
+        return (alphaNumericAndMarksRe.test(char) ||
+            digitRe.test(char) ||
+            char === '+' ||
+            char === '-' ||
+            char === '.');
     }
     /**
      * Determines if the character can begin a domain label, which must be an

@@ -8,5 +8,5 @@ yarn-error.log
 
 # Note: /dist/Autolinker.js and /dist/Autolinker.min.js are not gitignored to
 # allow for Bower
-/dist/commonjs
-/dist/es2015
+# /dist/commonjs
+# /dist/es2015
