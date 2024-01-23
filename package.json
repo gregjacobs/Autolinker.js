@@ -20,8 +20,7 @@
         "test:unit": "node --require=ts-node/register node_modules/jasmine/bin/jasmine.js \"tests/**/*.spec.ts\"",
         "test:unit:debug": "node --inspect-brk --require=ts-node/register node_modules/jasmine/bin/jasmine.js \"tests/**/*.spec.ts\"",
         "test:integration": "ts-node scripts/test-integration.ts",
-        "update-tld-regex": "ts-node scripts/update-tld-regex.ts",
-        "prepare": "husky install"
+        "update-tld-regex": "ts-node scripts/update-tld-regex.ts"
     },
     "repository": {
         "type": "git",
@@ -62,7 +61,6 @@
         "fast-glob": "^3.2.11",
         "fs-extra": "^10.0.1",
         "html-webpack-plugin": "^5.5.0",
-        "husky": "^7.0.4",
         "jasmine": "^4.0.2",
         "jsduck": "^1.1.2",
         "lint-staged": "^12.3.4",
@@ -72,7 +70,6 @@
         "npm-run-all": "^4.1.5",
         "prettier": "2.5.1",
         "punycode": "^2.1.1",
-        "puppeteer": "^13.4.0",
         "rimraf": "^3.0.2",
         "rollup": "^2.52.2",
         "style-loader": "^3.3.1",
