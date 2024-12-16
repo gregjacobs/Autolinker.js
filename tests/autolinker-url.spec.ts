@@ -228,6 +228,12 @@ describe('Autolinker Url Matching >', () => {
             expect(result).toBe(`Link 1:<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
         });
 
+        it('should match urls if a URL begins after a non-latin character+colon', function () {
+            const result = autolinker.link('한글:https://nia.nexon.com testing');
+
+            expect(result).toBe(`한글:<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
+        });
+
         it('should match urls with scheme starting with an emoji', function () {
             const result = autolinker.link('emoji url 👉http://📙.la/🧛🏻‍♂️ mid-sentence');
 
