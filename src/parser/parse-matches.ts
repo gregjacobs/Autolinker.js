@@ -59,7 +59,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
     // For debugging: search for and uncomment other "For debugging" lines
     // const table = new CliTable({
-    //     head: ['charIdx', 'char', 'states', 'charIdx', 'startIdx', 'reached accept state'],
+    //     head: ['charIdx', 'char', 'code', 'type', 'states', 'charIdx', 'startIdx', 'reached accept state'],
     // });
 
     let charIdx = 0;
@@ -219,12 +219,29 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         assertNever(stateMachine.state);
                 }
             }
+
+            // Special case for handling a colon (or other non-alphanumeric)
+            // when preceded by another character, such as in the text:
+            //     Link 1:http://google.com
+            // In this case, the 'h' character after the colon wouldn't start a
+            // new scheme url because we'd be in a ipv4 or tld url and the colon
+            // would be interpreted as a port ':' char. Also, only start a new
+            // scheme url machine if there isn't currently one so we don't start
+            // new ones for colons inside a url
+            if (charIdx > 0 && isSchemeStartChar(char)) {
+                const prevChar = text.charAt(charIdx - 1);
+                if (!isSchemeStartChar(prevChar) && !stateMachines.some(isSchemeUrlStateMachine)) {
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
+                }
+            }
         }
 
         // For debugging: search for and uncomment other "For debugging" lines
         // table.push([
         //     charIdx,
         //     char,
+        //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
+        //     stateMachines.map(machine => `${machine.type}${'matchType' in machine ? ` (${machine.matchType})` : ''}`).join('\n') || '(none)',
         //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
         //     charIdx,
         //     stateMachines.map(m => m.startIdx).join('\n'),
@@ -1071,6 +1088,7 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
 }
 
 // States for the parser
+// For debugging: temporarily remove 'const'
 const enum State {
     // Scheme states
     SchemeChar = 0, // First char must be an ASCII letter. Subsequent characters can be: ALPHA / DIGIT / "+" / "-" / "."
@@ -1269,4 +1287,8 @@ function createPhoneNumberStateMachine(startIdx: number, state: State): PhoneNum
         state,
         acceptStateReached: false,
     };
+}
+
+function isSchemeUrlStateMachine(machine: StateMachine): machine is SchemeUrlStateMachine {
+    return machine.type === 'url' && machine.matchType === 'scheme';
 }

@@ -205,9 +205,33 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should match urls containing emoji', function () {
-            const result = autolinker.link('emoji url http://📙.la/🧛🏻‍♂️ mid-sentance');
+            const result = autolinker.link('emoji url http://📙.la/🧛🏻‍♂️ mid-sentence');
 
-            expect(result).toBe(`emoji url <a href="http://📙.la/🧛🏻‍♂️">📙.la/🧛🏻‍♂️</a> mid-sentance`);
+            expect(result).toBe(`emoji url <a href="http://📙.la/🧛🏻‍♂️">📙.la/🧛🏻‍♂️</a> mid-sentence`);
+        });
+
+        it('should match urls if a URL begins after a colon', function () {
+            const result = autolinker.link('stuff :https://nia.nexon.com testing');
+
+            expect(result).toBe(`stuff :<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
+        });
+
+        it(`should match urls if a URL begins after a semicolon (i.e. char that isn't part of a url)`, function () {
+            const result = autolinker.link('Link 1;https://nia.nexon.com testing');
+
+            expect(result).toBe(`Link 1;<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
+        });
+
+        it('should match urls if a URL begins after a numeric character+colon', function () {
+            const result = autolinker.link('Link 1:https://nia.nexon.com testing');
+
+            expect(result).toBe(`Link 1:<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
+        });
+
+        it('should match urls with scheme starting with an emoji', function () {
+            const result = autolinker.link('emoji url 👉http://📙.la/🧛🏻‍♂️ mid-sentence');
+
+            expect(result).toBe(`emoji url 👉<a href="http://📙.la/🧛🏻‍♂️">📙.la/🧛🏻‍♂️</a> mid-sentence`);
         });
 
         it("should NOT autolink possible URLs with the 'javascript:' URI scheme", () => {
@@ -758,7 +782,7 @@ describe('Autolinker Url Matching >', () => {
                 );
             });
 
-            it(`should correctly accept square brackets such as PHP array 
+            it(`should correctly accept square brackets such as PHP array
                  representation in query strings, when the entire URL is surrounded
                  by square brackets
                 `, () => {
@@ -984,11 +1008,11 @@ describe('Autolinker Url Matching >', () => {
 				Sometimes you need to go to a path like yahoo.com/my-page
 				And hit query strings like yahoo.com?page=index
 				Port numbers on known TLDs are important too like yahoo.com:8000.
-				Hashes too yahoo.com:8000/#some-link. 
+				Hashes too yahoo.com:8000/#some-link.
 				Sometimes you need a lot of things in the URL like https://abc123def.org/path1/2path?param1=value1#hash123z
 				Do you see the need for dashes in these things too https://abc-def.org/his-path/?the-param=the-value#the-hash?
 				There's a time for lots and lots of special characters like in https://abc123def.org/-+&@#/%=~_()|\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\'$*[]?!:,.;#hash-+&@#/%=~_()|\'$*[]?!:,.;z
-				Don't forget about good times with unicode https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица 
+				Don't forget about good times with unicode https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица
 				and this unicode http://россия.рф
 				along with punycode http://xn--d1acufc.xn--p1ai
 				Oh good old www links like www.yahoo.com
@@ -1008,11 +1032,11 @@ describe('Autolinker Url Matching >', () => {
 				Sometimes you need to go to a path like <a href="http://yahoo.com/my-page">yahoo.com/my-page</a>
 				And hit query strings like <a href="http://yahoo.com?page=index">yahoo.com?page=index</a>
 				Port numbers on known TLDs are important too like <a href="http://yahoo.com:8000">yahoo.com:8000</a>.
-				Hashes too <a href="http://yahoo.com:8000/#some-link">yahoo.com:8000/#some-link</a>. 
+				Hashes too <a href="http://yahoo.com:8000/#some-link">yahoo.com:8000/#some-link</a>.
 				Sometimes you need a lot of things in the URL like <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>
 				Do you see the need for dashes in these things too <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>?
 				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z</a>
-				Don't forget about good times with unicode <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a> 
+				Don't forget about good times with unicode <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>
 				and this unicode <a href="http://россия.рф">россия.рф</a>
 				along with punycode <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a>
 				Oh good old www links like <a href="http://www.yahoo.com">www.yahoo.com</a>
