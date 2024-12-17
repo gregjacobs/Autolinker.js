@@ -222,7 +222,7 @@ describe('Autolinker Url Matching >', () => {
             expect(result).toBe(`Link 1;<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
         });
 
-        it('should match urls if a URL begins after a numeric character+colon', function () {
+        it('should match urls if a URL begins after a numeric character+colon (https://github.com/gregjacobs/Autolinker.js/issues/413)', function () {
             const result = autolinker.link('Link 1:https://nia.nexon.com testing');
 
             expect(result).toBe(`Link 1:<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
@@ -232,6 +232,32 @@ describe('Autolinker Url Matching >', () => {
             const result = autolinker.link('한글:https://nia.nexon.com testing');
 
             expect(result).toBe(`한글:<a href="https://nia.nexon.com">nia.nexon.com</a> testing`);
+        });
+
+        it('should match urls if a URL begins after a non-latin character+colon (https://github.com/gregjacobs/Autolinker.js/issues/394)', function () {
+            const result = autolinker.link('链接:https://www.google.com testing');
+
+            expect(result).toBe(`链接:<a href="https://www.google.com">www.google.com</a> testing`);
+        });
+
+        it('should match urls if a URL begins after a non-latin character+colon #2 (https://github.com/gregjacobs/Autolinker.js/issues/394)', function () {
+            const result = autolinker.link('こちら→https://google.com testing');
+
+            expect(result).toBe(`こちら→<a href="https://google.com">google.com</a> testing`);
+        });
+
+        it('should match urls if a URL begins after a Persian character (https://github.com/gregjacobs/Autolinker.js/issues/409)', function () {
+            const result = autolinker.link('این یک لینک استhttps://www.example.com testing');
+
+            expect(result).toBe(
+                `این یک لینک است<a href="https://www.example.com">www.example.com</a> testing`
+            );
+        });
+
+        it('should match urls if a URL begins after an equals sign (much like an environment var assignment) (https://github.com/gregjacobs/Autolinker.js/issues/405)', function () {
+            const result = autolinker.link('FOO=https://example.com');
+
+            expect(result).toBe(`FOO=<a href="https://example.com">example.com</a>`);
         });
 
         it('should match urls with scheme starting with an emoji', function () {
