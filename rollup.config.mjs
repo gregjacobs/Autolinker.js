@@ -36,6 +36,7 @@ export default {
         rollupCommonjs(),
         typescript({
             compilerOptions: {
+                module: 'esnext',
                 declaration: false, // don't need declaration files for the rolled up autolinker.js file
             }
         }),

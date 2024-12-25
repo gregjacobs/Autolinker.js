@@ -1,6 +1,6 @@
 {
     "name": "autolinker",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "Utility to automatically link the URLs, email addresses, phone numbers, hashtags, and mentions (Twitter, Instagram) in a given block of text/HTML",
     "main": "./dist/commonjs/index.js",
     "typings": "./dist/commonjs/index.d.ts",

@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v4.0.1
+ * v4.0.2
  *
  * Copyright(c) 2024 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -15,7 +15,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '4.0.1';
+    var version = '4.0.2';
 
     /**
      * Simpler helper method to check for undefined simply for the benefit of
