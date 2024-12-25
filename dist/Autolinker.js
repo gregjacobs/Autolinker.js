@@ -924,7 +924,7 @@
         return AnchorTagBuilder;
     }());
 
-    /*! *****************************************************************************
+    /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
     Permission to use, copy, modify, and/or distribute this software for any
@@ -938,32 +938,37 @@
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
     var extendStatics = function(d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
+      extendStatics = Object.setPrototypeOf ||
+          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+          function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+      return extendStatics(d, b);
     };
 
     function __extends(d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      if (typeof b !== "function" && b !== null)
+          throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+      extendStatics(d, b);
+      function __() { this.constructor = d; }
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
 
     var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
+      __assign = Object.assign || function __assign(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) {
+              s = arguments[i];
+              for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+          }
+          return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
     /**
@@ -1123,7 +1128,6 @@
 
     // NOTE: THIS IS A GENERATED FILE
     // To update with the latest TLD list, run `npm run update-tld-regex`
-    // prettier-ignore
     var tldRegexStr = '(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|banamex|bauhaus|bentley|bestbuy|booking|brother|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|yamaxun|youtube|zuerich|католик|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kindle|kosher|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|nagoya|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|lipsy|loans|locus|lotte|lotto|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|scb|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)';
     var tldRegex = new RegExp('^' + tldRegexStr + '$');
 
@@ -2153,134 +2157,134 @@
                     var stateMachine = stateMachines[stateIdx];
                     switch (stateMachine.state) {
                         // Protocol-relative URL states
-                        case 11 /* ProtocolRelativeSlash1 */:
+                        case 11 /* State.ProtocolRelativeSlash1 */:
                             stateProtocolRelativeSlash1(stateMachine, char);
                             break;
-                        case 12 /* ProtocolRelativeSlash2 */:
+                        case 12 /* State.ProtocolRelativeSlash2 */:
                             stateProtocolRelativeSlash2(stateMachine, char);
                             break;
-                        case 0 /* SchemeChar */:
+                        case 0 /* State.SchemeChar */:
                             stateSchemeChar(stateMachine, char);
                             break;
-                        case 1 /* SchemeHyphen */:
+                        case 1 /* State.SchemeHyphen */:
                             stateSchemeHyphen(stateMachine, char);
                             break;
-                        case 2 /* SchemeColon */:
+                        case 2 /* State.SchemeColon */:
                             stateSchemeColon(stateMachine, char);
                             break;
-                        case 3 /* SchemeSlash1 */:
+                        case 3 /* State.SchemeSlash1 */:
                             stateSchemeSlash1(stateMachine, char);
                             break;
-                        case 4 /* SchemeSlash2 */:
+                        case 4 /* State.SchemeSlash2 */:
                             stateSchemeSlash2(stateMachine, char);
                             break;
-                        case 5 /* DomainLabelChar */:
+                        case 5 /* State.DomainLabelChar */:
                             stateDomainLabelChar(stateMachine, char);
                             break;
-                        case 6 /* DomainHyphen */:
+                        case 6 /* State.DomainHyphen */:
                             stateDomainHyphen(stateMachine, char);
                             break;
-                        case 7 /* DomainDot */:
+                        case 7 /* State.DomainDot */:
                             stateDomainDot(stateMachine, char);
                             break;
-                        case 13 /* IpV4Digit */:
+                        case 13 /* State.IpV4Digit */:
                             stateIpV4Digit(stateMachine, char);
                             break;
-                        case 14 /* IpV4Dot */:
+                        case 14 /* State.IpV4Dot */:
                             stateIPv4Dot(stateMachine, char);
                             break;
-                        case 8 /* PortColon */:
+                        case 8 /* State.PortColon */:
                             statePortColon(stateMachine, char);
                             break;
-                        case 9 /* PortNumber */:
+                        case 9 /* State.PortNumber */:
                             statePortNumber(stateMachine, char);
                             break;
-                        case 10 /* Path */:
+                        case 10 /* State.Path */:
                             statePath(stateMachine, char);
                             break;
                         // Email States
-                        case 15 /* EmailMailto_M */:
+                        case 15 /* State.EmailMailto_M */:
                             stateEmailMailto_M(stateMachine, char);
                             break;
-                        case 16 /* EmailMailto_A */:
+                        case 16 /* State.EmailMailto_A */:
                             stateEmailMailto_A(stateMachine, char);
                             break;
-                        case 17 /* EmailMailto_I */:
+                        case 17 /* State.EmailMailto_I */:
                             stateEmailMailto_I(stateMachine, char);
                             break;
-                        case 18 /* EmailMailto_L */:
+                        case 18 /* State.EmailMailto_L */:
                             stateEmailMailto_L(stateMachine, char);
                             break;
-                        case 19 /* EmailMailto_T */:
+                        case 19 /* State.EmailMailto_T */:
                             stateEmailMailto_T(stateMachine, char);
                             break;
-                        case 20 /* EmailMailto_O */:
+                        case 20 /* State.EmailMailto_O */:
                             stateEmailMailto_O(stateMachine, char);
                             break;
-                        case 21 /* EmailMailto_Colon */:
+                        case 21 /* State.EmailMailto_Colon */:
                             stateEmailMailtoColon(stateMachine, char);
                             break;
-                        case 22 /* EmailLocalPart */:
+                        case 22 /* State.EmailLocalPart */:
                             stateEmailLocalPart(stateMachine, char);
                             break;
-                        case 23 /* EmailLocalPartDot */:
+                        case 23 /* State.EmailLocalPartDot */:
                             stateEmailLocalPartDot(stateMachine, char);
                             break;
-                        case 24 /* EmailAtSign */:
+                        case 24 /* State.EmailAtSign */:
                             stateEmailAtSign(stateMachine, char);
                             break;
-                        case 25 /* EmailDomainChar */:
+                        case 25 /* State.EmailDomainChar */:
                             stateEmailDomainChar(stateMachine, char);
                             break;
-                        case 26 /* EmailDomainHyphen */:
+                        case 26 /* State.EmailDomainHyphen */:
                             stateEmailDomainHyphen(stateMachine, char);
                             break;
-                        case 27 /* EmailDomainDot */:
+                        case 27 /* State.EmailDomainDot */:
                             stateEmailDomainDot(stateMachine, char);
                             break;
                         // Hashtag states
-                        case 28 /* HashtagHashChar */:
+                        case 28 /* State.HashtagHashChar */:
                             stateHashtagHashChar(stateMachine, char);
                             break;
-                        case 29 /* HashtagTextChar */:
+                        case 29 /* State.HashtagTextChar */:
                             stateHashtagTextChar(stateMachine, char);
                             break;
                         // Mention states
-                        case 30 /* MentionAtChar */:
+                        case 30 /* State.MentionAtChar */:
                             stateMentionAtChar(stateMachine, char);
                             break;
-                        case 31 /* MentionTextChar */:
+                        case 31 /* State.MentionTextChar */:
                             stateMentionTextChar(stateMachine, char);
                             break;
                         // Phone number states
-                        case 32 /* PhoneNumberOpenParen */:
+                        case 32 /* State.PhoneNumberOpenParen */:
                             statePhoneNumberOpenParen(stateMachine, char);
                             break;
-                        case 33 /* PhoneNumberAreaCodeDigit1 */:
+                        case 33 /* State.PhoneNumberAreaCodeDigit1 */:
                             statePhoneNumberAreaCodeDigit1(stateMachine, char);
                             break;
-                        case 34 /* PhoneNumberAreaCodeDigit2 */:
+                        case 34 /* State.PhoneNumberAreaCodeDigit2 */:
                             statePhoneNumberAreaCodeDigit2(stateMachine, char);
                             break;
-                        case 35 /* PhoneNumberAreaCodeDigit3 */:
+                        case 35 /* State.PhoneNumberAreaCodeDigit3 */:
                             statePhoneNumberAreaCodeDigit3(stateMachine, char);
                             break;
-                        case 36 /* PhoneNumberCloseParen */:
+                        case 36 /* State.PhoneNumberCloseParen */:
                             statePhoneNumberCloseParen(stateMachine, char);
                             break;
-                        case 37 /* PhoneNumberPlus */:
+                        case 37 /* State.PhoneNumberPlus */:
                             statePhoneNumberPlus(stateMachine, char);
                             break;
-                        case 38 /* PhoneNumberDigit */:
+                        case 38 /* State.PhoneNumberDigit */:
                             statePhoneNumberDigit(stateMachine, char);
                             break;
-                        case 39 /* PhoneNumberSeparator */:
+                        case 39 /* State.PhoneNumberSeparator */:
                             statePhoneNumberSeparator(stateMachine, char);
                             break;
-                        case 40 /* PhoneNumberControlChar */:
+                        case 40 /* State.PhoneNumberControlChar */:
                             statePhoneNumberControlChar(stateMachine, char);
                             break;
-                        case 41 /* PhoneNumberPoundChar */:
+                        case 41 /* State.PhoneNumberPoundChar */:
                             statePhoneNumberPoundChar(stateMachine, char);
                             break;
                         default:
@@ -2298,7 +2302,7 @@
                 if (charIdx > 0 && isSchemeStartChar(char)) {
                     var prevChar = text.charAt(charIdx - 1);
                     if (!isSchemeStartChar(prevChar) && !stateMachines.some(isSchemeUrlStateMachine)) {
-                        stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                        stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
                     }
                 }
             }
@@ -2330,44 +2334,44 @@
         function stateNoMatch(char) {
             if (char === '#') {
                 // Hash char, start a Hashtag match
-                stateMachines.push(createHashtagStateMachine(charIdx, 28 /* HashtagHashChar */));
+                stateMachines.push(createHashtagStateMachine(charIdx, 28 /* State.HashtagHashChar */));
             }
             else if (char === '@') {
                 // '@' char, start a Mention match
-                stateMachines.push(createMentionStateMachine(charIdx, 30 /* MentionAtChar */));
+                stateMachines.push(createMentionStateMachine(charIdx, 30 /* State.MentionAtChar */));
             }
             else if (char === '/') {
                 // A slash could begin a protocol-relative URL
-                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* ProtocolRelativeSlash1 */));
+                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
             }
             else if (char === '+') {
                 // A '+' char can start a Phone number
-                stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* PhoneNumberPlus */));
+                stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* State.PhoneNumberPlus */));
             }
             else if (char === '(') {
-                stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* PhoneNumberOpenParen */));
+                stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* State.PhoneNumberOpenParen */));
             }
             else {
                 if (digitRe.test(char)) {
                     // A digit could start a phone number
-                    stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* PhoneNumberDigit */));
+                    stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* State.PhoneNumberDigit */));
                     // A digit could start an IP address
-                    stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* IpV4Digit */));
+                    stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* State.IpV4Digit */));
                 }
                 if (isEmailLocalPartStartChar(char)) {
                     // Any email local part. An 'm' character in particular could
                     // start a 'mailto:' match
-                    var startState = char.toLowerCase() === 'm' ? 15 /* EmailMailto_M */ : 22 /* EmailLocalPart */;
+                    var startState = char.toLowerCase() === 'm' ? 15 /* State.EmailMailto_M */ : 22 /* State.EmailLocalPart */;
                     stateMachines.push(createEmailStateMachine(charIdx, startState));
                 }
                 if (isSchemeStartChar(char)) {
                     // An uppercase or lowercase letter may start a scheme match
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
                 }
                 if (alphaNumericAndMarksRe.test(char)) {
                     // A unicode alpha character or digit could start a domain name
                     // label for a TLD match
-                    stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* DomainLabelChar */));
+                    stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* State.DomainLabelChar */));
                 }
             }
             // Anything else, remain in the "non-url" state by not creating any
@@ -2376,10 +2380,10 @@
         // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
         function stateSchemeChar(stateMachine, char) {
             if (char === ':') {
-                stateMachine.state = 2 /* SchemeColon */;
+                stateMachine.state = 2 /* State.SchemeColon */;
             }
             else if (char === '-') {
-                stateMachine.state = 1 /* SchemeHyphen */;
+                stateMachine.state = 1 /* State.SchemeHyphen */;
             }
             else if (isSchemeChar(char)) ;
             else {
@@ -2393,10 +2397,10 @@
                 // Not a valid scheme match, but may be the start of a
                 // protocol-relative match (such as //google.com)
                 remove(stateMachines, stateMachine);
-                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* ProtocolRelativeSlash1 */));
+                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
             }
             else if (isSchemeChar(char)) {
-                stateMachine.state = 0 /* SchemeChar */;
+                stateMachine.state = 0 /* State.SchemeChar */;
             }
             else {
                 // Any other character, not a scheme
@@ -2405,21 +2409,21 @@
         }
         function stateSchemeColon(stateMachine, char) {
             if (char === '/') {
-                stateMachine.state = 3 /* SchemeSlash1 */;
+                stateMachine.state = 3 /* State.SchemeSlash1 */;
             }
             else if (char === '.') {
                 // We've read something like 'hello:.' - don't capture
                 remove(stateMachines, stateMachine);
             }
             else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.state = 5 /* State.DomainLabelChar */;
                 // It's possible that we read an "introduction" piece of text,
                 // and the character after the current colon actually starts an
                 // actual scheme. An example of this is:
                 //     "The link:http://google.com"
                 // Hence, start a new machine to capture this match if so
                 if (isSchemeStartChar(char)) {
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
                 }
             }
             else {
@@ -2428,10 +2432,10 @@
         }
         function stateSchemeSlash1(stateMachine, char) {
             if (char === '/') {
-                stateMachine.state = 4 /* SchemeSlash2 */;
+                stateMachine.state = 4 /* State.SchemeSlash2 */;
             }
             else if (isPathChar(char)) {
-                stateMachine.state = 10 /* Path */;
+                stateMachine.state = 10 /* State.Path */;
                 stateMachine.acceptStateReached = true;
             }
             else {
@@ -2443,11 +2447,11 @@
                 // 3rd slash, must be an absolute path (path-absolute in the
                 // ABNF), such as in a file:///c:/windows/etc. See
                 // https://tools.ietf.org/html/rfc3986#appendix-A
-                stateMachine.state = 10 /* Path */;
+                stateMachine.state = 10 /* State.Path */;
             }
             else if (isDomainLabelStartChar(char)) {
                 // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
-                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.state = 5 /* State.DomainLabelChar */;
                 stateMachine.acceptStateReached = true;
             }
             else {
@@ -2458,7 +2462,7 @@
         // Handles reading a '/' from the NonUrl state
         function stateProtocolRelativeSlash1(stateMachine, char) {
             if (char === '/') {
-                stateMachine.state = 12 /* ProtocolRelativeSlash2 */;
+                stateMachine.state = 12 /* State.ProtocolRelativeSlash2 */;
             }
             else {
                 // Anything else, cannot be the start of a protocol-relative
@@ -2469,7 +2473,7 @@
         // Handles reading a second '/', which could start a protocol-relative URL
         function stateProtocolRelativeSlash2(stateMachine, char) {
             if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.state = 5 /* State.DomainLabelChar */;
             }
             else {
                 // Anything else, not a URL
@@ -2479,18 +2483,18 @@
         // Handles when we have read a domain label character
         function stateDomainLabelChar(stateMachine, char) {
             if (char === '.') {
-                stateMachine.state = 7 /* DomainDot */;
+                stateMachine.state = 7 /* State.DomainDot */;
             }
             else if (char === '-') {
-                stateMachine.state = 6 /* DomainHyphen */;
+                stateMachine.state = 6 /* State.DomainHyphen */;
             }
             else if (char === ':') {
                 // Beginning of a port number, end the domain name
-                stateMachine.state = 8 /* PortColon */;
+                stateMachine.state = 8 /* State.PortColon */;
             }
             else if (isUrlSuffixStartChar(char)) {
                 // '/', '?', or '#'
-                stateMachine.state = 10 /* Path */;
+                stateMachine.state = 10 /* State.Path */;
             }
             else if (isDomainLabelChar(char)) ;
             else {
@@ -2505,7 +2509,7 @@
                 captureMatchIfValidAndRemove(stateMachine);
             }
             else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.state = 5 /* State.DomainLabelChar */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2520,7 +2524,7 @@
                 captureMatchIfValidAndRemove(stateMachine);
             }
             else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* DomainLabelChar */;
+                stateMachine.state = 5 /* State.DomainLabelChar */;
                 stateMachine.acceptStateReached = true; // after hitting a dot, and then another domain label, we've reached an accept state
             }
             else {
@@ -2530,15 +2534,15 @@
         }
         function stateIpV4Digit(stateMachine, char) {
             if (char === '.') {
-                stateMachine.state = 14 /* IpV4Dot */;
+                stateMachine.state = 14 /* State.IpV4Dot */;
             }
             else if (char === ':') {
                 // Beginning of a port number
-                stateMachine.state = 8 /* PortColon */;
+                stateMachine.state = 8 /* State.PortColon */;
             }
             else if (digitRe.test(char)) ;
             else if (isUrlSuffixStartChar(char)) {
-                stateMachine.state = 10 /* Path */;
+                stateMachine.state = 10 /* State.Path */;
             }
             else if (alphaNumericAndMarksRe.test(char)) {
                 // If we hit an alpha character, must not be an IPv4
@@ -2559,7 +2563,7 @@
                 if (stateMachine.octetsEncountered === 4) {
                     stateMachine.acceptStateReached = true;
                 }
-                stateMachine.state = 13 /* IpV4Digit */;
+                stateMachine.state = 13 /* State.IpV4Digit */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2567,7 +2571,7 @@
         }
         function statePortColon(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 9 /* PortNumber */;
+                stateMachine.state = 9 /* State.PortNumber */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2577,7 +2581,7 @@
             if (digitRe.test(char)) ;
             else if (isUrlSuffixStartChar(char)) {
                 // '/', '?', or '#'
-                stateMachine.state = 10 /* Path */;
+                stateMachine.state = 10 /* State.Path */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2592,7 +2596,7 @@
         // Handles if we're reading a 'mailto:' prefix on the string
         function stateEmailMailto_M(stateMachine, char) {
             if (char.toLowerCase() === 'a') {
-                stateMachine.state = 16 /* EmailMailto_A */;
+                stateMachine.state = 16 /* State.EmailMailto_A */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2600,7 +2604,7 @@
         }
         function stateEmailMailto_A(stateMachine, char) {
             if (char.toLowerCase() === 'i') {
-                stateMachine.state = 17 /* EmailMailto_I */;
+                stateMachine.state = 17 /* State.EmailMailto_I */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2608,7 +2612,7 @@
         }
         function stateEmailMailto_I(stateMachine, char) {
             if (char.toLowerCase() === 'l') {
-                stateMachine.state = 18 /* EmailMailto_L */;
+                stateMachine.state = 18 /* State.EmailMailto_L */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2616,7 +2620,7 @@
         }
         function stateEmailMailto_L(stateMachine, char) {
             if (char.toLowerCase() === 't') {
-                stateMachine.state = 19 /* EmailMailto_T */;
+                stateMachine.state = 19 /* State.EmailMailto_T */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2624,7 +2628,7 @@
         }
         function stateEmailMailto_T(stateMachine, char) {
             if (char.toLowerCase() === 'o') {
-                stateMachine.state = 20 /* EmailMailto_O */;
+                stateMachine.state = 20 /* State.EmailMailto_O */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2632,7 +2636,7 @@
         }
         function stateEmailMailto_O(stateMachine, char) {
             if (char.toLowerCase() === ':') {
-                stateMachine.state = 21 /* EmailMailto_Colon */;
+                stateMachine.state = 21 /* State.EmailMailto_Colon */;
             }
             else {
                 stateEmailLocalPart(stateMachine, char);
@@ -2640,7 +2644,7 @@
         }
         function stateEmailMailtoColon(stateMachine, char) {
             if (isEmailLocalPartChar(char)) {
-                stateMachine.state = 22 /* EmailLocalPart */;
+                stateMachine.state = 22 /* State.EmailLocalPart */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2650,17 +2654,17 @@
         // email address (as opposed to the "domain part")
         function stateEmailLocalPart(stateMachine, char) {
             if (char === '.') {
-                stateMachine.state = 23 /* EmailLocalPartDot */;
+                stateMachine.state = 23 /* State.EmailLocalPartDot */;
             }
             else if (char === '@') {
-                stateMachine.state = 24 /* EmailAtSign */;
+                stateMachine.state = 24 /* State.EmailAtSign */;
             }
             else if (isEmailLocalPartChar(char)) {
                 // stay in the "local part" of the email address
                 // Note: because stateEmailLocalPart() is called from the
                 // 'mailto' states (when the 'mailto' prefix itself has been
                 // broken), make sure to set the state to EmailLocalPart
-                stateMachine.state = 22 /* EmailLocalPart */;
+                stateMachine.state = 22 /* State.EmailLocalPart */;
             }
             else {
                 // not an email address character
@@ -2680,7 +2684,7 @@
                 remove(stateMachines, stateMachine);
             }
             else if (isEmailLocalPartChar(char)) {
-                stateMachine.state = 22 /* EmailLocalPart */;
+                stateMachine.state = 22 /* State.EmailLocalPart */;
             }
             else {
                 // Anything else, not an email address
@@ -2689,7 +2693,7 @@
         }
         function stateEmailAtSign(stateMachine, char) {
             if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 25 /* EmailDomainChar */;
+                stateMachine.state = 25 /* State.EmailDomainChar */;
             }
             else {
                 // Anything else, not an email address
@@ -2698,10 +2702,10 @@
         }
         function stateEmailDomainChar(stateMachine, char) {
             if (char === '.') {
-                stateMachine.state = 27 /* EmailDomainDot */;
+                stateMachine.state = 27 /* State.EmailDomainDot */;
             }
             else if (char === '-') {
-                stateMachine.state = 26 /* EmailDomainHyphen */;
+                stateMachine.state = 26 /* State.EmailDomainHyphen */;
             }
             else if (isDomainLabelChar(char)) ;
             else {
@@ -2716,7 +2720,7 @@
                 captureMatchIfValidAndRemove(stateMachine);
             }
             else if (isDomainLabelChar(char)) {
-                stateMachine.state = 25 /* EmailDomainChar */;
+                stateMachine.state = 25 /* State.EmailDomainChar */;
             }
             else {
                 // Anything else
@@ -2729,7 +2733,7 @@
                 captureMatchIfValidAndRemove(stateMachine);
             }
             else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 25 /* EmailDomainChar */;
+                stateMachine.state = 25 /* State.EmailDomainChar */;
                 // After having read a '.' and then a valid domain character,
                 // we now know that the domain part of the email is valid, and
                 // we have found at least a partial EmailMatch (however, the
@@ -2745,7 +2749,7 @@
         function stateHashtagHashChar(stateMachine, char) {
             if (isHashtagTextChar(char)) {
                 // '#' char with valid hash text char following
-                stateMachine.state = 29 /* HashtagTextChar */;
+                stateMachine.state = 29 /* State.HashtagTextChar */;
                 stateMachine.acceptStateReached = true;
             }
             else {
@@ -2763,7 +2767,7 @@
         function stateMentionAtChar(stateMachine, char) {
             if (isMentionTextChar(char)) {
                 // '@' char with valid mention text char following
-                stateMachine.state = 31 /* MentionTextChar */;
+                stateMachine.state = 31 /* State.MentionTextChar */;
                 stateMachine.acceptStateReached = true;
             }
             else {
@@ -2785,7 +2789,7 @@
         }
         function statePhoneNumberPlus(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 38 /* PhoneNumberDigit */;
+                stateMachine.state = 38 /* State.PhoneNumberDigit */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2795,7 +2799,7 @@
         }
         function statePhoneNumberOpenParen(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 33 /* PhoneNumberAreaCodeDigit1 */;
+                stateMachine.state = 33 /* State.PhoneNumberAreaCodeDigit1 */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2806,7 +2810,7 @@
         }
         function statePhoneNumberAreaCodeDigit1(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 34 /* PhoneNumberAreaCodeDigit2 */;
+                stateMachine.state = 34 /* State.PhoneNumberAreaCodeDigit2 */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2814,7 +2818,7 @@
         }
         function statePhoneNumberAreaCodeDigit2(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 35 /* PhoneNumberAreaCodeDigit3 */;
+                stateMachine.state = 35 /* State.PhoneNumberAreaCodeDigit3 */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2822,7 +2826,7 @@
         }
         function statePhoneNumberAreaCodeDigit3(stateMachine, char) {
             if (char === ')') {
-                stateMachine.state = 36 /* PhoneNumberCloseParen */;
+                stateMachine.state = 36 /* State.PhoneNumberCloseParen */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2830,10 +2834,10 @@
         }
         function statePhoneNumberCloseParen(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 38 /* PhoneNumberDigit */;
+                stateMachine.state = 38 /* State.PhoneNumberDigit */;
             }
             else if (isPhoneNumberSeparatorChar(char)) {
-                stateMachine.state = 39 /* PhoneNumberSeparator */;
+                stateMachine.state = 39 /* State.PhoneNumberSeparator */;
             }
             else {
                 remove(stateMachines, stateMachine);
@@ -2847,33 +2851,33 @@
             // invoking the phone number regex
             stateMachine.acceptStateReached = true;
             if (isPhoneNumberControlChar(char)) {
-                stateMachine.state = 40 /* PhoneNumberControlChar */;
+                stateMachine.state = 40 /* State.PhoneNumberControlChar */;
             }
             else if (char === '#') {
-                stateMachine.state = 41 /* PhoneNumberPoundChar */;
+                stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
             }
             else if (digitRe.test(char)) ;
             else if (char === '(') {
-                stateMachine.state = 32 /* PhoneNumberOpenParen */;
+                stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
             }
             else if (isPhoneNumberSeparatorChar(char)) {
-                stateMachine.state = 39 /* PhoneNumberSeparator */;
+                stateMachine.state = 39 /* State.PhoneNumberSeparator */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
                 // The transition from a digit character to a letter can be the
                 // start of a new scheme URL match
                 if (isSchemeStartChar(char)) {
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* SchemeChar */));
+                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
                 }
             }
         }
         function statePhoneNumberSeparator(stateMachine, char) {
             if (digitRe.test(char)) {
-                stateMachine.state = 38 /* PhoneNumberDigit */;
+                stateMachine.state = 38 /* State.PhoneNumberDigit */;
             }
             else if (char === '(') {
-                stateMachine.state = 32 /* PhoneNumberOpenParen */;
+                stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2886,10 +2890,10 @@
         function statePhoneNumberControlChar(stateMachine, char) {
             if (isPhoneNumberControlChar(char)) ;
             else if (char === '#') {
-                stateMachine.state = 41 /* PhoneNumberPoundChar */;
+                stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
             }
             else if (digitRe.test(char)) {
-                stateMachine.state = 38 /* PhoneNumberDigit */;
+                stateMachine.state = 38 /* State.PhoneNumberDigit */;
             }
             else {
                 captureMatchIfValidAndRemove(stateMachine);
@@ -2898,7 +2902,7 @@
         // The "#" characters is "pound" in a phone number
         function statePhoneNumberPoundChar(stateMachine, char) {
             if (isPhoneNumberControlChar(char)) {
-                stateMachine.state = 40 /* PhoneNumberControlChar */;
+                stateMachine.state = 40 /* State.PhoneNumberControlChar */;
             }
             else if (digitRe.test(char)) {
                 // According to some of the older tests, if there's a digit
@@ -3242,7 +3246,7 @@
     function parseHtml(html, _a) {
         var onOpenTag = _a.onOpenTag, onCloseTag = _a.onCloseTag, onText = _a.onText, onComment = _a.onComment, onDoctype = _a.onDoctype;
         var noCurrentTag = new CurrentTag();
-        var charIdx = 0, len = html.length, state = 0 /* Data */, currentDataIdx = 0, // where the current data start index is
+        var charIdx = 0, len = html.length, state = 0 /* State.Data */, currentDataIdx = 0, // where the current data start index is
         currentTag = noCurrentTag; // describes the current tag that is being read
         // For debugging: search for other "For debugging" lines
         // const table = new CliTable( {
@@ -3256,67 +3260,67 @@
             // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
             // );
             switch (state) {
-                case 0 /* Data */:
+                case 0 /* State.Data */:
                     stateData(char);
                     break;
-                case 1 /* TagOpen */:
+                case 1 /* State.TagOpen */:
                     stateTagOpen(char);
                     break;
-                case 2 /* EndTagOpen */:
+                case 2 /* State.EndTagOpen */:
                     stateEndTagOpen(char);
                     break;
-                case 3 /* TagName */:
+                case 3 /* State.TagName */:
                     stateTagName(char);
                     break;
-                case 4 /* BeforeAttributeName */:
+                case 4 /* State.BeforeAttributeName */:
                     stateBeforeAttributeName(char);
                     break;
-                case 5 /* AttributeName */:
+                case 5 /* State.AttributeName */:
                     stateAttributeName(char);
                     break;
-                case 6 /* AfterAttributeName */:
+                case 6 /* State.AfterAttributeName */:
                     stateAfterAttributeName(char);
                     break;
-                case 7 /* BeforeAttributeValue */:
+                case 7 /* State.BeforeAttributeValue */:
                     stateBeforeAttributeValue(char);
                     break;
-                case 8 /* AttributeValueDoubleQuoted */:
+                case 8 /* State.AttributeValueDoubleQuoted */:
                     stateAttributeValueDoubleQuoted(char);
                     break;
-                case 9 /* AttributeValueSingleQuoted */:
+                case 9 /* State.AttributeValueSingleQuoted */:
                     stateAttributeValueSingleQuoted(char);
                     break;
-                case 10 /* AttributeValueUnquoted */:
+                case 10 /* State.AttributeValueUnquoted */:
                     stateAttributeValueUnquoted(char);
                     break;
-                case 11 /* AfterAttributeValueQuoted */:
+                case 11 /* State.AfterAttributeValueQuoted */:
                     stateAfterAttributeValueQuoted(char);
                     break;
-                case 12 /* SelfClosingStartTag */:
+                case 12 /* State.SelfClosingStartTag */:
                     stateSelfClosingStartTag(char);
                     break;
-                case 13 /* MarkupDeclarationOpenState */:
+                case 13 /* State.MarkupDeclarationOpenState */:
                     stateMarkupDeclarationOpen();
                     break;
-                case 14 /* CommentStart */:
+                case 14 /* State.CommentStart */:
                     stateCommentStart(char);
                     break;
-                case 15 /* CommentStartDash */:
+                case 15 /* State.CommentStartDash */:
                     stateCommentStartDash(char);
                     break;
-                case 16 /* Comment */:
+                case 16 /* State.Comment */:
                     stateComment(char);
                     break;
-                case 17 /* CommentEndDash */:
+                case 17 /* State.CommentEndDash */:
                     stateCommentEndDash(char);
                     break;
-                case 18 /* CommentEnd */:
+                case 18 /* State.CommentEnd */:
                     stateCommentEnd(char);
                     break;
-                case 19 /* CommentEndBang */:
+                case 19 /* State.CommentEndBang */:
                     stateCommentEndBang(char);
                     break;
-                case 20 /* Doctype */:
+                case 20 /* State.Doctype */:
                     stateDoctype(char);
                     break;
                 default:
@@ -3345,10 +3349,10 @@
         // https://www.w3.org/TR/html51/syntax.html#tag-open-state
         function stateTagOpen(char) {
             if (char === '!') {
-                state = 13 /* MarkupDeclarationOpenState */;
+                state = 13 /* State.MarkupDeclarationOpenState */;
             }
             else if (char === '/') {
-                state = 2 /* EndTagOpen */;
+                state = 2 /* State.EndTagOpen */;
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isClosing: true }));
             }
             else if (char === '<') {
@@ -3357,12 +3361,12 @@
             }
             else if (letterRe.test(char)) {
                 // tag name start (and no '/' read)
-                state = 3 /* TagName */;
+                state = 3 /* State.TagName */;
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isOpening: true }));
             }
             else {
                 // Any other
-                state = 0 /* Data */;
+                state = 0 /* State.Data */;
                 currentTag = noCurrentTag;
             }
         }
@@ -3372,7 +3376,7 @@
         function stateTagName(char) {
             if (whitespaceRe.test(char)) {
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
-                state = 4 /* BeforeAttributeName */;
+                state = 4 /* State.BeforeAttributeName */;
             }
             else if (char === '<') {
                 // start of another tag (ignore the previous, incomplete one)
@@ -3380,7 +3384,7 @@
             }
             else if (char === '/') {
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
-                state = 12 /* SelfClosingStartTag */;
+                state = 12 /* State.SelfClosingStartTag */;
             }
             else if (char === '>') {
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
@@ -3401,7 +3405,7 @@
                 resetToDataState();
             }
             else if (letterRe.test(char)) {
-                state = 3 /* TagName */;
+                state = 3 /* State.TagName */;
             }
             else {
                 // some other non-tag-like character, don't treat this as a tag
@@ -3412,7 +3416,7 @@
         function stateBeforeAttributeName(char) {
             if (whitespaceRe.test(char)) ;
             else if (char === '/') {
-                state = 12 /* SelfClosingStartTag */;
+                state = 12 /* State.SelfClosingStartTag */;
             }
             else if (char === '>') {
                 emitTagAndPreviousTextNode(); // resets to Data state as well
@@ -3429,19 +3433,19 @@
             }
             else {
                 // Any other char, start of a new attribute name
-                state = 5 /* AttributeName */;
+                state = 5 /* State.AttributeName */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
         function stateAttributeName(char) {
             if (whitespaceRe.test(char)) {
-                state = 6 /* AfterAttributeName */;
+                state = 6 /* State.AfterAttributeName */;
             }
             else if (char === '/') {
-                state = 12 /* SelfClosingStartTag */;
+                state = 12 /* State.SelfClosingStartTag */;
             }
             else if (char === '=') {
-                state = 7 /* BeforeAttributeValue */;
+                state = 7 /* State.BeforeAttributeValue */;
             }
             else if (char === '>') {
                 emitTagAndPreviousTextNode(); // resets to Data state as well
@@ -3462,10 +3466,10 @@
         function stateAfterAttributeName(char) {
             if (whitespaceRe.test(char)) ;
             else if (char === '/') {
-                state = 12 /* SelfClosingStartTag */;
+                state = 12 /* State.SelfClosingStartTag */;
             }
             else if (char === '=') {
-                state = 7 /* BeforeAttributeValue */;
+                state = 7 /* State.BeforeAttributeValue */;
             }
             else if (char === '>') {
                 emitTagAndPreviousTextNode();
@@ -3482,17 +3486,17 @@
             }
             else {
                 // Any other character, start a new attribute in the current tag
-                state = 5 /* AttributeName */;
+                state = 5 /* State.AttributeName */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
         function stateBeforeAttributeValue(char) {
             if (whitespaceRe.test(char)) ;
             else if (char === "\"") {
-                state = 8 /* AttributeValueDoubleQuoted */;
+                state = 8 /* State.AttributeValueDoubleQuoted */;
             }
             else if (char === "'") {
-                state = 9 /* AttributeValueSingleQuoted */;
+                state = 9 /* State.AttributeValueSingleQuoted */;
             }
             else if (/[>=`]/.test(char)) {
                 // Invalid chars after an '=' for an attribute value, don't count
@@ -3505,27 +3509,27 @@
             }
             else {
                 // Any other character, consider it an unquoted attribute value
-                state = 10 /* AttributeValueUnquoted */;
+                state = 10 /* State.AttributeValueUnquoted */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-value-double-quoted-state
         function stateAttributeValueDoubleQuoted(char) {
             if (char === "\"") {
                 // end the current double-quoted attribute
-                state = 11 /* AfterAttributeValueQuoted */;
+                state = 11 /* State.AfterAttributeValueQuoted */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-value-single-quoted-state
         function stateAttributeValueSingleQuoted(char) {
             if (char === "'") {
                 // end the current single-quoted attribute
-                state = 11 /* AfterAttributeValueQuoted */;
+                state = 11 /* State.AfterAttributeValueQuoted */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
         function stateAttributeValueUnquoted(char) {
             if (whitespaceRe.test(char)) {
-                state = 4 /* BeforeAttributeName */;
+                state = 4 /* State.BeforeAttributeName */;
             }
             else if (char === '>') {
                 emitTagAndPreviousTextNode();
@@ -3539,10 +3543,10 @@
         // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
         function stateAfterAttributeValueQuoted(char) {
             if (whitespaceRe.test(char)) {
-                state = 4 /* BeforeAttributeName */;
+                state = 4 /* State.BeforeAttributeName */;
             }
             else if (char === '/') {
-                state = 12 /* SelfClosingStartTag */;
+                state = 12 /* State.SelfClosingStartTag */;
             }
             else if (char === '>') {
                 emitTagAndPreviousTextNode();
@@ -3555,7 +3559,7 @@
                 // Any other character, "parse error". Spec says to switch to the
                 // BeforeAttributeState and re-consume the character, as it may be
                 // the start of a new attribute name
-                state = 4 /* BeforeAttributeName */;
+                state = 4 /* State.BeforeAttributeName */;
                 reconsumeCurrentCharacter();
             }
         }
@@ -3568,7 +3572,7 @@
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
             else {
-                state = 4 /* BeforeAttributeName */;
+                state = 4 /* State.BeforeAttributeName */;
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
@@ -3578,12 +3582,12 @@
                 // html comment
                 charIdx += 2; // "consume" characters
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'comment' }));
-                state = 14 /* CommentStart */;
+                state = 14 /* State.CommentStart */;
             }
             else if (html.substr(charIdx, 7).toUpperCase() === 'DOCTYPE') {
                 charIdx += 7; // "consume" characters
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'doctype' }));
-                state = 20 /* Doctype */;
+                state = 20 /* State.Doctype */;
             }
             else {
                 // At this point, the spec specifies that the state machine should
@@ -3599,7 +3603,7 @@
         function stateCommentStart(char) {
             if (char === '-') {
                 // We've read the sequence '<!---' at this point (3 dashes)
-                state = 15 /* CommentStartDash */;
+                state = 15 /* State.CommentStartDash */;
             }
             else if (char === '>') {
                 // At this point, we'll assume the comment wasn't a real comment
@@ -3609,7 +3613,7 @@
             }
             else {
                 // Any other char, take it as part of the comment
-                state = 16 /* Comment */;
+                state = 16 /* State.Comment */;
             }
         }
         // We've read the sequence '<!---' at this point (3 dashes)
@@ -3617,7 +3621,7 @@
         function stateCommentStartDash(char) {
             if (char === '-') {
                 // We've read '<!----' (4 dashes) at this point
-                state = 18 /* CommentEnd */;
+                state = 18 /* State.CommentEnd */;
             }
             else if (char === '>') {
                 // At this point, we'll assume the comment wasn't a real comment
@@ -3627,14 +3631,14 @@
             }
             else {
                 // Anything else, take it as a valid comment
-                state = 16 /* Comment */;
+                state = 16 /* State.Comment */;
             }
         }
         // Currently reading the comment's text (data)
         // https://www.w3.org/TR/html51/syntax.html#comment-state
         function stateComment(char) {
             if (char === '-') {
-                state = 17 /* CommentEndDash */;
+                state = 17 /* State.CommentEndDash */;
             }
         }
         // When we we've read the first dash inside a comment, it may signal the
@@ -3642,11 +3646,11 @@
         // https://www.w3.org/TR/html51/syntax.html#comment-end-dash-state
         function stateCommentEndDash(char) {
             if (char === '-') {
-                state = 18 /* CommentEnd */;
+                state = 18 /* State.CommentEnd */;
             }
             else {
                 // Wasn't a dash, must still be part of the comment
-                state = 16 /* Comment */;
+                state = 16 /* State.Comment */;
             }
         }
         // After we've read two dashes inside a comment, it may signal the end of
@@ -3657,13 +3661,13 @@
                 emitTagAndPreviousTextNode();
             }
             else if (char === '!') {
-                state = 19 /* CommentEndBang */;
+                state = 19 /* State.CommentEndBang */;
             }
             else if (char === '-') ;
             else {
                 // Anything else, switch back to the comment state since we didn't
                 // read the full "end comment" sequence (i.e. '-->')
-                state = 16 /* Comment */;
+                state = 16 /* State.Comment */;
             }
         }
         // We've read the sequence '--!' inside of a comment
@@ -3672,7 +3676,7 @@
             if (char === '-') {
                 // We read the sequence '--!-' inside of a comment. The last dash
                 // could signify that the comment is going to close
-                state = 17 /* CommentEndDash */;
+                state = 17 /* State.CommentEndDash */;
             }
             else if (char === '>') {
                 // End of comment with the sequence '--!>'
@@ -3681,7 +3685,7 @@
             else {
                 // The '--!' was not followed by a '>', continue reading the
                 // comment's text
-                state = 16 /* Comment */;
+                state = 16 /* State.Comment */;
             }
         }
         /**
@@ -3711,7 +3715,7 @@
          * like a real HTML tag.
          */
         function resetToDataState() {
-            state = 0 /* Data */;
+            state = 0 /* State.Data */;
             currentTag = noCurrentTag;
         }
         /**
@@ -3723,7 +3727,7 @@
          * previously reading.
          */
         function startNewTag() {
-            state = 1 /* TagOpen */;
+            state = 1 /* State.TagOpen */;
             currentTag = new CurrentTag({ idx: charIdx });
         }
         /**
@@ -4334,7 +4338,7 @@
                         skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                     }
                 },
-                onComment: function (_offset) { },
+                onComment: function (_offset) { }, // no need to process comment nodes
                 onDoctype: function (_offset) { }, // no need to process doctype nodes
             });
             // After we have found all matches, remove subsequent matches that

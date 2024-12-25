@@ -21,8 +21,7 @@ export async function updateTldRegex() {
         dedent`
         // NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run \`npm run update-tld-regex\`
         
-        // prettier-ignore
-        export const tldRegexStr = '(?:${tldRegexStr})';\n
+        export const tldRegexStr = '(?:${tldRegexStr})';
 
         export const tldRegex = new RegExp('^' + tldRegexStr + '$');
     ` + '\n';

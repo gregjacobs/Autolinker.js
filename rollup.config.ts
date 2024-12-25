@@ -1,8 +1,9 @@
 import dedent from 'dedent';
+import fs from 'fs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import rollupCommonjs from '@rollup/plugin-commonjs';
 
-const pkg = require('./package.json');
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
 export default {
     input: './dist/es2015/autolinker.js',
