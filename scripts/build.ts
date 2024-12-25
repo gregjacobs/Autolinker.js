@@ -28,7 +28,7 @@ execSync(
 );
 execSync(`mkdirp dist/es2015 && tsc --module es2015 --outDir ${es2015OutputDir} --noEmit false`);
 execSync(
-    `rollup --config rollup.config.ts --configPlugin typescript && terser dist/autolinker.js --output dist/autolinker.min.js --compress --mangle --source-map "url='autolinker.min.js.map',includeSources=true"`
+    `rollup --config rollup.config.mjs && terser dist/autolinker.js --output dist/autolinker.min.js --compress --mangle --source-map "url='autolinker.min.js.map',includeSources=true"`
 );
 
 fixCommonJsOutput();
