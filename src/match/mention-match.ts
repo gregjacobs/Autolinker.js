@@ -1,4 +1,5 @@
 import { MentionService } from '../parser/mention-utils';
+import { assertNever } from '../utils';
 import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
 
 /**
@@ -91,9 +92,12 @@ export class MentionMatch extends AbstractMatch {
                 return 'https://soundcloud.com/' + this.mention;
             case 'tiktok':
                 return 'https://www.tiktok.com/@' + this.mention;
+            case 'youtube':
+                return 'https://youtube.com/@' + this.mention;
 
             default:
                 // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                assertNever(this.serviceName);
                 throw new Error('Unknown service name to point mention to: ' + this.serviceName);
         }
     }

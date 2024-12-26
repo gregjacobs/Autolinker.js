@@ -1,7 +1,7 @@
 # Autolinker.js
 
 Because I had so much trouble finding a good auto-linking implementation out in
-the wild, I decided to roll my own. It  seemed that everything I found out there
+the wild, I decided to roll my own. It seemed that everything I found out there
 was either an implementation that didn't cover every case, or was just limited
 in one way or another.
 
@@ -27,27 +27,34 @@ Full API Docs: [http://gregjacobs.github.io/Autolinker.js/api/](http://gregjacob
 Live Example: [http://gregjacobs.github.io/Autolinker.js/examples/live-example/](http://gregjacobs.github.io/Autolinker.js/examples/live-example/)
 
 
-## v4.0 released September 2022
+## Upgrading from a previous major version of Autolinker?
 
-See [Upgrading from v3.x -> v4.x (Breaking Changes)](#upgrading-from-v3x---v4x-breaking-changes) at the bottom of this readme.
+See [Breaking Changes](#upgrading-from-v3x---v4x-breaking-changes) at the bottom of this readme.
 
 ## Installation
 
-#### Installing with the [npm](https://www.npmjs.org/) package manager:
+#### Installing with [npm](https://www.npmjs.org/):
 
 ```shell
 npm install autolinker --save
 ```
 
 
-#### Installing with the [Yarn](https://yarnpkg.com/) package manager:
+#### Installing with [Yarn](https://yarnpkg.com/):
 
 ```shell
 yarn add autolinker
 ```
 
 
-#### Installing with the [Bower](http://bower.io) package manager:	
+#### Installing with [pnpm](https://pnpm.io/):
+
+```shell
+pnpm add autolinker
+```
+
+
+#### Installing with [Bower](http://bower.io):	
   
 ```shell
 bower install Autolinker.js --save
@@ -57,18 +64,18 @@ bower install Autolinker.js --save
 #### Direct download
 
 Simply clone this repository or download a zip of the project, and link to 
-either `dist/Autolinker.js` or `dist/Autolinker.min.js` with a script tag.
+either `dist/Autolinker.js` or `dist/Autolinker.min.js` with a `<script>` tag.
 
 
 ## Importing Autolinker
 
-#### ES6/TypeScript/Webpack:
+#### ES6+/TypeScript/Webpack/Node.js ESM:
 
 ```ts
 import Autolinker from 'autolinker';
 ```
 
-#### Node.js:
+#### Node.js CommonJS:
 
 ```javascript
 const Autolinker = require('autolinker');
@@ -159,14 +166,10 @@ These include:
   phone numbers. Defaults to `true`.
 
 - [mention](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-mention) : string<br />
-  A string for the service name to have mentions (@username) auto-linked to. Supported
-  values at this time are 'twitter', 'soundcloud', 'instagram' and 'tiktok'. Pass `false` to skip
-  auto-linking of mentions. Defaults to `false`.
+  A string for the service name to have mentions (@username) auto-linked to. Supported values at this time are 'twitter', 'soundcloud', 'instagram', 'tiktok', and 'youtube'. Pass `false` to skip auto-linking of mentions. Defaults to `false`.
 
 - [hashtag](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-hashtag) : boolean/string<br />
-  A string for the service name to have hashtags auto-linked to. Supported
-  values at this time are 'twitter', 'facebook', 'instagram' and 'tiktok'. Pass `false` to skip
-  auto-linking of hashtags. Defaults to `false`.
+  A string for the service name to have hashtags auto-linked to. Supported values at this time are 'twitter', 'facebook', 'instagram', 'tiktok', and 'youtube'. Pass `false` to skip auto-linking of hashtags. Defaults to `false`.
 
 - [stripPrefix](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-stripPrefix) : boolean<br />
   `true` to have the `'http://'` (or `'https://'`) and/or the `'www.'` 

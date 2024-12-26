@@ -6,6 +6,11 @@ const mentionRegexes: { [serviceName in MentionService]: RegExp } = {
     // TikTok usernames are 1-24 characters containing letters, numbers, underscores
     // and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
     tiktok: /^@[.\w]{1,23}[\w]$/,
+
+    // Youtube usernames are 3-30 characters containing letters, numbers, underscores,
+    // dashes, or latin middle dots ('·').
+    // https://support.google.com/youtube/answer/11585688?hl=en&co=GENIE.Platform%3DAndroid#tns
+    youtube: /^@[-.·\w]{3,30}$/,
 };
 
 // Regex that allows for all possible mention characters for any service. We'll
@@ -29,5 +34,11 @@ export function isValidMention(mention: string, serviceName: MentionService): bo
     return re.test(mention);
 }
 
-export type MentionService = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok';
-export const mentionServices: MentionService[] = ['twitter', 'instagram', 'soundcloud', 'tiktok'];
+export type MentionService = 'twitter' | 'instagram' | 'soundcloud' | 'tiktok' | 'youtube';
+export const mentionServices: MentionService[] = [
+    'twitter',
+    'instagram',
+    'soundcloud',
+    'tiktok',
+    'youtube',
+];

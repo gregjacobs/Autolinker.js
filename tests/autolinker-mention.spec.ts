@@ -20,6 +20,10 @@ describe('Autolinker Mention Matching >', () => {
         mention: 'tiktok',
         newWindow: false,
     });
+    const youtubeAutolinker = new Autolinker({
+        mention: 'youtube',
+        newWindow: false,
+    });
 
     const services: MentionTestService[] = [
         {
@@ -41,6 +45,11 @@ describe('Autolinker Mention Matching >', () => {
             serviceName: 'tiktok',
             urlPrefix: 'https://www.tiktok.com/@',
             autolinker: tiktokAutolinker,
+        },
+        {
+            serviceName: 'youtube',
+            urlPrefix: 'https://youtube.com/@',
+            autolinker: youtubeAutolinker,
         },
     ];
 

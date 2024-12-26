@@ -60,7 +60,7 @@ $(document).ready(function () {
         mentionOption = new RadioOption({
             name: 'mention',
             description: 'Mentions',
-            options: [false, 'twitter', 'instagram', 'soundcloud', 'tiktok'],
+            options: [false, 'twitter', 'instagram', 'soundcloud', 'tiktok', 'youtube'],
             defaultValue: false,
         }).onChange(autolink);
 

@@ -282,6 +282,7 @@ export default class Autolinker {
      * - 'instagram'
      * - 'soundcloud'
      * - 'tiktok'
+     * - 'youtube'
      *
      * Defaults to `false` to skip auto-linking of mentions.
      */
