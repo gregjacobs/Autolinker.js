@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v4.0.2
+ * v4.1.0
  *
  * Copyright(c) 2024 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -15,7 +15,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '4.0.2';
+    var version = '4.1.0';
 
     /**
      * Simpler helper method to check for undefined simply for the benefit of
@@ -1709,7 +1709,13 @@
         // Max length of 140 for a hashtag ('#' char + 139 word chars)
         return hashtag.length <= 140;
     }
-    var hashtagServices = ['twitter', 'facebook', 'instagram', 'tiktok'];
+    var hashtagServices = [
+        'twitter',
+        'facebook',
+        'instagram',
+        'tiktok',
+        'youtube',
+    ];
 
     /**
      * @class Autolinker.match.Hashtag
@@ -1798,6 +1804,8 @@
                     return 'https://instagram.com/explore/tags/' + hashtag;
                 case 'tiktok':
                     return 'https://www.tiktok.com/tag/' + hashtag;
+                case 'youtube':
+                    return 'https://youtube.com/hashtag/' + hashtag;
                 default:
                     // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
                     assertNever(serviceName);
@@ -1836,6 +1844,10 @@
         // TikTok usernames are 1-24 characters containing letters, numbers, underscores
         // and periods, but cannot end in a period: https://support.tiktok.com/en/getting-started/setting-up-your-profile/changing-your-username
         tiktok: /^@[.\w]{1,23}[\w]$/,
+        // Youtube usernames are 3-30 characters containing letters, numbers, underscores,
+        // dashes, or latin middle dots ('·').
+        // https://support.google.com/youtube/answer/11585688?hl=en&co=GENIE.Platform%3DAndroid#tns
+        youtube: /^@[-.·\w]{3,30}$/,
     };
     // Regex that allows for all possible mention characters for any service. We'll
     // confirm the match based on the user-configured service name after a match is
@@ -1854,7 +1866,13 @@
         var re = mentionRegexes[serviceName];
         return re.test(mention);
     }
-    var mentionServices = ['twitter', 'instagram', 'soundcloud', 'tiktok'];
+    var mentionServices = [
+        'twitter',
+        'instagram',
+        'soundcloud',
+        'tiktok',
+        'youtube',
+    ];
 
     /**
      * @class Autolinker.match.Mention
@@ -1940,8 +1958,11 @@
                     return 'https://soundcloud.com/' + this.mention;
                 case 'tiktok':
                     return 'https://www.tiktok.com/@' + this.mention;
+                case 'youtube':
+                    return 'https://youtube.com/@' + this.mention;
                 default:
                     // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                    assertNever(this.serviceName);
                     throw new Error('Unknown service name to point mention to: ' + this.serviceName);
             }
         };
@@ -3977,6 +3998,8 @@
              * - 'twitter'
              * - 'facebook'
              * - 'instagram'
+             * - 'tiktok'
+             * - 'youtube'
              *
              * Pass `false` to skip auto-linking of hashtags.
              */
@@ -3991,6 +4014,7 @@
              * - 'instagram'
              * - 'soundcloud'
              * - 'tiktok'
+             * - 'youtube'
              *
              * Defaults to `false` to skip auto-linking of mentions.
              */
