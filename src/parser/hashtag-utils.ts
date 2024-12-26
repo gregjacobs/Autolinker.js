@@ -16,5 +16,11 @@ export function isValidHashtag(hashtag: string): boolean {
     return hashtag.length <= 140;
 }
 
-export type HashtagService = 'twitter' | 'facebook' | 'instagram' | 'tiktok';
-export const hashtagServices: HashtagService[] = ['twitter', 'facebook', 'instagram', 'tiktok'];
+export type HashtagService = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'youtube';
+export const hashtagServices: HashtagService[] = [
+    'twitter',
+    'facebook',
+    'instagram',
+    'tiktok',
+    'youtube',
+];

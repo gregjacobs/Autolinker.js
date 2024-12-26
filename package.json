@@ -15,6 +15,7 @@
         "build:src": "ts-node scripts/build.ts",
         "build:live-example": "webpack",
         "clean": "rimraf dist",
+        "devserver": "webpack-dev-server",
         "prepublishOnly": "npm-run-all build test",
         "start": "webpack serve --open",
         "test": "npm-run-all test:unit test:integration",

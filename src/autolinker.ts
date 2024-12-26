@@ -265,6 +265,8 @@ export default class Autolinker {
      * - 'twitter'
      * - 'facebook'
      * - 'instagram'
+     * - 'tiktok'
+     * - 'youtube'
      *
      * Pass `false` to skip auto-linking of hashtags.
      */

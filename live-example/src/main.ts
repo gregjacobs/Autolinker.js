@@ -67,7 +67,7 @@ $(document).ready(function () {
         hashtagOption = new RadioOption({
             name: 'hashtag',
             description: 'Hashtags',
-            options: [false, 'twitter', 'facebook', 'instagram', 'tiktok'],
+            options: [false, 'twitter', 'facebook', 'instagram', 'tiktok', 'youtube'],
             defaultValue: false,
         }).onChange(autolink);
 

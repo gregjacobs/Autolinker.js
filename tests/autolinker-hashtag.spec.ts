@@ -21,6 +21,10 @@ describe(`Hashtag Matching >`, () => {
         hashtag: 'tiktok',
         newWindow: false,
     });
+    const youtubeAutolinker = new Autolinker({
+        hashtag: 'youtube',
+        newWindow: false,
+    });
 
     const services: HashtagTestService[] = [
         {
@@ -42,6 +46,11 @@ describe(`Hashtag Matching >`, () => {
             serviceName: 'tiktok',
             urlPrefix: 'https://www.tiktok.com/tag',
             autolinker: tiktokAutolinker,
+        },
+        {
+            serviceName: 'youtube',
+            urlPrefix: 'https://youtube.com/hashtag',
+            autolinker: youtubeAutolinker,
         },
     ];
 

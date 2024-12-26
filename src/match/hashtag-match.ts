@@ -97,6 +97,8 @@ export class HashtagMatch extends AbstractMatch {
                 return 'https://instagram.com/explore/tags/' + hashtag;
             case 'tiktok':
                 return 'https://www.tiktok.com/tag/' + hashtag;
+            case 'youtube':
+                return 'https://youtube.com/hashtag/' + hashtag;
 
             default:
                 // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
