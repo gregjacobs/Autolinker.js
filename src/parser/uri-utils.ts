@@ -110,6 +110,10 @@ export function isDomainLabelChar(char: string): boolean {
     return char === '_' || isDomainLabelStartChar(char);
 }
 
+export function hasDirectionalChar(char: string) {
+    return /[\u202a-\u202e\u200e-\u200f]/g.test(char);
+}
+
 /**
  * Determines if the character is a path character ("pchar") as defined by
  * https://tools.ietf.org/html/rfc3986#appendix-A
@@ -168,6 +172,11 @@ export function isValidSchemeUrl(url: string): boolean {
         return false;
     }
 
+    // If url contains directional change character prevent it from linking
+    if (hasDirectionalChar(url)) {
+        return false;
+    }
+
     const isAuthorityMatch = !!schemeMatch![1];
     const host = schemeMatch![2];
     if (isAuthorityMatch) {
@@ -210,6 +219,11 @@ export function isValidTldMatch(url: string): boolean {
     const hostLabels = host.split('.');
     if (hostLabels.length < 2) {
         // 0 or 1 host label, there's no TLD. Ex: 'localhost'
+        return false;
+    }
+
+    // If url contains directional change character prevent it from linking
+    if (hasDirectionalChar(url)) {
         return false;
     }
 
