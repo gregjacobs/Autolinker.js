@@ -1088,6 +1088,13 @@ describe('Autolinker Url Matching >', () => {
         });
     });
 
+    describe('unicode exploits', () => {
+        fit('text with directional change characters should not be linked', () => {
+            expect(autolinker.link('foo.com\u202Ebar.com')).toBe('foo.com\u202Ebar.com');
+            expect(autolinker.link('foo.com\u202Emoc.rab')).toBe('foo.com\u202Emoc.rab');
+        });
+    });
+
     function generateCombinationTests({
         schemes,
         hosts,
