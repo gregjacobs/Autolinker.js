@@ -470,6 +470,12 @@ export default class Autolinker {
     private readonly sanitizeHtml: boolean = false; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
+     * @cfg {Boolean} [sanitizeHtml=false]
+     * removes all directional override characters from input string
+     */
+    private readonly stripDirectionalCharacters: boolean = false;
+
+    /**
      * @private
      * @property {Autolinker.AnchorTagBuilder} tagBuilder
      *
@@ -500,6 +506,7 @@ export default class Autolinker {
             ? cfg.decodePercentEncoding
             : this.decodePercentEncoding;
         this.sanitizeHtml = cfg.sanitizeHtml || false;
+        this.stripDirectionalCharacters = cfg.stripDirectionalCharacters || false;
 
         // Validate the value of the `mention` cfg
         const mention = this.mention;
@@ -786,6 +793,10 @@ export default class Autolinker {
             textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        if (this.stripDirectionalCharacters) {
+            textOrHtml = this.stripUnsafeCharacters(textOrHtml);
+        }
+
         let matches = this.parse(textOrHtml),
             newHtml: string[] = [],
             lastIndex = 0;
@@ -856,6 +867,16 @@ export default class Autolinker {
         }
 
         return tagBuilder;
+    }
+
+    /**
+     * Strips characters considered as unsafe
+     * SNYK-AUTOLINKER-2438289
+     * @param text
+     * @private
+     */
+    private stripUnsafeCharacters(text: string) {
+        return text.replace(/[\u202a-\u202e\u200e-\u200f]/g, '');
     }
 }
 
@@ -947,6 +968,7 @@ export interface AutolinkerConfig {
     context?: any;
     sanitizeHtml?: boolean;
     decodePercentEncoding?: boolean;
+    stripDirectionalCharacters?: boolean;
 }
 
 export type UrlsConfig = boolean | UrlsConfigObj;
