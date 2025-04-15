@@ -1,5 +1,5 @@
 import { AbstractMatch, AbstractMatchConfig } from './abstract-match';
-import { httpSchemePrefixRe } from '../parser/uri-utils';
+import { directionalCharRe, httpSchemePrefixRe } from '../parser/uri-utils';
 import type { StripPrefixConfigObj } from '../autolinker';
 
 /**
@@ -162,7 +162,7 @@ export class UrlMatch extends AbstractMatch {
     public getAnchorHref(): string {
         let url = this.getUrl();
 
-        return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
+        return url.replace(directionalCharRe, encodeURIComponent).replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
     }
 
     /**
@@ -189,7 +189,7 @@ export class UrlMatch extends AbstractMatch {
         if (this.decodePercentEncoding) {
             anchorText = removePercentEncoding(anchorText);
         }
-        return anchorText;
+        return anchorText.replace(directionalCharRe, encodeURIComponent);
     }
 }
 

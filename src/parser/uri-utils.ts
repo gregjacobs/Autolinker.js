@@ -72,6 +72,8 @@ export const schemeUrlRe = /^[A-Za-z][-.+A-Za-z0-9]*:(\/\/)?([^:/]*)/;
 // See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
 export const tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative '//' chars
 
+export const directionalCharRe = /[\u202a-\u202e\u200e-\u200f]/;
+
 /**
  * Determines if the given character may start a scheme (ex: 'http').
  */
@@ -108,6 +110,14 @@ export function isDomainLabelStartChar(char: string): boolean {
  */
 export function isDomainLabelChar(char: string): boolean {
     return char === '_' || isDomainLabelStartChar(char);
+}
+
+/**
+ * Detects directional change character
+ * https://github.com/gregjacobs/Autolinker.js/issues/377
+ */
+export function isDirectionalChar(char: string): boolean {
+    return directionalCharRe.test(char);
 }
 
 /**
