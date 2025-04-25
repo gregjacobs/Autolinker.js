@@ -5,7 +5,7 @@ describe('Webpack build with TypeScript in a browser', function () {
     let page: Page;
 
     beforeAll(async () => {
-        browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
         page = await browser.newPage();
 
         // Print errors from the page
