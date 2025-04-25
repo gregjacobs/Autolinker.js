@@ -78,7 +78,7 @@
         "nyc": "^17.1.0",
         "prettier": "3.4.2",
         "punycode": "^2.3.1",
-        "puppeteer": "^23.11.1",
+        "puppeteer": "^24.7.2",
         "rimraf": "^6.0.1",
         "rollup": "^4.29.1",
         "style-loader": "^4.0.0",

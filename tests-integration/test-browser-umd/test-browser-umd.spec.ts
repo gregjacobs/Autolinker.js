@@ -1,10 +1,8 @@
-describe('Autolinker.js UMD file in browser', function () {
-    // @types/puppeteer causing a lot of conflicts with @types/node. Removing for now.
-    //import puppeteer, { Browser, Page } from 'puppeteer';
-    const puppeteer = require('puppeteer');
+import puppeteer, { Browser, Page } from 'puppeteer';
 
-    let browser: any; // :Browser
-    let page: any; // :Page
+describe('Autolinker.js UMD file in browser', function () {
+    let browser: Browser;
+    let page: Page;
 
     beforeAll(async () => {
         browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
