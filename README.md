@@ -1,5 +1,7 @@
 # Autolinker.js
 
+<!--[![build-and-test](https://github.com/gregjacobs/Autolinker.js/actions/workflows/main.yml/badge.svg)](https://github.com/gregjacobs/Autolinker.js/actions/workflows/main.yml)-->
+
 Because I had so much trouble finding a good auto-linking implementation out in
 the wild, I decided to roll my own. It seemed that everything I found out there
 was either an implementation that didn't cover every case, or was just limited

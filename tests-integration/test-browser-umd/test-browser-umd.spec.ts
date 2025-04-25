@@ -1,3 +1,4 @@
+import fs from 'fs';
 import puppeteer, { Browser, Page } from 'puppeteer';
 
 describe('Autolinker.js UMD file in browser', function () {
@@ -12,10 +13,17 @@ describe('Autolinker.js UMD file in browser', function () {
         page.on('console', (msg: any) => console.log('PAGE LOG:', msg.text()));
         page.on('pageerror', (err: Error) => console.error(err));
 
-        const url = `file://${__dirname}/test-browser-umd.html`;
+        const pathToHtmlFile = `${__dirname}/test-browser-umd.html`;
+        if (!fs.existsSync(pathToHtmlFile)) {
+            throw new Error(
+                `The test-browser-umd.html file was not found at path: '${pathToHtmlFile}'`
+            );
+        }
+
+        const url = `file://${pathToHtmlFile}`;
         const response = await page.goto(url, { waitUntil: 'load' });
         if (!response || !response.ok()) {
-            throw new Error(`Failed to load ${url}. Error: ${response?.toString()}`);
+            throw new Error(`Failed to load url ${url}. Error: ${response?.toString()}`);
         }
     });
 
