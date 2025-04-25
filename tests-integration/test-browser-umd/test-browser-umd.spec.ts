@@ -23,7 +23,7 @@ describe('Autolinker.js UMD file in browser', function () {
         const url = `file://${pathToHtmlFile}`;
         const response = await page.goto(url, { waitUntil: 'load' });
         if (!response || !response.ok()) {
-            throw new Error(`Failed to load url ${url}. Error: ${response?.toString()}`);
+            throw new Error(`Failed to load url ${url}. Response status: ${response?.status()}`);
         }
     });
 
