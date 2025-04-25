@@ -12,9 +12,11 @@ describe('Autolinker.js UMD file in browser', function () {
         page.on('console', (msg: any) => console.log('PAGE LOG:', msg.text()));
         page.on('pageerror', (err: Error) => console.error(err));
 
-        await page.goto(`file://${__dirname}/test-browser-umd.html`, {
-            waitUntil: 'load',
-        });
+        const url = `file://${__dirname}/test-browser-umd.html`;
+        const response = await page.goto(url, { waitUntil: 'load' });
+        if (!response || !response.ok()) {
+            throw new Error(`Failed to load ${url}. Error: ${response?.toString()}`);
+        }
     });
 
     afterAll(async () => {
