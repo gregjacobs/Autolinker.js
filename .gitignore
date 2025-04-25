@@ -1,7 +1,9 @@
 .idea
+.nyc_output
 .project
 .settings
 .tmp
+coverage
 node_modules/
 npm-debug.log
 yarn-error.log
