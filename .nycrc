@@ -2,7 +2,9 @@
     "extends": "@istanbuljs/nyc-config-typescript",
     "reporter": [
         "text",
-        "html"
+        "text-summary",
+        "html",
+        "json-summary"
     ],
     "report-dir": "coverage",
     "include": [
