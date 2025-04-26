@@ -23,76 +23,18 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
         ellipsisLengthBeforeParsing = ellipsisChars.length;
     }
 
-    let parse_url = function (url: string) {
-        // Functionality inspired by PHP function of same name
-        let urlObj: UrlObject = {};
-        let urlSub = url;
-        let match = urlSub.match(/^([a-z]+):\/\//i);
-        if (match) {
-            urlObj.scheme = match[1];
-            urlSub = urlSub.substr(match[0].length);
-        }
-        match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
-        if (match) {
-            urlObj.host = match[1];
-            urlSub = urlSub.substr(match[0].length);
-        }
-        match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
-        if (match) {
-            urlObj.path = match[1];
-            urlSub = urlSub.substr(match[0].length);
-        }
-        match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
-        if (match) {
-            urlObj.query = match[1];
-            urlSub = urlSub.substr(match[0].length);
-        }
-        match = urlSub.match(/^#(.*?)$/i);
-        if (match) {
-            urlObj.fragment = match[1];
-            //urlSub = urlSub.substr(match[0].length);  -- not used. Uncomment if adding another block.
-        }
-        return urlObj;
-    };
-
-    let buildUrl = function (urlObj: UrlObject) {
-        let url = '';
-        if (urlObj.scheme && urlObj.host) {
-            url += urlObj.scheme + '://';
-        }
-        if (urlObj.host) {
-            url += urlObj.host;
-        }
-        if (urlObj.path) {
-            url += '/' + urlObj.path;
-        }
-        if (urlObj.query) {
-            url += '?' + urlObj.query;
-        }
-        if (urlObj.fragment) {
-            url += '#' + urlObj.fragment;
-        }
-        return url;
-    };
-
-    let buildSegment = function (segment: string, remainingAvailableLength: number) {
-        let remainingAvailableLengthHalf = remainingAvailableLength / 2,
-            startOffset = Math.ceil(remainingAvailableLengthHalf),
-            endOffset = -1 * Math.floor(remainingAvailableLengthHalf),
-            end = '';
-        if (endOffset < 0) {
-            end = segment.substr(endOffset);
-        }
-        return segment.substr(0, startOffset) + ellipsisChars + end;
-    };
+    // If the URL is shorter than the truncate length, return it as is
     if (url.length <= truncateLen) {
         return url;
     }
+
     let availableLength = truncateLen - ellipsisLength;
-    let urlObj = parse_url(url);
-    // Clean up the URL
+    let urlObj = parseUrl(url);
+
+    // Clean up the URL by removing any malformed query string
+    // (e.g. "?foo=bar?ignorethis")
     if (urlObj.query) {
-        let matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
+        let matchQuery = urlObj.query.match(/^(.*?)(?=(\?|#))(.*?)$/i);
         if (matchQuery) {
             // Malformed URL; two or more "?". Removed any content behind the 2nd.
             urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
@@ -100,31 +42,37 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
         }
     }
     if (url.length <= truncateLen) {
-        return url;
+        return url; // removing a malformed query string brought the URL under the truncateLength
     }
+
+    // Clean up the URL by removing 'www.' from the host if it exists
     if (urlObj.host) {
         urlObj.host = urlObj.host.replace(/^www\./, '');
         url = buildUrl(urlObj);
     }
     if (url.length <= truncateLen) {
-        return url;
+        return url; // removing 'www.' brought the URL under the truncateLength
     }
-    // Process and build the URL
-    let str = '';
+
+    // Process and build the truncated URL, starting with the hostname
+    let truncatedUrl = '';
     if (urlObj.host) {
-        str += urlObj.host;
+        truncatedUrl += urlObj.host;
     }
-    if (str.length >= availableLength) {
-        if ((urlObj.host as string).length == truncateLen) {
-            return (
-                (urlObj.host as string).substr(0, truncateLen - ellipsisLength) + ellipsisChars
-            ).substr(0, availableLength + ellipsisLengthBeforeParsing);
+    if (truncatedUrl.length >= availableLength) {
+        if (urlObj.host!.length === truncateLen) {
+            return (urlObj.host!.substr(0, truncateLen - ellipsisLength) + ellipsisChars).substr(
+                0,
+                availableLength + ellipsisLengthBeforeParsing
+            );
         }
-        return buildSegment(str, availableLength).substr(
+        return buildSegment(truncatedUrl, availableLength, ellipsisChars).substr(
             0,
             availableLength + ellipsisLengthBeforeParsing
         );
     }
+
+    // If we still have available chars left, add the path and query string
     let pathAndQuery = '';
     if (urlObj.path) {
         pathAndQuery += '/' + urlObj.path;
@@ -133,51 +81,131 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
         pathAndQuery += '?' + urlObj.query;
     }
     if (pathAndQuery) {
-        if ((str + pathAndQuery).length >= availableLength) {
-            if ((str + pathAndQuery).length == truncateLen) {
-                return (str + pathAndQuery).substr(0, truncateLen);
+        if ((truncatedUrl + pathAndQuery).length >= availableLength) {
+            if ((truncatedUrl + pathAndQuery).length == truncateLen) {
+                return (truncatedUrl + pathAndQuery).substr(0, truncateLen);
             }
-            let remainingAvailableLength = availableLength - str.length;
-            return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(
-                0,
-                availableLength + ellipsisLengthBeforeParsing
-            );
+            let remainingAvailableLength = availableLength - truncatedUrl.length;
+            return (
+                truncatedUrl + buildSegment(pathAndQuery, remainingAvailableLength, ellipsisChars)
+            ).substr(0, availableLength + ellipsisLengthBeforeParsing);
         } else {
-            str += pathAndQuery;
+            truncatedUrl += pathAndQuery;
         }
     }
+
+    // If we still have available chars left, add the fragment
     if (urlObj.fragment) {
         let fragment = '#' + urlObj.fragment;
-        if ((str + fragment).length >= availableLength) {
-            if ((str + fragment).length == truncateLen) {
-                return (str + fragment).substr(0, truncateLen);
+        if ((truncatedUrl + fragment).length >= availableLength) {
+            if ((truncatedUrl + fragment).length == truncateLen) {
+                return (truncatedUrl + fragment).substr(0, truncateLen);
             }
-            let remainingAvailableLength2 = availableLength - str.length;
-            return (str + buildSegment(fragment, remainingAvailableLength2)).substr(
-                0,
-                availableLength + ellipsisLengthBeforeParsing
-            );
+            let remainingAvailableLength2 = availableLength - truncatedUrl.length;
+            return (
+                truncatedUrl + buildSegment(fragment, remainingAvailableLength2, ellipsisChars)
+            ).substr(0, availableLength + ellipsisLengthBeforeParsing);
         } else {
-            str += fragment;
+            truncatedUrl += fragment;
         }
     }
+
+    // If we still have available chars left, add the scheme
     if (urlObj.scheme && urlObj.host) {
         let scheme = urlObj.scheme + '://';
-        if ((str + scheme).length < availableLength) {
-            return (scheme + str).substr(0, truncateLen);
+        if ((truncatedUrl + scheme).length < availableLength) {
+            return (scheme + truncatedUrl).substr(0, truncateLen);
         }
     }
-    if (str.length <= truncateLen) {
-        return str;
+    if (truncatedUrl.length <= truncateLen) {
+        return truncatedUrl;
     }
+
     let end = '';
     if (availableLength > 0) {
-        end = str.substr(-1 * Math.floor(availableLength / 2));
+        end = truncatedUrl.substr(-1 * Math.floor(availableLength / 2));
     }
-    return (str.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(
+    return (truncatedUrl.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(
         0,
         availableLength + ellipsisLengthBeforeParsing
     );
+}
+
+/**
+ * Parses a URL into its components: scheme, host, path, query, and fragment.
+ */
+function parseUrl(url: string): UrlObject {
+    // Functionality inspired by PHP function of same name
+    let urlObj: UrlObject = {};
+    let urlSub = url;
+
+    // Parse scheme
+    let match = urlSub.match(/^([a-z]+):\/\//i);
+    if (match) {
+        urlObj.scheme = match[1];
+        urlSub = urlSub.slice(match[0].length);
+    }
+
+    // Parse host
+    match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
+    if (match) {
+        urlObj.host = match[1];
+        urlSub = urlSub.slice(match[0].length);
+    }
+
+    // Parse path
+    match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
+    if (match) {
+        urlObj.path = match[1];
+        urlSub = urlSub.slice(match[0].length);
+    }
+
+    // Parse query
+    match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
+    if (match) {
+        urlObj.query = match[1];
+        urlSub = urlSub.slice(match[0].length);
+    }
+
+    // Parse fragment
+    match = urlSub.match(/^#(.*?)$/i);
+    if (match) {
+        urlObj.fragment = match[1];
+        //urlSub = urlSub.slice(match[0].length);  -- not used. Uncomment if adding another block.
+    }
+
+    return urlObj;
+}
+
+function buildUrl(urlObj: UrlObject): string {
+    let url = '';
+    if (urlObj.scheme && urlObj.host) {
+        url += urlObj.scheme + '://';
+    }
+    if (urlObj.host) {
+        url += urlObj.host;
+    }
+    if (urlObj.path) {
+        url += '/' + urlObj.path;
+    }
+    if (urlObj.query) {
+        url += '?' + urlObj.query;
+    }
+    if (urlObj.fragment) {
+        url += '#' + urlObj.fragment;
+    }
+    return url;
+}
+
+function buildSegment(segment: string, remainingAvailableLength: number, ellipsisChars: string) {
+    let remainingAvailableLengthHalf = remainingAvailableLength / 2,
+        startOffset = Math.ceil(remainingAvailableLengthHalf),
+        endOffset = -1 * Math.floor(remainingAvailableLengthHalf),
+        end = '';
+    if (endOffset < 0) {
+        end = segment.substr(endOffset);
+    }
+    return segment.substr(0, startOffset) + ellipsisChars + end;
 }
 
 interface UrlObject {

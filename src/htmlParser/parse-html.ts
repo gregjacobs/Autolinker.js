@@ -159,6 +159,7 @@ export function parseHtml(
                 stateDoctype(char);
                 break;
 
+            /* istanbul ignore next */
             default:
                 assertNever(state);
         }

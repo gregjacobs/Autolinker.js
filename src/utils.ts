@@ -100,6 +100,6 @@ export function removeWithPredicate<T>(arr: T[], fn: (item: T) => boolean) {
  * Function that should never be called but is used to check that every
  * enum value is handled using TypeScript's 'never' type.
  */
-export function assertNever(theValue: never) {
+export function assertNever(theValue: never): never {
     throw new Error(`Unhandled case for value: '${theValue}'`);
 }

@@ -4,6 +4,7 @@
 [![build](https://github.com/gregjacobs/Autolinker.js/actions/workflows/main.yml/badge.svg)](https://github.com/gregjacobs/Autolinker.js/actions/workflows/main.yml)
 [![NPM Downloads](https://img.shields.io/npm/dw/autolinker)](https://www.npmjs.com/package/autolinker)
 [![GitHub License](https://img.shields.io/github/license/gregjacobs/Autolinker.js)](https://github.com/gregjacobs/Autolinker.js/blob/master/LICENSE)
+<!--[![codecov](https://codecov.io/github/gregjacobs/Autolinker.js/graph/badge.svg?token=6sqLqa2oeb)](https://codecov.io/github/gregjacobs/Autolinker.js)-->
 
 Because I had so much trouble finding a good auto-linking implementation out in
 the wild, I decided to roll my own. It seemed that everything I found out there

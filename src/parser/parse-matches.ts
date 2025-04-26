@@ -215,6 +215,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         statePhoneNumberPoundChar(stateMachine, char);
                         break;
 
+                    /* istanbul ignore next */
                     default:
                         assertNever(stateMachine.state);
                 }
@@ -920,6 +921,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                     return; // not a valid match
                 }
             } else {
+                /* istanbul ignore next */
                 assertNever(urlMatchType);
             }
 
@@ -994,6 +996,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                 );
             }
         } else {
+            /* istanbul ignore next */
             assertNever(stateMachine);
         }
     }

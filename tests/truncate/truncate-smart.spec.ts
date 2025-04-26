@@ -20,6 +20,18 @@ describe('Truncate.truncate.truncateSmart', function () {
         expect(truncatedUrl.length).toBe(72);
     });
 
+    it(`when just a hostname is present and it's exactly the truncate length, should return it as-is`, () => {
+        let truncatedUrl = truncateSmart('yahoo.com', 'yahoo.com'.length, '..');
+
+        expect(truncatedUrl).toBe('yahoo.com');
+    });
+
+    it(`when the hostname is exactly the truncate length but there's also a scheme, should ellipsis the hostname while removing the scheme`, () => {
+        let truncatedUrl = truncateSmart('http://yahoo.com', 'yahoo.com'.length, '..');
+
+        expect(truncatedUrl).toBe('yahoo.c..');
+    });
+
     it('Will remove malformed query section 1st', function () {
         let truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',

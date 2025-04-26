@@ -95,10 +95,10 @@ export class MentionMatch extends AbstractMatch {
             case 'youtube':
                 return 'https://youtube.com/@' + this.mention;
 
+            /* istanbul ignore next */
             default:
-                // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                // Should never happen because Autolinker's constructor should block any invalid values, but just in case.
                 assertNever(this.serviceName);
-                throw new Error('Unknown service name to point mention to: ' + this.serviceName);
         }
     }
 

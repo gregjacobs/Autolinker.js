@@ -100,10 +100,10 @@ export class HashtagMatch extends AbstractMatch {
             case 'youtube':
                 return 'https://youtube.com/hashtag/' + hashtag;
 
+            /* istanbul ignore next */
             default:
-                // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
+                // Should never happen because Autolinker's constructor should block any invalid values, but just in case
                 assertNever(serviceName);
-                throw new Error(`Invalid hashtag service: ${serviceName}`);
         }
     }
 
