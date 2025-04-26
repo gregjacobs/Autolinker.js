@@ -269,8 +269,17 @@ describe('Autolinker Url Matching >', () => {
             const result = autolinker.link('file:some-file.txt mid-sentence');
 
             // TODO: in theory this is a valid url, but do we want to continue
-            // autolinking this in the future?
+            // autolinking this in the future? Seems like Autolinker may link
+            // "too much" in this case, such as "things:stuff"
             expect(result).toBe(`<a href="file:some-file.txt">file:some-file.txt</a> mid-sentence`);
+        });
+
+        it('should match a file url with an absolute path', function () {
+            const result = autolinker.link('check out file:///c:/windows/etc mid-sentence');
+
+            expect(result).toBe(
+                `check out <a href="file:///c:/windows/etc">file:///c:/windows/etc</a> mid-sentence`
+            );
         });
 
         it("should NOT autolink possible URLs with the 'javascript:' URI scheme", () => {

@@ -239,12 +239,12 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
         // For debugging: search for and uncomment other "For debugging" lines
         // table.push([
-        //     charIdx,
+        //     String(charIdx),
         //     char,
         //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
         //     stateMachines.map(machine => `${machine.type}${'matchType' in machine ? ` (${machine.matchType})` : ''}`).join('\n') || '(none)',
         //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
-        //     charIdx,
+        //     String(charIdx),
         //     stateMachines.map(m => m.startIdx).join('\n'),
         //     stateMachines.map(m => m.acceptStateReached).join('\n'),
         // ]);
@@ -382,10 +382,11 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
     function stateSchemeSlash2(stateMachine: StateMachine, char: string) {
         if (char === '/') {
-            // 3rd slash, must be an absolute path (path-absolute in the
-            // ABNF), such as in a file:///c:/windows/etc. See
+            // 3rd slash, must be an absolute path (`path-absolute` in the
+            // ABNF), such as in "file:///c:/windows/etc". See
             // https://tools.ietf.org/html/rfc3986#appendix-A
             stateMachine.state = State.Path;
+            stateMachine.acceptStateReached = true;
         } else if (isDomainLabelStartChar(char)) {
             // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
             stateMachine.state = State.DomainLabelChar;
@@ -1092,7 +1093,7 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
 }
 
 // States for the parser
-// For debugging: temporarily remove 'const'
+// For debugging: temporarily remove `const` from `const enum`
 const enum State {
     // Scheme states
     SchemeChar = 0, // First char must be an ASCII letter. Subsequent characters can be: ALPHA / DIGIT / "+" / "-" / "."
