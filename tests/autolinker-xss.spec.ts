@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Autolinker, { AutolinkerConfig } from '../src/autolinker';
 
 describe('Autolinker XSS (Cross Site Scripting) check -', () => {

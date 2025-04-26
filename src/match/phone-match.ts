@@ -19,7 +19,7 @@ export class PhoneMatch extends AbstractMatch {
      * used in a TypeScript discriminating union to type-narrow from the
      * `Match` type.
      */
-    public readonly type: 'phone' = 'phone';
+    public readonly type = 'phone' as const;
 
     /**
      * @protected

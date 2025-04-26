@@ -4,8 +4,8 @@
 //     yarn test
 // This will install the package locally in ./.tmp/, and build this file.
 
-const Autolinker = require('autolinker');
-const NamedAutolinker = require('autolinker').Autolinker;
+const Autolinker = require('autolinker'); // eslint-disable-line @typescript-eslint/no-require-imports
+const NamedAutolinker = require('autolinker').Autolinker; // eslint-disable-line @typescript-eslint/no-require-imports
 
 describe('Autolinker require() tests >', () => {
     it(`Autolinker should be the default export of 'autolinker'`, () => {

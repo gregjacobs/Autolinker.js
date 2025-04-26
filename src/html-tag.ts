@@ -1,4 +1,5 @@
 import { whitespaceRe } from './regex-lib';
+import { hasOwnProperty } from './utils';
 
 /**
  * @class Autolinker.HtmlTag
@@ -192,10 +193,10 @@ export class HtmlTag {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     addClass(cssClass: string): this {
-        let classAttr = this.getClass(),
-            classes = !classAttr ? [] : classAttr.split(whitespaceRe),
-            newClasses = cssClass.split(whitespaceRe),
-            newClass: string | undefined;
+        const classAttr = this.getClass();
+        const classes = !classAttr ? [] : classAttr.split(whitespaceRe);
+        const newClasses = cssClass.split(whitespaceRe);
+        let newClass: string | undefined;
 
         while ((newClass = newClasses.shift())) {
             if (classes.indexOf(newClass) === -1) {
@@ -214,10 +215,10 @@ export class HtmlTag {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     removeClass(cssClass: string): this {
-        let classAttr = this.getClass(),
-            classes = !classAttr ? [] : classAttr.split(whitespaceRe),
-            removeClasses = cssClass.split(whitespaceRe),
-            removeClass: string | undefined;
+        const classAttr = this.getClass();
+        const classes = !classAttr ? [] : classAttr.split(whitespaceRe);
+        const removeClasses = cssClass.split(whitespaceRe);
+        let removeClass: string | undefined;
 
         while (classes.length && (removeClass = removeClasses.shift())) {
             const idx = classes.indexOf(removeClass);
@@ -296,8 +297,8 @@ export class HtmlTag {
      * @return {String}
      */
     toAnchorString(): string {
-        let tagName = this.getTagName(),
-            attrsStr = this.buildAttrsStr();
+        const tagName = this.getTagName();
+        let attrsStr = this.buildAttrsStr();
 
         attrsStr = attrsStr ? ' ' + attrsStr : ''; // prepend a space if there are actually attributes
 
@@ -316,7 +317,7 @@ export class HtmlTag {
             attrsArr: string[] = [];
 
         for (const prop in attrs) {
-            if (attrs.hasOwnProperty(prop)) {
+            if (hasOwnProperty.call(attrs, prop)) {
                 attrsArr.push(prop + '="' + attrs[prop] + '"');
             }
         }

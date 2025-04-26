@@ -11,7 +11,7 @@ export const domainNameCharRegex = alphaNumericAndMarksRe;
  * The set of characters that will start a URL suffix (i.e. the path, query, and
  * hash part of the URL)
  */
-export const urlSuffixStartCharsRe = /[\/?#]/;
+export const urlSuffixStartCharsRe = /[/?#]/;
 
 /**
  * The set of characters that are allowed in the URL suffix (i.e. the path,
@@ -21,7 +21,7 @@ export const urlSuffixStartCharsRe = /[\/?#]/;
  * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL
  * suffix characters, but (generally) should not be the last character of a URL.
  */
-export const urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*\[\]{}\u2713]/;
+export const urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*[\]{}\u2713]/;
 
 /**
  * URL suffix characters (i.e. path, query, and has part of the URL) that are

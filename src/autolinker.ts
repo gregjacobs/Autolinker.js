@@ -1,5 +1,5 @@
 import { version } from './version';
-import { defaults, isBoolean, removeWithPredicate } from './utils';
+import { isBoolean, removeWithPredicate } from './utils';
 import { AnchorTagBuilder } from './anchor-tag-builder';
 import { Match } from './match/match';
 import { UrlMatch } from './match/url-match';
@@ -451,7 +451,7 @@ export default class Autolinker {
      *
      * Defaults to this Autolinker instance.
      */
-    private readonly context: any = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
+    private readonly context: object | undefined = undefined; // default value just to get the above doc comment in the ES5 output and documentation generator
 
     /**
      * @cfg {Boolean} [sanitizeHtml=false]
@@ -551,9 +551,10 @@ export default class Autolinker {
      *   given input `textOrHtml`.
      */
     parse(textOrHtml: string) {
-        let skipTagNames = ['a', 'style', 'script'],
-            skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
-            matches: Match[] = [];
+        const skipTagNames = ['a', 'style', 'script'];
+        let skipTagsStackCount = 0; // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
+
+        let matches: Match[] = [];
 
         // Find all matches within the `textOrHtml` (but not matches that are
         // already nested within <a>, <style> and <script> tags)
@@ -580,7 +581,7 @@ export default class Autolinker {
                         // even number matches are text, odd numbers are html entities
                         if (i % 2 === 0) {
                             const textNodeMatches = this.parseText(splitText, currentOffset);
-                            matches.push.apply(matches, textNodeMatches);
+                            matches.push(...textNodeMatches);
                         }
                         currentOffset += splitText.length;
                     });
@@ -591,8 +592,8 @@ export default class Autolinker {
                     skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                 }
             },
-            onComment: (_offset: number) => {}, // no need to process comment nodes
-            onDoctype: (_offset: number) => {}, // no need to process doctype nodes
+            onComment: (/*_offset: number*/) => {}, // no need to process comment nodes
+            onDoctype: (/*_offset: number*/) => {}, // no need to process doctype nodes
         });
 
         // After we have found all matches, remove subsequent matches that
@@ -786,9 +787,9 @@ export default class Autolinker {
             textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        let matches = this.parse(textOrHtml),
-            newHtml: string[] = [],
-            lastIndex = 0;
+        const matches = this.parse(textOrHtml);
+        const newHtml: string[] = [];
+        let lastIndex = 0;
 
         for (let i = 0, len = matches.length; i < len; i++) {
             const match = matches[i];
@@ -925,10 +926,11 @@ function normalizeTruncateCfg(truncate: TruncateConfig | undefined): Required<Tr
         return { length: truncate, location: 'end' };
     } else {
         // object, or undefined/null
-        return defaults(truncate || {}, {
+        return {
             length: Number.POSITIVE_INFINITY,
             location: 'end',
-        });
+            ...truncate,
+        };
     }
 }
 
@@ -944,7 +946,7 @@ export interface AutolinkerConfig {
     truncate?: TruncateConfig;
     className?: string;
     replaceFn?: ReplaceFn | null;
-    context?: any;
+    context?: object;
     sanitizeHtml?: boolean;
     decodePercentEncoding?: boolean;
 }

@@ -1012,8 +1012,8 @@ export interface ParseMatchesArgs {
     mentionServiceName: MentionService;
 }
 
-const openBraceRe = /[\(\{\[]/;
-const closeBraceRe = /[\)\}\]]/;
+const openBraceRe = /[({[]/;
+const closeBraceRe = /[)}\]]/;
 const oppositeBrace: { [char: string]: string } = {
     ')': '(',
     '}': '{',

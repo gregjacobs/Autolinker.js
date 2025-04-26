@@ -10,7 +10,7 @@ describe('Autolinker.js UMD file in browser', function () {
         page = await browser.newPage();
 
         // Print errors from the page
-        page.on('console', (msg: any) => console.log('PAGE LOG:', msg.text()));
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
         page.on('pageerror', (err: Error) => console.error(err));
 
         const pathToHtmlFile = `${__dirname}/test-browser-umd.html`;
@@ -33,7 +33,7 @@ describe('Autolinker.js UMD file in browser', function () {
 
     it('should have the `window.Autolinker` global, and Autolinker should work', async () => {
         const innerHTML = await page.evaluate(() => {
-            return (document as any).querySelector('#result').innerHTML.trim();
+            return document.querySelector('#result')!.innerHTML.trim();
         });
 
         expect(innerHTML).toBe('Go to <a href="http://google.com">google.com</a>');

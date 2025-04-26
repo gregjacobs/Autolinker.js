@@ -74,8 +74,8 @@ export function parseHtml(
 ) {
     const noCurrentTag = new CurrentTag();
 
+    const len = html.length;
     let charIdx = 0,
-        len = html.length,
         state = State.Data as State,
         currentDataIdx = 0, // where the current data start index is
         currentTag = noCurrentTag; // describes the current tag that is being read
@@ -135,7 +135,7 @@ export function parseHtml(
                 stateSelfClosingStartTag(char);
                 break;
             case State.MarkupDeclarationOpenState:
-                stateMarkupDeclarationOpen(char);
+                stateMarkupDeclarationOpen();
                 break;
             case State.CommentStart:
                 stateCommentStart(char);
@@ -416,7 +416,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
     // (HTML Comments or !DOCTYPE)
-    function stateMarkupDeclarationOpen(char: string) {
+    function stateMarkupDeclarationOpen() {
         if (html.substr(charIdx, 2) === '--') {
             // html comment
             charIdx += 2; // "consume" characters

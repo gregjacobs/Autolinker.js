@@ -1,4 +1,3 @@
-/*global Autolinker, _, describe, beforeEach, afterEach, it, expect */
 import { HtmlTag } from '../src/html-tag';
 
 describe('Autolinker.HtmlTag', function () {

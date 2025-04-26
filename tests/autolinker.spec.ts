@@ -35,11 +35,13 @@ describe('Autolinker', function () {
         describe('`hashtag` cfg', function () {
             it('should throw if `hashtag` is a value other than `false` or one of the valid service names', function () {
                 expect(function () {
-                    new Autolinker({ hashtag: true } as any); // `true` is an invalid value - must be a service name
+                    // @ts-expect-error Testing invalid value
+                    new Autolinker({ hashtag: true }); // `true` is an invalid value - must be a service name
                 }).toThrowError("invalid `hashtag` cfg 'true' - see docs");
 
                 expect(function () {
-                    new Autolinker({ hashtag: 'non-existent-service' } as any);
+                    // @ts-expect-error Testing invalid value
+                    new Autolinker({ hashtag: 'non-existent-service' });
                 }).toThrowError("invalid `hashtag` cfg 'non-existent-service' - see docs");
             });
 
@@ -71,11 +73,13 @@ describe('Autolinker', function () {
         describe('`mention` cfg', function () {
             it('should throw if `mention` is a value other than `false` or one of the valid service names', function () {
                 expect(function () {
-                    new Autolinker({ mention: true } as any); // `true` is an invalid value - must be a service name
+                    // @ts-expect-error Testing invalid value
+                    new Autolinker({ mention: true }); // `true` is an invalid value - must be a service name
                 }).toThrowError("invalid `mention` cfg 'true' - see docs");
 
                 expect(function () {
-                    new Autolinker({ mention: 'non-existent-service' } as any);
+                    // @ts-expect-error Testing invalid value
+                    new Autolinker({ mention: 'non-existent-service' });
                 }).toThrowError("invalid `mention` cfg 'non-existent-service' - see docs");
             });
 
@@ -118,11 +122,13 @@ describe('Autolinker', function () {
         });
 
         it('should return an empty string when provided `undefined` as its argument', function () {
-            expect(autolinker.link(undefined as any)).toBe('');
+            // @ts-expect-error Testing invalid value
+            expect(autolinker.link(undefined)).toBe('');
         });
 
         it('should return an empty string when provided `null` as its argument', function () {
-            expect(autolinker.link(null as any)).toBe('');
+            // @ts-expect-error Testing invalid value
+            expect(autolinker.link(null)).toBe('');
         });
 
         describe('proper handling of HTML in the input string', function () {
@@ -1015,8 +1021,10 @@ describe('Autolinker', function () {
 
                 result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
+
+                    // @ts-expect-error Testing invalid value
                     className: null,
-                } as any);
+                });
                 expect(result).toBe('Test <a href="http://url.com">url.com</a>');
 
                 result = Autolinker.link('Test http://url.com', {
@@ -1414,13 +1422,13 @@ describe('Autolinker', function () {
         });
 
         describe('`replaceFn` option', function () {
-            let returnTrueFn = function () {
-                    return true;
-                },
-                returnFalseFn = function () {
-                    return false;
-                },
-                replaceFnSpy: jasmine.Spy;
+            const returnTrueFn = function () {
+                return true;
+            };
+            const returnFalseFn = function () {
+                return false;
+            };
+            let replaceFnSpy: jasmine.Spy;
 
             beforeEach(function () {
                 replaceFnSpy = jasmine.createSpy('replaceFnSpy');
@@ -1833,7 +1841,7 @@ describe('Autolinker', function () {
                     ];
 
                     errorMsg.push('{');
-                    _.forOwn(cfg, (value: any, key: string) => {
+                    _.forOwn(cfg, (value: string | boolean, key: string) => {
                         errorMsg.push('\t' + key + ': ' + value);
                     });
                     errorMsg.push('}');

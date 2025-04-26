@@ -1,3 +1,4 @@
+/* global Package, Autolinker */
 if (Package.templating) {
     var Template = Package.templating.Template;
     var Blaze = Package.blaze.Blaze; // implied by `templating`
@@ -6,7 +7,7 @@ if (Package.templating) {
     Blaze.Template.registerHelper(
         'autolinker',
         new Template('autolinker', function () {
-            var view = this;
+            var view = this; // eslint-disable-line @typescript-eslint/no-this-alias
             var content = '';
             var linkerOptions = {};
             var linker;

@@ -4,10 +4,10 @@ import path from 'path';
 
 // Note: the JSDuck python gem must be installed manually using:
 //   gem install jsduck
-const JsDuck = require('jsduck');
+const JsDuck = require('jsduck'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 const pkgRoot = path.normalize(`${__dirname}/..`);
-const pkg = require('../package.json');
+const pkg = fse.readJsonSync('../package.json');
 
 // First need to create a temporary directory for all of the files to document
 // because we need to modify them just a bit before JsDuck takes over

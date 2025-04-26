@@ -1,8 +1,10 @@
 import { Option, OptionCfg } from './Option';
 
+type RadioOptionValue = boolean | string;
+
 interface RadioOptionCfg extends OptionCfg {
-    options: any[];
-    defaultValue?: any;
+    options: RadioOptionValue[];
+    defaultValue?: RadioOptionValue;
 }
 
 /**
@@ -20,14 +22,14 @@ export class RadioOption extends Option {
      * Any data type may be passed as the elements, and {@link #getValue} will
      * return that value/type.
      */
-    private options: any[];
+    private options: RadioOptionValue[];
 
     /**
      * @cfg {*} [defaultValue=false]
      *
      * The value in {@link #options} to select by default.
      */
-    private defaultValue: any = false;
+    private defaultValue: RadioOptionValue = false;
 
     private $valueDisplayEl: JQuery;
 
@@ -39,7 +41,7 @@ export class RadioOption extends Option {
     constructor(cfg: RadioOptionCfg) {
         super(cfg);
 
-        this.options = ([] as any[]).concat(cfg.options);
+        this.options = cfg.options;
         this.defaultValue = cfg.defaultValue || false;
 
         this.$containerEl.html(this.generateHtml());
@@ -75,12 +77,12 @@ export class RadioOption extends Option {
      * @param {*} defaultValue
      * @return {String[]}
      */
-    createRadiosHtml(options: any[], defaultValue: any) {
+    createRadiosHtml(options: RadioOptionValue[], defaultValue: RadioOptionValue) {
         return options.map((option, idx) => {
             return `
 				<input type="radio" id="${this.containerId}-radio-${option}" name="${
                     this.containerId
-                }-radio" data-option-idx="${idx}" ${option === this.defaultValue ? 'checked' : ''}> 
+                }-radio" data-option-idx="${idx}" ${option === defaultValue ? 'checked' : ''}> 
 				<label for="${this.containerId}-radio-${option}">${option}</label>
 			`;
         });
@@ -113,7 +115,7 @@ export class RadioOption extends Option {
      *
      * @param {*} value
      */
-    formatValueForDisplay(value: any) {
+    formatValueForDisplay(value: string | boolean) {
         return typeof value === 'string' ? `'${value}'` : value + '';
     }
 }

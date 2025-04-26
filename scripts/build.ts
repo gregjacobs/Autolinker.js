@@ -5,7 +5,7 @@ import { execSync } from './util/exec-sync';
 
 // This script builds the 'src/' to the 'dist/' directory
 
-const pkg = require('../package.json');
+const pkg = fse.readJsonSync('../package.json');
 const pkgDir = path.normalize(`${__dirname}/..`);
 
 const commonJsOutputDir = './dist/commonjs';

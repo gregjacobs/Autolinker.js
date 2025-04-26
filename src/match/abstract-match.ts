@@ -50,8 +50,8 @@ export abstract class AbstractMatch {
      * Reference to the AnchorTagBuilder instance to use to generate an anchor
      * tag for the Match.
      */
-    // @ts-ignore
-    private _ = null; // property used just to get the above doc comment into the ES5 output and documentation generator
+    // @ts-expect-error Property used just to get the above doc comment into the ES5 output and documentation generator
+    private _ = null;
 
     // Actual property for the above jsdoc comment
     private readonly tagBuilder: AnchorTagBuilder;

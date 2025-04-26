@@ -1,3 +1,4 @@
+/* global Tinytest, Autolinker */
 Tinytest.add('Autolinker - phone', function (test) {
     test.equal(Autolinker.link('12345678'), '<a href="tel:12345678" target="_blank">12345678</a>');
     test.equal(

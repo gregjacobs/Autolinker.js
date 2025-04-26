@@ -21,7 +21,7 @@ export class HashtagMatch extends AbstractMatch {
      * used in a TypeScript discriminating union to type-narrow from the
      * `Match` type.
      */
-    public readonly type: 'hashtag' = 'hashtag';
+    public readonly type = 'hashtag' as const;
 
     /**
      * @cfg {String} serviceName

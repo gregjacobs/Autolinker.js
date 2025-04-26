@@ -19,7 +19,7 @@ export class MentionMatch extends AbstractMatch {
      * used in a TypeScript discriminating union to type-narrow from the
      * `Match` type.
      */
-    public readonly type: 'mention' = 'mention';
+    public readonly type = 'mention' as const;
 
     /**
      * @cfg {String} serviceName

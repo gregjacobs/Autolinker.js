@@ -31,7 +31,7 @@ export class UrlMatch extends AbstractMatch {
      * used in a TypeScript discriminating union to type-narrow from the
      * `Match` type.
      */
-    public readonly type: 'url' = 'url';
+    public readonly type = 'url' as const;
 
     /**
      * @cfg {String} url (required)
@@ -282,7 +282,8 @@ function removePercentEncoding(anchorText: string): string {
     try {
         // Now attempt to decode the rest of the anchor text
         return decodeURIComponent(preProcessedEntityAnchorText);
-    } catch (e) {
+    } catch (error: unknown) {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
         // Invalid % escape sequence in the anchor text
         return preProcessedEntityAnchorText;
     }

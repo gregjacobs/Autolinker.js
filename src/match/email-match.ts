@@ -17,7 +17,7 @@ export class EmailMatch extends AbstractMatch {
      * used in a TypeScript discriminating union to type-narrow from the
      * `Match` type.
      */
-    public readonly type: 'email' = 'email';
+    public readonly type = 'email' as const;
 
     /**
      * @cfg {String} email (required)

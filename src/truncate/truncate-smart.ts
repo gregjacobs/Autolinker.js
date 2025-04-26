@@ -198,10 +198,11 @@ function buildUrl(urlObj: UrlObject): string {
 }
 
 function buildSegment(segment: string, remainingAvailableLength: number, ellipsisChars: string) {
-    let remainingAvailableLengthHalf = remainingAvailableLength / 2,
-        startOffset = Math.ceil(remainingAvailableLengthHalf),
-        endOffset = -1 * Math.floor(remainingAvailableLengthHalf),
-        end = '';
+    const remainingAvailableLengthHalf = remainingAvailableLength / 2;
+    const startOffset = Math.ceil(remainingAvailableLengthHalf);
+    const endOffset = -1 * Math.floor(remainingAvailableLengthHalf);
+
+    let end = '';
     if (endOffset < 0) {
         end = segment.substr(endOffset);
     }

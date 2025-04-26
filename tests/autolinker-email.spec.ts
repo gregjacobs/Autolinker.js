@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Autolinker from '../src/autolinker';
 import { generateLinkTests } from './util/generate-link-tests';
 

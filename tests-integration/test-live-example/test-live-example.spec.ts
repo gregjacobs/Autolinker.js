@@ -11,7 +11,7 @@ describe('Live example page -', function () {
         page = await browser.newPage();
 
         // Print errors from the page
-        page.on('console', (msg: any) => console.log('PAGE LOG:', msg.text()));
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
         page.on('pageerror', (err: Error) => console.error(err));
     });
 
@@ -33,7 +33,7 @@ describe('Live example page -', function () {
         await page.goto(`file://${pathToHtmlFile}`, { waitUntil: 'load' });
 
         const autolinkerOutputHtml = await page.evaluate(() => {
-            return (document as any).querySelector('#output').innerHTML.trim();
+            return document.querySelector('#output')!.innerHTML.trim();
         });
         expect(autolinkerOutputHtml).toBe(
             [

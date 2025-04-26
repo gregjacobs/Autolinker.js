@@ -7,10 +7,11 @@ import { TextOption } from './TextOption';
 $(document).ready(function () {
     $('#version').text(Autolinker.version);
 
-    let $inputEl = $('#input'),
-        $outputEl = $('#output'),
-        $optionsOutputEl = $('#options-output'),
-        urlsSchemeOption: Option,
+    const $inputEl = $('#input');
+    const $outputEl = $('#output');
+    const $optionsOutputEl = $('#options-output');
+
+    let urlsSchemeOption: Option,
         urlsTldOption: Option,
         urlsIpV4Option: Option,
         emailOption: Option,
@@ -150,7 +151,7 @@ $(document).ready(function () {
         };
     }
 
-    function createCodeSample(optionsObj: any) {
+    function createCodeSample(optionsObj: ReturnType<typeof createAutolinkerOptionsObj>) {
         return [
             `var autolinker = new Autolinker( {`,
             `    urls : {`,

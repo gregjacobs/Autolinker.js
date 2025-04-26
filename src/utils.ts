@@ -1,9 +1,11 @@
+export const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 /**
  * Simpler helper method to check for undefined simply for the benefit of
  * gaining better compression when minified by not needing to have multiple
  * comparisons to the `undefined` keyword in the codebase.
  */
-export function isUndefined(value: any): value is undefined {
+export function isUndefined(value: unknown): value is undefined {
     return value === undefined;
 }
 
@@ -12,26 +14,8 @@ export function isUndefined(value: any): value is undefined {
  * gaining better compression when minified by not needing to have multiple
  * `typeof` comparisons in the codebase.
  */
-export function isBoolean(value: any): value is boolean {
+export function isBoolean(value: unknown): value is boolean {
     return typeof value === 'boolean';
-}
-
-/**
- * Assigns (shallow copies) the properties of `src` onto `dest`, if the
- * corresponding property on `dest` === `undefined`.
- *
- * @param {Object} dest The destination object.
- * @param {Object} src The source object.
- * @return {Object} The destination object (`dest`)
- */
-export function defaults(dest: any, src: any) {
-    for (const prop in src) {
-        if (src.hasOwnProperty(prop) && isUndefined(dest[prop])) {
-            dest[prop] = src[prop];
-        }
-    }
-
-    return dest;
 }
 
 /**

@@ -51,7 +51,7 @@ export abstract class Option {
      * The array of 'change' callbacks assigned by {@link #onChange}, and which
      * are called by {@link #fireChange}.
      */
-    private changeCallbacks: Function[];
+    private changeCallbacks: (() => void)[];
 
     /**
      * @method constructor
@@ -92,7 +92,7 @@ export abstract class Option {
      * @abstract
      * @return {*}
      */
-    abstract getValue(): any;
+    abstract getValue(): boolean | string | string[] | undefined;
 
     /**
      * Registers a callback to call when the option is changed.
@@ -100,7 +100,7 @@ export abstract class Option {
      * @param {Function} callbackFn
      * @chainable
      */
-    public onChange(callbackFn: Function): Option {
+    public onChange(callbackFn: () => void): Option {
         this.changeCallbacks.push(callbackFn);
         return this;
     }

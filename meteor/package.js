@@ -1,3 +1,4 @@
+/* global Npm, Package */
 // package metadata file for Meteor.js
 'use strict';
 

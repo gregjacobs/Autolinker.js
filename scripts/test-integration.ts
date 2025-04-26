@@ -10,7 +10,7 @@ import { execSync } from './util/exec-sync';
  */
 (async () => {
     const pkgRoot = path.normalize(`${__dirname}/..`);
-    const pkg = require(`${pkgRoot}/package.json`);
+    const pkg = fse.readJsonSync(`${pkgRoot}/package.json`);
     const testsSrcDir = path.normalize(`${pkgRoot}/tests-integration`);
     const testsOutputDir = path.normalize(`${pkgRoot}/.tmp/tests-integration`);
 

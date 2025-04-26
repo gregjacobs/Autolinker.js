@@ -33,9 +33,11 @@ export const quoteRe = /['"]/;
 
 /**
  * Regular expression to match the range of ASCII control characters (0-31), and
- * the backspace char (127)
+ * the backspace char (127).
+ *
+ * Used to check for invalid characters in the HTML parser.
  */
-export const controlCharsRe = /[\x00-\x1F\x7F]/;
+export const controlCharsRe = /[\x00-\x1F\x7F]/; // eslint-disable-line no-control-regex
 
 /**
  * The string form of a regular expression that would match all of the
@@ -165,4 +167,8 @@ export const alphaNumericAndMarksCharsStr = alphaCharsAndMarksStr + decimalNumbe
  * The regular expression that will match a single letter of the
  * {@link #alphaNumericAndMarksCharsStr}.
  */
+// TODO: We likely need to work on the eslint error about this in that a character
+// class cannot handle multiple code points. See https://eslint.org/docs/latest/rules/no-misleading-character-class
+// However, all tests pass for now, so leaving as-is for the moment.
+// eslint-disable-next-line no-misleading-character-class
 export const alphaNumericAndMarksRe = new RegExp(`[${alphaNumericAndMarksCharsStr}]`);
