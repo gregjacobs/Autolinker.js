@@ -5,7 +5,7 @@ import { punctuationChars } from './punctuation';
 /**
  * Utility function to generate tests that check matches at the beginning,
  * middle, and end of strings, combined with a series of brace and punctuation
- * differences.
+ * differences surrounding the text-to-be-linked.
  */
 export function generateLinkTests(testCases: TestCase[]) {
     testCases.forEach(

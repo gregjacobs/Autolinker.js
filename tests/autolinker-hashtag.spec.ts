@@ -127,6 +127,12 @@ describe(`Hashtag Matching >`, () => {
                     expect(result).toBe(`test as#df test`);
                 });
 
+                it(`should NOT automatically link a hash symbol followed by another hash symbol`, () => {
+                    const result = autolinker.link(`Hello ## stuff`);
+
+                    expect(result).toBe(`Hello ## stuff`);
+                });
+
                 it(`should NOT automatically link a hashtag that is actually a named anchor within a URL`, () => {
                     const result = autolinker.link(`http://google.com/#link`);
 

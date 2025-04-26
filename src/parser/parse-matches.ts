@@ -347,6 +347,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         }
     }
 
+    // https://tools.ietf.org/html/rfc3986#appendix-A
     function stateSchemeColon(stateMachine: StateMachine, char: string) {
         if (char === '/') {
             stateMachine.state = State.SchemeSlash1;
@@ -369,6 +370,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         }
     }
 
+    // https://tools.ietf.org/html/rfc3986#appendix-A
     function stateSchemeSlash1(stateMachine: StateMachine, char: string) {
         if (char === '/') {
             stateMachine.state = State.SchemeSlash2;
@@ -608,7 +610,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
     }
 
     // Handles the state where we've read a '.' character in the local part of
-    // the email address
+    // the email address (i.e. the part before the '@' character)
     function stateEmailLocalPartDot(stateMachine: StateMachine, char: string) {
         if (char === '.') {
             // We read a second '.' in a row, not a valid email address

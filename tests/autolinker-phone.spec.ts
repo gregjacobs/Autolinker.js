@@ -66,8 +66,14 @@ describe('Phone Number Matching >', () => {
                 autolinker,
             },
             {
+                input: '1(541)754-3010',
+                description: '1 prefix (USA), no "+" sign, and area code in parens with no spaces',
+                expectedHref: 'tel:15417543010',
+                autolinker,
+            },
+            {
                 input: '1 (541) 754-3010',
-                description: '1 prefix (USA), no "+" sign, and area code in parens',
+                description: '1 prefix (USA), no "+" sign, and area code in parens with spaces',
                 expectedHref: 'tel:15417543010',
                 autolinker,
             },
@@ -125,9 +131,9 @@ describe('Phone Number Matching >', () => {
                 autolinker,
             },
             {
-                input: '555 666 7777,234523#,23453#',
+                input: '555 666 7777,234523#,23453#,#',
                 description: 'number with pauses and pound signs',
-                expectedHref: 'tel:5556667777,234523#,23453#',
+                expectedHref: 'tel:5556667777,234523#,23453#,#',
                 autolinker,
             },
         ]);
@@ -164,5 +170,10 @@ describe('Phone Number Matching >', () => {
         expect(autolinker.link('555 666  7777')).toBe('555 666  7777');
         expect(autolinker.link('555	666 7777')).toBe('555	666 7777');
         expect(autolinker.link('555\n666 7777')).toBe('555\n666 7777');
+    });
+
+    it('should NOT link text that starts to look like a phone number, but is not', function () {
+        expect(autolinker.link('(555)abc 123')).toBe('(555)abc 123');
+        expect(autolinker.link('+1 (555)abc 123')).toBe('+1 (555)abc 123');
     });
 });

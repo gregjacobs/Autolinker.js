@@ -167,16 +167,16 @@ export default class Autolinker {
      *
      * Example:
      *
-     *     var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
+     *     var matches = Autolinker.parse("Hello google.com, I am asdf@asdf.com", {
      *         urls: true,
      *         email: true
-     *     } );
+     *     });
      *
-     *     console.log( matches.length );           // 2
-     *     console.log( matches[ 0 ].getType() );   // 'url'
-     *     console.log( matches[ 0 ].getUrl() );    // 'google.com'
-     *     console.log( matches[ 1 ].getType() );   // 'email'
-     *     console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
+     *     console.log(matches.length);         // 2
+     *     console.log(matches[0].getType());   // 'url'
+     *     console.log(matches[0].getUrl());    // 'google.com'
+     *     console.log(matches[1].getType());   // 'email'
+     *     console.log(matches[1].getEmail());  // 'asdf@asdf.com'
      *
      * @static
      * @param {String} textOrHtml The HTML or text to find matches within
@@ -188,7 +188,7 @@ export default class Autolinker {
      * @return {Autolinker.match.Match[]} The array of Matches found in the
      *   given input `textOrHtml`.
      */
-    static parse(textOrHtml: string, options: AutolinkerConfig) {
+    static parse(textOrHtml: string, options?: AutolinkerConfig) {
         const autolinker = new Autolinker(options);
         return autolinker.parse(textOrHtml);
     }

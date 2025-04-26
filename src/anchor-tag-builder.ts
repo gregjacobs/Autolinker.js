@@ -19,14 +19,14 @@ import { AbstractMatch } from './match/abstract-match';
  * instances which may be modified before returning from the
  * {@link Autolinker#replaceFn replaceFn}. For example:
  *
- *     var html = Autolinker.link( "Test google.com", {
- *         replaceFn : function( match ) {
+ *     var html = Autolinker.link("Test google.com", {
+ *         replaceFn: function(match) {
  *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
- *             tag.setAttr( 'rel', 'nofollow' );
+ *             tag.setAttr('rel', 'nofollow');
  *
  *             return tag;
  *         }
- *     } );
+ *     });
  *
  *     // generated html:
  *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
@@ -97,10 +97,8 @@ export class AnchorTagBuilder {
             attrs['rel'] = 'noopener noreferrer'; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
         }
 
-        if (this.truncate) {
-            if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
-                attrs['title'] = match.getAnchorHref();
-            }
+        if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
+            attrs['title'] = match.getAnchorHref();
         }
 
         return attrs;
@@ -170,7 +168,7 @@ export class AnchorTagBuilder {
      */
     private doTruncate(anchorText: string): string {
         const truncate = this.truncate;
-        if (!truncate || !truncate.length) return anchorText;
+        if (!truncate.length) return anchorText;
 
         const truncateLength = truncate.length,
             truncateLocation = truncate.location;

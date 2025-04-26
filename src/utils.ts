@@ -1,15 +1,6 @@
 export const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 /**
- * Simpler helper method to check for undefined simply for the benefit of
- * gaining better compression when minified by not needing to have multiple
- * comparisons to the `undefined` keyword in the codebase.
- */
-export function isUndefined(value: unknown): value is undefined {
-    return value === undefined;
-}
-
-/**
  * Simpler helper method to check for a boolean type simply for the benefit of
  * gaining better compression when minified by not needing to have multiple
  * `typeof` comparisons in the codebase.
