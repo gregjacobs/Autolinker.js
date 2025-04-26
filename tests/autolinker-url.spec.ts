@@ -1066,7 +1066,7 @@ describe('Autolinker Url Matching >', () => {
 				Hashes too yahoo.com:8000/#some-link.
 				Sometimes you need a lot of things in the URL like https://abc123def.org/path1/2path?param1=value1#hash123z
 				Do you see the need for dashes in these things too https://abc-def.org/his-path/?the-param=the-value#the-hash?
-				There's a time for lots and lots of special characters like in https://abc123def.org/-+&@#/%=~_()|\\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\\'$*[]?!:,.;#hash-+&@#/%=~_()|\\'$*[]?!:,.;z
+				There's a time for lots and lots of special characters like in https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z
 				Don't forget about good times with unicode https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица
 				and this unicode http://россия.рф
 				along with punycode http://xn--d1acufc.xn--p1ai
@@ -1074,6 +1074,7 @@ describe('Autolinker Url Matching >', () => {
 			`;
 
             const result = autolinker.link(inputStr);
+
             expect(result).toBe(`
 				Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://localhost">localhost</a> today along with <a href="http://localhost:8000">localhost:8000</a>.
 				He also had a path on localhost: <a href="http://localhost:8000/abc">localhost:8000/abc</a>, and a query string: <a href="http://localhost:8000?abc">localhost:8000?abc</a>
@@ -1090,7 +1091,7 @@ describe('Autolinker Url Matching >', () => {
 				Hashes too <a href="http://yahoo.com:8000/#some-link">yahoo.com:8000/#some-link</a>.
 				Sometimes you need a lot of things in the URL like <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>
 				Do you see the need for dashes in these things too <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>?
-				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|\\'$*[]?!:,.;/?param1=value-+&@#/%=~_()|\\'$*[]?!:,.;#hash-+&@#/%=~_()|\\'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z</a>
+				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z</a>
 				Don't forget about good times with unicode <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>
 				and this unicode <a href="http://россия.рф">россия.рф</a>
 				along with punycode <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a>

@@ -2,7 +2,7 @@
  * Autolinker.js
  * v4.1.0
  *
- * Copyright(c) 2024 Gregory Jacobs <greg@greg-jacobs.com>
+ * Copyright(c) 2025 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
  *
  * https://github.com/gregjacobs/Autolinker.js
@@ -13,18 +13,85 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Autolinker = factory());
 })(this, (function () { 'use strict';
 
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
+    function __extends(d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __read(o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    }
+
+    function __spreadArray(to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
     var version = '4.1.0';
 
-    /**
-     * Simpler helper method to check for undefined simply for the benefit of
-     * gaining better compression when minified by not needing to have multiple
-     * comparisons to the `undefined` keyword in the codebase.
-     */
-    function isUndefined(value) {
-        return value === undefined;
-    }
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
     /**
      * Simpler helper method to check for a boolean type simply for the benefit of
      * gaining better compression when minified by not needing to have multiple
@@ -32,22 +99,6 @@
      */
     function isBoolean(value) {
         return typeof value === 'boolean';
-    }
-    /**
-     * Assigns (shallow copies) the properties of `src` onto `dest`, if the
-     * corresponding property on `dest` === `undefined`.
-     *
-     * @param {Object} dest The destination object.
-     * @param {Object} src The source object.
-     * @return {Object} The destination object (`dest`)
-     */
-    function defaults(dest, src) {
-        for (var prop in src) {
-            if (src.hasOwnProperty(prop) && isUndefined(dest[prop])) {
-                dest[prop] = src[prop];
-            }
-        }
-        return dest;
     }
     /**
      * Truncates the `str` at `len - ellipsisChars.length`, and adds the `ellipsisChars` to the
@@ -111,6 +162,7 @@
      * Function that should never be called but is used to check that every
      * enum value is handled using TypeScript's 'never' type.
      */
+    /* istanbul ignore next */
     function assertNever(theValue) {
         throw new Error("Unhandled case for value: '".concat(theValue, "'"));
     }
@@ -140,9 +192,11 @@
     var quoteRe = /['"]/;
     /**
      * Regular expression to match the range of ASCII control characters (0-31), and
-     * the backspace char (127)
+     * the backspace char (127).
+     *
+     * Used to check for invalid characters in the HTML parser.
      */
-    var controlCharsRe = /[\x00-\x1F\x7F]/;
+    var controlCharsRe = /[\x00-\x1F\x7F]/; // eslint-disable-line no-control-regex
     /**
      * The string form of a regular expression that would match all of the
      * alphabetic ("letter") chars in the unicode character set when placed in a
@@ -254,6 +308,10 @@
      * The regular expression that will match a single letter of the
      * {@link #alphaNumericAndMarksCharsStr}.
      */
+    // TODO: We likely need to work on the eslint error about this in that a character
+    // class cannot handle multiple code points. See https://eslint.org/docs/latest/rules/no-misleading-character-class
+    // However, all tests pass for now, so leaving as-is for the moment.
+    // eslint-disable-next-line no-misleading-character-class
     var alphaNumericAndMarksRe = new RegExp("[".concat(alphaNumericAndMarksCharsStr, "]"));
 
     /**
@@ -379,7 +437,7 @@
          * @return {String}
          */
         HtmlTag.prototype.getTagName = function () {
-            return this.tagName || '';
+            return this.tagName;
         };
         /**
          * Sets an attribute on the HtmlTag.
@@ -418,7 +476,7 @@
          * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
          */
         HtmlTag.prototype.getAttrs = function () {
-            return this.attrs || (this.attrs = {});
+            return this.attrs;
         };
         /**
          * Sets the provided `cssClass`, overwriting any current CSS classes on the HtmlTag.
@@ -436,7 +494,10 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.addClass = function (cssClass) {
-            var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(whitespaceRe), newClasses = cssClass.split(whitespaceRe), newClass;
+            var classAttr = this.getClass();
+            var classes = !classAttr ? [] : classAttr.split(whitespaceRe);
+            var newClasses = cssClass.split(whitespaceRe);
+            var newClass;
             while ((newClass = newClasses.shift())) {
                 if (classes.indexOf(newClass) === -1) {
                     classes.push(newClass);
@@ -452,7 +513,10 @@
          * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
          */
         HtmlTag.prototype.removeClass = function (cssClass) {
-            var classAttr = this.getClass(), classes = !classAttr ? [] : classAttr.split(whitespaceRe), removeClasses = cssClass.split(whitespaceRe), removeClass;
+            var classAttr = this.getClass();
+            var classes = !classAttr ? [] : classAttr.split(whitespaceRe);
+            var removeClasses = cssClass.split(whitespaceRe);
+            var removeClass;
             while (classes.length && (removeClass = removeClasses.shift())) {
                 var idx = classes.indexOf(removeClass);
                 if (idx !== -1) {
@@ -521,7 +585,8 @@
          * @return {String}
          */
         HtmlTag.prototype.toAnchorString = function () {
-            var tagName = this.getTagName(), attrsStr = this.buildAttrsStr();
+            var tagName = this.getTagName();
+            var attrsStr = this.buildAttrsStr();
             attrsStr = attrsStr ? ' ' + attrsStr : ''; // prepend a space if there are actually attributes
             return ['<', tagName, attrsStr, '>', this.getInnerHtml(), '</', tagName, '>'].join('');
         };
@@ -533,11 +598,9 @@
          * @return {String} Example return: `attr1="value1" attr2="value2"`
          */
         HtmlTag.prototype.buildAttrsStr = function () {
-            if (!this.attrs)
-                return ''; // no `attrs` Object (map) has been set, return empty string
             var attrs = this.getAttrs(), attrsArr = [];
             for (var prop in attrs) {
-                if (attrs.hasOwnProperty(prop)) {
+                if (hasOwnProperty.call(attrs, prop)) {
                     attrsArr.push(prop + '="' + attrs[prop] + '"');
                 }
             }
@@ -570,71 +633,16 @@
             ellipsisLength = ellipsisChars.length;
             ellipsisLengthBeforeParsing = ellipsisChars.length;
         }
-        var parse_url = function (url) {
-            // Functionality inspired by PHP function of same name
-            var urlObj = {};
-            var urlSub = url;
-            var match = urlSub.match(/^([a-z]+):\/\//i);
-            if (match) {
-                urlObj.scheme = match[1];
-                urlSub = urlSub.substr(match[0].length);
-            }
-            match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
-            if (match) {
-                urlObj.host = match[1];
-                urlSub = urlSub.substr(match[0].length);
-            }
-            match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
-            if (match) {
-                urlObj.path = match[1];
-                urlSub = urlSub.substr(match[0].length);
-            }
-            match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
-            if (match) {
-                urlObj.query = match[1];
-                urlSub = urlSub.substr(match[0].length);
-            }
-            match = urlSub.match(/^#(.*?)$/i);
-            if (match) {
-                urlObj.fragment = match[1];
-                //urlSub = urlSub.substr(match[0].length);  -- not used. Uncomment if adding another block.
-            }
-            return urlObj;
-        };
-        var buildUrl = function (urlObj) {
-            var url = '';
-            if (urlObj.scheme && urlObj.host) {
-                url += urlObj.scheme + '://';
-            }
-            if (urlObj.host) {
-                url += urlObj.host;
-            }
-            if (urlObj.path) {
-                url += '/' + urlObj.path;
-            }
-            if (urlObj.query) {
-                url += '?' + urlObj.query;
-            }
-            if (urlObj.fragment) {
-                url += '#' + urlObj.fragment;
-            }
-            return url;
-        };
-        var buildSegment = function (segment, remainingAvailableLength) {
-            var remainingAvailableLengthHalf = remainingAvailableLength / 2, startOffset = Math.ceil(remainingAvailableLengthHalf), endOffset = -1 * Math.floor(remainingAvailableLengthHalf), end = '';
-            if (endOffset < 0) {
-                end = segment.substr(endOffset);
-            }
-            return segment.substr(0, startOffset) + ellipsisChars + end;
-        };
+        // If the URL is shorter than the truncate length, return it as is
         if (url.length <= truncateLen) {
             return url;
         }
         var availableLength = truncateLen - ellipsisLength;
-        var urlObj = parse_url(url);
-        // Clean up the URL
+        var urlObj = parseUrl(url);
+        // Clean up the URL by removing any malformed query string
+        // (e.g. "?foo=bar?ignorethis")
         if (urlObj.query) {
-            var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|\#))(.*?)$/i);
+            var matchQuery = urlObj.query.match(/^(.*?)(?=(\?|#))(.*?)$/i);
             if (matchQuery) {
                 // Malformed URL; two or more "?". Removed any content behind the 2nd.
                 urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
@@ -642,26 +650,28 @@
             }
         }
         if (url.length <= truncateLen) {
-            return url;
+            return url; // removing a malformed query string brought the URL under the truncateLength
         }
+        // Clean up the URL by removing 'www.' from the host if it exists
         if (urlObj.host) {
             urlObj.host = urlObj.host.replace(/^www\./, '');
             url = buildUrl(urlObj);
         }
         if (url.length <= truncateLen) {
-            return url;
+            return url; // removing 'www.' brought the URL under the truncateLength
         }
-        // Process and build the URL
-        var str = '';
+        // Process and build the truncated URL, starting with the hostname
+        var truncatedUrl = '';
         if (urlObj.host) {
-            str += urlObj.host;
+            truncatedUrl += urlObj.host;
         }
-        if (str.length >= availableLength) {
-            if (urlObj.host.length == truncateLen) {
+        if (truncatedUrl.length >= availableLength) {
+            if (urlObj.host.length === truncateLen) {
                 return (urlObj.host.substr(0, truncateLen - ellipsisLength) + ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
             }
-            return buildSegment(str, availableLength).substr(0, availableLength + ellipsisLengthBeforeParsing);
+            return buildSegment(truncatedUrl, availableLength, ellipsisChars).substr(0, availableLength + ellipsisLengthBeforeParsing);
         }
+        // If we still have available chars left, add the path and query string
         var pathAndQuery = '';
         if (urlObj.path) {
             pathAndQuery += '/' + urlObj.path;
@@ -670,44 +680,114 @@
             pathAndQuery += '?' + urlObj.query;
         }
         if (pathAndQuery) {
-            if ((str + pathAndQuery).length >= availableLength) {
-                if ((str + pathAndQuery).length == truncateLen) {
-                    return (str + pathAndQuery).substr(0, truncateLen);
+            if ((truncatedUrl + pathAndQuery).length >= availableLength) {
+                if ((truncatedUrl + pathAndQuery).length == truncateLen) {
+                    return (truncatedUrl + pathAndQuery).substr(0, truncateLen);
                 }
-                var remainingAvailableLength = availableLength - str.length;
-                return (str + buildSegment(pathAndQuery, remainingAvailableLength)).substr(0, availableLength + ellipsisLengthBeforeParsing);
+                var remainingAvailableLength = availableLength - truncatedUrl.length;
+                return (truncatedUrl + buildSegment(pathAndQuery, remainingAvailableLength, ellipsisChars)).substr(0, availableLength + ellipsisLengthBeforeParsing);
             }
             else {
-                str += pathAndQuery;
+                truncatedUrl += pathAndQuery;
             }
         }
+        // If we still have available chars left, add the fragment
         if (urlObj.fragment) {
             var fragment = '#' + urlObj.fragment;
-            if ((str + fragment).length >= availableLength) {
-                if ((str + fragment).length == truncateLen) {
-                    return (str + fragment).substr(0, truncateLen);
+            if ((truncatedUrl + fragment).length >= availableLength) {
+                if ((truncatedUrl + fragment).length == truncateLen) {
+                    return (truncatedUrl + fragment).substr(0, truncateLen);
                 }
-                var remainingAvailableLength2 = availableLength - str.length;
-                return (str + buildSegment(fragment, remainingAvailableLength2)).substr(0, availableLength + ellipsisLengthBeforeParsing);
+                var remainingAvailableLength2 = availableLength - truncatedUrl.length;
+                return (truncatedUrl + buildSegment(fragment, remainingAvailableLength2, ellipsisChars)).substr(0, availableLength + ellipsisLengthBeforeParsing);
             }
             else {
-                str += fragment;
+                truncatedUrl += fragment;
             }
         }
+        // If we still have available chars left, add the scheme
         if (urlObj.scheme && urlObj.host) {
             var scheme = urlObj.scheme + '://';
-            if ((str + scheme).length < availableLength) {
-                return (scheme + str).substr(0, truncateLen);
+            if ((truncatedUrl + scheme).length < availableLength) {
+                return (scheme + truncatedUrl).substr(0, truncateLen);
             }
         }
-        if (str.length <= truncateLen) {
-            return str;
+        if (truncatedUrl.length <= truncateLen) {
+            return truncatedUrl;
         }
         var end = '';
         if (availableLength > 0) {
-            end = str.substr(-1 * Math.floor(availableLength / 2));
+            end = truncatedUrl.substr(-1 * Math.floor(availableLength / 2));
         }
-        return (str.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
+        return (truncatedUrl.substr(0, Math.ceil(availableLength / 2)) + ellipsisChars + end).substr(0, availableLength + ellipsisLengthBeforeParsing);
+    }
+    /**
+     * Parses a URL into its components: scheme, host, path, query, and fragment.
+     */
+    function parseUrl(url) {
+        // Functionality inspired by PHP function of same name
+        var urlObj = {};
+        var urlSub = url;
+        // Parse scheme
+        var match = urlSub.match(/^([a-z]+):\/\//i);
+        if (match) {
+            urlObj.scheme = match[1];
+            urlSub = urlSub.slice(match[0].length);
+        }
+        // Parse host
+        match = urlSub.match(/^(.*?)(?=(\?|#|\/|$))/i);
+        if (match) {
+            urlObj.host = match[1];
+            urlSub = urlSub.slice(match[0].length);
+        }
+        // Parse path
+        match = urlSub.match(/^\/(.*?)(?=(\?|#|$))/i);
+        if (match) {
+            urlObj.path = match[1];
+            urlSub = urlSub.slice(match[0].length);
+        }
+        // Parse query
+        match = urlSub.match(/^\?(.*?)(?=(#|$))/i);
+        if (match) {
+            urlObj.query = match[1];
+            urlSub = urlSub.slice(match[0].length);
+        }
+        // Parse fragment
+        match = urlSub.match(/^#(.*?)$/i);
+        if (match) {
+            urlObj.fragment = match[1];
+            //urlSub = urlSub.slice(match[0].length);  -- not used. Uncomment if adding another block.
+        }
+        return urlObj;
+    }
+    function buildUrl(urlObj) {
+        var url = '';
+        if (urlObj.scheme && urlObj.host) {
+            url += urlObj.scheme + '://';
+        }
+        if (urlObj.host) {
+            url += urlObj.host;
+        }
+        if (urlObj.path) {
+            url += '/' + urlObj.path;
+        }
+        if (urlObj.query) {
+            url += '?' + urlObj.query;
+        }
+        if (urlObj.fragment) {
+            url += '#' + urlObj.fragment;
+        }
+        return url;
+    }
+    function buildSegment(segment, remainingAvailableLength, ellipsisChars) {
+        var remainingAvailableLengthHalf = remainingAvailableLength / 2;
+        var startOffset = Math.ceil(remainingAvailableLengthHalf);
+        var endOffset = -1 * Math.floor(remainingAvailableLengthHalf);
+        var end = '';
+        if (endOffset < 0) {
+            end = segment.substr(endOffset);
+        }
+        return segment.substr(0, startOffset) + ellipsisChars + end;
     }
 
     /**
@@ -924,53 +1004,6 @@
         return AnchorTagBuilder;
     }());
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-    var extendStatics = function(d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-
-    function __extends(d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    }
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
     /**
      * @abstract
      * @class Autolinker.match.AbstractMatch
@@ -1016,8 +1049,8 @@
              * Reference to the AnchorTagBuilder instance to use to generate an anchor
              * tag for the Match.
              */
-            // @ts-ignore
-            this._ = null; // property used just to get the above doc comment into the ES5 output and documentation generator
+            // @ts-expect-error Property used just to get the above doc comment into the ES5 output and documentation generator
+            this._ = null;
             /**
              * @cfg {String} matchedText (required)
              *
@@ -1128,14 +1161,14 @@
 
     // NOTE: THIS IS A GENERATED FILE
     // To update with the latest TLD list, run `npm run update-tld-regex`
-    var tldRegexStr = '(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|kerrylogistics|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|banamex|bauhaus|bentley|bestbuy|booking|brother|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|yamaxun|youtube|zuerich|католик|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kindle|kosher|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|nagoya|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|lipsy|loans|locus|lotte|lotto|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|scb|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)';
+    var tldRegexStr = '(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|banamex|bauhaus|bestbuy|booking|brother|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|yamaxun|youtube|zuerich|католик|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kindle|kosher|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|nagoya|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|loans|locus|lotte|lotto|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|scb|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)';
     var tldRegex = new RegExp('^' + tldRegexStr + '$');
 
     /**
      * The set of characters that will start a URL suffix (i.e. the path, query, and
      * hash part of the URL)
      */
-    var urlSuffixStartCharsRe = /[\/?#]/;
+    var urlSuffixStartCharsRe = /[/?#]/;
     /**
      * The set of characters that are allowed in the URL suffix (i.e. the path,
      * query, and hash part of the URL) which may also form the ending character of
@@ -1144,7 +1177,7 @@
      * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL
      * suffix characters, but (generally) should not be the last character of a URL.
      */
-    var urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*\[\]{}\u2713]/;
+    var urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*[\]{}\u2713]/;
     /**
      * URL suffix characters (i.e. path, query, and has part of the URL) that are
      * not allowed as the *last character* in the URL suffix as they would normally
@@ -1575,8 +1608,9 @@
         try {
             // Now attempt to decode the rest of the anchor text
             return decodeURIComponent(preProcessedEntityAnchorText);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         }
-        catch (e) {
+        catch (error) {
             // Invalid % escape sequence in the anchor text
             return preProcessedEntityAnchorText;
         }
@@ -1620,7 +1654,7 @@
      * @return true is email have valid TLD, false otherwise
      */
     function isValidEmail(emailAddress) {
-        var emailAddressTld = emailAddress.split('.').pop() || '';
+        var emailAddressTld = emailAddress.split('.').pop(); // as long as we have a valid string (as opposed to null or undefined), we will always get at least one element in the .split('.') array
         return isKnownTld(emailAddressTld);
     }
 
@@ -1806,10 +1840,10 @@
                     return 'https://www.tiktok.com/tag/' + hashtag;
                 case 'youtube':
                     return 'https://youtube.com/hashtag/' + hashtag;
+                /* istanbul ignore next */
                 default:
-                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case
+                    // Should never happen because Autolinker's constructor should block any invalid values, but just in case
                     assertNever(serviceName);
-                    throw new Error("Invalid hashtag service: ".concat(serviceName));
             }
         };
         /**
@@ -1960,10 +1994,10 @@
                     return 'https://www.tiktok.com/@' + this.mention;
                 case 'youtube':
                     return 'https://youtube.com/@' + this.mention;
+                /* istanbul ignore next */
                 default:
-                    // Shouldn't happen because Autolinker's constructor should block any invalid values, but just in case.
+                    // Should never happen because Autolinker's constructor should block any invalid values, but just in case.
                     assertNever(this.serviceName);
-                    throw new Error('Unknown service name to point mention to: ' + this.serviceName);
             }
         };
         /**
@@ -2308,6 +2342,7 @@
                         case 41 /* State.PhoneNumberPoundChar */:
                             statePhoneNumberPoundChar(stateMachine, char);
                             break;
+                        /* istanbul ignore next */
                         default:
                             assertNever(stateMachine.state);
                     }
@@ -2480,7 +2515,7 @@
                 remove(stateMachines, stateMachine);
             }
         }
-        // Handles reading a '/' from the NonUrl state
+        // Handles after we've read a '/' from the NonUrl state
         function stateProtocolRelativeSlash1(stateMachine, char) {
             if (char === '/') {
                 stateMachine.state = 12 /* State.ProtocolRelativeSlash2 */;
@@ -2491,7 +2526,7 @@
                 remove(stateMachines, stateMachine);
             }
         }
-        // Handles reading a second '/', which could start a protocol-relative URL
+        // Handles after we've read a second '/', which could start a protocol-relative URL
         function stateProtocolRelativeSlash2(stateMachine, char) {
             if (isDomainLabelStartChar(char)) {
                 stateMachine.state = 5 /* State.DomainLabelChar */;
@@ -2692,7 +2727,8 @@
                 remove(stateMachines, stateMachine);
             }
         }
-        // Handles the state where we've read
+        // Handles the state where we've read a '.' character in the local part of
+        // the email address
         function stateEmailLocalPartDot(stateMachine, char) {
             if (char === '.') {
                 // We read a second '.' in a row, not a valid email address
@@ -3003,6 +3039,7 @@
                     }
                 }
                 else {
+                    /* istanbul ignore next */
                     assertNever(urlMatchType);
                 }
                 matches.push(new UrlMatch({
@@ -3068,12 +3105,13 @@
                 }
             }
             else {
+                /* istanbul ignore next */
                 assertNever(stateMachine);
             }
         }
     }
-    var openBraceRe = /[\(\{\[]/;
-    var closeBraceRe = /[\)\}\]]/;
+    var openBraceRe = /[({[]/;
+    var closeBraceRe = /[)}\]]/;
     var oppositeBrace = {
         ')': '(',
         '}': '{',
@@ -3267,7 +3305,8 @@
     function parseHtml(html, _a) {
         var onOpenTag = _a.onOpenTag, onCloseTag = _a.onCloseTag, onText = _a.onText, onComment = _a.onComment, onDoctype = _a.onDoctype;
         var noCurrentTag = new CurrentTag();
-        var charIdx = 0, len = html.length, state = 0 /* State.Data */, currentDataIdx = 0, // where the current data start index is
+        var len = html.length;
+        var charIdx = 0, state = 0 /* State.Data */, currentDataIdx = 0, // where the current data start index is
         currentTag = noCurrentTag; // describes the current tag that is being read
         // For debugging: search for other "For debugging" lines
         // const table = new CliTable( {
@@ -3344,6 +3383,7 @@
                 case 20 /* State.Doctype */:
                     stateDoctype(char);
                     break;
+                /* istanbul ignore next */
                 default:
                     assertNever(state);
             }
@@ -3598,7 +3638,7 @@
         }
         // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
         // (HTML Comments or !DOCTYPE)
-        function stateMarkupDeclarationOpen(char) {
+        function stateMarkupDeclarationOpen() {
             if (html.substr(charIdx, 2) === '--') {
                 // html comment
                 charIdx += 2; // "consume" characters
@@ -4326,8 +4366,9 @@
          */
         Autolinker.prototype.parse = function (textOrHtml) {
             var _this = this;
-            var skipTagNames = ['a', 'style', 'script'], skipTagsStackCount = 0, // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
-            matches = [];
+            var skipTagNames = ['a', 'style', 'script'];
+            var skipTagsStackCount = 0; // used to only Autolink text outside of anchor/script/style tags. We don't want to autolink something that is already linked inside of an <a> tag, for instance
+            var matches = [];
             // Find all matches within the `textOrHtml` (but not matches that are
             // already nested within <a>, <style> and <script> tags)
             parseHtml(textOrHtml, {
@@ -4351,7 +4392,7 @@
                             // even number matches are text, odd numbers are html entities
                             if (i % 2 === 0) {
                                 var textNodeMatches = _this.parseText(splitText, currentOffset_1);
-                                matches.push.apply(matches, textNodeMatches);
+                                matches.push.apply(matches, __spreadArray([], __read(textNodeMatches), false));
                             }
                             currentOffset_1 += splitText.length;
                         });
@@ -4362,8 +4403,8 @@
                         skipTagsStackCount = Math.max(skipTagsStackCount - 1, 0); // attempt to handle extraneous </a> tags by making sure the stack count never goes below 0
                     }
                 },
-                onComment: function (_offset) { }, // no need to process comment nodes
-                onDoctype: function (_offset) { }, // no need to process doctype nodes
+                onComment: function ( /*_offset: number*/) { }, // no need to process comment nodes
+                onDoctype: function ( /*_offset: number*/) { }, // no need to process doctype nodes
             });
             // After we have found all matches, remove subsequent matches that
             // overlap with a previous match. This can happen for instance with URLs,
@@ -4530,7 +4571,9 @@
             if (this.sanitizeHtml) {
                 textOrHtml = textOrHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
-            var matches = this.parse(textOrHtml), newHtml = [], lastIndex = 0;
+            var matches = this.parse(textOrHtml);
+            var newHtml = [];
+            var lastIndex = 0;
             for (var i = 0, len = matches.length; i < len; i++) {
                 var match = matches[i];
                 newHtml.push(textOrHtml.substring(lastIndex, match.getOffset()));
@@ -4669,10 +4712,7 @@
         }
         else {
             // object, or undefined/null
-            return defaults(truncate || {}, {
-                length: Number.POSITIVE_INFINITY,
-                location: 'end',
-            });
+            return __assign({ length: Number.POSITIVE_INFINITY, location: 'end' }, truncate);
         }
     }
 
