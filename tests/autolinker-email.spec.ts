@@ -80,5 +80,26 @@ describe('Autolinker Email Matching >', () => {
 
         let result2 = autolinker.link('My email is fake@gmail.comf');
         expect(result2).toBe('My email is fake@gmail.comf');
+
+        let result3 = autolinker.link('My email is fake@gmail..com');
+        expect(result3).toBe('My email is fake@gmail..com');
+    });
+
+    it('should match an email with a dash in it', function () {
+        let result = autolinker.link('Hi bob@bobs-stuff.com');
+
+        expect(result).toBe('Hi <a href="mailto:bob@bobs-stuff.com">bob@bobs-stuff.com</a>');
+    });
+
+    it(`should not match schemes that start looking like 'mailto:' schemes but end up not being them`, function () {
+        expect(autolinker.link('mzzzzz:asdf@asdf.com')).toBe('mzzzzz:asdf@asdf.com');
+        expect(autolinker.link('mazzzz:asdf@asdf.com')).toBe('mazzzz:asdf@asdf.com');
+        expect(autolinker.link('maizzz:asdf@asdf.com')).toBe('maizzz:asdf@asdf.com');
+        expect(autolinker.link('mailzz:asdf@asdf.com')).toBe('mailzz:asdf@asdf.com');
+        expect(autolinker.link('mailto_')).toBe('mailto_'); // note: no colon char
+    });
+
+    it(`should not match a random 'mailto:' with no other email-like chars after it`, function () {
+        expect(autolinker.link('hello mailto: the world')).toBe('hello mailto: the world');
     });
 });

@@ -17,6 +17,8 @@ describe('Autolinker.HtmlTag', function () {
 
         expect(tag.getTagName()).toBe('a');
         expect(tag.getAttrs()).toEqual({ attr1: 'value1', attr2: 'value2' });
+        expect(tag.getAttr('attr1')).toBe('value1');
+        expect(tag.getAttr('attr2')).toBe('value2');
         expect(tag.getInnerHtml()).toBe('Hello');
     });
 
@@ -28,6 +30,8 @@ describe('Autolinker.HtmlTag', function () {
 
         expect(tag.getTagName()).toBe('a');
         expect(tag.getAttrs()).toEqual({ attr1: 'value1', attr2: 'value2' });
+        expect(tag.getAttr('attr1')).toBe('value1');
+        expect(tag.getAttr('attr2')).toBe('value2');
         expect(tag.getInnerHtml()).toBe('Hello');
     });
 

@@ -127,7 +127,7 @@ export class HtmlTag {
      * @return {String}
      */
     getTagName(): string {
-        return this.tagName || '';
+        return this.tagName;
     }
 
     /**
@@ -172,7 +172,7 @@ export class HtmlTag {
      * @return {Object.<String, String>} A key/value object of the attributes for the HtmlTag.
      */
     getAttrs(): { [key: string]: string } {
-        return this.attrs || (this.attrs = {});
+        return this.attrs;
     }
 
     /**
@@ -312,8 +312,6 @@ export class HtmlTag {
      * @return {String} Example return: `attr1="value1" attr2="value2"`
      */
     protected buildAttrsStr(): string {
-        if (!this.attrs) return ''; // no `attrs` Object (map) has been set, return empty string
-
         let attrs = this.getAttrs(),
             attrsArr: string[] = [];
 

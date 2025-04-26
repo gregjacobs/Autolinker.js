@@ -396,7 +396,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         }
     }
 
-    // Handles reading a '/' from the NonUrl state
+    // Handles after we've read a '/' from the NonUrl state
     function stateProtocolRelativeSlash1(stateMachine: StateMachine, char: string) {
         if (char === '/') {
             stateMachine.state = State.ProtocolRelativeSlash2;
@@ -407,7 +407,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         }
     }
 
-    // Handles reading a second '/', which could start a protocol-relative URL
+    // Handles after we've read a second '/', which could start a protocol-relative URL
     function stateProtocolRelativeSlash2(stateMachine: StateMachine, char: string) {
         if (isDomainLabelStartChar(char)) {
             stateMachine.state = State.DomainLabelChar;
@@ -606,7 +606,8 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         }
     }
 
-    // Handles the state where we've read
+    // Handles the state where we've read a '.' character in the local part of
+    // the email address
     function stateEmailLocalPartDot(stateMachine: StateMachine, char: string) {
         if (char === '.') {
             // We read a second '.' in a row, not a valid email address

@@ -266,6 +266,14 @@ describe('Autolinker Url Matching >', () => {
             expect(result).toBe(`emoji url 👉<a href="http://📙.la/🧛🏻‍♂️">📙.la/🧛🏻‍♂️</a> mid-sentence`);
         });
 
+        it('should match urls with just a path', function () {
+            const result = autolinker.link('file:some-file.txt mid-sentence');
+
+            // TODO: in theory this is a valid url, but do we want to continue
+            // autolinking this in the future?
+            expect(result).toBe(`<a href="file:some-file.txt">file:some-file.txt</a> mid-sentence`);
+        });
+
         it("should NOT autolink possible URLs with the 'javascript:' URI scheme", () => {
             let result = autolinker.link("do not link javascript:window.alert('hi') please");
             expect(result).toBe("do not link javascript:window.alert('hi') please");
@@ -462,6 +470,12 @@ describe('Autolinker Url Matching >', () => {
             expect(result).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>.');
         });
 
+        it(`should not automatically link hostname that has a dot following a hypen in a domain label. This is not legal according to the domain label specs`, () => {
+            const result = autolinker.link('google-.com');
+
+            expect(result).toBe('google-.com');
+        });
+
         it("should automatically link URLs in the form of 'yahoo.com:8000' (with a port number)", () => {
             let result = autolinker.link('Joe went to yahoo.com:8000 today');
             expect(result).toBe(
@@ -646,6 +660,11 @@ describe('Autolinker Url Matching >', () => {
         it('should NOT automatically link supposed protocol-relative URLs in the form of 123//yahoo.com, which is most likely not supposed to be interpreted as a URL', () => {
             let result = autolinker.link('Joe went to 123//yahoo.com');
             expect(result).toBe('Joe went to 123//yahoo.com');
+        });
+
+        it(`should NOT automatically link supposed protocol-relative URLs where a non-domain label character follows the '//'`, () => {
+            let result = autolinker.link('Joe went to //.asdf');
+            expect(result).toBe('Joe went to //.asdf');
         });
 
         it("should automatically link supposed protocol-relative URLs as long as the character before the '//' is a non-word character", () => {

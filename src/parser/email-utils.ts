@@ -43,7 +43,7 @@ export function isEmailLocalPartChar(char: string): boolean {
  * @return true is email have valid TLD, false otherwise
  */
 export function isValidEmail(emailAddress: string): boolean {
-    const emailAddressTld: string = emailAddress.split('.').pop() || '';
+    const emailAddressTld: string = emailAddress.split('.').pop()!; // as long as we have a valid string (as opposed to null or undefined), we will always get at least one element in the .split('.') array
 
     return isKnownTld(emailAddressTld);
 }
