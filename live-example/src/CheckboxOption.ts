@@ -42,7 +42,7 @@ export class CheckboxOption extends Option {
      * @return {string}
      */
     private generateHtml() {
-        var containerId = this.containerId,
+        const containerId = this.containerId,
             optionDescription = this.optionDescription,
             defaultValue = this.defaultValue,
             checkboxId = containerId + '-checkbox';

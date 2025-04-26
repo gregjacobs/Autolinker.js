@@ -27,17 +27,17 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should link scheme URLs that are only numbers', () => {
-            let result = autolinker.link('Joe went to bugtracker://20012909');
+            const result = autolinker.link('Joe went to bugtracker://20012909');
             expect(result).toBe(
                 'Joe went to <a href="bugtracker://20012909">bugtracker://20012909</a>'
             );
         });
 
         it('should automatically link capitalized URLs', () => {
-            let result1 = autolinker.link('Joe went to HTTP://YAHOO.COM');
+            const result1 = autolinker.link('Joe went to HTTP://YAHOO.COM');
             expect(result1).toBe('Joe went to <a href="HTTP://YAHOO.COM">YAHOO.COM</a>');
 
-            let result2 = autolinker.link('Joe went to HTTP://WWW.YAHOO.COM');
+            const result2 = autolinker.link('Joe went to HTTP://WWW.YAHOO.COM');
             expect(result2).toBe('Joe went to <a href="HTTP://WWW.YAHOO.COM">WWW.YAHOO.COM</a>');
         });
 
@@ -58,7 +58,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should automatically link a URL with accented characters', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Joe went to http://mañana.com/mañana?mañana=1#mañana today.'
             );
             expect(result).toBe(
@@ -67,7 +67,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should automatically link cyrillic URLs', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Joe went to https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица'
             );
             expect(result).toBe(
@@ -76,19 +76,19 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should match local urls with numbers when prefixed with http://', () => {
-            let result1 = autolinker.link('http://localhost.local001/test');
+            const result1 = autolinker.link('http://localhost.local001/test');
             expect(result1).toBe(
                 '<a href="http://localhost.local001/test">localhost.local001/test</a>'
             );
 
-            let result2 = autolinker.link('http://suus111.w10:8090/display/test/AI');
+            const result2 = autolinker.link('http://suus111.w10:8090/display/test/AI');
             expect(result2).toBe(
                 '<a href="http://suus111.w10:8090/display/test/AI">suus111.w10:8090/display/test/AI</a>'
             );
         });
 
         it('should match a url with underscores in domain label', () => {
-            let result = autolinker.link('https://gcs_test_env.storage.googleapis.com/file.pdf');
+            const result = autolinker.link('https://gcs_test_env.storage.googleapis.com/file.pdf');
             expect(result).toBe(
                 '<a href="https://gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
             );
@@ -100,77 +100,77 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it("should NOT include preceding ':' introductions without a space", () => {
-            let result1 = autolinker.link('the link:http://example.com/');
+            const result1 = autolinker.link('the link:http://example.com/');
             expect(result1).toBe('the link:<a href="http://example.com/">example.com</a>');
 
-            let result2 = autolinker.link('the link:git:example.com/');
+            const result2 = autolinker.link('the link:git:example.com/');
             expect(result2).toBe('the link:<a href="git:example.com/">git:example.com</a>');
         });
 
         it('should autolink protocols with at least one character', () => {
-            let result = autolinker.link('link this: g://example.com/');
+            const result = autolinker.link('link this: g://example.com/');
             expect(result).toBe('link this: <a href="g://example.com/">g://example.com</a>');
         });
 
         it('should autolink protocols with more than 9 characters (as was the previous upper bound, but it seems protocols may be longer)', () => {
-            let result = autolinker.link('link this: opaquelocktoken://example');
+            const result = autolinker.link('link this: opaquelocktoken://example');
             expect(result).toBe(
                 'link this: <a href="opaquelocktoken://example">opaquelocktoken://example</a>'
             );
         });
 
         it('should autolink protocols with digits, dashes, dots, and plus signs in their names', () => {
-            let result1 = autolinker.link('link this: a1://example');
+            const result1 = autolinker.link('link this: a1://example');
             expect(result1).toBe('link this: <a href="a1://example">a1://example</a>');
 
-            let result2 = autolinker.link('link this: view-source://example');
+            const result2 = autolinker.link('link this: view-source://example');
             expect(result2).toBe(
                 'link this: <a href="view-source://example">view-source://example</a>'
             );
 
-            let result3 = autolinker.link('link this: iris.xpc://example');
+            const result3 = autolinker.link('link this: iris.xpc://example');
             expect(result3).toBe('link this: <a href="iris.xpc://example">iris.xpc://example</a>');
 
-            let result4 = autolinker.link('link this: test+protocol://example');
+            const result4 = autolinker.link('link this: test+protocol://example');
             expect(result4).toBe(
                 'link this: <a href="test+protocol://example">test+protocol://example</a>'
             );
 
             // Test all allowed non-alpha chars
-            let result5 = autolinker.link('link this: test+proto-col.123://example');
+            const result5 = autolinker.link('link this: test+proto-col.123://example');
             expect(result5).toBe(
                 'link this: <a href="test+proto-col.123://example">test+proto-col.123://example</a>'
             );
         });
 
         it('should NOT autolink protocols that start with a digit, dash, plus sign, or dot, as per http://tools.ietf.org/html/rfc3986#section-3.1', () => {
-            let result1 = autolinker.link('do not link first char: -a://example');
+            const result1 = autolinker.link('do not link first char: -a://example');
             expect(result1).toBe('do not link first char: -<a href="a://example">a://example</a>');
 
-            let result2 = autolinker.link('do not link first char: +a://example');
+            const result2 = autolinker.link('do not link first char: +a://example');
             expect(result2).toBe('do not link first char: +<a href="a://example">a://example</a>');
 
-            let result3 = autolinker.link('do not link first char: .a://example');
+            const result3 = autolinker.link('do not link first char: .a://example');
             expect(result3).toBe('do not link first char: .<a href="a://example">a://example</a>');
 
-            let result4 = autolinker.link('do not link first char: .aa://example');
+            const result4 = autolinker.link('do not link first char: .aa://example');
             expect(result4).toBe(
                 'do not link first char: .<a href="aa://example">aa://example</a>'
             );
         });
 
         it('should autolink protocol starting at http:// or http:// if URL is preceded with text', () => {
-            let result1 = autolinker.link('link this: xxxhttp://example.com');
+            const result1 = autolinker.link('link this: xxxhttp://example.com');
             expect(result1).toBe('link this: xxx<a href="http://example.com">example.com</a>');
 
-            let result2 = autolinker.link('link this: abchttps://www.example.com');
+            const result2 = autolinker.link('link this: abchttps://www.example.com');
             expect(result2).toBe(
                 'link this: abc<a href="https://www.example.com">www.example.com</a>'
             );
         });
 
         it('should link a URL with a check character', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master'
             );
             expect(result).toBe(
@@ -275,49 +275,53 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it("should NOT autolink possible URLs with the 'javascript:' URI scheme", () => {
-            let result = autolinker.link("do not link javascript:window.alert('hi') please");
+            const result = autolinker.link("do not link javascript:window.alert('hi') please");
             expect(result).toBe("do not link javascript:window.alert('hi') please");
         });
 
         it("should NOT autolink possible URLs with the 'javascript:' URI scheme, with different upper/lowercase letters in the uri scheme", () => {
-            let result = autolinker.link("do not link JavAscriPt:window.alert('hi') please");
+            const result = autolinker.link("do not link JavAscriPt:window.alert('hi') please");
             expect(result).toBe("do not link JavAscriPt:window.alert('hi') please");
         });
 
         it("should NOT autolink possible URLs with the 'vbscript:' URI scheme", () => {
-            let result = autolinker.link("do not link vbscript:window.alert('hi') please");
+            const result = autolinker.link("do not link vbscript:window.alert('hi') please");
             expect(result).toBe("do not link vbscript:window.alert('hi') please");
         });
 
         it("should NOT autolink possible URLs with the 'vbscript:' URI scheme, with different upper/lowercase letters in the uri scheme", () => {
-            let result = autolinker.link("do not link vBsCriPt:window.alert('hi') please");
+            const result = autolinker.link("do not link vBsCriPt:window.alert('hi') please");
             expect(result).toBe("do not link vBsCriPt:window.alert('hi') please");
         });
 
         it("should NOT automatically link strings of the form 'git:d' (using the heuristic that the domain name does not have a '.' in it)", () => {
-            let result = autolinker.link('Something like git:d should not be linked as a URL');
+            const result = autolinker.link('Something like git:d should not be linked as a URL');
             expect(result).toBe('Something like git:d should not be linked as a URL');
         });
 
         it("should NOT automatically link strings of the form 'git:domain' (using the heuristic that the domain name does not have a '.' in it)", () => {
-            let result = autolinker.link('Something like git:domain should not be linked as a URL');
+            const result = autolinker.link(
+                'Something like git:domain should not be linked as a URL'
+            );
             expect(result).toBe('Something like git:domain should not be linked as a URL');
         });
 
         it("should automatically link strings of the form 'git:domain.com', interpreting this as a protocol and domain name", () => {
-            let result = autolinker.link('Something like git:domain.com should be linked as a URL');
+            const result = autolinker.link(
+                'Something like git:domain.com should be linked as a URL'
+            );
             expect(result).toBe(
                 'Something like <a href="git:domain.com">git:domain.com</a> should be linked as a URL'
             );
         });
 
         it("should NOT automatically link a string in the form of 'version:1.0'", () => {
-            let result = autolinker.link('version:1.0');
+            const result = autolinker.link('version:1.0');
             expect(result).toBe('version:1.0');
         });
 
         it("should NOT automatically link these 'abc:def' style strings", () => {
-            let strings = [
+            const strings = [
                 'BEGIN:VCALENDAR',
                 'VERSION:1.0',
                 'BEGIN:VEVENT',
@@ -375,24 +379,24 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it(`should link a basic TLD URL`, () => {
-            let result1 = autolinker.link('yahoo.com');
+            const result1 = autolinker.link('yahoo.com');
             expect(result1).toBe('<a href="http://yahoo.com">yahoo.com</a>');
         });
 
         it(`should link a basic TLD URL with a port`, () => {
-            let result1 = autolinker.link('yahoo.com:8080');
+            const result1 = autolinker.link('yahoo.com:8080');
             expect(result1).toBe('<a href="http://yahoo.com:8080">yahoo.com:8080</a>');
         });
 
         it('should automatically link domain names represented in punicode', () => {
-            let result1 = autolinker.link(
+            const result1 = autolinker.link(
                 'For compatibility reasons, xn--d1acufc.xn--p1ai is an acceptable form of an international domain.'
             );
             expect(result1).toBe(
                 'For compatibility reasons, <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a> is an acceptable form of an international domain.'
             );
 
-            let result2 = autolinker.link(
+            const result2 = autolinker.link(
                 'For compatibility reasons, http://xn--d1acufc.xn--p1ai is an acceptable form of an international domain.'
             );
             expect(result2).toBe(
@@ -401,19 +405,21 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should automatically link international domain names', () => {
-            let result1 = autolinker.link('Русским гораздо проще набрать россия.рф на клавиатуре.');
+            const result1 = autolinker.link(
+                'Русским гораздо проще набрать россия.рф на клавиатуре.'
+            );
             expect(result1).toBe(
                 'Русским гораздо проще набрать <a href="http://россия.рф">россия.рф</a> на клавиатуре.'
             );
 
-            let result2 = autolinker.link(
+            const result2 = autolinker.link(
                 'Русским гораздо проще набрать http://россия.рф на клавиатуре.'
             );
             expect(result2).toBe(
                 'Русским гораздо проще набрать <a href="http://россия.рф">россия.рф</a> на клавиатуре.'
             );
 
-            let result3 = autolinker.link(
+            const result3 = autolinker.link(
                 'Русским гораздо проще набрать //россия.рф на клавиатуре.'
             );
             expect(result3).toBe(
@@ -422,51 +428,51 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should not match local urls with numbers when NOT prefixed with http://', () => {
-            let result1 = autolinker.link('localhost.local001/test');
+            const result1 = autolinker.link('localhost.local001/test');
             expect(result1).toBe('localhost.local001/test');
 
-            let result2 = autolinker.link('suus111.w10:8090/display/test/AI');
+            const result2 = autolinker.link('suus111.w10:8090/display/test/AI');
             expect(result2).toBe('suus111.w10:8090/display/test/AI');
         });
 
         it("should automatically link 'yahoo.xyz' (a known TLD), but not 'sencha.etc' (an unknown TLD)", () => {
-            let result = autolinker.link('yahoo.xyz should be linked, sencha.etc should not');
+            const result = autolinker.link('yahoo.xyz should be linked, sencha.etc should not');
             expect(result).toBe(
                 '<a href="http://yahoo.xyz">yahoo.xyz</a> should be linked, sencha.etc should not'
             );
         });
 
         it("should automatically link 'a.museum' (a known TLD), but not 'abc.123'", () => {
-            let result = autolinker.link('a.museum should be linked, but abc.123 should not');
+            const result = autolinker.link('a.museum should be linked, but abc.123 should not');
             expect(result).toBe(
                 '<a href="http://a.museum">a.museum</a> should be linked, but abc.123 should not'
             );
         });
 
         it('should automatically link URLs in the form of yahoo.com, prepending the http:// in this case', () => {
-            let result = autolinker.link('Joe went to yahoo.com');
+            const result = autolinker.link('Joe went to yahoo.com');
             expect(result).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>');
         });
 
         it('should automatically link URLs in the form of subdomain.yahoo.com', () => {
-            let result = autolinker.link('Joe went to subdomain.yahoo.com');
+            const result = autolinker.link('Joe went to subdomain.yahoo.com');
             expect(result).toBe(
                 'Joe went to <a href="http://subdomain.yahoo.com">subdomain.yahoo.com</a>'
             );
         });
 
         it('should automatically link URLs in the form of yahoo.co.uk, prepending the http:// in this case', () => {
-            let result = autolinker.link('Joe went to yahoo.co.uk');
+            const result = autolinker.link('Joe went to yahoo.co.uk');
             expect(result).toBe('Joe went to <a href="http://yahoo.co.uk">yahoo.co.uk</a>');
         });
 
         it('should automatically link URLs in the form of yahoo.ru, prepending the http:// in this case', () => {
-            let result = autolinker.link('Joe went to yahoo.ru');
+            const result = autolinker.link('Joe went to yahoo.ru');
             expect(result).toBe('Joe went to <a href="http://yahoo.ru">yahoo.ru</a>');
         });
 
         it("should automatically link URLs in the form of 'yahoo.com.', without including the trailing period", () => {
-            let result = autolinker.link('Joe went to yahoo.com.');
+            const result = autolinker.link('Joe went to yahoo.com.');
             expect(result).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>.');
         });
 
@@ -477,75 +483,75 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it("should automatically link URLs in the form of 'yahoo.com:8000' (with a port number)", () => {
-            let result = autolinker.link('Joe went to yahoo.com:8000 today');
+            const result = autolinker.link('Joe went to yahoo.com:8000 today');
             expect(result).toBe(
                 'Joe went to <a href="http://yahoo.com:8000">yahoo.com:8000</a> today'
             );
         });
 
         it("should automatically link URLs in the form of 'yahoo.com:8000/abc' (with a port number and path)", () => {
-            let result = autolinker.link('Joe went to yahoo.com:8000/abc today');
+            const result = autolinker.link('Joe went to yahoo.com:8000/abc today');
             expect(result).toBe(
                 'Joe went to <a href="http://yahoo.com:8000/abc">yahoo.com:8000/abc</a> today'
             );
         });
 
         it("should automatically link URLs in the form of 'yahoo.com:8000?abc' (with a port number and query string)", () => {
-            let result = autolinker.link('Joe went to yahoo.com:8000?abc today');
+            const result = autolinker.link('Joe went to yahoo.com:8000?abc today');
             expect(result).toBe(
                 'Joe went to <a href="http://yahoo.com:8000?abc">yahoo.com:8000?abc</a> today'
             );
         });
 
         it("should automatically link URLs in the form of 'yahoo.com:8000#abc' (with a port number and hash)", () => {
-            let result = autolinker.link('Joe went to yahoo.com:8000#abc today');
+            const result = autolinker.link('Joe went to yahoo.com:8000#abc today');
             expect(result).toBe(
                 'Joe went to <a href="http://yahoo.com:8000#abc">yahoo.com:8000#abc</a> today'
             );
         });
 
         it('should automatically link capitalized URLs', () => {
-            let result = autolinker.link('Joe went to YAHOO.COM.');
+            const result = autolinker.link('Joe went to YAHOO.COM.');
             expect(result).toBe('Joe went to <a href="http://YAHOO.COM">YAHOO.COM</a>.');
         });
 
         it('should not include [?!:,.;] chars if at the end of the URL', () => {
-            let result1 = autolinker.link('Joe went to yahoo.com? today');
+            const result1 = autolinker.link('Joe went to yahoo.com? today');
             expect(result1).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>? today');
-            let result2 = autolinker.link('Joe went to yahoo.com! today');
+            const result2 = autolinker.link('Joe went to yahoo.com! today');
             expect(result2).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>! today');
-            let result3 = autolinker.link('Joe went to yahoo.com: today');
+            const result3 = autolinker.link('Joe went to yahoo.com: today');
             expect(result3).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>: today');
-            let result4 = autolinker.link('Joe went to yahoo.com, today');
+            const result4 = autolinker.link('Joe went to yahoo.com, today');
             expect(result4).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>, today');
-            let result5 = autolinker.link('Joe went to yahoo.com. today');
+            const result5 = autolinker.link('Joe went to yahoo.com. today');
             expect(result5).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>. today');
-            let result6 = autolinker.link('Joe went to yahoo.com; today');
+            const result6 = autolinker.link('Joe went to yahoo.com; today');
             expect(result6).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>; today');
         });
 
         it('should exclude invalid chars after TLD', () => {
-            let result1 = autolinker.link("Joe went to yahoo.com's today");
+            const result1 = autolinker.link("Joe went to yahoo.com's today");
             expect(result1).toBe('Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s today');
-            let result2 = autolinker.link("Joe went to yahoo.com/foo's today");
+            const result2 = autolinker.link("Joe went to yahoo.com/foo's today");
             expect(result2).toBe(
                 'Joe went to <a href="http://yahoo.com/foo\'s">yahoo.com/foo\'s</a> today'
             );
-            let result3 = autolinker.link("Joe went to yahoo.com's/foo today");
+            const result3 = autolinker.link("Joe went to yahoo.com's/foo today");
             expect(result3).toBe(
                 'Joe went to <a href="http://yahoo.com">yahoo.com</a>\'s/foo today'
             );
         });
 
         it('should match a url with underscores in domain label', () => {
-            let result = autolinker.link('gcs_test_env.storage.googleapis.com/file.pdf');
+            const result = autolinker.link('gcs_test_env.storage.googleapis.com/file.pdf');
             expect(result).toBe(
                 '<a href="http://gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
             );
         });
 
         it('should automatically link a URL with accented characters', () => {
-            let result = autolinker.link('Joe went to mañana.com today.');
+            const result = autolinker.link('Joe went to mañana.com today.');
             expect(result).toBe('Joe went to <a href="http://mañana.com">mañana.com</a> today.');
         });
     });
@@ -623,52 +629,52 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should automatically link protocol-relative URLs in the form of //yahoo.com at the beginning of the string', () => {
-            let result = autolinker.link('//yahoo.com');
+            const result = autolinker.link('//yahoo.com');
             expect(result).toBe('<a href="//yahoo.com">yahoo.com</a>');
         });
 
         it('should automatically link protocol-relative URLs in the form of //yahoo.com in the middle of the string', () => {
-            let result = autolinker.link('Joe went to //yahoo.com yesterday');
+            const result = autolinker.link('Joe went to //yahoo.com yesterday');
             expect(result).toBe('Joe went to <a href="//yahoo.com">yahoo.com</a> yesterday');
         });
 
         it('should automatically link protocol-relative URLs in the form of //yahoo.com at the end of the string', () => {
-            let result = autolinker.link('Joe went to //yahoo.com');
+            const result = autolinker.link('Joe went to //yahoo.com');
             expect(result).toBe('Joe went to <a href="//yahoo.com">yahoo.com</a>');
         });
 
         it('should automatically link capitalized protocol-relative URLs', () => {
-            let result = autolinker.link('Joe went to //YAHOO.COM');
+            const result = autolinker.link('Joe went to //YAHOO.COM');
             expect(result).toBe('Joe went to <a href="//YAHOO.COM">YAHOO.COM</a>');
         });
 
         it('should match a url with underscores in domain label', () => {
-            let result = autolinker.link('//gcs_test_env.storage.googleapis.com/file.pdf');
+            const result = autolinker.link('//gcs_test_env.storage.googleapis.com/file.pdf');
             expect(result).toBe(
                 '<a href="//gcs_test_env.storage.googleapis.com/file.pdf">gcs_test_env.storage.googleapis.com/file.pdf</a>'
             );
         });
 
         it('should NOT automatically link supposed protocol-relative URLs in the form of abc//yahoo.com, which is most likely not supposed to be interpreted as a URL', () => {
-            let result1 = autolinker.link('Joe went to abc//yahoo.com');
+            const result1 = autolinker.link('Joe went to abc//yahoo.com');
             expect(result1).toBe('Joe went to abc//yahoo.com');
 
-            let result2 = autolinker.link('Относительный протокол//россия.рф');
+            const result2 = autolinker.link('Относительный протокол//россия.рф');
             expect(result2).toBe('Относительный протокол//россия.рф');
         });
 
         it('should NOT automatically link supposed protocol-relative URLs in the form of 123//yahoo.com, which is most likely not supposed to be interpreted as a URL', () => {
-            let result = autolinker.link('Joe went to 123//yahoo.com');
+            const result = autolinker.link('Joe went to 123//yahoo.com');
             expect(result).toBe('Joe went to 123//yahoo.com');
         });
 
         it(`should NOT automatically link supposed protocol-relative URLs where a non-domain label character follows the '//'`, () => {
-            let result = autolinker.link('Joe went to //.asdf');
+            const result = autolinker.link('Joe went to //.asdf');
             expect(result).toBe('Joe went to //.asdf');
         });
 
         it("should automatically link supposed protocol-relative URLs as long as the character before the '//' is a non-word character", () => {
-            let result = autolinker.link('Joe went to abc-//yahoo.com');
+            const result = autolinker.link('Joe went to abc-//yahoo.com');
             expect(result).toBe('Joe went to abc-<a href="//yahoo.com">yahoo.com</a>');
         });
     });
@@ -816,7 +822,7 @@ describe('Autolinker Url Matching >', () => {
 
         describe('square bracket-specific handling >', () => {
             it('should include escaped square brackets in the URL', () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%5BCentral_Point_Software%5D"
                 );
                 expect(result).toBe(
@@ -825,7 +831,7 @@ describe('Autolinker Url Matching >', () => {
             });
 
             it(`should correctly accept square brackets such as PHP array representation in query strings`, () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example: http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3"
                 );
                 expect(result).toBe(
@@ -837,7 +843,7 @@ describe('Autolinker Url Matching >', () => {
                  representation in query strings, when the entire URL is surrounded
                  by square brackets
                 `, () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example: [http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
                 );
                 expect(result).toBe(
@@ -848,7 +854,7 @@ describe('Autolinker Url Matching >', () => {
 
         describe('curly bracket-specific handling >', () => {
             it('should include escaped curly brackets in the URL', () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%7BCentral_Point_Software%7D"
                 );
                 expect(result).toBe(
@@ -857,7 +863,7 @@ describe('Autolinker Url Matching >', () => {
             });
 
             it(`should correctly accept curly brackets such as a sharepoint url`, () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
                 expect(result).toBe(
@@ -867,7 +873,7 @@ describe('Autolinker Url Matching >', () => {
 
             it(`should correctly accept curly brackets such as a sharepoint url,
                  when the entire URL is surrounded by square brackets`, () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
                 expect(result).toBe(
@@ -876,7 +882,7 @@ describe('Autolinker Url Matching >', () => {
             });
 
             it(`should handle accepting nested curly brackets at end of URL`, () => {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Here's an example: http://gohub.sharepoint/example/make-payment?props={%22params%22:{%22loanId%22:%220349494%22}}"
                 );
                 expect(result).toBe(
@@ -888,7 +894,7 @@ describe('Autolinker Url Matching >', () => {
 
     describe('Special character handling >', () => {
         it('should include $ in URLs', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Check out pair programming: http://c2.com/cgi/wiki$?VirtualPairProgramming'
             );
             expect(result).toBe(
@@ -897,7 +903,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should include $ in URLs with query strings', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Check out the image at http://server.com/template?fmt=jpeg&$base=700.'
             );
             expect(result).toBe(
@@ -906,7 +912,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should include * in URLs', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Google from wayback http://wayback.archive.org/web/*/http://google.com'
             );
             expect(result).toBe(
@@ -915,7 +921,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should include * in URLs with query strings', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Twitter search for bob smith https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith'
             );
             expect(result).toBe(
@@ -924,7 +930,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should include ^ in URLs with query strings', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Test caret url: https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal'
             );
             expect(result).toBe(
@@ -933,7 +939,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it("should include ' in URLs", () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 "You are a star http://en.wikipedia.org/wiki/You're_a_Star/"
             );
             expect(result).toBe(
@@ -942,14 +948,14 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it("should include ' in URLs with query strings", () => {
-            let result = autolinker.link("Test google search https://google.com/#q=test's");
+            const result = autolinker.link("Test google search https://google.com/#q=test's");
             expect(result).toBe(
                 'Test google search <a href="https://google.com/#q=test\'s">google.com/#q=test\'s</a>'
             );
         });
 
         it('should include [ and ] in URLs with query strings', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 'Go to https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6 today'
             );
             expect(result).toBe(
@@ -958,7 +964,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should handle an example Google Maps URL with query string', () => {
-            let result = autolinker.link(
+            const result = autolinker.link(
                 "google.no/maps/place/Gary's+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no"
             );
 
@@ -968,14 +974,14 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should handle emoji', () => {
-            let result = autolinker.link('Joe went to http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀');
+            const result = autolinker.link('Joe went to http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀');
             expect(result).toBe(
                 'Joe went to <a href="http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀">emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀</a>'
             );
         });
 
         it('should decode emojis', () => {
-            var result = autolinker.link(
+            const result = autolinker.link(
                 'Danish flag emoji: https://emojipedia.org/%F0%9F%87%A9%F0%9F%87%B0'
             );
 
@@ -985,7 +991,7 @@ describe('Autolinker Url Matching >', () => {
         });
 
         it('should HTML-encode escape-encoded special characters', () => {
-            var result = autolinker.link('Link: http://example.com/%3c%3E%22%27%26');
+            const result = autolinker.link('Link: http://example.com/%3c%3E%22%27%26');
 
             expect(result).toBe(
                 'Link: <a href="http://example.com/%3c%3E%22%27%26">example.com/&lt;&gt;&quot;&#39;&amp;</a>'
@@ -994,7 +1000,7 @@ describe('Autolinker Url Matching >', () => {
     });
 
     it('should automatically link a URL with a complex hash (such as a Google Analytics url)', () => {
-        let result = autolinker.link(
+        const result = autolinker.link(
             'Joe went to https://google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics'
         );
         expect(result).toBe(
@@ -1003,18 +1009,18 @@ describe('Autolinker Url Matching >', () => {
     });
 
     it("should remove trailing slash from 'http://yahoo.com/'", () => {
-        let result = autolinker.link('Joe went to http://yahoo.com/.');
+        const result = autolinker.link('Joe went to http://yahoo.com/.');
         expect(result).toBe('Joe went to <a href="http://yahoo.com/">yahoo.com</a>.');
     });
 
     it("should remove trailing slash from 'http://yahoo.com/sports/'", () => {
-        let result = autolinker.link('Joe went to http://yahoo.com/sports/.');
+        const result = autolinker.link('Joe went to http://yahoo.com/sports/.');
         expect(result).toBe('Joe went to <a href="http://yahoo.com/sports/">yahoo.com/sports</a>.');
     });
 
     describe('multiple dots handling', () => {
         it('should autolink a url with multiple dots in the path', () => {
-            var result = autolinker.link(
+            const result = autolinker.link(
                 'https://gitlab.example.com/space/repo/compare/master...develop'
             );
 
@@ -1026,19 +1032,19 @@ describe('Autolinker Url Matching >', () => {
 
     describe('curly quotes handling', () => {
         it('should autolink a url surrounded by curly quotes', () => {
-            var result = autolinker.link('“link.com/foo”');
+            const result = autolinker.link('“link.com/foo”');
 
             expect(result).toBe('“<a href="http://link.com/foo">link.com/foo</a>”');
         });
 
         it('should autolink a url with www. prefix surrounded by curly quotes', () => {
-            var result = autolinker.link('“www.link.com/foo”');
+            const result = autolinker.link('“www.link.com/foo”');
 
             expect(result).toBe('“<a href="http://www.link.com/foo">www.link.com/foo</a>”');
         });
 
         it('should autolink a url with protocol prefix surrounded by curly quotes', () => {
-            var result = autolinker.link('“http://link.com/foo”');
+            const result = autolinker.link('“http://link.com/foo”');
 
             expect(result).toBe('“<a href="http://link.com/foo">link.com/foo</a>”');
         });
@@ -1046,7 +1052,7 @@ describe('Autolinker Url Matching >', () => {
 
     describe('combination example', () => {
         it(`should automatically link all of the URLs of many different forms`, () => {
-            let inputStr = `
+            const inputStr = `
 				Joe went to http://yahoo.com and http://localhost today along with http://localhost:8000.
 				He also had a path on localhost: http://localhost:8000/abc, and a query string: http://localhost:8000?abc
 				But who could forget about hashes like http://localhost:8000#abc
@@ -1069,7 +1075,7 @@ describe('Autolinker Url Matching >', () => {
 				Oh good old www links like www.yahoo.com
 			`;
 
-            let result = autolinker.link(inputStr);
+            const result = autolinker.link(inputStr);
             expect(result).toBe(`
 				Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://localhost">localhost</a> today along with <a href="http://localhost:8000">localhost:8000</a>.
 				He also had a path on localhost: <a href="http://localhost:8000/abc">localhost:8000/abc</a>, and a query string: <a href="http://localhost:8000?abc">localhost:8000?abc</a>

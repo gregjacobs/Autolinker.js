@@ -49,7 +49,7 @@ export class TextOption extends Option {
      * @return {string}
      */
     generateHtml() {
-        var containerId = this.containerId,
+        const containerId = this.containerId,
             optionDescription = this.optionDescription,
             size = this.size,
             defaultValue = this.defaultValue,

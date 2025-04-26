@@ -119,7 +119,7 @@ export class MentionMatch extends AbstractMatch {
      * @return {String[]}
      */
     getCssClassSuffixes(): string[] {
-        let cssClassSuffixes = super.getCssClassSuffixes(),
+        const cssClassSuffixes = super.getCssClassSuffixes(),
             serviceName = this.getServiceName();
 
         if (serviceName) {

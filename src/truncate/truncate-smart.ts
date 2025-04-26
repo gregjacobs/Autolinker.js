@@ -28,13 +28,13 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
         return url;
     }
 
-    let availableLength = truncateLen - ellipsisLength;
-    let urlObj = parseUrl(url);
+    const availableLength = truncateLen - ellipsisLength;
+    const urlObj = parseUrl(url);
 
     // Clean up the URL by removing any malformed query string
     // (e.g. "?foo=bar?ignorethis")
     if (urlObj.query) {
-        let matchQuery = urlObj.query.match(/^(.*?)(?=(\?|#))(.*?)$/i);
+        const matchQuery = urlObj.query.match(/^(.*?)(?=(\?|#))(.*?)$/i);
         if (matchQuery) {
             // Malformed URL; two or more "?". Removed any content behind the 2nd.
             urlObj.query = urlObj.query.substr(0, matchQuery[1].length);
@@ -85,7 +85,7 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
             if ((truncatedUrl + pathAndQuery).length == truncateLen) {
                 return (truncatedUrl + pathAndQuery).substr(0, truncateLen);
             }
-            let remainingAvailableLength = availableLength - truncatedUrl.length;
+            const remainingAvailableLength = availableLength - truncatedUrl.length;
             return (
                 truncatedUrl + buildSegment(pathAndQuery, remainingAvailableLength, ellipsisChars)
             ).substr(0, availableLength + ellipsisLengthBeforeParsing);
@@ -96,12 +96,12 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
 
     // If we still have available chars left, add the fragment
     if (urlObj.fragment) {
-        let fragment = '#' + urlObj.fragment;
+        const fragment = '#' + urlObj.fragment;
         if ((truncatedUrl + fragment).length >= availableLength) {
             if ((truncatedUrl + fragment).length == truncateLen) {
                 return (truncatedUrl + fragment).substr(0, truncateLen);
             }
-            let remainingAvailableLength2 = availableLength - truncatedUrl.length;
+            const remainingAvailableLength2 = availableLength - truncatedUrl.length;
             return (
                 truncatedUrl + buildSegment(fragment, remainingAvailableLength2, ellipsisChars)
             ).substr(0, availableLength + ellipsisLengthBeforeParsing);
@@ -112,7 +112,7 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
 
     // If we still have available chars left, add the scheme
     if (urlObj.scheme && urlObj.host) {
-        let scheme = urlObj.scheme + '://';
+        const scheme = urlObj.scheme + '://';
         if ((truncatedUrl + scheme).length < availableLength) {
             return (scheme + truncatedUrl).substr(0, truncateLen);
         }
@@ -136,7 +136,7 @@ export function truncateSmart(url: string, truncateLen: number, ellipsisChars?: 
  */
 function parseUrl(url: string): UrlObject {
     // Functionality inspired by PHP function of same name
-    let urlObj: UrlObject = {};
+    const urlObj: UrlObject = {};
     let urlSub = url;
 
     // Parse scheme

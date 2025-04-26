@@ -60,12 +60,12 @@ describe('Autolinker Mention Matching >', () => {
     }
 
     it(`should not autolink mentions by default`, () => {
-        let autolinker = new Autolinker({ newWindow: false });
+        const autolinker = new Autolinker({ newWindow: false });
         expect(autolinker.link('@test')).toBe('@test');
     });
 
     it(`should not autolink a mentions found as part of an email address`, () => {
-        let autolinker = new Autolinker({ newWindow: false, mention: 'twitter', email: false });
+        const autolinker = new Autolinker({ newWindow: false, mention: 'twitter', email: false });
         expect(autolinker.link('asdf@test.com')).toBe('asdf@test.com');
     });
 
@@ -90,19 +90,19 @@ describe('Autolinker Mention Matching >', () => {
                 ]);
 
                 it(`should NOT automatically link username handles with accented characters for ${serviceName} because non-ascii-letter characters are not allowed`, () => {
-                    let result = autolinker.link(`Hello @mañana how are you?`);
+                    const result = autolinker.link(`Hello @mañana how are you?`);
 
                     expect(result).toBe(`Hello @mañana how are you?`);
                 });
 
                 it(`should NOT automatically link username handles with cyrillic characters for service ${serviceName} because non-ascii-letter characters are not allowed`, () => {
-                    let result = autolinker.link(`Hello @Кириллица how are you?`);
+                    const result = autolinker.link(`Hello @Кириллица how are you?`);
 
                     expect(result).toBe(`Hello @Кириллица how are you?`);
                 });
 
                 it(`should NOT automatically link a mention when the '@' belongs to part of another string`, () => {
-                    let result = autolinker.link(`test as@df test`);
+                    const result = autolinker.link(`test as@df test`);
 
                     expect(result).toBe(`test as@df test`);
                 });
@@ -128,7 +128,7 @@ describe('Autolinker Mention Matching >', () => {
         });
 
         it(`should link fully capitalized twitter handles`, () => {
-            let result = twitterAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+            const result = twitterAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
 
             expect(result).toBe(
                 `<a href="https://twitter.com/GREG">@GREG</a> is tweeting <a href="https://twitter.com/JOE">@JOE</a> with <a href="https://twitter.com/JOSH">@JOSH</a>`
@@ -154,7 +154,7 @@ describe('Autolinker Mention Matching >', () => {
         });
 
         it(`should link fully capitalized instagram handles`, () => {
-            let result = instagramAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+            const result = instagramAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
 
             expect(result).toBe(
                 `<a href="https://instagram.com/GREG">@GREG</a> is tweeting <a href="https://instagram.com/JOE">@JOE</a> with <a href="https://instagram.com/JOSH">@JOSH</a>`
@@ -186,7 +186,7 @@ describe('Autolinker Mention Matching >', () => {
         });
 
         it(`should NOT link capitalized soundcloud handles (soundcloud must be all lowercase)`, () => {
-            let result = soundcloudAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+            const result = soundcloudAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
 
             expect(result).toBe(`@GREG is tweeting @JOE with @JOSH`);
         });
@@ -226,7 +226,7 @@ describe('Autolinker Mention Matching >', () => {
         });
 
         it(`should link fully capitalized twitter handles`, () => {
-            let result = tiktokAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
+            const result = tiktokAutolinker.link(`@GREG is tweeting @JOE with @JOSH`);
 
             expect(result).toBe(
                 `<a href="https://www.tiktok.com/@GREG">@GREG</a> is tweeting <a href="https://www.tiktok.com/@JOE">@JOE</a> with <a href="https://www.tiktok.com/@JOSH">@JOSH</a>`
@@ -235,12 +235,12 @@ describe('Autolinker Mention Matching >', () => {
     });
 
     it(`should NOT automatically link a username that is actually part of an email address when email address linking is turned on`, () => {
-        let emailAutolinker = new Autolinker({
+        const emailAutolinker = new Autolinker({
             email: true,
             mention: 'twitter',
             newWindow: false,
         });
-        let result = emailAutolinker.link('asdf@asdf.com');
+        const result = emailAutolinker.link('asdf@asdf.com');
 
         expect(result).toBe('<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>');
     });
@@ -248,12 +248,12 @@ describe('Autolinker Mention Matching >', () => {
     it(`should NOT automatically link a username that is actually part of an 
 		 email address when email address linking is turned *off*
 	`, () => {
-        let noEmailAutolinker = new Autolinker({
+        const noEmailAutolinker = new Autolinker({
             email: false,
             mention: 'twitter',
             newWindow: false,
         });
-        let result = noEmailAutolinker.link('asdf@asdf.com');
+        const result = noEmailAutolinker.link('asdf@asdf.com');
 
         expect(result).toBe('asdf@asdf.com');
     });

@@ -579,7 +579,7 @@ export default class Autolinker {
                     textSplit.forEach((splitText, i) => {
                         // even number matches are text, odd numbers are html entities
                         if (i % 2 === 0) {
-                            let textNodeMatches = this.parseText(splitText, currentOffset);
+                            const textNodeMatches = this.parseText(splitText, currentOffset);
                             matches.push.apply(matches, textNodeMatches);
                         }
                         currentOffset += splitText.length;
@@ -628,7 +628,7 @@ export default class Autolinker {
 
         let i = 0;
         while (i < matches.length - 1) {
-            let match = matches[i],
+            const match = matches[i],
                 offset = match.getOffset(),
                 matchedTextLength = match.getMatchedText().length,
                 endIdx = offset + matchedTextLength;
@@ -636,7 +636,7 @@ export default class Autolinker {
             if (i + 1 < matches.length) {
                 // Remove subsequent matches that equal offset with current match
                 if (matches[i + 1].getOffset() === offset) {
-                    let removeIdx =
+                    const removeIdx =
                         matches[i + 1].getMatchedText().length > matchedTextLength ? i : i + 1;
                     matches.splice(removeIdx, 1);
                     continue;
@@ -791,7 +791,7 @@ export default class Autolinker {
             lastIndex = 0;
 
         for (let i = 0, len = matches.length; i < len; i++) {
-            let match = matches[i];
+            const match = matches[i];
 
             newHtml.push(textOrHtml.substring(lastIndex, match.getOffset()));
             newHtml.push(this.createMatchReturnVal(match));
@@ -831,7 +831,7 @@ export default class Autolinker {
         } else {
             // replaceFnResult === true, or no/unknown return value from function
             // Perform Autolinker's default anchor tag generation
-            let anchorTag = match.buildTag(); // returns an Autolinker.HtmlTag instance
+            const anchorTag = match.buildTag(); // returns an Autolinker.HtmlTag instance
 
             return anchorTag.toAnchorString();
         }

@@ -81,7 +81,7 @@ export abstract class Option {
      * @return {String}
      */
     protected getApiDocLink(): string {
-        let configName: string = this.optionName.match(/[^.]+/)![0]; // ex: 'urls.schemeMatches' -> 'urls'
+        const configName: string = this.optionName.match(/[^.]+/)![0]; // ex: 'urls.schemeMatches' -> 'urls'
 
         return `http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-cfg-${configName}`;
     }

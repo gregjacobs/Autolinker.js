@@ -138,7 +138,7 @@ export class HtmlTag {
      * @return {Autolinker.HtmlTag} This HtmlTag instance, so that method calls may be chained.
      */
     setAttr(attrName: string, attrValue: string): this {
-        let tagAttrs = this.getAttrs();
+        const tagAttrs = this.getAttrs();
         tagAttrs[attrName] = attrValue;
 
         return this;
@@ -220,7 +220,7 @@ export class HtmlTag {
             removeClass: string | undefined;
 
         while (classes.length && (removeClass = removeClasses.shift())) {
-            let idx = classes.indexOf(removeClass);
+            const idx = classes.indexOf(removeClass);
             if (idx !== -1) {
                 classes.splice(idx, 1);
             }
@@ -312,10 +312,10 @@ export class HtmlTag {
      * @return {String} Example return: `attr1="value1" attr2="value2"`
      */
     protected buildAttrsStr(): string {
-        let attrs = this.getAttrs(),
+        const attrs = this.getAttrs(),
             attrsArr: string[] = [];
 
-        for (let prop in attrs) {
+        for (const prop in attrs) {
             if (attrs.hasOwnProperty(prop)) {
                 attrsArr.push(prop + '="' + attrs[prop] + '"');
             }

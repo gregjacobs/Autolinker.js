@@ -7,7 +7,7 @@ import { TextOption } from './TextOption';
 $(document).ready(function () {
     $('#version').text(Autolinker.version);
 
-    var $inputEl = $('#input'),
+    let $inputEl = $('#input'),
         $outputEl = $('#output'),
         $optionsOutputEl = $('#options-output'),
         urlsSchemeOption: Option,
@@ -119,7 +119,7 @@ $(document).ready(function () {
     }
 
     function autolink() {
-        var inputText = ($inputEl.val() as string).replace(/\n/g, '<br>'),
+        const inputText = ($inputEl.val() as string).replace(/\n/g, '<br>'),
             optionsObj = createAutolinkerOptionsObj(),
             linkedHtml = Autolinker.link(inputText, optionsObj);
 

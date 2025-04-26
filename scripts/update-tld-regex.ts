@@ -17,7 +17,7 @@ export async function updateTldRegex() {
     });
 
     const tldRegexStr = domainsToRegex(tldsFile.data);
-    let outputFile =
+    const outputFile =
         dedent`
         // NOTE: THIS IS A GENERATED FILE\n// To update with the latest TLD list, run \`npm run update-tld-regex\`
         
@@ -29,9 +29,9 @@ export async function updateTldRegex() {
 }
 
 function domainsToRegex(contents: string): string {
-    let lines = contents.split('\n').filter(notCommentLine);
+    const lines = contents.split('\n').filter(notCommentLine);
 
-    let domains = lines
+    const domains = lines
         .map(dePunycodeDomain)
         .flat()
         .filter(s => !!s) // remove empty elements;
@@ -53,7 +53,7 @@ function dePunycodeDomain(domain: string): string[] {
 }
 
 function compareLengthLongestFirst(a: string, b: string): number {
-    var result = b.length - a.length;
+    let result = b.length - a.length;
     if (result === 0) {
         result = a.localeCompare(b);
     }

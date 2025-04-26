@@ -160,7 +160,7 @@ export class UrlMatch extends AbstractMatch {
      * @return {String}
      */
     public getAnchorHref(): string {
-        let url = this.getUrl();
+        const url = this.getUrl();
 
         return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
     }

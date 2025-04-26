@@ -26,7 +26,7 @@ export function truncateMiddle(url: string, truncateLen: number, ellipsisChars?:
         ellipsisLength = ellipsisChars.length;
     }
 
-    let availableLength = truncateLen - ellipsisLength;
+    const availableLength = truncateLen - ellipsisLength;
     let end = '';
     if (availableLength > 0) {
         end = url.substr(-1 * Math.floor(availableLength / 2));

@@ -9,7 +9,7 @@ import { truncateMiddle } from '../../src/truncate/truncate-middle';
  */
 describe('Truncate.truncate.truncateMiddle', function () {
     it("Will not truncate a URL if 'truncateLen' is greater", function () {
-        let truncatedUrl = truncateMiddle(
+        const truncatedUrl = truncateMiddle(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             999,
             '..'
@@ -21,7 +21,7 @@ describe('Truncate.truncate.truncateMiddle', function () {
     });
 
     it('Will truncate a simple URL correctly', function () {
-        let truncatedUrl = truncateMiddle(
+        const truncatedUrl = truncateMiddle(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             60,
             '..'
@@ -31,13 +31,13 @@ describe('Truncate.truncate.truncateMiddle', function () {
     });
 
     it('Will truncate a very short URL correctly', function () {
-        let truncatedUrl = truncateMiddle('yahoo.com', 4, '..');
+        const truncatedUrl = truncateMiddle('yahoo.com', 4, '..');
         expect(truncatedUrl).toBe('y..m');
         expect(truncatedUrl.length).toBe(4);
     });
 
     it('Will truncate a long URL correctly', function () {
-        let truncatedUrl = truncateMiddle(
+        const truncatedUrl = truncateMiddle(
             'https://www.google.com/search?q=cake&safe=off&es_sm=93&tbas=0&tbs=qdr:d,itp:photo,ic:specific,isc:red,isz:l&tbm=isch&source=lnt&sa=X&ved=0CBQQpwVqFQoTCMCUxfOErMgCFeFrcgodUDwD1w&dpr=1&biw=1920&bih=955',
             80,
             '..'

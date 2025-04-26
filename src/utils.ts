@@ -25,7 +25,7 @@ export function isBoolean(value: any): value is boolean {
  * @return {Object} The destination object (`dest`)
  */
 export function defaults(dest: any, src: any) {
-    for (let prop in src) {
+    for (const prop in src) {
         if (src.hasOwnProperty(prop) && isUndefined(dest[prop])) {
             dest[prop] = src[prop];
         }

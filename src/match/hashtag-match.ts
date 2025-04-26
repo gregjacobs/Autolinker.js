@@ -85,7 +85,7 @@ export class HashtagMatch extends AbstractMatch {
      * @return {String}
      */
     getAnchorHref(): string {
-        let serviceName = this.serviceName,
+        const serviceName = this.serviceName,
             hashtag = this.hashtag;
 
         switch (serviceName) {
@@ -124,7 +124,7 @@ export class HashtagMatch extends AbstractMatch {
      * @return {String[]}
      */
     getCssClassSuffixes(): string[] {
-        let cssClassSuffixes = super.getCssClassSuffixes(),
+        const cssClassSuffixes = super.getCssClassSuffixes(),
             serviceName = this.getServiceName();
 
         if (serviceName) {

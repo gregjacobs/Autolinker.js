@@ -9,7 +9,7 @@ import { truncateSmart } from '../../src/truncate/truncate-smart';
  */
 describe('Truncate.truncate.truncateSmart', function () {
     it('Will not truncate a URL which is shorter than the specified length', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             999,
             '..'
@@ -21,19 +21,19 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it(`when just a hostname is present and it's exactly the truncate length, should return it as-is`, () => {
-        let truncatedUrl = truncateSmart('yahoo.com', 'yahoo.com'.length, '..');
+        const truncatedUrl = truncateSmart('yahoo.com', 'yahoo.com'.length, '..');
 
         expect(truncatedUrl).toBe('yahoo.com');
     });
 
     it(`when the hostname is exactly the truncate length but there's also a scheme, should ellipsis the hostname while removing the scheme`, () => {
-        let truncatedUrl = truncateSmart('http://yahoo.com', 'yahoo.com'.length, '..');
+        const truncatedUrl = truncateSmart('http://yahoo.com', 'yahoo.com'.length, '..');
 
         expect(truncatedUrl).toBe('yahoo.c..');
     });
 
     it('Will remove malformed query section 1st', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             61,
             '..'
@@ -43,7 +43,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will remove 'www' 2nd", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             57,
             '..'
@@ -53,7 +53,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will remove scheme ('http') 3rd", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             53,
             '..'
@@ -63,7 +63,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate fragment ('#') 4th", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             45,
             '..'
@@ -73,7 +73,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate path ('/') 5th", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorezthis#baz=bee',
             40,
             '..'
@@ -83,7 +83,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it('Will keep fragment when there is room for it', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             50,
             '..'
@@ -93,7 +93,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will remove/truncate 'path' before 'host'", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             12,
             '..'
@@ -103,7 +103,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate 'host' when 'truncateLen' is very short", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             7,
             '..'
@@ -113,7 +113,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate 'path' when no 'query' exists", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file#baz=bee',
             17,
             '..'
@@ -123,7 +123,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate 'query' when no 'path' exists", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com?foo=bar?ignorethis#baz=bee',
             17,
             '..'
@@ -133,7 +133,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Works when no 'scheme' or 'host' exists", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             '/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             17,
             '..'
@@ -143,19 +143,19 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Works when only 'query' exists", function () {
-        let truncatedUrl = truncateSmart('?foo=bar?ignorethis#baz=bee', 15, '..');
+        const truncatedUrl = truncateSmart('?foo=bar?ignorethis#baz=bee', 15, '..');
         expect(truncatedUrl).toBe('?foo=bar#ba..ee');
         expect(truncatedUrl.length).toBe(15);
     });
 
     it("Works when only 'fragment' exists", function () {
-        let truncatedUrl = truncateSmart('#baz=bee', 5, '..');
+        const truncatedUrl = truncateSmart('#baz=bee', 5, '..');
         expect(truncatedUrl).toBe('#b..e');
         expect(truncatedUrl.length).toBe(5);
     });
 
     it('Works with a standard Google search URL', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'https://www.google.com/search?q=cake&oq=cake&aqs=chrome..69i57j69i60l5.573j0j7&sourceid=chrome&es_sm=93&ie=UTF-8',
             80,
             '..'
@@ -167,7 +167,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it('Works with a long URL', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'https://www.google.com/search?q=cake&safe=off&es_sm=93&tbas=0&tbs=qdr:d,itp:photo,ic:specific,isc:red,isz:l&tbm=isch&source=lnt&sa=X&ved=0CBQQpwVqFQoTCMCUxfOErMgCFeFrcgodUDwD1w&dpr=1&biw=1920&bih=955',
             80,
             '..'
@@ -179,7 +179,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it('Will start with a character from the URL and then append the ellipsis character(s)', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             3,
             '..'
@@ -189,7 +189,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will write only the ellipsis character(s) ('..') when truncate length is 2", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             2,
             '..'
@@ -199,7 +199,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will write only the ellipsis character ('.') when truncate length is 1", function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             1,
             '..'
@@ -209,7 +209,7 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it('Will write nothing (empty string) when truncate length is 0', function () {
-        let truncatedUrl = truncateSmart(
+        const truncatedUrl = truncateSmart(
             'http://www.yahoo.com/some/long/path/to/a/file?foo=bar?ignorethis#baz=bee',
             0,
             '..'
@@ -219,19 +219,19 @@ describe('Truncate.truncate.truncateSmart', function () {
     });
 
     it("Will truncate 'hashtag routing' nicely", function () {
-        let truncatedUrl = truncateSmart('/app#my/little/hashtag/route', 20, '..');
+        const truncatedUrl = truncateSmart('/app#my/little/hashtag/route', 20, '..');
         expect(truncatedUrl).toBe('/app#my/lit..g/route');
         expect(truncatedUrl.length).toBe(20);
     });
 
     it("Allows a 'query' section in 'hashtag routing'", function () {
-        let truncatedUrl = truncateSmart('/app#my/little/hashtag/route?foo=bar', 20, '..');
+        const truncatedUrl = truncateSmart('/app#my/little/hashtag/route?foo=bar', 20, '..');
         expect(truncatedUrl).toBe('/app#my/lit..foo=bar');
         expect(truncatedUrl.length).toBe(20);
     });
 
     it("Removes 'hashtag routing' when truncate length is very small", function () {
-        let truncatedUrl = truncateSmart('/app#my/little/hashtag/route?foo=bar', 4, '..');
+        const truncatedUrl = truncateSmart('/app#my/little/hashtag/route?foo=bar', 4, '..');
         expect(truncatedUrl).toBe('/app');
         expect(truncatedUrl.length).toBe(4);
     });

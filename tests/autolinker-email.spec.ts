@@ -61,13 +61,13 @@ describe('Autolinker Email Matching >', () => {
     });
 
     it('should NOT automatically link any old word with an @ character in it', function () {
-        let result = autolinker.link('Hi there@stuff');
+        const result = autolinker.link('Hi there@stuff');
 
         expect(result).toBe('Hi there@stuff');
     });
 
     it('should automatically link an email address with tld matched localpart', function () {
-        let result = autolinker.link('My email is busueng.kim@aaa.com');
+        const result = autolinker.link('My email is busueng.kim@aaa.com');
 
         expect(result).toBe(
             'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>'
@@ -75,18 +75,18 @@ describe('Autolinker Email Matching >', () => {
     });
 
     it('should NOT link an email address with an invalid tld', function () {
-        let result1 = autolinker.link('My email is fake@gmail.c');
+        const result1 = autolinker.link('My email is fake@gmail.c');
         expect(result1).toBe('My email is fake@gmail.c');
 
-        let result2 = autolinker.link('My email is fake@gmail.comf');
+        const result2 = autolinker.link('My email is fake@gmail.comf');
         expect(result2).toBe('My email is fake@gmail.comf');
 
-        let result3 = autolinker.link('My email is fake@gmail..com');
+        const result3 = autolinker.link('My email is fake@gmail..com');
         expect(result3).toBe('My email is fake@gmail..com');
     });
 
     it('should match an email with a dash in it', function () {
-        let result = autolinker.link('Hi bob@bobs-stuff.com');
+        const result = autolinker.link('Hi bob@bobs-stuff.com');
 
         expect(result).toBe('Hi <a href="mailto:bob@bobs-stuff.com">bob@bobs-stuff.com</a>');
     });

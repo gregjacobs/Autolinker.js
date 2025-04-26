@@ -9,7 +9,7 @@ describe('Autolinker.HtmlTag', function () {
     });
 
     it('should be able to be configured via the config options', function () {
-        let tag = new HtmlTag({
+        const tag = new HtmlTag({
             tagName: 'a',
             attrs: { attr1: 'value1', attr2: 'value2' },
             innerHtml: 'Hello',
@@ -23,7 +23,7 @@ describe('Autolinker.HtmlTag', function () {
     });
 
     it('should be able to be configured via setters', function () {
-        let tag = new HtmlTag();
+        const tag = new HtmlTag();
         tag.setTagName('a');
         tag.setAttrs({ attr1: 'value1', attr2: 'value2' });
         tag.setInnerHtml('Hello');
@@ -37,7 +37,7 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('setTagName()', function () {
         it('should set, and override, the tag name', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             tag.setTagName('a');
             expect(tag.getTagName()).toBe('a');
@@ -47,7 +47,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.setTagName('a')).toBe(tag); // return value should be the HtmlTag itself
         });
@@ -55,7 +55,7 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('setAttr()', function () {
         it('should set, then override, attribute properties', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             tag.setAttr('attr1', 'value1'); // note: this call should lazily instantiate the `attrs` map
             tag.setAttr('attr2', 'value2');
@@ -69,7 +69,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.setAttr('href', 'test')).toBe(tag); // return value should be the HtmlTag itself
         });
@@ -77,7 +77,7 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('setAttrs()', function () {
         it('should set, then override, attribute properties', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             tag.setAttrs({ attr1: 'value1', attr2: 'value2' }); // note: this call should lazily instantiate the `attrs` map
             expect(tag.getAttrs()).toEqual({
@@ -90,7 +90,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.setAttrs({ href: 'test' })).toBe(tag); // return value should be the HtmlTag itself
         });
@@ -198,13 +198,13 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('getClass()', function () {
         it('should return an empty string when there are no CSS classes on the HtmlTag', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.getClass()).toBe('');
         });
 
         it('should return the CSS classes configured on the HtmlTag', function () {
-            let tag = new HtmlTag({
+            const tag = new HtmlTag({
                 attrs: { class: 'test1 test2' },
             });
 
@@ -212,7 +212,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return the CSS classes set using addClass()', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
             tag.addClass('test1 test2');
 
             expect(tag.getClass()).toBe('test1 test2');
@@ -253,7 +253,7 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('setInnerHtml()', function () {
         it("should set, then override, the tag's inner HTML", function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             tag.setInnerHtml('test');
             expect(tag.getInnerHtml()).toBe('test');
@@ -263,7 +263,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.setInnerHtml('test')).toBe(tag); // return value should be the HtmlTag itself
         });
@@ -271,19 +271,19 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('getInnerHtml()', function () {
         it('should return an empty string if no inner HTML has been set', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
 
             expect(tag.getInnerHtml()).toBe('');
         });
 
         it('should return the inner HTML set during construction', function () {
-            let tag = new HtmlTag({ innerHtml: 'test' });
+            const tag = new HtmlTag({ innerHtml: 'test' });
 
             expect(tag.getInnerHtml()).toBe('test');
         });
 
         it('should return the inner HTML set with setInnerHtml()', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
             tag.setInnerHtml('test');
 
             expect(tag.getInnerHtml()).toBe('test');
@@ -292,7 +292,7 @@ describe('Autolinker.HtmlTag', function () {
 
     describe('toAnchorString()', function () {
         it('should populate only the tag name when no attribute are set, and no inner HTML is set', function () {
-            let tag = new HtmlTag({
+            const tag = new HtmlTag({
                 tagName: 'a',
             });
 
@@ -300,7 +300,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should populate only the tag name and inner HTML when no attribute are set', function () {
-            let tag = new HtmlTag({
+            const tag = new HtmlTag({
                 tagName: 'a',
                 innerHtml: 'My Site',
             });
@@ -309,7 +309,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should populate both the tag name and attributes when set', function () {
-            let tag = new HtmlTag({
+            const tag = new HtmlTag({
                 tagName: 'a',
                 attrs: { href: 'http://path/to/site', rel: 'nofollow' },
             });
@@ -318,7 +318,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should populate all 3: tag name, attributes, and inner HTML when set', function () {
-            let tag = new HtmlTag({
+            const tag = new HtmlTag({
                 tagName: 'a',
                 attrs: { href: 'http://path/to/site', rel: 'nofollow' },
                 innerHtml: 'My Site',
@@ -330,7 +330,7 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should properly build an HTML string from just the mutator methods', function () {
-            let tag = new HtmlTag();
+            const tag = new HtmlTag();
             tag.setTagName('a');
             tag.addClass('test');
             tag.addClass('test2');

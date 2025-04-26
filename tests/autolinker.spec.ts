@@ -12,9 +12,11 @@ import { HashtagService } from '../src/parser/hashtag-utils';
 describe('Autolinker', function () {
     describe('instantiating and using as a class', function () {
         it('should configure the instance with configuration options, and then be able to execute the link() method', function () {
-            let autolinker = new Autolinker({ newWindow: false, truncate: 25 });
+            const autolinker = new Autolinker({ newWindow: false, truncate: 25 });
 
-            let result = autolinker.link('Check out http://www.yahoo.com/some/long/path/to/a/file');
+            const result = autolinker.link(
+                'Check out http://www.yahoo.com/some/long/path/to/a/file'
+            );
             expect(result).toBe(
                 'Check out <a href="http://www.yahoo.com/some/long/path/to/a/file" title="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pa&hellip;</a>'
             );
@@ -125,7 +127,7 @@ describe('Autolinker', function () {
 
         describe('proper handling of HTML in the input string', function () {
             it('should automatically link URLs past the last HTML tag', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com'
                 );
                 expect(result).toBe(
@@ -134,19 +136,19 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link URLs within the attributes of existing HTML tags', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>'
                 );
                 expect(result).toBe('<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>');
             });
 
             it('should NOT automatically link URLs within the attributes of existing HTML tags when there are prefixed or suffixed spaces in the attribute values', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>'
                 );
                 expect(result).toBe('<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>');
 
-                let result2 = autolinker.link(
+                const result2 = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com ">yahoo</a></p>'
                 );
                 expect(result2).toBe(
@@ -155,12 +157,12 @@ describe('Autolinker', function () {
             });
 
             it("when unquoted anchor href's exist, should NOT automatically link the text inside", function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>'
                 );
                 expect(result).toBe('<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>');
 
-                let result2 = autolinker.link(
+                const result2 = autolinker.link(
                     '<p>Joe went to <a href=http://www.yahoo.com?query=1>yahoo</a></p>'
                 );
                 expect(result2).toBe(
@@ -169,7 +171,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link URLs within self-closing tags', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />'
                 );
                 expect(result).toBe(
@@ -178,7 +180,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a URL found within the inner text of a pre-existing anchor tag', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.'
                 );
                 expect(result).toBe(
@@ -187,7 +189,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a URL found within the inner text of a pre-existing anchor tag that uses a capital letter for its tag name', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.'
                 );
                 expect(result).toBe(
@@ -196,7 +198,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a URL found within the inner text of a pre-existing anchor tag, but link others', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.'
                 );
                 expect(result).toBe(
@@ -205,7 +207,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link an image tag with incorrect HTML attribute spacing', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<img src="https://ssl.gstatic.com/welcome_calendar.png" alt="Calendar" style="display:block;"width="129"height="129"/>'
                 );
                 expect(result).toBe(
@@ -214,7 +216,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link an image tag with a URL inside it, inside an anchor tag', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>'
                 );
                 expect(result).toBe(
@@ -223,7 +225,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link an image tag with a URL inside it, inside an anchor tag, but match urls around the tags', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)'
                 );
                 expect(result).toBe(
@@ -232,7 +234,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a URL found within the inner text of a style tag', function () {
-                var result = autolinker.link(
+                const result = autolinker.link(
                     'Testing with <style> .class { background-image: url("http://www.example.com/image.png"); } </style> tags'
                 );
                 expect(result).toBe(
@@ -241,7 +243,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a URL found within the inner text of a script tag', function () {
-                var result = autolinker.link(
+                const result = autolinker.link(
                     'Testing with <script> alert("http://google.com"); </script> tags'
                 );
                 expect(result).toBe(
@@ -250,7 +252,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link an image tag with a URL inside of it, when it has another attribute which has extraneous spaces surround its value (Issue #45)', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>"
                 );
                 expect(result).toBe(
@@ -259,7 +261,7 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link a tag within an attribute of another tag (Issue #45)', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<form class="approval-form" name="thumbsUp" ng-submit="postApproval()"> <button type="submit"> <img class="thumbs-up" ng-click="comment.body=\'<img src=\'http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png\' style=\'height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;\'>\'+comment.body;" ng-src="http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png"> </button> </form>'
                 );
                 expect(result).toBe(
@@ -268,32 +270,32 @@ describe('Autolinker', function () {
             });
 
             it('should NOT remove `br` tags from the output (Issue #46)', function () {
-                let result = autolinker.link('Testing<br /> with<br/> br<br> tags');
+                const result = autolinker.link('Testing<br /> with<br/> br<br> tags');
                 expect(result).toBe('Testing<br /> with<br/> br<br> tags');
             });
 
             it('should NOT automatically link anything in a !DOCTYPE tag (Issue #53)', function () {
-                let input =
+                const input =
                     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
 
-                let result = autolinker.link(input);
+                const result = autolinker.link(input);
                 expect(result).toBe(input);
             });
 
             it('should NOT automatically link within comment tags', function () {
-                let result = autolinker.link('<!-- google.com -->');
+                const result = autolinker.link('<!-- google.com -->');
 
                 expect(result).toBe('<!-- google.com -->');
             });
 
             it('should NOT automatically link within multi-line comment tags', function () {
-                let result = autolinker.link('<!--\n\tgoogle.com\n\t-->');
+                const result = autolinker.link('<!--\n\tgoogle.com\n\t-->');
 
                 expect(result).toBe('<!--\n\tgoogle.com\n\t-->');
             });
 
             it('should automatically link between comment tags, but not the comment tags themselves', function () {
-                let result = autolinker.link(
+                const result = autolinker.link(
                     '<!-- google.com -->\nweather.com\n<!-- http://yahoo.com -->'
                 );
 
@@ -303,13 +305,13 @@ describe('Autolinker', function () {
             });
 
             it('should NOT automatically link within comment tags, using part of the comment tag as the URL (Issue #88)', function () {
-                let result = autolinker.link('<!--.post-author-->');
+                const result = autolinker.link('<!--.post-author-->');
 
                 expect(result).toBe('<!--.post-author-->');
             });
 
             it('should automatically link tags after a !DOCTYPE tag', function () {
-                let input = [
+                const input = [
                     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
                     '<html>',
                     '<body>',
@@ -318,7 +320,7 @@ describe('Autolinker', function () {
                     '</html>',
                 ].join('');
 
-                let result = autolinker.link(input);
+                const result = autolinker.link(input);
                 expect(result).toBe(
                     [
                         '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
@@ -332,7 +334,7 @@ describe('Autolinker', function () {
             });
 
             it('should autolink the link, and not fail with 100% cpu in the Regex engine when presented with the input in issue #54', function () {
-                let inputStr =
+                const inputStr =
                         'Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! Gefallt mir klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)',
                     result = autolinker.link(inputStr);
 
@@ -342,7 +344,7 @@ describe('Autolinker', function () {
             });
 
             it('should not fail with an infinite loop for these given input strings (Issue #160)', function () {
-                let inputStrings = [
+                const inputStrings = [
                     'asdf ouefof<33we oeweofjojfew oeijwffejifjew ojiwjoiwefj iowjefojwe iofjw:)<33',
                     '<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3',
                     '<33<33<33<33<33<33<33<33<33<33',
@@ -358,7 +360,7 @@ describe('Autolinker', function () {
                 'should not fail with an infinite loop for an input string with ' +
                     'completely invalid HTML (issue #160)',
                 function () {
-                    let result = autolinker.link(
+                    const result = autolinker.link(
                         '<US_Con_SL_RTNS@dell.com\n' +
                             "He gave me a 1-800 customer care number that I've called twice.  The last time I called, about 3 weeks ago, the customer rep said he would request an expedited response. He gave me a reference number which is  925767619. Thankyou very much for looking into this.\n" +
                             '\n' +
@@ -382,10 +384,10 @@ describe('Autolinker', function () {
                 'should not fail with an infinite loop for an input string with ' +
                     'marginally valid HTML (issue #157)',
                 function () {
-                    let str =
+                    const str =
                         'Our first step should be to get a CBC with differential, accompanied by a blood smear. The blood smear will be read (by a Hematologist) as sparse platelets among RBCs and some WBCs, that will most likely be normal. The platelets that do show up on the blood smear may or may not be damaged. In the case of TTP, platelets should not be damaged, but rather just low in number. A CBC with platelet count <50K starts to raise eyebrows for a possible case requiring platelet transfusion. Now would be the time to get a Type & Screen, and most would also tend towards ordering PT, PTT, and INR, or the "coagulative" measurement laboratory tests. Confirmation of TTP would be made by a serum ADAMST13 activity level.';
 
-                    let result = autolinker.link(str);
+                    const result = autolinker.link(str);
 
                     expect(result).toBe(str);
                 }
@@ -396,10 +398,10 @@ describe('Autolinker', function () {
                     'an emoji (although really the <3 might be the original problem - ' +
                     'issue #165)',
                 function () {
-                    let str =
+                    const str =
                         '-Que estupendos nos vemos <3#lapeorfoto #despedida2016 #dehoyoenhoyo #rabbit';
 
-                    let result = autolinker.link(str);
+                    const result = autolinker.link(str);
 
                     expect(result).toBe(str);
                 }
@@ -409,7 +411,7 @@ describe('Autolinker', function () {
                 'should not fail with an infinite loop for an input string with ' +
                     'a string that looks like HTML (Issue #172)',
                 function () {
-                    let str =
+                    const str =
                             '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
                         result = autolinker.link(str);
 
@@ -421,21 +423,21 @@ describe('Autolinker', function () {
                 'should not fail with a Maximum Call Stack Size Exceeded for an ' +
                     'input with a large number of html entities (Issue #171)',
                 function () {
-                    let testStr = (function () {
-                        let t: string[] = [];
+                    const testStr = (function () {
+                        const t: string[] = [];
                         for (let i = 0; i < 50000; i++) {
                             t.push(' /&gt;&lt;br');
                         }
                         return t.join('');
                     })();
 
-                    let result = autolinker.link(testStr);
+                    const result = autolinker.link(testStr);
                     expect(result).toBe(testStr);
                 }
             );
 
             it('should NOT modify the email address with other tags when inside another anchor', function () {
-                let input = [
+                const input = [
                     '<div>First name: Subin</div>',
                     '<div>Surname: Sundar</div>',
                     '<div>',
@@ -448,62 +450,62 @@ describe('Autolinker', function () {
                     '</div>',
                 ].join('');
 
-                let result = autolinker.link(input);
+                const result = autolinker.link(input);
                 expect(result).toBe(input);
             });
 
             it('should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)', function () {
                 // Note: We aren't actually expecting the HTML to be modified by this test
-                let inAndOutHtml =
+                const inAndOutHtml =
                     '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar</a> Baz</ns:p>';
                 expect(autolinker.link(inAndOutHtml)).toBe(inAndOutHtml);
             });
 
             it('should properly autolink text within namespaced HTML elements, skipping over html elements with urls in attribute values', function () {
-                let html =
+                const html =
                     '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com">Bar</a> Baz</ns:p>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<ns:p>Go to <a href="http://google.com">google.com</a> or <a data-qux-="test" href="http://www.example.com">Bar</a> Baz</ns:p>'
                 );
             });
 
             it('should properly skip over attribute names that could be interpreted as urls, while still autolinking urls in their inner text', function () {
-                let html =
+                const html =
                     '<div google.com anotherAttr yahoo.com>My div that has an attribute of google.com</div>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<div google.com anotherAttr yahoo.com>My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
 
             it('should properly skip over attribute names that could be interpreted as urls when they have a value, while still autolinking urls in their inner text', function () {
-                let html =
+                const html =
                     '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of google.com</div>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
 
             it('should properly skip over attribute names that could be interpreted as urls when they have a value and any number of spaces between attrs, while still autolinking urls in their inner text', function () {
-                let html =
+                const html =
                     '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of google.com</div>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
 
             it('should properly skip over attribute values that could be interpreted as urls/emails/twitter/mention accts, while still autolinking urls in their inner text', function () {
-                let html =
+                const html =
                     '<div url="google.com" email="asdf@asdf.com" mention="@asdf">google.com asdf@asdf.com @asdf</div>';
 
-                let result = twitterAutolinker.link(html);
+                const result = twitterAutolinker.link(html);
                 expect(result).toBe(
                     [
                         '<div url="google.com" email="asdf@asdf.com" mention="@asdf">',
@@ -516,10 +518,10 @@ describe('Autolinker', function () {
             });
 
             it('should properly skip over attribute names and values that could be interpreted as urls/emails/twitter accts, while still autolinking urls in their inner text', function () {
-                let html =
+                const html =
                     '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">google.com asdf@asdf.com @asdf</div>';
 
-                let result = twitterAutolinker.link(html);
+                const result = twitterAutolinker.link(html);
                 expect(result).toBe(
                     [
                         '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">',
@@ -532,21 +534,21 @@ describe('Autolinker', function () {
             });
 
             it('should properly handle HTML markup + text nodes that are nested within <a> tags', function () {
-                let html = '<a href="http://google.com"><b>google.com</b></a>';
+                const html = '<a href="http://google.com"><b>google.com</b></a>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(html);
             });
 
             it('should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags', function () {
-                let html = '</a><a href="http://google.com">google.com</a>';
+                const html = '</a><a href="http://google.com">google.com</a>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(html);
             });
 
             it('should attempt to handle some more complex invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags', function () {
-                let html = [
+                const html = [
                     '</a>', // invalid
                     '<a href="http://google.com">google.com</a>',
                     '<div>google.com</div>',
@@ -557,7 +559,7 @@ describe('Autolinker', function () {
                     'twitter.com',
                 ].join('');
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     [
                         '</a>', // invalid - left alone
@@ -573,93 +575,93 @@ describe('Autolinker', function () {
             });
 
             it('should handle &nbsp; after a url and not treat it as a query string', function () {
-                let html = '<p>Joe went to yahoo.com&nbsp;and google.com&nbsp;today</p>';
+                const html = '<p>Joe went to yahoo.com&nbsp;and google.com&nbsp;today</p>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<p>Joe went to <a href="http://yahoo.com">yahoo.com</a>&nbsp;and <a href="http://google.com">google.com</a>&nbsp;today</p>'
                 );
             });
 
             it('should handle HTML entities like &nbsp; within a non-autolinked part of a text node, properly appending it to the output', function () {
-                let html =
+                const html =
                     'Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     'Joe went to <a href="http://yahoo.com">yahoo.com</a> and used HTML&nbsp;entities like &gt; and &lt; <a href="http://google.com">google.com</a>'
                 );
             });
 
             it('should handle &amp; inside a url and not ignore it', function () {
-                let html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
+                const html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
                 );
             });
 
             it('should handle line breaks inside an HTML tag, not accidentally autolinking a URL within the tag', function () {
-                let html =
+                const html =
                     '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(
                     '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>'
                 );
             });
 
             it('should handle a URL inside an HTML-encoded anchor tag (Issue #76)', function () {
-                let html =
+                const html =
                     'Joe learned about anchor tags on the &lt;a href=&quot;http://www.w3schools.com/aaa&quot;&gt;W3SCHOOLS&lt;/a&gt; site ...';
-                let tobe =
+                const tobe =
                     'Joe learned about anchor tags on the &lt;a href=&quot;<a href="http://www.w3schools.com/aaa">w3schools.com/aaa</a>&quot;&gt;W3SCHOOLS&lt;/a&gt; site ...';
 
-                let result = autolinker.link(html);
+                const result = autolinker.link(html);
                 expect(result).toBe(tobe);
             });
         });
 
         describe('HTML entity character handling', () => {
             it('should handle an HTML entity at the beginning of the string', function () {
-                let result = autolinker.link('&amp;now go to google.com');
+                const result = autolinker.link('&amp;now go to google.com');
                 expect(result).toBe('&amp;now go to <a href="http://google.com">google.com</a>');
             });
 
             it('should handle an HTML entity at the end of the string', function () {
-                let result = autolinker.link('now go to google.com &amp;');
+                const result = autolinker.link('now go to google.com &amp;');
                 expect(result).toBe('now go to <a href="http://google.com">google.com</a> &amp;');
             });
 
             it('should handle an HTML entity at the beginning and end of the string', function () {
-                let result = autolinker.link('&amp;now go to google.com &amp;');
+                const result = autolinker.link('&amp;now go to google.com &amp;');
                 expect(result).toBe(
                     '&amp;now go to <a href="http://google.com">google.com</a> &amp;'
                 );
             });
 
             it('should handle an HTML entity in the middle of the string', function () {
-                let result = autolinker.link('now &amp;go to google.com');
+                const result = autolinker.link('now &amp;go to google.com');
                 expect(result).toBe('now &amp;go to <a href="http://google.com">google.com</a>');
             });
 
             it('should handle a string with only an HTML entity', function () {
-                let result = autolinker.link('&amp;');
+                const result = autolinker.link('&amp;');
                 expect(result).toBe('&amp;');
             });
         });
 
         describe('`newWindow` option', function () {
             it('should not add target="_blank" when the \'newWindow\' option is set to false', function () {
-                let result = Autolinker.link('Test http://url.com', {
+                const result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
                 });
                 expect(result).toBe('Test <a href="http://url.com">url.com</a>');
             });
 
             it('should add target="_blank" and rel="noopener noreferrer" when the \'newWindow\' option is set to true (see https://mathiasbynens.github.io/rel-noopener/ about the \'rel\' attribute, which prevents a potential phishing attack)', function () {
-                let result = Autolinker.link('Test http://url.com', {
+                const result = Autolinker.link('Test http://url.com', {
                     newWindow: true,
                 });
                 expect(result).toBe(
@@ -670,7 +672,7 @@ describe('Autolinker', function () {
 
         describe('`stripPrefix` option', function () {
             it('should not remove the prefix for non-http protocols', function () {
-                let result = Autolinker.link('Test file://execute-virus.com', {
+                const result = Autolinker.link('Test file://execute-virus.com', {
                     stripPrefix: true,
                     newWindow: false,
                 });
@@ -680,7 +682,7 @@ describe('Autolinker', function () {
             });
 
             it("should remove 'http://www.' when the 'stripPrefix' option is set to `true`", function () {
-                let result = Autolinker.link('Test http://www.url.com', {
+                const result = Autolinker.link('Test http://www.url.com', {
                     stripPrefix: true,
                     newWindow: false,
                 });
@@ -688,7 +690,7 @@ describe('Autolinker', function () {
             });
 
             it("should not remove 'http://www.' when the 'stripPrefix' option is set to `false`", function () {
-                let result = Autolinker.link('Test http://www.url.com', {
+                const result = Autolinker.link('Test http://www.url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
@@ -696,25 +698,25 @@ describe('Autolinker', function () {
             });
 
             it('should leave the original text as-is when the `stripPrefix` option is `false`', function () {
-                let result1 = Autolinker.link('My url.com', {
+                const result1 = Autolinker.link('My url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
                 expect(result1).toBe('My <a href="http://url.com">url.com</a>');
 
-                let result2 = Autolinker.link('My www.url.com', {
+                const result2 = Autolinker.link('My www.url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
                 expect(result2).toBe('My <a href="http://www.url.com">www.url.com</a>');
 
-                let result3 = Autolinker.link('My http://url.com', {
+                const result3 = Autolinker.link('My http://url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
                 expect(result3).toBe('My <a href="http://url.com">http://url.com</a>');
 
-                let result4 = Autolinker.link('My http://www.url.com', {
+                const result4 = Autolinker.link('My http://www.url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
@@ -722,7 +724,7 @@ describe('Autolinker', function () {
             });
 
             it('should remove the prefix by default', function () {
-                let result = Autolinker.link('Test http://www.url.com', {
+                const result = Autolinker.link('Test http://www.url.com', {
                     newWindow: false,
                 });
                 expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
@@ -732,7 +734,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is true, but `www` is false, it should ' +
                     'only strip the scheme',
                 function () {
-                    let result = Autolinker.link('Test http://www.url.com', {
+                    const result = Autolinker.link('Test http://www.url.com', {
                         stripPrefix: { scheme: true, www: false },
                         newWindow: false,
                     });
@@ -745,7 +747,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is false, but `www` is true, it should ' +
                     "only strip the 'www'",
                 function () {
-                    let result = Autolinker.link('Test http://www.url.com', {
+                    const result = Autolinker.link('Test http://www.url.com', {
                         stripPrefix: { scheme: false, www: true },
                         newWindow: false,
                     });
@@ -758,7 +760,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is false, but `www` is true for a ' +
                     'scheme-only URL, it should not strip anything',
                 function () {
-                    let result = Autolinker.link('Test http://url.com', {
+                    const result = Autolinker.link('Test http://url.com', {
                         stripPrefix: { scheme: false, www: true },
                         newWindow: false,
                     });
@@ -771,7 +773,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is false, but `www` is true for a ' +
                     "'www'-only URL, it should strip the 'www'",
                 function () {
-                    let result = Autolinker.link('Test www.url.com', {
+                    const result = Autolinker.link('Test www.url.com', {
                         stripPrefix: { scheme: false, www: true },
                         newWindow: false,
                     });
@@ -784,7 +786,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is true and `www` is true, it should ' +
                     "strip the entire prefix (scheme and 'www')",
                 function () {
-                    let result = Autolinker.link('Test http://www.url.com', {
+                    const result = Autolinker.link('Test http://www.url.com', {
                         stripPrefix: { scheme: true, www: true },
                         newWindow: false,
                     });
@@ -797,7 +799,7 @@ describe('Autolinker', function () {
                 'when stripPrefix `scheme` is false and `www` is false, it should ' +
                     'not strip any prefix',
                 function () {
-                    let result = Autolinker.link('Test http://www.url.com', {
+                    const result = Autolinker.link('Test http://www.url.com', {
                         stripPrefix: { scheme: false, www: false },
                         newWindow: false,
                     });
@@ -809,7 +811,7 @@ describe('Autolinker', function () {
 
         describe('`stripTrailingSlash` option', function () {
             it('by default, should remove the trailing slash', function () {
-                let result = Autolinker.link('http://google.com/', {
+                const result = Autolinker.link('http://google.com/', {
                     stripPrefix: false,
                     //stripTrailingSlash : true,  -- not providing this cfg
                     newWindow: false,
@@ -819,7 +821,7 @@ describe('Autolinker', function () {
             });
 
             it('when provided as `true`, should remove the trailing slash', function () {
-                let result = Autolinker.link('http://google.com/', {
+                const result = Autolinker.link('http://google.com/', {
                     stripPrefix: false,
                     stripTrailingSlash: true,
                     newWindow: false,
@@ -831,7 +833,7 @@ describe('Autolinker', function () {
             it(
                 'when provided as `false`, should not remove (i.e. retain) the ' + 'trailing slash',
                 function () {
-                    let result = Autolinker.link('http://google.com/', {
+                    const result = Autolinker.link('http://google.com/', {
                         stripPrefix: false,
                         stripTrailingSlash: false,
                         newWindow: false,
@@ -844,7 +846,7 @@ describe('Autolinker', function () {
 
         describe('`decodePercentEncoding` option', function () {
             it('by default, should decode percent-encoding', function () {
-                var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
+                const result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
                     stripPrefix: false,
                     //decodePercentEncoding : true,  -- not providing this cfg
                     newWindow: false,
@@ -856,7 +858,7 @@ describe('Autolinker', function () {
             });
 
             it('when provided as `true`, should decode percent-encoding', function () {
-                var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
+                const result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
                     stripPrefix: false,
                     decodePercentEncoding: true,
                     newWindow: false,
@@ -868,7 +870,7 @@ describe('Autolinker', function () {
             });
 
             it('when provided as `false`, should not decode percent-encoding', function () {
-                var result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
+                const result = Autolinker.link('https://en.wikipedia.org/wiki/San_Jos%C3%A9', {
                     stripPrefix: false,
                     decodePercentEncoding: false,
                     newWindow: false,
@@ -883,7 +885,7 @@ describe('Autolinker', function () {
         describe('`truncate` option', function () {
             describe('number form', function () {
                 it('should not perform any truncation if the `truncate` option is not passed in', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         newWindow: false,
                     });
 
@@ -893,7 +895,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should not perform any truncation if `truncate` is 0', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: 0,
                         newWindow: false,
                     });
@@ -904,7 +906,7 @@ describe('Autolinker', function () {
                 });
 
                 it("should truncate long a url/email/twitter to the given number of characters with the 'truncate' option specified", function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: 12,
                         newWindow: false,
                     });
@@ -915,7 +917,7 @@ describe('Autolinker', function () {
                 });
 
                 it("should leave a url/email/twitter alone if the length of the url is exactly equal to the length of the 'truncate' option", function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: 'url.com/with/path'.length,
                         newWindow: false,
                     }); // the exact length of the link
@@ -926,7 +928,7 @@ describe('Autolinker', function () {
                 });
 
                 it("should leave a url/email/twitter alone if it does not exceed the given number of characters provided in the 'truncate' option", function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: 25,
                         newWindow: false,
                     }); // just a random high number
@@ -939,7 +941,7 @@ describe('Autolinker', function () {
 
             describe('object form (with `length` and `location` properties)', function () {
                 it('should not perform any truncation if `truncate.length` is not passed in', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { location: 'end' },
                         newWindow: false,
                     });
@@ -950,7 +952,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should not perform any truncation if `truncate.length` is 0', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { length: 0 },
                         newWindow: false,
                     });
@@ -961,7 +963,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should default the `location` to "end" if it is not provided', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { length: 12 },
                         newWindow: false,
                     });
@@ -972,7 +974,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should truncate at the end when `location: "end"` is specified', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { length: 12, location: 'end' },
                         newWindow: false,
                     });
@@ -983,7 +985,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should truncate in the middle when `location: "middle"` is specified', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { length: 12, location: 'middle' },
                         newWindow: false,
                     });
@@ -993,7 +995,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should truncate according to the "smart" truncation rules when `location: "smart"` is specified', function () {
-                    let result = Autolinker.link('Test http://url.com/with/path', {
+                    const result = Autolinker.link('Test http://url.com/with/path', {
                         truncate: { length: 12, location: 'smart' },
                         newWindow: false,
                     });
@@ -1025,7 +1027,7 @@ describe('Autolinker', function () {
             });
 
             it('should add className to links', function () {
-                let result = Autolinker.link('Test http://url.com', {
+                const result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
                     className: 'myLink',
                 });
@@ -1035,7 +1037,7 @@ describe('Autolinker', function () {
             });
 
             it('should add className to email links', function () {
-                let result = Autolinker.link("Iggy's email is mr@iggypop.com", {
+                const result = Autolinker.link("Iggy's email is mr@iggypop.com", {
                     newWindow: false,
                     email: true,
                     className: 'myLink',
@@ -1046,7 +1048,7 @@ describe('Autolinker', function () {
             });
 
             it('should add className to twitter links', function () {
-                let result = Autolinker.link('hi from @iggypopschest', {
+                const result = Autolinker.link('hi from @iggypopschest', {
                     newWindow: false,
                     mention: 'twitter',
                     className: 'myLink',
@@ -1096,10 +1098,10 @@ describe('Autolinker', function () {
         });
 
         describe('`urls` option', function () {
-            let str = 'http://google.com google.com 192.168.0.1'; // the 3 types: scheme URL, TLD (top level domain) URL, IPv4 address
+            const str = 'http://google.com google.com 192.168.0.1'; // the 3 types: scheme URL, TLD (top level domain) URL, IPv4 address
 
             it('should link all 3 types if the `urls` option is `true`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: true,
@@ -1115,7 +1117,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link any of the 3 types if the `urls` option is `false`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: false,
@@ -1125,7 +1127,7 @@ describe('Autolinker', function () {
             });
 
             it('should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1145,7 +1147,7 @@ describe('Autolinker', function () {
             });
 
             it('should only link TLD URLs if `tldMatches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1165,7 +1167,7 @@ describe('Autolinker', function () {
             });
 
             it('should only link IPv4 addresses if `ipV4Matches` is the only `urls` option that is `true`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1185,7 +1187,7 @@ describe('Autolinker', function () {
             });
 
             it('should link both scheme and IPv4 matches, but not TLD matches when `tldMatches` is the only option that is `false`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1205,7 +1207,7 @@ describe('Autolinker', function () {
             });
 
             it('should link both scheme and TLD matches, but not IPv4 matches when `ipV4Matches` is the only option that is `false`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1225,7 +1227,7 @@ describe('Autolinker', function () {
             });
 
             it('should link both TLD and IPv4 matches, but not scheme matches when `schemeMatches` is the only option that is `false`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1245,7 +1247,7 @@ describe('Autolinker', function () {
             });
 
             it('should link nothing when all 3 urls options are set to `false`', function () {
-                let result = Autolinker.link(str, {
+                const result = Autolinker.link(str, {
                     newWindow: false,
                     stripPrefix: false,
                     urls: {
@@ -1260,7 +1262,7 @@ describe('Autolinker', function () {
         });
 
         describe('`urls` (as boolean), `email`, `phone`, `twitter`, and `mention` options', function () {
-            let inputStr = [
+            const inputStr = [
                 'Website: asdf.com',
                 'EmailMatch: asdf@asdf.com',
                 'Phone: (123) 456-7890',
@@ -1269,7 +1271,7 @@ describe('Autolinker', function () {
             ].join(', ');
 
             it('should link all 5 types if all 5 urls/email/phone/mention/hashtag options are enabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     hashtag: 'twitter',
                     mention: 'twitter',
                     newWindow: false,
@@ -1318,7 +1320,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link urls when they are disabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     mention: 'twitter',
                     hashtag: 'twitter',
                     urls: false,
@@ -1337,7 +1339,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link email addresses when they are disabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     mention: 'twitter',
                     hashtag: 'twitter',
                     email: false,
@@ -1356,7 +1358,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link phone numbers when they are disabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     hashtag: 'twitter',
                     mention: 'twitter',
                     phone: false,
@@ -1375,7 +1377,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link mention handles when they are disabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     newWindow: false,
                     hashtag: 'twitter',
                     mention: false,
@@ -1393,7 +1395,7 @@ describe('Autolinker', function () {
             });
 
             it('should not link Hashtags when they are disabled', function () {
-                let result = Autolinker.link(inputStr, {
+                const result = Autolinker.link(inputStr, {
                     mention: 'twitter',
                     hashtag: false,
                     newWindow: false,
@@ -1428,7 +1430,7 @@ describe('Autolinker', function () {
                 'by default, should be called with with the `Autolinker` instance ' +
                     'as the context object (`this` reference)',
                 function () {
-                    let replaceFnAutolinker = new Autolinker({
+                    const replaceFnAutolinker = new Autolinker({
                         replaceFn: replaceFnSpy,
                     });
                     replaceFnAutolinker.link('asdf.com'); // will call the `replaceFn`
@@ -1442,8 +1444,8 @@ describe('Autolinker', function () {
                 'when provided a `context` option, should be called with with ' +
                     'that object as the context object (`this` reference)',
                 function () {
-                    let contextObj = { prop: 'value' };
-                    let replaceFnAutolinker = new Autolinker({
+                    const contextObj = { prop: 'value' };
+                    const replaceFnAutolinker = new Autolinker({
                         replaceFn: replaceFnSpy,
                         context: contextObj,
                     });
@@ -1534,7 +1536,7 @@ describe('Autolinker', function () {
             });
 
             it('should replace the match as Autolinker would normally do when `true` is returned from the `replaceFn`', function () {
-                let result = Autolinker.link(
+                const result = Autolinker.link(
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         mention: 'twitter',
@@ -1553,7 +1555,7 @@ describe('Autolinker', function () {
             });
 
             it('should replace the match as Autolinker would normally do when there is no return value (i.e. `undefined` is returned) from the `replaceFn`', function () {
-                let result = Autolinker.link(
+                const result = Autolinker.link(
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         mention: 'twitter',
@@ -1572,7 +1574,7 @@ describe('Autolinker', function () {
             });
 
             it('should leave the match as-is when `false` is returned from the `replaceFn`', function () {
-                let result = Autolinker.link(
+                const result = Autolinker.link(
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         mention: 'twitter',
@@ -1586,7 +1588,7 @@ describe('Autolinker', function () {
             });
 
             it('should use a string returned from the `replaceFn` as the HTML that is replaced in the input', function () {
-                let result = Autolinker.link(
+                const result = Autolinker.link(
                     'Website: asdf.com, EmailMatch: asdf@asdf.com, Twitter: @asdf',
                     {
                         mention: 'twitter',
@@ -1600,11 +1602,11 @@ describe('Autolinker', function () {
             });
 
             it('should allow an Autolinker.HtmlTag instance to be returned from the `replaceFn`, and use that as the HTML to be replaced from the input', function () {
-                let result = Autolinker.link('Website: asdf.com', {
+                const result = Autolinker.link('Website: asdf.com', {
                     newWindow: false,
 
                     replaceFn: function (match) {
-                        let tag = match.buildTag();
+                        const tag = match.buildTag();
                         tag.setInnerHtml('asdf!'); // just to check that we're replacing with the returned `tag` instance
                         return tag;
                     },
@@ -1614,11 +1616,11 @@ describe('Autolinker', function () {
             });
 
             it('should allow an Autolinker.HtmlTag instance to be modified before being returned from the `replaceFn`', function () {
-                let result = Autolinker.link('Website: asdf.com', {
+                const result = Autolinker.link('Website: asdf.com', {
                     newWindow: false,
 
                     replaceFn: function (match) {
-                        let tag = match.buildTag();
+                        const tag = match.buildTag();
                         tag.addClass('test');
                         tag.addClass('test2');
                         tag.setAttr('rel', 'nofollow');
@@ -1632,7 +1634,7 @@ describe('Autolinker', function () {
             });
 
             it('should not drop a trailing parenthesis of a URL match if the `replaceFn` returns false', function () {
-                let result = Autolinker.link('Go to the website (asdf.com) and see', {
+                const result = Autolinker.link('Go to the website (asdf.com) and see', {
                     newWindow: false,
                     replaceFn: returnFalseFn,
                 });
@@ -1642,12 +1644,12 @@ describe('Autolinker', function () {
 
             describe('special cases which check the `prefixStr` and `suffixStr` vars in the code', function () {
                 it('should leave the match as-is when the `replaceFn` returns `false` for a Twitter match', function () {
-                    let result = Autolinker.link('@asdf', {
+                    const result = Autolinker.link('@asdf', {
                         replaceFn: returnFalseFn,
                     });
                     expect(result).toBe('@asdf');
 
-                    let result2 = Autolinker.link('Twitter: @asdf', {
+                    const result2 = Autolinker.link('Twitter: @asdf', {
                         mention: 'twitter',
                         replaceFn: returnFalseFn,
                     });
@@ -1655,12 +1657,12 @@ describe('Autolinker', function () {
                 });
 
                 it('should leave the match as-is when the `replaceFn` returns `false`, and the URL was wrapped in parenthesis', function () {
-                    let result = Autolinker.link('Go to (yahoo.com) my friend', {
+                    const result = Autolinker.link('Go to (yahoo.com) my friend', {
                         replaceFn: returnFalseFn,
                     });
                     expect(result).toBe('Go to (yahoo.com) my friend');
 
-                    let result2 = Autolinker.link(
+                    const result2 = Autolinker.link(
                         'Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend',
                         { replaceFn: returnFalseFn }
                     );
@@ -1668,7 +1670,7 @@ describe('Autolinker', function () {
                         'Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend'
                     );
 
-                    let result3 = Autolinker.link(
+                    const result3 = Autolinker.link(
                         'Go to (en.wikipedia.org/wiki/IANA_(disambiguation)) my friend',
                         { replaceFn: returnFalseFn }
                     );
@@ -1678,7 +1680,7 @@ describe('Autolinker', function () {
                 });
 
                 it('should leave the match as-is when the `replaceFn` returns `false`, and the URL was a protocol-relative match', function () {
-                    let result = Autolinker.link('Go to //yahoo.com my friend', {
+                    const result = Autolinker.link('Go to //yahoo.com my friend', {
                         replaceFn: returnFalseFn,
                     });
                     expect(result).toBe('Go to //yahoo.com my friend');
@@ -1687,7 +1689,7 @@ describe('Autolinker', function () {
         });
 
         describe('all match types tests', function () {
-            let testCases = {
+            const testCases = {
                 schemeUrl: {
                     unlinked: 'http://google.com/path?param1=value1&param2=value2#hash',
                     linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&param2=value2#hash</a>',
@@ -1718,9 +1720,9 @@ describe('Autolinker', function () {
                 },
             };
 
-            let numTestCaseKeys = Object.keys(testCases).length;
+            const numTestCaseKeys = Object.keys(testCases).length;
 
-            let paragraphTpl = _.template(
+            const paragraphTpl = _.template(
                 [
                     'Check link 1: <%= schemeUrl %>.',
                     'Check link 2: <%= tldUrl %>.',
@@ -1732,7 +1734,7 @@ describe('Autolinker', function () {
                 ].join('\n')
             );
 
-            let sourceParagraph = paragraphTpl({
+            const sourceParagraph = paragraphTpl({
                 schemeUrl: testCases.schemeUrl.unlinked,
                 tldUrl: testCases.tldUrl.unlinked,
                 ipV4Url: testCases.ipV4Url.unlinked,
@@ -1758,17 +1760,17 @@ describe('Autolinker', function () {
                 // 7 different settings and two possibilities for each (on or off)
                 // is 2^7 == 128 settings possibilities
                 for (let i = 0, len = Math.pow(2, numTestCaseKeys); i < len; i++) {
-                    let cfg: MatcherTestConfig = {
+                    const cfg: MatcherTestConfig = {
                         schemeMatches: !!(i & parseInt('00000001', 2)),
                         tldMatches: !!(i & parseInt('00000010', 2)),
                         ipV4Matches: !!(i & parseInt('00000100', 2)),
                         email: !!(i & parseInt('00001000', 2)),
-                        mention: !!(i & parseInt('00010000', 2)) ? 'twitter' : false,
+                        mention: i & parseInt('00010000', 2) ? 'twitter' : false,
                         phone: !!(i & parseInt('00100000', 2)),
-                        hashtag: !!(i & parseInt('01000000', 2)) ? 'twitter' : false,
+                        hashtag: i & parseInt('01000000', 2) ? 'twitter' : false,
                     };
 
-                    let autolinker = new Autolinker({
+                    const autolinker = new Autolinker({
                         urls: {
                             schemeMatches: cfg.schemeMatches,
                             tldMatches: cfg.tldMatches,
@@ -1783,7 +1785,7 @@ describe('Autolinker', function () {
                         stripPrefix: false,
                     });
 
-                    let result = autolinker.link(sourceParagraph),
+                    const result = autolinker.link(sourceParagraph),
                         resultLines = result.split('\n'), // splitting line-by-line to make it easier to see where a failure is
                         expectedLines = generateExpectedLines(cfg);
 
@@ -1791,14 +1793,14 @@ describe('Autolinker', function () {
 
                     for (let j = 0, jlen = expectedLines.length; j < jlen; j++) {
                         if (resultLines[j] !== expectedLines[j]) {
-                            let errorMsg = generateErrMsg(resultLines[j], expectedLines[j], cfg);
+                            const errorMsg = generateErrMsg(resultLines[j], expectedLines[j], cfg);
                             throw new Error(errorMsg);
                         }
                     }
                 }
 
                 function generateExpectedLines(cfg: MatcherTestConfig) {
-                    let expectedLines = paragraphTpl({
+                    const expectedLines = paragraphTpl({
                         schemeUrl: cfg.schemeMatches
                             ? testCases.schemeUrl.linked
                             : testCases.schemeUrl.unlinked,
@@ -1826,7 +1828,7 @@ describe('Autolinker', function () {
                     expectedLine: string,
                     cfg: MatcherTestConfig
                 ) {
-                    let errorMsg = [
+                    const errorMsg = [
                         "Expected: '" + resultLine + "' to be '" + expectedLine + "'\n",
                     ];
 
@@ -1841,15 +1843,15 @@ describe('Autolinker', function () {
             });
 
             it('should be able to parse a very long string', function () {
-                var testStr = (function () {
-                    var t: string[] = [];
-                    for (var i = 0; i < 50000; i++) {
+                const testStr = (function () {
+                    const t: string[] = [];
+                    for (let i = 0; i < 50000; i++) {
                         t.push(' foo');
                     }
                     return t.join('');
                 })();
 
-                var result = Autolinker.link(testStr);
+                const result = Autolinker.link(testStr);
                 expect(result).toBe(testStr);
             });
         });
@@ -2030,7 +2032,7 @@ describe('Autolinker', function () {
 
     describe('static parse()', function () {
         it('should return an array of Match objects for the input', function () {
-            let text = [
+            const text = [
                 'Website: asdf.com',
                 'EmailMatch: asdf@asdf.com',
                 'Phone: (123) 456-7890',
@@ -2038,7 +2040,7 @@ describe('Autolinker', function () {
                 'HashtagMatch: #asdf2',
             ].join(' ');
 
-            let matches = Autolinker.parse(text, {
+            const matches = Autolinker.parse(text, {
                 hashtag: 'twitter',
                 mention: 'twitter',
             });
@@ -2064,13 +2066,13 @@ describe('Autolinker', function () {
 
     describe('parse()', function () {
         it('should return an array of Match objects for the input', function () {
-            let autolinker = new Autolinker({
+            const autolinker = new Autolinker({
                 mention: 'instagram',
                 hashtag: 'tiktok',
                 newWindow: false,
             });
 
-            let text = [
+            const text = [
                 '<div>', // html tag to make sure that the 'offset' property is assigned correctly in the presence of them
                 'Website1: http://asdf.com',
                 'Website2: asdf.com',
@@ -2083,7 +2085,7 @@ describe('Autolinker', function () {
                 'HashtagMatch: #asdf2',
                 '</div>',
             ].join(' ');
-            let matches = autolinker.parse(text);
+            const matches = autolinker.parse(text);
 
             expect(matches.length).toBe(9);
 

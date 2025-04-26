@@ -86,7 +86,7 @@ export function parseHtml(
     // } );
 
     while (charIdx < len) {
-        var char = html.charAt(charIdx);
+        const char = html.charAt(charIdx);
 
         // For debugging: search for other "For debugging" lines
         // ALSO: Temporarily remove the 'const' keyword on the State enum

@@ -84,11 +84,11 @@ export class AnchorTagBuilder {
      * @return A key/value Object (map) of the anchor tag's attributes.
      */
     protected createAttrs(match: AbstractMatch) {
-        let attrs: { [attrName: string]: string } = {
+        const attrs: { [attrName: string]: string } = {
             href: match.getAnchorHref(), // we'll always have the `href` attribute
         };
 
-        let cssClass = this.createCssClass(match);
+        const cssClass = this.createCssClass(match);
         if (cssClass) {
             attrs['class'] = cssClass;
         }
@@ -127,12 +127,12 @@ export class AnchorTagBuilder {
      *   an empty string.
      */
     protected createCssClass(match: AbstractMatch): string {
-        let className = this.className;
+        const className = this.className;
 
         if (!className) {
             return '';
         } else {
-            let returnClasses = [className],
+            const returnClasses = [className],
                 cssClassSuffixes = match.getCssClassSuffixes();
 
             for (let i = 0, len = cssClassSuffixes.length; i < len; i++) {
@@ -169,10 +169,10 @@ export class AnchorTagBuilder {
      * @return The truncated anchor text.
      */
     private doTruncate(anchorText: string): string {
-        let truncate = this.truncate;
+        const truncate = this.truncate;
         if (!truncate || !truncate.length) return anchorText;
 
-        let truncateLength = truncate.length,
+        const truncateLength = truncate.length,
             truncateLocation = truncate.location;
 
         if (truncateLocation === 'smart') {

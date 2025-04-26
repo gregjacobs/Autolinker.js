@@ -53,7 +53,7 @@ export class RadioOption extends Option {
      * @return {string}
      */
     generateHtml() {
-        var containerId = this.containerId,
+        const containerId = this.containerId,
             optionDescription = this.optionDescription,
             defaultValue = this.defaultValue,
             radiosHtml = this.createRadiosHtml(this.options, defaultValue);
@@ -61,8 +61,8 @@ export class RadioOption extends Option {
         return `
 			<label>${optionDescription}: </label>
 			(<code>${this.getApiDocAnchor()}: <span id="${containerId}-value">${this.formatValueForDisplay(
-            defaultValue
-        )}</span></code>)
+                defaultValue
+            )}</span></code>)
 			<div class="pl10">${radiosHtml.join('<br>')}</div>
 		`;
     }
@@ -79,8 +79,8 @@ export class RadioOption extends Option {
         return options.map((option, idx) => {
             return `
 				<input type="radio" id="${this.containerId}-radio-${option}" name="${
-                this.containerId
-            }-radio" data-option-idx="${idx}" ${option === this.defaultValue ? 'checked' : ''}> 
+                    this.containerId
+                }-radio" data-option-idx="${idx}" ${option === this.defaultValue ? 'checked' : ''}> 
 				<label for="${this.containerId}-radio-${option}">${option}</label>
 			`;
         });
@@ -90,7 +90,7 @@ export class RadioOption extends Option {
      * @private
      */
     updateDisplayEl() {
-        var displayValue = this.formatValueForDisplay(this.getValue());
+        const displayValue = this.formatValueForDisplay(this.getValue());
 
         this.$valueDisplayEl.html(displayValue);
         this.fireChange();
@@ -100,7 +100,7 @@ export class RadioOption extends Option {
      * @return {Boolean}
      */
     getValue() {
-        var optionIdx = this.$containerEl.find(':radio:checked').data('option-idx');
+        const optionIdx = this.$containerEl.find(':radio:checked').data('option-idx');
 
         return this.options[optionIdx];
     }
