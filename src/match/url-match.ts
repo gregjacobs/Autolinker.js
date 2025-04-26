@@ -282,8 +282,8 @@ function removePercentEncoding(anchorText: string): string {
     try {
         // Now attempt to decode the rest of the anchor text
         return decodeURIComponent(preProcessedEntityAnchorText);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
         // Invalid % escape sequence in the anchor text
         return preProcessedEntityAnchorText;
     }
