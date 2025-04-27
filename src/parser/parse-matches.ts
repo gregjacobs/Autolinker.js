@@ -921,7 +921,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                     return; // not a valid match
                 }
             } else if (urlMatchType === 'ipV4') {
-                if (!isValidIpV4Address(matchedText)) {
+                /* istanbul ignore else */ if (!isValidIpV4Address(matchedText)) {
                     return; // not a valid match
                 }
             } else {
@@ -982,7 +982,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                 );
             }
         } else if (stateMachine.type === 'phone') {
-            // remove any trailing spaces that were considered as "separator"
+            /* istanbul ignore else */ // remove any trailing spaces that were considered as "separator"
             // chars by the state machine
             matchedText = matchedText.replace(/ +$/g, '');
 

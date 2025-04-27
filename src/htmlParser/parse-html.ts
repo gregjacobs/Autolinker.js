@@ -391,6 +391,8 @@ export function parseHtml(
         }
     }
 
+    // Called after a double-quoted or single-quoted attribute value is read
+    // (i.e. after the closing quote character)
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
     function stateAfterAttributeValueQuoted(char: string) {
         if (whitespaceRe.test(char)) {
@@ -419,7 +421,14 @@ export function parseHtml(
             currentTag = new CurrentTag({ ...currentTag, isClosing: true });
             emitTagAndPreviousTextNode(); // resets to Data state as well
         } else {
-            state = State.BeforeAttributeName;
+            // Note: the spec calls for a character after a '/' within a start
+            // tag to go back into the BeforeAttributeName state (in order to
+            // read more attributes, but for the purposes of Autolinker, this is
+            // most likely not a valid HTML tag. For example: "<something / other>"
+            // state = State.BeforeAttributeName;
+
+            // Instead, just treat as regular text
+            resetToDataState();
         }
     }
 

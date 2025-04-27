@@ -127,13 +127,25 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
 
         it(`should handle html tags with attributes`, () => {
             const nodes = parseHtmlAndCapture(
-                `<div id="hi" class='some-class' align=center>Test</div>`
+                `<div id="hi" class='some-class' align=center checked other>Test</div>`
             );
 
             expect(nodes).to.deep.equal([
                 { type: 'openTag', tagName: 'div', offset: 0 },
-                { type: 'text', text: 'Test', offset: 45 },
-                { type: 'closeTag', tagName: 'div', offset: 49 },
+                { type: 'text', text: 'Test', offset: 59 },
+                { type: 'closeTag', tagName: 'div', offset: 63 },
+            ]);
+        });
+
+        it(`should handle self-closing tags with attributes`, () => {
+            const nodes = parseHtmlAndCapture(
+                `<div id="hi" class='some-class' align=center checked other/>Test`
+            );
+
+            expect(nodes).to.deep.equal([
+                { type: 'openTag', tagName: 'div', offset: 0 },
+                { type: 'closeTag', tagName: 'div', offset: 0 },
+                { type: 'text', text: 'Test', offset: 60 },
             ]);
         });
 
@@ -149,6 +161,37 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
                 { type: 'openTag', tagName: 'input', offset: 51 },
                 { type: 'openTag', tagName: 'input', offset: 66 },
                 { type: 'closeTag', tagName: 'input', offset: 66 },
+            ]);
+        });
+
+        it(`should handle html tags with varying spaces around the = sign`, () => {
+            const nodes = parseHtmlAndCapture(
+                `<div id= hi class =some-class align = center style = "color: blue">Test</div>`
+            );
+
+            expect(nodes).to.deep.equal([
+                { type: 'openTag', tagName: 'div', offset: 0 },
+                { type: 'text', text: 'Test', offset: 67 },
+                { type: 'closeTag', tagName: 'div', offset: 71 },
+            ]);
+        });
+
+        it(`should handle html tags with a value-less attribute then whitespace before the close of the tag`, () => {
+            const nodes = parseHtmlAndCapture(`<input checked  >Test`);
+
+            expect(nodes).to.deep.equal([
+                { type: 'openTag', tagName: 'input', offset: 0 },
+                { type: 'text', text: 'Test', offset: 17 },
+            ]);
+        });
+
+        it(`should handle self-closing html tags with a value-less attribute then whitespace before the close of the tag`, () => {
+            const nodes = parseHtmlAndCapture(`<input checked />Test`);
+
+            expect(nodes).to.deep.equal([
+                { type: 'openTag', tagName: 'input', offset: 0 },
+                { type: 'closeTag', tagName: 'input', offset: 0 },
+                { type: 'text', text: 'Test', offset: 17 },
             ]);
         });
 
@@ -188,8 +231,13 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
-        it(`when we have text such as '<xyz<', and the second '<' does not form
-		     a tag, this sequence should be treated as text`, () => {
+        it(`when we have a tag that has a '/' char in it, treat it as text even though the spec calls for reading another attribute. It is most likely not an HTML tag`, () => {
+            const nodes = parseHtmlAndCapture(`<stuff / things>`);
+
+            expect(nodes).to.deep.equal([{ type: 'text', text: '<stuff / things>', offset: 0 }]);
+        });
+
+        it(`when we have text such as '<xyz<', and the second '<' does not form a tag, this sequence should be treated as text`, () => {
             const nodes = parseHtmlAndCapture(`<xyz< Test <3<asdf`);
 
             expect(nodes).to.deep.equal([{ type: 'text', text: '<xyz< Test <3<asdf', offset: 0 }]);
@@ -206,11 +254,57 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
-        it(`tags have invalid attributes (i.e. don't actually look like HTML tags), they should be treated as text (because they probably are)`, () => {
-            const nodes = parseHtmlAndCapture(`<div => <div "hi"> <div 'hi'> <div \b>`);
+        it(`when a second tag is created before the first is closed when the first looks like it's starting an attribute, the first should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`<div attr<div>Test</div>`);
 
             expect(nodes).to.deep.equal([
-                { type: 'text', text: `<div => <div "hi"> <div 'hi'> <div \b>`, offset: 0 },
+                { type: 'text', text: '<div attr', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 9 },
+                { type: 'text', text: 'Test', offset: 14 },
+                { type: 'closeTag', tagName: 'div', offset: 18 },
+            ]);
+        });
+
+        it(`when a second tag is created before the first is closed when the first looks like it's starting an attribute and then has a space (value-less attribute), the first should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`<div attr <div>Test</div>`);
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: '<div attr ', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 10 },
+                { type: 'text', text: 'Test', offset: 15 },
+                { type: 'closeTag', tagName: 'div', offset: 19 },
+            ]);
+        });
+
+        it(`when a second tag is created before the first is closed when the first looks like it's starting an attribute that has a quote, the first should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`<div attr"<div>Test</div>`);
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: '<div attr"', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 10 },
+                { type: 'text', text: 'Test', offset: 15 },
+                { type: 'closeTag', tagName: 'div', offset: 19 },
+            ]);
+        });
+
+        it(`when a second tag is created before the first is closed when the first looks like it's just finished an attribute with a quote, the first should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`<div align="center"<div>Test</div>`);
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: '<div align="center"', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 19 },
+                { type: 'text', text: 'Test', offset: 24 },
+                { type: 'closeTag', tagName: 'div', offset: 28 },
+            ]);
+        });
+
+        it(`tags have invalid attributes (i.e. don't actually look like HTML tags), they should be treated as text (because they probably are just text)`, () => {
+            const inputText = `<div => <div ==> <div =< <div attr=something< <div attr="something< <div attr="something"< <div "hi"> <div 'hi'> <div \b>`;
+
+            const nodes = parseHtmlAndCapture(inputText);
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: /* unchanged */ inputText, offset: 0 },
             ]);
         });
 
@@ -324,10 +418,82 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
-        it(`should handle something that starts to look like an HTML comment but isn't, emitting it as text instead`, function () {
-            const nodes = parseHtmlAndCapture('Test <!--> Test');
+        it('should handle a comment that starts with 3 dashes instead of 2', function () {
+            const nodes = parseHtmlAndCapture('Test <!--- Comment --> Test');
 
-            expect(nodes).to.deep.equal([{ type: 'text', text: 'Test <!--> Test', offset: 0 }]);
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 22 },
+            ]);
+        });
+
+        it('should handle a comment that starts with 4 dashes instead of 2', function () {
+            const nodes = parseHtmlAndCapture('Test <!---- Comment --> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 23 },
+            ]);
+        });
+
+        it('should handle a comment that ends with 3 dashes instead of 2', function () {
+            const nodes = parseHtmlAndCapture('Test <!-- Comment ---> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 22 },
+            ]);
+        });
+
+        it('should handle a comment that ends with 4 dashes instead of 2', function () {
+            const nodes = parseHtmlAndCapture('Test <!-- Comment ----> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 23 },
+            ]);
+        });
+
+        it(`should handle a comment that ends with '!>'. According to the spec, this is an incorrectly closed comment, but should still be treated as one`, function () {
+            const nodes = parseHtmlAndCapture('Test <!-- Comment --!> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 22 },
+            ]);
+        });
+
+        it(`should handle a comment that ends with '--!-->'. Not 100% sure why the spec treats a '--!' sequence specially, but it seems to just be a comment like any other`, function () {
+            const nodes = parseHtmlAndCapture('Test <!-- Comment --!--> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 24 },
+            ]);
+        });
+
+        it(`should handle a comment that has a '--!' sequence inside it (but not ending it). Not 100% sure why the spec treats a '--!' sequence specially, but it seems to just be a comment like any other`, function () {
+            const nodes = parseHtmlAndCapture('Test <!-- Comment --! More Comment --> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 38 },
+            ]);
+        });
+
+        it(`should handle something that starts to look like an HTML comment but isn't, emitting it as text instead`, function () {
+            const nodes = parseHtmlAndCapture('Test <!--> <!---> Test');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: 'Test <!--> <!---> Test', offset: 0 },
+            ]);
         });
 
         it(`should handle an immediately-closed HTML comment`, function () {
