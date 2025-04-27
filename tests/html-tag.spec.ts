@@ -1,10 +1,11 @@
+import { expect } from 'chai';
 import { HtmlTag } from '../src/html-tag';
 
 describe('Autolinker.HtmlTag', function () {
     it('should be able to be instantiated with no arguments', function () {
         expect(function () {
             new HtmlTag();
-        }).not.toThrow();
+        }).to.not.throw();
     });
 
     it('should be able to be configured via the config options', function () {
@@ -14,11 +15,11 @@ describe('Autolinker.HtmlTag', function () {
             innerHtml: 'Hello',
         });
 
-        expect(tag.getTagName()).toBe('a');
-        expect(tag.getAttrs()).toEqual({ attr1: 'value1', attr2: 'value2' });
-        expect(tag.getAttr('attr1')).toBe('value1');
-        expect(tag.getAttr('attr2')).toBe('value2');
-        expect(tag.getInnerHtml()).toBe('Hello');
+        expect(tag.getTagName()).to.equal('a');
+        expect(tag.getAttrs()).to.deep.equal({ attr1: 'value1', attr2: 'value2' });
+        expect(tag.getAttr('attr1')).to.equal('value1');
+        expect(tag.getAttr('attr2')).to.equal('value2');
+        expect(tag.getInnerHtml()).to.equal('Hello');
     });
 
     it('should be able to be configured via setters', function () {
@@ -27,11 +28,11 @@ describe('Autolinker.HtmlTag', function () {
         tag.setAttrs({ attr1: 'value1', attr2: 'value2' });
         tag.setInnerHtml('Hello');
 
-        expect(tag.getTagName()).toBe('a');
-        expect(tag.getAttrs()).toEqual({ attr1: 'value1', attr2: 'value2' });
-        expect(tag.getAttr('attr1')).toBe('value1');
-        expect(tag.getAttr('attr2')).toBe('value2');
-        expect(tag.getInnerHtml()).toBe('Hello');
+        expect(tag.getTagName()).to.equal('a');
+        expect(tag.getAttrs()).to.deep.equal({ attr1: 'value1', attr2: 'value2' });
+        expect(tag.getAttr('attr1')).to.equal('value1');
+        expect(tag.getAttr('attr2')).to.equal('value2');
+        expect(tag.getInnerHtml()).to.equal('Hello');
     });
 
     describe('setTagName()', function () {
@@ -39,16 +40,16 @@ describe('Autolinker.HtmlTag', function () {
             const tag = new HtmlTag();
 
             tag.setTagName('a');
-            expect(tag.getTagName()).toBe('a');
+            expect(tag.getTagName()).to.equal('a');
 
             tag.setTagName('button');
-            expect(tag.getTagName()).toBe('button');
+            expect(tag.getTagName()).to.equal('button');
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
             const tag = new HtmlTag();
 
-            expect(tag.setTagName('a')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.setTagName('a')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -58,19 +59,19 @@ describe('Autolinker.HtmlTag', function () {
 
             tag.setAttr('attr1', 'value1'); // note: this call should lazily instantiate the `attrs` map
             tag.setAttr('attr2', 'value2');
-            expect(tag.getAttrs()).toEqual({
+            expect(tag.getAttrs()).to.deep.equal({
                 attr1: 'value1',
                 attr2: 'value2',
             });
 
             tag.setAttr('attr1', '42');
-            expect(tag.getAttrs()).toEqual({ attr1: '42', attr2: 'value2' });
+            expect(tag.getAttrs()).to.deep.equal({ attr1: '42', attr2: 'value2' });
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
             const tag = new HtmlTag();
 
-            expect(tag.setAttr('href', 'test')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.setAttr('href', 'test')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -79,19 +80,19 @@ describe('Autolinker.HtmlTag', function () {
             const tag = new HtmlTag();
 
             tag.setAttrs({ attr1: 'value1', attr2: 'value2' }); // note: this call should lazily instantiate the `attrs` map
-            expect(tag.getAttrs()).toEqual({
+            expect(tag.getAttrs()).to.deep.equal({
                 attr1: 'value1',
                 attr2: 'value2',
             });
 
             tag.setAttrs({ attr1: '42' });
-            expect(tag.getAttrs()).toEqual({ attr1: '42', attr2: 'value2' });
+            expect(tag.getAttrs()).to.deep.equal({ attr1: '42', attr2: 'value2' });
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
             const tag = new HtmlTag();
 
-            expect(tag.setAttrs({ href: 'test' })).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.setAttrs({ href: 'test' })).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -105,18 +106,18 @@ describe('Autolinker.HtmlTag', function () {
         it('should set the CSS class to the tag when there are none yet', function () {
             tag.setClass('test');
 
-            expect(tag.getClass()).toBe('test');
+            expect(tag.getClass()).to.equal('test');
         });
 
         it('should overwrite the current CSS classes on the tag', function () {
             tag.setClass('test');
             tag.setClass('test_override');
 
-            expect(tag.getClass()).toBe('test_override');
+            expect(tag.getClass()).to.equal('test_override');
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            expect(tag.setClass('test')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.setClass('test')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -129,37 +130,37 @@ describe('Autolinker.HtmlTag', function () {
 
         it('should add a CSS class to the tag when there are none yet', function () {
             tag.addClass('test');
-            expect(tag.getClass()).toBe('test');
+            expect(tag.getClass()).to.equal('test');
         });
 
         it('should add multiple CSS classes to the tag when there are none yet', function () {
             tag.addClass('test1 test2');
-            expect(tag.getClass()).toBe('test1 test2');
+            expect(tag.getClass()).to.equal('test1 test2');
         });
 
         it('should add a CSS class to existing CSS classes', function () {
             tag.addClass('test1');
             tag.addClass('test2');
 
-            expect(tag.getClass()).toBe('test1 test2');
+            expect(tag.getClass()).to.equal('test1 test2');
         });
 
         it('should add multiple CSS classes to existing CSS classes', function () {
             tag.addClass('test1 test2');
             tag.addClass('test3 test4');
 
-            expect(tag.getClass()).toBe('test1 test2 test3 test4');
+            expect(tag.getClass()).to.equal('test1 test2 test3 test4');
         });
 
         it('should not add duplicate CSS classes to the tag', function () {
             tag.addClass('test1 test2');
             tag.addClass('test1 test3 test4 test4');
 
-            expect(tag.getClass()).toBe('test1 test2 test3 test4');
+            expect(tag.getClass()).to.equal('test1 test2 test3 test4');
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            expect(tag.addClass('test')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.addClass('test')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -173,25 +174,25 @@ describe('Autolinker.HtmlTag', function () {
         it('should have no effect when removing a CSS class from an HtmlTag with no CSS classes', function () {
             expect(function () {
                 tag.removeClass('test'); // simply make sure an error isn't thrown
-            }).not.toThrow();
+            }).to.not.throw();
         });
 
         it('should remove a single CSS class from the HtmlTag', function () {
             tag.addClass('test1 test2 test3 test4');
             tag.removeClass('test1');
 
-            expect(tag.getClass()).toBe('test2 test3 test4');
+            expect(tag.getClass()).to.equal('test2 test3 test4');
         });
 
         it('should remove multiple CSS classes from the HtmlTag', function () {
             tag.addClass('test1 test2 test3 test4');
             tag.removeClass('test1 test3');
 
-            expect(tag.getClass()).toBe('test2 test4');
+            expect(tag.getClass()).to.equal('test2 test4');
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
-            expect(tag.removeClass('test')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.removeClass('test')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -199,7 +200,7 @@ describe('Autolinker.HtmlTag', function () {
         it('should return an empty string when there are no CSS classes on the HtmlTag', function () {
             const tag = new HtmlTag();
 
-            expect(tag.getClass()).toBe('');
+            expect(tag.getClass()).to.equal('');
         });
 
         it('should return the CSS classes configured on the HtmlTag', function () {
@@ -207,14 +208,14 @@ describe('Autolinker.HtmlTag', function () {
                 attrs: { class: 'test1 test2' },
             });
 
-            expect(tag.getClass()).toBe('test1 test2');
+            expect(tag.getClass()).to.equal('test1 test2');
         });
 
         it('should return the CSS classes set using addClass()', function () {
             const tag = new HtmlTag();
             tag.addClass('test1 test2');
 
-            expect(tag.getClass()).toBe('test1 test2');
+            expect(tag.getClass()).to.equal('test1 test2');
         });
     });
 
@@ -226,27 +227,27 @@ describe('Autolinker.HtmlTag', function () {
         });
 
         it('should return `false` when there are no CSS classes on the HtmlTag', function () {
-            expect(tag.hasClass('test')).toBe(false);
+            expect(tag.hasClass('test')).to.equal(false);
         });
 
         it('should return `true` for a CSS class that exists on the HtmlTag', function () {
             tag.addClass('test');
 
-            expect(tag.hasClass('test')).toBe(true);
+            expect(tag.hasClass('test')).to.equal(true);
         });
 
         it('should return `true` for a CSS class that exists on the HtmlTag, when there are multiple CSS classes', function () {
             tag.addClass('test1 test2');
 
-            expect(tag.hasClass('test1')).toBe(true);
-            expect(tag.hasClass('test2')).toBe(true);
-            expect(tag.hasClass('test3')).toBe(false);
+            expect(tag.hasClass('test1')).to.equal(true);
+            expect(tag.hasClass('test2')).to.equal(true);
+            expect(tag.hasClass('test3')).to.equal(false);
         });
 
         it('should return `false` for a CSS class that is a substring of a CSS class on the HtmlTag', function () {
             tag.addClass('longCssClass');
 
-            expect(tag.hasClass('longCss')).toBe(false);
+            expect(tag.hasClass('longCss')).to.equal(false);
         });
     });
 
@@ -255,16 +256,16 @@ describe('Autolinker.HtmlTag', function () {
             const tag = new HtmlTag();
 
             tag.setInnerHtml('test');
-            expect(tag.getInnerHtml()).toBe('test');
+            expect(tag.getInnerHtml()).to.equal('test');
 
             tag.setInnerHtml('test2');
-            expect(tag.getInnerHtml()).toBe('test2');
+            expect(tag.getInnerHtml()).to.equal('test2');
         });
 
         it('should return a reference to the HtmlTag instance, to allow method chaining', function () {
             const tag = new HtmlTag();
 
-            expect(tag.setInnerHtml('test')).toBe(tag); // return value should be the HtmlTag itself
+            expect(tag.setInnerHtml('test')).to.equal(tag); // return value should be the HtmlTag itself
         });
     });
 
@@ -272,20 +273,20 @@ describe('Autolinker.HtmlTag', function () {
         it('should return an empty string if no inner HTML has been set', function () {
             const tag = new HtmlTag();
 
-            expect(tag.getInnerHtml()).toBe('');
+            expect(tag.getInnerHtml()).to.equal('');
         });
 
         it('should return the inner HTML set during construction', function () {
             const tag = new HtmlTag({ innerHtml: 'test' });
 
-            expect(tag.getInnerHtml()).toBe('test');
+            expect(tag.getInnerHtml()).to.equal('test');
         });
 
         it('should return the inner HTML set with setInnerHtml()', function () {
             const tag = new HtmlTag();
             tag.setInnerHtml('test');
 
-            expect(tag.getInnerHtml()).toBe('test');
+            expect(tag.getInnerHtml()).to.equal('test');
         });
     });
 
@@ -295,7 +296,7 @@ describe('Autolinker.HtmlTag', function () {
                 tagName: 'a',
             });
 
-            expect(tag.toAnchorString()).toBe('<a></a>');
+            expect(tag.toAnchorString()).to.equal('<a></a>');
         });
 
         it('should populate only the tag name and inner HTML when no attribute are set', function () {
@@ -304,7 +305,7 @@ describe('Autolinker.HtmlTag', function () {
                 innerHtml: 'My Site',
             });
 
-            expect(tag.toAnchorString()).toBe('<a>My Site</a>');
+            expect(tag.toAnchorString()).to.equal('<a>My Site</a>');
         });
 
         it('should populate both the tag name and attributes when set', function () {
@@ -313,7 +314,9 @@ describe('Autolinker.HtmlTag', function () {
                 attrs: { href: 'http://path/to/site', rel: 'nofollow' },
             });
 
-            expect(tag.toAnchorString()).toBe('<a href="http://path/to/site" rel="nofollow"></a>');
+            expect(tag.toAnchorString()).to.equal(
+                '<a href="http://path/to/site" rel="nofollow"></a>'
+            );
         });
 
         it('should populate all 3: tag name, attributes, and inner HTML when set', function () {
@@ -323,7 +326,7 @@ describe('Autolinker.HtmlTag', function () {
                 innerHtml: 'My Site',
             });
 
-            expect(tag.toAnchorString()).toBe(
+            expect(tag.toAnchorString()).to.equal(
                 '<a href="http://path/to/site" rel="nofollow">My Site</a>'
             );
         });
@@ -336,7 +339,7 @@ describe('Autolinker.HtmlTag', function () {
             tag.setAttr('href', 'http://path/to/site');
             tag.setInnerHtml('My Site');
 
-            expect(tag.toAnchorString()).toBe(
+            expect(tag.toAnchorString()).to.equal(
                 '<a class="test test2" href="http://path/to/site">My Site</a>'
             );
         });

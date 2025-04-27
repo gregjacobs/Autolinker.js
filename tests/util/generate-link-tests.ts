@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import Autolinker from '../../src/autolinker';
 import { braceChars } from './braces';
 import { punctuationChars } from './punctuation';
@@ -30,31 +31,33 @@ export function generateLinkTests(testCases: TestCase[]) {
 
                             it(`when it's the only text in the string, properly links '${inputText}' (${description})`, () => {
                                 const result = autolinker.link(inputText);
-                                expect(result).toBe(expectedText);
+                                expect(result).to.equal(expectedText);
                             });
 
                             it(`when at the beginning of the string, links '${input}' (${description})`, () => {
                                 const result = autolinker.link(`${inputText} is where Joe went`);
-                                expect(result).toBe(`${expectedText} is where Joe went`);
+                                expect(result).to.equal(`${expectedText} is where Joe went`);
                             });
 
                             it(`when in the middle of the string, links '${input}' (${description})`, () => {
                                 const result = autolinker.link(
                                     `The link ${inputText} is where Joe went`
                                 );
-                                expect(result).toBe(`The link ${expectedText} is where Joe went`);
+                                expect(result).to.equal(
+                                    `The link ${expectedText} is where Joe went`
+                                );
                             });
 
                             it(`when at the end of a string, links '${input}' (${description})`, () => {
                                 const result = autolinker.link(`Joe went to ${inputText}`);
-                                expect(result).toBe(`Joe went to ${expectedText}`);
+                                expect(result).to.equal(`Joe went to ${expectedText}`);
                             });
 
                             it(`when appearing multiple times in the string (beginning, middle, and end), links '${input}' (${description})`, () => {
                                 const result = autolinker.link(
                                     `${inputText} is a link to ${inputText} and ${inputText}`
                                 );
-                                expect(result).toBe(
+                                expect(result).to.equal(
                                     `${expectedText} is a link to ${expectedText} and ${expectedText}`
                                 );
                             });

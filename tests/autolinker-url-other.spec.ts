@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import Autolinker from '../src/autolinker';
 
 describe('General URL Matching behavior (other) >', () => {
@@ -20,14 +21,14 @@ describe('General URL Matching behavior (other) >', () => {
                 const result1 = autolinker.link(
                     `TLDs come from en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}.`
                 );
-                expect(result1).toBe(
+                expect(result1).to.equal(
                     `TLDs come from <a href="http://en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}">en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}</a>.`
                 );
 
                 const result2 = autolinker.link(
                     `MSDN has a great article at http://msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx.`
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     `MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx">msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx</a>.`
                 );
             });
@@ -36,14 +37,14 @@ describe('General URL Matching behavior (other) >', () => {
                 const result1 = autolinker.link(
                     `TLDs come from en.wikipedia.org/wiki?IANA_${openBraceChar}disambiguation${closeBraceChar}.`
                 );
-                expect(result1).toBe(
+                expect(result1).to.equal(
                     `TLDs come from <a href="http://en.wikipedia.org/wiki?IANA_${openBraceChar}disambiguation${closeBraceChar}">en.wikipedia.org/wiki?IANA_${openBraceChar}disambiguation${closeBraceChar}</a>.`
                 );
 
                 const result2 = autolinker.link(
                     `MSDN has a great article at http://msdn.microsoft.com/en-us/library?aa752574${openBraceChar}VS.85${closeBraceChar}.aspx.`
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     `MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library?aa752574${openBraceChar}VS.85${closeBraceChar}.aspx">msdn.microsoft.com/en-us/library?aa752574${openBraceChar}VS.85${closeBraceChar}.aspx</a>.`
                 );
             });
@@ -52,14 +53,14 @@ describe('General URL Matching behavior (other) >', () => {
                 const result1 = autolinker.link(
                     `TLDs come from en.wikipedia.org/wiki#IANA_${openBraceChar}disambiguation${closeBraceChar}.`
                 );
-                expect(result1).toBe(
+                expect(result1).to.equal(
                     `TLDs come from <a href="http://en.wikipedia.org/wiki#IANA_${openBraceChar}disambiguation${closeBraceChar}">en.wikipedia.org/wiki#IANA_${openBraceChar}disambiguation${closeBraceChar}</a>.`
                 );
 
                 const result2 = autolinker.link(
                     `MSDN has a great article at http://msdn.microsoft.com/en-us/library#aa752574${openBraceChar}VS.85${closeBraceChar}.aspx.`
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     `MSDN has a great article at <a href="http://msdn.microsoft.com/en-us/library#aa752574${openBraceChar}VS.85${closeBraceChar}.aspx">msdn.microsoft.com/en-us/library#aa752574${openBraceChar}VS.85${closeBraceChar}.aspx</a>.`
                 );
             });
@@ -68,14 +69,14 @@ describe('General URL Matching behavior (other) >', () => {
                 const result1 = autolinker.link(
                     `TLDs come from ${openBraceChar}en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}${closeBraceChar}.`
                 );
-                expect(result1).toBe(
+                expect(result1).to.equal(
                     `TLDs come from ${openBraceChar}<a href="http://en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}">en.wikipedia.org/wiki/IANA_${openBraceChar}disambiguation${closeBraceChar}</a>${closeBraceChar}.`
                 );
 
                 const result2 = autolinker.link(
                     `MSDN has a great article at ${openBraceChar}http://msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx${closeBraceChar}.`
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     `MSDN has a great article at ${openBraceChar}<a href="http://msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx">msdn.microsoft.com/en-us/library/aa752574${openBraceChar}VS.85${closeBraceChar}.aspx</a>${closeBraceChar}.`
                 );
             });
@@ -84,7 +85,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     `Click here ${openBraceChar}google.com${closeBraceChar} for more details`
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Click here ${openBraceChar}<a href="http://google.com">google.com</a>${closeBraceChar} for more details`
                 );
             });
@@ -93,7 +94,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     `Click here ${openBraceChar}google.com/abc${closeBraceChar} for more details`
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Click here ${openBraceChar}<a href="http://google.com/abc">google.com/abc</a>${closeBraceChar} for more details`
                 );
             });
@@ -102,7 +103,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     `Click here ${openBraceChar}google.com?abc=1${closeBraceChar} for more details`
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Click here ${openBraceChar}<a href="http://google.com?abc=1">google.com?abc=1</a>${closeBraceChar} for more details`
                 );
             });
@@ -111,7 +112,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     `Click here ${openBraceChar}google.com#abc${closeBraceChar} for more details`
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Click here ${openBraceChar}<a href="http://google.com#abc">google.com#abc</a>${closeBraceChar} for more details`
                 );
             });
@@ -119,21 +120,21 @@ describe('General URL Matching behavior (other) >', () => {
 
         it(`when there are multiple brackets surrounding the URL, should exclude them all`, () => {
             const result = autolinker.link(`(Websites {like [google.com/path]})`);
-            expect(result).toBe(
+            expect(result).to.equal(
                 `(Websites {like [<a href="http://google.com/path">google.com/path</a>]})`
             );
         });
 
         it(`when there are multiple brackets surrounding the URL including punctuation, should exclude the braces and the punctuation`, () => {
             const result = autolinker.link(`(Websites {like [google.com/path.]!}?)`);
-            expect(result).toBe(
+            expect(result).to.equal(
                 `(Websites {like [<a href="http://google.com/path">google.com/path</a>.]!}?)`
             );
         });
 
         it(`when there are brackets surrounding the URL and extraneous close brackets inside the URL, should only exclude the ones from the end`, () => {
             const result = autolinker.link(`(Websites {like [google.com/path))}]s]})`);
-            expect(result).toBe(
+            expect(result).to.equal(
                 `(Websites {like [<a href="http://google.com/path))}]s">google.com/path))}]s</a>]})`
             );
         });
@@ -143,7 +144,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%28Central_Point_Software%29">en.wikipedia.org/wiki/PC_Tools_(Central_Point_Software)</a>'
                 );
             });
@@ -154,7 +155,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%5BCentral_Point_Software%5D"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%5BCentral_Point_Software%5D">en.wikipedia.org/wiki/PC_Tools_[Central_Point_Software]</a>'
                 );
             });
@@ -163,7 +164,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example: http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Here's an example: <a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>`
                 );
             });
@@ -175,7 +176,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example: [http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Here's an example: [<a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>]`
                 );
             });
@@ -186,7 +187,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example from CodingHorror: http://en.wikipedia.org/wiki/PC_Tools_%7BCentral_Point_Software%7D"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Here\'s an example from CodingHorror: <a href="http://en.wikipedia.org/wiki/PC_Tools_%7BCentral_Point_Software%7D">en.wikipedia.org/wiki/PC_Tools_{Central_Point_Software}</a>'
                 );
             });
@@ -195,7 +196,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>`
                 );
             });
@@ -205,7 +206,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>`
                 );
             });
@@ -214,7 +215,7 @@ describe('General URL Matching behavior (other) >', () => {
                 const result = autolinker.link(
                     "Here's an example: http://gohub.sharepoint/example/make-payment?props={%22params%22:{%22loanId%22:%220349494%22}}"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     `Here's an example: <a href="http://gohub.sharepoint/example/make-payment?props={%22params%22:{%22loanId%22:%220349494%22}}">gohub.sharepoint/example/make-payment?props={&quot;params&quot;:{&quot;loanId&quot;:&quot;0349494&quot;}}</a>`
                 );
             });
@@ -226,7 +227,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Check out pair programming: http://c2.com/cgi/wiki$?VirtualPairProgramming'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Check out pair programming: <a href="http://c2.com/cgi/wiki$?VirtualPairProgramming">c2.com/cgi/wiki$?VirtualPairProgramming</a>'
             );
         });
@@ -235,7 +236,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Check out the image at http://server.com/template?fmt=jpeg&$base=700.'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Check out the image at <a href="http://server.com/template?fmt=jpeg&$base=700">server.com/template?fmt=jpeg&$base=700</a>.'
             );
         });
@@ -244,7 +245,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Google from wayback http://wayback.archive.org/web/*/http://google.com'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Google from wayback <a href="http://wayback.archive.org/web/*/http://google.com">wayback.archive.org/web/*/http://google.com</a>'
             );
         });
@@ -253,7 +254,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Twitter search for bob smith https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>'
             );
         });
@@ -262,7 +263,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Test caret url: https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Test caret url: <a href="https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal">sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal</a>'
             );
         });
@@ -271,14 +272,14 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 "You are a star http://en.wikipedia.org/wiki/You're_a_Star/"
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'You are a star <a href="http://en.wikipedia.org/wiki/You\'re_a_Star/">en.wikipedia.org/wiki/You\'re_a_Star</a>'
             );
         });
 
         it("should include ' in URLs with query strings", () => {
             const result = autolinker.link("Test google search https://google.com/#q=test's");
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Test google search <a href="https://google.com/#q=test\'s">google.com/#q=test\'s</a>'
             );
         });
@@ -287,7 +288,7 @@ describe('General URL Matching behavior (other) >', () => {
             const result = autolinker.link(
                 'Go to https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6 today'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Go to <a href="https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6">example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6</a> today'
             );
         });
@@ -297,14 +298,14 @@ describe('General URL Matching behavior (other) >', () => {
                 "google.no/maps/place/Gary's+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no"
             );
 
-            expect(result).toBe(
+            expect(result).to.equal(
                 '<a href="http://google.no/maps/place/Gary\'s+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no">google.no/maps/place/Gary\'s+Deli/@52.3664378,4.869345,18z/data=!4m7!1m4!3m3!1s0x47c609c14a6680df:0x643f005113531f15!2sBeertemple!3b1!3m1!1s0x0000000000000000:0x51a8a6adb4307be6?hl=no</a>'
             );
         });
 
         it('should handle emoji', () => {
             const result = autolinker.link('Joe went to http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀');
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Joe went to <a href="http://emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀">emoji🐰🦊town🧞‍♀️🧜🏻‍♀️.com/?emoji=👨🏾‍🚀</a>'
             );
         });
@@ -314,7 +315,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'Danish flag emoji: https://emojipedia.org/%F0%9F%87%A9%F0%9F%87%B0'
             );
 
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Danish flag emoji: <a href="https://emojipedia.org/%F0%9F%87%A9%F0%9F%87%B0">emojipedia.org/🇩🇰</a>'
             );
         });
@@ -322,7 +323,7 @@ describe('General URL Matching behavior (other) >', () => {
         it('should HTML-encode escape-encoded special characters', () => {
             const result = autolinker.link('Link: http://example.com/%3c%3E%22%27%26');
 
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Link: <a href="http://example.com/%3c%3E%22%27%26">example.com/&lt;&gt;&quot;&#39;&amp;</a>'
             );
         });
@@ -332,19 +333,21 @@ describe('General URL Matching behavior (other) >', () => {
         const result = autolinker.link(
             'Joe went to https://google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/ and analyzed his analytics'
         );
-        expect(result).toBe(
+        expect(result).to.equal(
             'Joe went to <a href="https://google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/%3F.date00%3D20120314%26_.date01%3D20120314%268534-table.rowStart%3D0%268534-table.rowCount%3D25/">google.com/analytics/web/?pli=1#my-reports/Obif-Y6qQB2xAJk0ZZE1Zg/a4454143w36378534p43704543/?.date00=20120314&amp;_.date01=20120314&amp;8534-table.rowStart=0&amp;8534-table.rowCount=25</a> and analyzed his analytics'
         );
     });
 
     it("should remove trailing slash from 'http://yahoo.com/'", () => {
         const result = autolinker.link('Joe went to http://yahoo.com/.');
-        expect(result).toBe('Joe went to <a href="http://yahoo.com/">yahoo.com</a>.');
+        expect(result).to.equal('Joe went to <a href="http://yahoo.com/">yahoo.com</a>.');
     });
 
     it("should remove trailing slash from 'http://yahoo.com/sports/'", () => {
         const result = autolinker.link('Joe went to http://yahoo.com/sports/.');
-        expect(result).toBe('Joe went to <a href="http://yahoo.com/sports/">yahoo.com/sports</a>.');
+        expect(result).to.equal(
+            'Joe went to <a href="http://yahoo.com/sports/">yahoo.com/sports</a>.'
+        );
     });
 
     describe('multiple dots handling', () => {
@@ -353,7 +356,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'https://gitlab.example.com/space/repo/compare/master...develop'
             );
 
-            expect(result).toBe(
+            expect(result).to.equal(
                 '<a href="https://gitlab.example.com/space/repo/compare/master...develop">gitlab.example.com/space/repo/compare/master...develop</a>'
             );
         });
@@ -363,19 +366,19 @@ describe('General URL Matching behavior (other) >', () => {
         it('should autolink a url surrounded by curly quotes', () => {
             const result = autolinker.link('“link.com/foo”');
 
-            expect(result).toBe('“<a href="http://link.com/foo">link.com/foo</a>”');
+            expect(result).to.equal('“<a href="http://link.com/foo">link.com/foo</a>”');
         });
 
         it('should autolink a url with www. prefix surrounded by curly quotes', () => {
             const result = autolinker.link('“www.link.com/foo”');
 
-            expect(result).toBe('“<a href="http://www.link.com/foo">www.link.com/foo</a>”');
+            expect(result).to.equal('“<a href="http://www.link.com/foo">www.link.com/foo</a>”');
         });
 
         it('should autolink a url with protocol prefix surrounded by curly quotes', () => {
             const result = autolinker.link('“http://link.com/foo”');
 
-            expect(result).toBe('“<a href="http://link.com/foo">link.com/foo</a>”');
+            expect(result).to.equal('“<a href="http://link.com/foo">link.com/foo</a>”');
         });
     });
 
@@ -406,7 +409,7 @@ describe('General URL Matching behavior (other) >', () => {
 
             const result = autolinker.link(inputStr);
 
-            expect(result).toBe(`
+            expect(result).to.equal(`
 				Joe went to <a href="http://yahoo.com">yahoo.com</a> and <a href="http://localhost">localhost</a> today along with <a href="http://localhost:8000">localhost:8000</a>.
 				He also had a path on localhost: <a href="http://localhost:8000/abc">localhost:8000/abc</a>, and a query string: <a href="http://localhost:8000?abc">localhost:8000?abc</a>
 				But who could forget about hashes like <a href="http://localhost:8000#abc">localhost:8000#abc</a>
@@ -437,7 +440,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y'
             );
 
-            expect(result).toBe(
+            expect(result).to.equal(
                 '<a href="https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y">example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y</a>'
             );
         });

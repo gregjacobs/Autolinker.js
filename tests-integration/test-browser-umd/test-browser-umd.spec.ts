@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import fs from 'fs';
 import puppeteer, { Browser, Page } from 'puppeteer';
 
@@ -5,7 +6,7 @@ describe('Autolinker.js UMD file in browser', function () {
     let browser: Browser;
     let page: Page;
 
-    beforeAll(async () => {
+    before(async () => {
         browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
         page = await browser.newPage();
 
@@ -27,7 +28,7 @@ describe('Autolinker.js UMD file in browser', function () {
         }
     });
 
-    afterAll(async () => {
+    after(async () => {
         await browser.close();
     });
 
@@ -36,6 +37,6 @@ describe('Autolinker.js UMD file in browser', function () {
             return document.querySelector('#result')!.innerHTML.trim();
         });
 
-        expect(innerHTML).toBe('Go to <a href="http://google.com">google.com</a>');
+        expect(innerHTML).to.equal('Go to <a href="http://google.com">google.com</a>');
     });
 });

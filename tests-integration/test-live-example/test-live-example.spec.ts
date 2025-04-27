@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import path from 'path';
 import fs from 'fs';
 import puppeteer, { Browser, Page } from 'puppeteer';
@@ -6,7 +7,7 @@ describe('Live example page -', function () {
     let browser: Browser;
     let page: Page;
 
-    beforeAll(async () => {
+    before(async () => {
         browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
         page = await browser.newPage();
 
@@ -15,7 +16,7 @@ describe('Live example page -', function () {
         page.on('pageerror', (err: Error) => console.error(err));
     });
 
-    afterAll(async () => {
+    after(async () => {
         await browser.close();
     });
 
@@ -35,7 +36,7 @@ describe('Live example page -', function () {
         const autolinkerOutputHtml = await page.evaluate(() => {
             return document.querySelector('#output')!.innerHTML.trim();
         });
-        expect(autolinkerOutputHtml).toBe(
+        expect(autolinkerOutputHtml).to.equal(
             [
                 `<a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a><br>`,
                 `<a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a><br>`,

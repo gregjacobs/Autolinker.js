@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { AnchorTagBuilder } from '../src/anchor-tag-builder';
 import Autolinker from '../src/autolinker';
 
@@ -9,6 +10,6 @@ describe(`AnchorTagBuilder`, () => {
         const anchorTagBuilder = new AnchorTagBuilder();
         const tag = anchorTagBuilder.build(match);
 
-        expect(tag.toAnchorString()).toBe('<a href="http://example.com">example.com</a>');
+        expect(tag.toAnchorString()).to.equal('<a href="http://example.com">example.com</a>');
     });
 });

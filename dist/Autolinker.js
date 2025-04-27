@@ -850,14 +850,14 @@
      * instances which may be modified before returning from the
      * {@link Autolinker#replaceFn replaceFn}. For example:
      *
-     *     var html = Autolinker.link( "Test google.com", {
-     *         replaceFn : function( match ) {
+     *     var html = Autolinker.link("Test google.com", {
+     *         replaceFn: function(match) {
      *             var tag = match.buildTag();  // returns an {@link Autolinker.HtmlTag} instance
-     *             tag.setAttr( 'rel', 'nofollow' );
+     *             tag.setAttr('rel', 'nofollow');
      *
      *             return tag;
      *         }
-     *     } );
+     *     });
      *
      *     // generated html:
      *     //   Test <a href="http://google.com" target="_blank" rel="nofollow">google.com</a>
@@ -922,10 +922,8 @@
                 attrs['target'] = '_blank';
                 attrs['rel'] = 'noopener noreferrer'; // Issue #149. See https://mathiasbynens.github.io/rel-noopener/
             }
-            if (this.truncate) {
-                if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
-                    attrs['title'] = match.getAnchorHref();
-                }
+            if (this.truncate.length && this.truncate.length < match.getAnchorText().length) {
+                attrs['title'] = match.getAnchorHref();
             }
             return attrs;
         };
@@ -988,7 +986,7 @@
          */
         AnchorTagBuilder.prototype.doTruncate = function (anchorText) {
             var truncate = this.truncate;
-            if (!truncate || !truncate.length)
+            if (!truncate.length)
                 return anchorText;
             var truncateLength = truncate.length, truncateLocation = truncate.location;
             if (truncateLocation === 'smart') {
@@ -2364,12 +2362,12 @@
             }
             // For debugging: search for and uncomment other "For debugging" lines
             // table.push([
-            //     charIdx,
+            //     String(charIdx),
             //     char,
             //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
             //     stateMachines.map(machine => `${machine.type}${'matchType' in machine ? ` (${machine.matchType})` : ''}`).join('\n') || '(none)',
             //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
-            //     charIdx,
+            //     String(charIdx),
             //     stateMachines.map(m => m.startIdx).join('\n'),
             //     stateMachines.map(m => m.acceptStateReached).join('\n'),
             // ]);
@@ -2463,6 +2461,7 @@
                 remove(stateMachines, stateMachine);
             }
         }
+        // https://tools.ietf.org/html/rfc3986#appendix-A
         function stateSchemeColon(stateMachine, char) {
             if (char === '/') {
                 stateMachine.state = 3 /* State.SchemeSlash1 */;
@@ -2486,6 +2485,7 @@
                 remove(stateMachines, stateMachine);
             }
         }
+        // https://tools.ietf.org/html/rfc3986#appendix-A
         function stateSchemeSlash1(stateMachine, char) {
             if (char === '/') {
                 stateMachine.state = 4 /* State.SchemeSlash2 */;
@@ -2500,10 +2500,11 @@
         }
         function stateSchemeSlash2(stateMachine, char) {
             if (char === '/') {
-                // 3rd slash, must be an absolute path (path-absolute in the
-                // ABNF), such as in a file:///c:/windows/etc. See
+                // 3rd slash, must be an absolute path (`path-absolute` in the
+                // ABNF), such as in "file:///c:/windows/etc". See
                 // https://tools.ietf.org/html/rfc3986#appendix-A
                 stateMachine.state = 10 /* State.Path */;
+                stateMachine.acceptStateReached = true;
             }
             else if (isDomainLabelStartChar(char)) {
                 // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
@@ -2728,7 +2729,7 @@
             }
         }
         // Handles the state where we've read a '.' character in the local part of
-        // the email address
+        // the email address (i.e. the part before the '@' character)
         function stateEmailLocalPartDot(stateMachine, char) {
             if (char === '.') {
                 // We read a second '.' in a row, not a valid email address
@@ -3316,9 +3317,14 @@
             var char = html.charAt(charIdx);
             // For debugging: search for other "For debugging" lines
             // ALSO: Temporarily remove the 'const' keyword on the State enum
-            // table.push(
-            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
-            // );
+            // table.push([
+            //     String(charIdx),
+            //     char,
+            //     State[state],
+            //     String(currentDataIdx),
+            //     String(currentTag.idx),
+            //     currentTag.idx === -1 ? '' : currentTag.type
+            // ]);
             switch (state) {
                 case 0 /* State.Data */:
                     stateData(char);
@@ -3389,9 +3395,14 @@
             }
             // For debugging: search for other "For debugging" lines
             // ALSO: Temporarily remove the 'const' keyword on the State enum
-            // table.push(
-            // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
-            // );
+            // table.push([
+            //     String(charIdx),
+            //     char,
+            //     State[state],
+            //     String(currentDataIdx),
+            //     String(currentTag.idx),
+            //     currentTag.idx === -1 ? '' : currentTag.type
+            // ]);
             charIdx++;
         }
         if (currentDataIdx < charIdx) {
@@ -3639,14 +3650,14 @@
         // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
         // (HTML Comments or !DOCTYPE)
         function stateMarkupDeclarationOpen() {
-            if (html.substr(charIdx, 2) === '--') {
+            if (html.slice(charIdx, charIdx + 2) === '--') {
                 // html comment
-                charIdx += 2; // "consume" characters
+                charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'comment' }));
                 state = 14 /* State.CommentStart */;
             }
-            else if (html.substr(charIdx, 7).toUpperCase() === 'DOCTYPE') {
-                charIdx += 7; // "consume" characters
+            else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
+                charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { type: 'doctype' }));
                 state = 20 /* State.Doctype */;
             }
@@ -3655,7 +3666,8 @@
                 // enter the "bogus comment" state, in which case any character(s)
                 // after the '<!' that were read should become an HTML comment up
                 // until the first '>' that is read (or EOF). Instead, we'll assume
-                // that a user just typed '<!' as part of text data
+                // that a user just typed '<!' as part of some piece of non-html
+                // text
                 resetToDataState();
             }
         }
@@ -4308,16 +4320,16 @@
          *
          * Example:
          *
-         *     var matches = Autolinker.parse( "Hello google.com, I am asdf@asdf.com", {
+         *     var matches = Autolinker.parse("Hello google.com, I am asdf@asdf.com", {
          *         urls: true,
          *         email: true
-         *     } );
+         *     });
          *
-         *     console.log( matches.length );           // 2
-         *     console.log( matches[ 0 ].getType() );   // 'url'
-         *     console.log( matches[ 0 ].getUrl() );    // 'google.com'
-         *     console.log( matches[ 1 ].getType() );   // 'email'
-         *     console.log( matches[ 1 ].getEmail() );  // 'asdf@asdf.com'
+         *     console.log(matches.length);         // 2
+         *     console.log(matches[0].getType());   // 'url'
+         *     console.log(matches[0].getUrl());    // 'google.com'
+         *     console.log(matches[1].getType());   // 'email'
+         *     console.log(matches[1].getEmail());  // 'asdf@asdf.com'
          *
          * @static
          * @param {String} textOrHtml The HTML or text to find matches within
