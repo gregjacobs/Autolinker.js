@@ -113,6 +113,17 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
+        it(`when there are self-closing tags in the string with whitespace before the '/', should emit both an
+			 open and close tag`, () => {
+            const nodes = parseHtmlAndCapture('<div />Test');
+
+            expect(nodes).toEqual([
+                { type: 'openTag', tagName: 'div', offset: 0 },
+                { type: 'closeTag', tagName: 'div', offset: 0 },
+                { type: 'text', text: 'Test', offset: 7 },
+            ]);
+        });
+
         it(`should handle html tags with attributes`, () => {
             const nodes = parseHtmlAndCapture(
                 `<div id="hi" class='some-class' align=center>Test</div>`
@@ -127,13 +138,16 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
 
         it(`should handle html tags with unqouted attributes`, () => {
             const nodes = parseHtmlAndCapture(
-                `<div id=hi class=some-class align=center>Test</div>`
+                `<div id=hi class=some-class align=center>Test</div><input checked><input checked/>`
             );
 
             expect(nodes).toEqual([
                 { type: 'openTag', tagName: 'div', offset: 0 },
                 { type: 'text', text: 'Test', offset: 41 },
                 { type: 'closeTag', tagName: 'div', offset: 45 },
+                { type: 'openTag', tagName: 'input', offset: 51 },
+                { type: 'openTag', tagName: 'input', offset: 66 },
+                { type: 'closeTag', tagName: 'input', offset: 66 },
             ]);
         });
 
@@ -180,6 +194,37 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             expect(nodes).toEqual([{ type: 'text', text: '<xyz< Test <3<asdf', offset: 0 }]);
         });
 
+        it(`when a second tag is created before the first is closed, the first should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`<div <div>Test</div>`);
+
+            expect(nodes).toEqual([
+                { type: 'text', text: '<div ', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 5 },
+                { type: 'text', text: 'Test', offset: 10 },
+                { type: 'closeTag', tagName: 'div', offset: 14 },
+            ]);
+        });
+
+        it(`tags have invalid attributes (i.e. don't actually look like HTML tags), they should be treated as text (because they probably are)`, () => {
+            const nodes = parseHtmlAndCapture(`<div => <div "hi"> <div 'hi'> <div \b>`);
+
+            expect(nodes).toEqual([
+                { type: 'text', text: `<div => <div "hi"> <div 'hi'> <div \b>`, offset: 0 },
+            ]);
+        });
+
+        it(`when there is an invalid closing tag, should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`Test </> Test2`);
+
+            expect(nodes).toEqual([{ type: 'text', text: 'Test </> Test2', offset: 0 }]);
+        });
+
+        it(`when there is an invalid closing tag with a space after the '/', should be treated as text`, () => {
+            const nodes = parseHtmlAndCapture(`Test </ abc> Test2`);
+
+            expect(nodes).toEqual([{ type: 'text', text: 'Test </ abc> Test2', offset: 0 }]);
+        });
+
         it('should handle some more complex HTML strings', function () {
             const nodes = parseHtmlAndCapture(
                 'Joe went to <a href="google.com">ebay.com</a> today,&nbsp;and bought <b>big</b> items'
@@ -198,20 +243,17 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
-        it(
-            'should properly handle a tag where the attributes start on the ' + 'next line',
-            function () {
-                const nodes = parseHtmlAndCapture(
-                    'Test <div\nclass="myClass"\nstyle="color:red"> Test'
-                );
+        it('should properly handle a tag where the attributes start on the next line', function () {
+            const nodes = parseHtmlAndCapture(
+                'Test <div\nclass="myClass"\nstyle="color:red"> Test'
+            );
 
-                expect(nodes).toEqual([
-                    { type: 'text', text: 'Test ', offset: 0 },
-                    { type: 'openTag', tagName: 'div', offset: 5 },
-                    { type: 'text', text: ' Test', offset: 44 },
-                ]);
-            }
-        );
+            expect(nodes).toEqual([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'openTag', tagName: 'div', offset: 5 },
+                { type: 'text', text: ' Test', offset: 44 },
+            ]);
+        });
 
         it(`should properly handle xml namespaced elements`, () => {
             const nodes = parseHtmlAndCapture(
@@ -280,6 +322,22 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
                 { type: 'comment', offset: 27 },
             ]);
         });
+
+        it(`should handle something that starts to look like an HTML comment but isn't, emitting it as text instead`, function () {
+            const nodes = parseHtmlAndCapture('Test <!--> Test');
+
+            expect(nodes).toEqual([{ type: 'text', text: 'Test <!--> Test', offset: 0 }]);
+        });
+
+        it(`should handle an immediately-closed HTML comment`, function () {
+            const nodes = parseHtmlAndCapture('Test <!----> Test');
+
+            expect(nodes).toEqual([
+                { type: 'text', text: 'Test ', offset: 0 },
+                { type: 'comment', offset: 5 },
+                { type: 'text', text: ' Test', offset: 12 },
+            ]);
+        });
     });
 
     describe('<!DOCTYPE> handling', () => {
@@ -308,6 +366,15 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
                     text: '<!DOCTYPE html and blah blah blah',
                     offset: 0,
                 },
+            ]);
+        });
+
+        it('if the DOCTYPE tag has no attributes (not valid HTML, but could happen), should treat it as an empty doctype', () => {
+            const nodes = parseHtmlAndCapture(`<!DOCTYPE>Some text`);
+
+            expect(nodes).toEqual([
+                { type: 'doctype', offset: 0 },
+                { type: 'text', text: 'Some text', offset: 10 },
             ]);
         });
     });
@@ -350,7 +417,7 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
 
     describe('Time Complexity - ', () => {
         it(`should not freeze up the regular expression engine when presented with
-			the input string in issue #54 
+			the input string in issue #54 (https://github.com/gregjacobs/Autolinker.js/issues/54)
 			
 			(Note: this is an old test that came from the days before the HTML 
 			parser was converted from a RegExp to the current state machine parser)`, () => {
@@ -362,7 +429,7 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
         });
 
         it(`should not freeze up the regular expression engine when presented 
-			 with the input string in issue #172
+			 with the input string in issue #172 (https://github.com/gregjacobs/Autolinker.js/issues/172)
 			 
 			 (Note: this is an old test that came from the days before the HTML 
 			 parser was converted from a RegExp to the current state machine parser)`, () => {
@@ -374,7 +441,7 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
         });
 
         it(`should not freeze up the regular expression engine when presented 
-			 with the input string in issue #204
+			 with the input string in issue #204 (https://github.com/gregjacobs/Autolinker.js/issues/204)
 			 
 			 (Note: this is an old test that came from the days before the HTML 
 			 parser was converted from a RegExp to the current state machine parser)`, () => {

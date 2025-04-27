@@ -1,4 +1,3 @@
-import { State } from './state';
 import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
@@ -90,9 +89,14 @@ export function parseHtml(
 
         // For debugging: search for other "For debugging" lines
         // ALSO: Temporarily remove the 'const' keyword on the State enum
-        // table.push(
-        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
-        // );
+        // table.push([
+        //     String(charIdx),
+        //     char,
+        //     State[state],
+        //     String(currentDataIdx),
+        //     String(currentTag.idx),
+        //     currentTag.idx === -1 ? '' : currentTag.type
+        // ]);
 
         switch (state) {
             case State.Data:
@@ -166,9 +170,14 @@ export function parseHtml(
 
         // For debugging: search for other "For debugging" lines
         // ALSO: Temporarily remove the 'const' keyword on the State enum
-        // table.push(
-        // 	[ charIdx, char, State[ state ], currentDataIdx, currentTag.idx, currentTag.idx === -1 ? '' : currentTag.type ]
-        // );
+        // table.push([
+        //     String(charIdx),
+        //     char,
+        //     State[state],
+        //     String(currentDataIdx),
+        //     String(currentTag.idx),
+        //     currentTag.idx === -1 ? '' : currentTag.type
+        // ]);
 
         charIdx++;
     }
@@ -417,13 +426,13 @@ export function parseHtml(
     // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
     // (HTML Comments or !DOCTYPE)
     function stateMarkupDeclarationOpen() {
-        if (html.substr(charIdx, 2) === '--') {
+        if (html.slice(charIdx, charIdx + 2) === '--') {
             // html comment
-            charIdx += 2; // "consume" characters
+            charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
             currentTag = new CurrentTag({ ...currentTag, type: 'comment' });
             state = State.CommentStart;
-        } else if (html.substr(charIdx, 7).toUpperCase() === 'DOCTYPE') {
-            charIdx += 7; // "consume" characters
+        } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
+            charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
             currentTag = new CurrentTag({ ...currentTag, type: 'doctype' });
             state = State.Doctype;
         } else {
@@ -431,7 +440,8 @@ export function parseHtml(
             // enter the "bogus comment" state, in which case any character(s)
             // after the '<!' that were read should become an HTML comment up
             // until the first '>' that is read (or EOF). Instead, we'll assume
-            // that a user just typed '<!' as part of text data
+            // that a user just typed '<!' as part of some piece of non-html
+            // text
             resetToDataState();
         }
     }
@@ -643,4 +653,33 @@ class CurrentTag {
         this.isOpening = !!cfg.isOpening;
         this.isClosing = !!cfg.isClosing;
     }
+}
+
+/**
+ * The subset of the parser states defined in https://www.w3.org/TR/html51/syntax.html
+ * which are useful for Autolinker.
+ */
+// For debugging: temporarily remove 'const' keyword on the State enum
+export const enum State {
+    Data = 0,
+    TagOpen,
+    EndTagOpen,
+    TagName,
+    BeforeAttributeName,
+    AttributeName,
+    AfterAttributeName,
+    BeforeAttributeValue,
+    AttributeValueDoubleQuoted,
+    AttributeValueSingleQuoted,
+    AttributeValueUnquoted,
+    AfterAttributeValueQuoted,
+    SelfClosingStartTag,
+    MarkupDeclarationOpenState, // When the sequence '<!' is read for an HTML comment or doctype
+    CommentStart,
+    CommentStartDash,
+    Comment,
+    CommentEndDash,
+    CommentEnd,
+    CommentEndBang,
+    Doctype,
 }

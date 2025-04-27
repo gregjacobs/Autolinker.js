@@ -118,4 +118,88 @@ describe('Matching behavior within HTML >', () => {
         const result = autolinker.link(input);
         expect(result).toBe(input); // no changes should be made
     });
+
+    it(`should autolink URLs/emails/etc. found within HTML, but not be confused by invalid markup`, () => {
+        const result = autolinker.link(`
+            <!DOCTYPE>  <!-- Invalid DOCTYPE, should be <DOCTYPE html> -->
+            <html>
+                <body>
+                    <!-- Valid Comment -->
+                    <!--> <! <!-- Invalid comments precede this comment -->
+                    </> </ something> <!-- Invalid closing tags precede this comment -->
+                    <div <div>Hello, this is a test. Visit http://example.com for more info.</div>
+                    <div =><div "hi"><div \b> <!-- Some tags with invalid attributes that we'll treat as text instead of html (because it probably is) -->
+                    <div>Contact us at hello@example.com</div><3
+                    <div/>
+                    <<div>Our hashtag is #example</div>
+                    <xyz<div>Our mention is @example</div>
+                    <div>Our phone number is 123-456-7890</div>
+                </body>
+            </html>
+        `);
+
+        expect(result).toBe(`
+            <!DOCTYPE>  <!-- Invalid DOCTYPE, should be <DOCTYPE html> -->
+            <html>
+                <body>
+                    <!-- Valid Comment -->
+                    <!--> <! <!-- Invalid comments precede this comment -->
+                    </> </ something> <!-- Invalid closing tags precede this comment -->
+                    <div <div>Hello, this is a test. Visit <a href="http://example.com">example.com</a> for more info.</div>
+                    <div =><div "hi"><div \b> <!-- Some tags with invalid attributes that we'll treat as text instead of html (because it probably is) -->
+                    <div>Contact us at <a href="mailto:hello@example.com">hello@example.com</a></div><3
+                    <div/>
+                    <<div>Our hashtag is <a href="https://instagram.com/explore/tags/example">#example</a></div>
+                    <xyz<div>Our mention is <a href="https://instagram.com/example">@example</a></div>
+                    <div>Our phone number is <a href="tel:1234567890">123-456-7890</a></div>
+                </body>
+            </html>
+        `);
+    });
+
+    it(`should autolink URLs/emails/etc. found within HTML in complex html scenarios (line breaks within tags, non-value attributes, no quotes around attributes, different quoting styles, html entities, etc.)`, () => {
+        const result = autolinker.link(`
+            <html>
+                <!--
+                    Multi-line comment
+                -->
+                <!---->  <!-- Immediately-closed comment precedes this one -->
+                <body
+                    class=class1
+                    style="color: blue;"
+                >
+                    <!-- Valid Comment -->
+                    <div align='center'>Hello, this is a test. Visit http://example.com for more info.</div>
+                    <div align="center">Contact us at hello@example.com</div>
+                    <div align=center>Our&nbsp;hashtag is #example</div>
+                    <br/><br />
+                    <input type="checkbox" checked>
+                    <div>Our mention is @example</div>
+                    <div>Our phone number is 123-456-7890</div>
+                </body>
+            </html>
+        `);
+
+        expect(result).toBe(`
+            <html>
+                <!--
+                    Multi-line comment
+                -->
+                <!---->  <!-- Immediately-closed comment precedes this one -->
+                <body
+                    class=class1
+                    style="color: blue;"
+                >
+                    <!-- Valid Comment -->
+                    <div align='center'>Hello, this is a test. Visit <a href="http://example.com">example.com</a> for more info.</div>
+                    <div align="center">Contact us at <a href="mailto:hello@example.com">hello@example.com</a></div>
+                    <div align=center>Our&nbsp;hashtag is <a href="https://instagram.com/explore/tags/example">#example</a></div>
+                    <br/><br />
+                    <input type="checkbox" checked>
+                    <div>Our mention is <a href="https://instagram.com/example">@example</a></div>
+                    <div>Our phone number is <a href="tel:1234567890">123-456-7890</a></div>
+                </body>
+            </html>
+        `);
+    });
 });
