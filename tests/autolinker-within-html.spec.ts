@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import Autolinker from '../src/autolinker';
 
 describe('Matching behavior within HTML >', () => {
@@ -27,7 +28,7 @@ describe('Matching behavior within HTML >', () => {
             </html>
         `);
 
-        expect(result).toBe(`
+        expect(result).to.equal(`
             <html>
                 <body>
                     <div>Hello, this is a test. Visit <a href="http://example.com">example.com</a> for more info.</div>
@@ -54,7 +55,7 @@ describe('Matching behavior within HTML >', () => {
         `;
 
         const result = autolinker.link(input);
-        expect(result).toBe(input); // no changes should be made
+        expect(result).to.equal(input); // no changes should be made
     });
 
     it(`should NOT link URLs/emails/etc. that are inside of <script> tags`, () => {
@@ -76,7 +77,7 @@ describe('Matching behavior within HTML >', () => {
         `;
 
         const result = autolinker.link(input);
-        expect(result).toBe(input); // no changes should be made
+        expect(result).to.equal(input); // no changes should be made
     });
 
     it(`should NOT link URLs/emails/etc. that are inside of <style> tags`, () => {
@@ -116,7 +117,7 @@ describe('Matching behavior within HTML >', () => {
         `;
 
         const result = autolinker.link(input);
-        expect(result).toBe(input); // no changes should be made
+        expect(result).to.equal(input); // no changes should be made
     });
 
     it(`should autolink URLs/emails/etc. found within HTML, but not be confused by invalid markup`, () => {
@@ -138,7 +139,7 @@ describe('Matching behavior within HTML >', () => {
             </html>
         `);
 
-        expect(result).toBe(`
+        expect(result).to.equal(`
             <!DOCTYPE>  <!-- Invalid DOCTYPE, should be <DOCTYPE html> -->
             <html>
                 <body>
@@ -180,7 +181,7 @@ describe('Matching behavior within HTML >', () => {
             </html>
         `);
 
-        expect(result).toBe(`
+        expect(result).to.equal(`
             <html>
                 <!--
                     Multi-line comment

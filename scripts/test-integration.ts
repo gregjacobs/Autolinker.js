@@ -38,7 +38,7 @@ import { execSync } from './util/exec-sync';
 
     // And finally, run the tests
     execSync(
-        `node --require=ts-node/register node_modules/jasmine/bin/jasmine.js "${testsOutputDir}/**/*.spec.ts"`
+        `node --require=ts-node/register node_modules/mocha/bin/mocha.js "${testsOutputDir}/**/*.spec.ts"`
     );
 
     async function buildWebpackTypeScriptTestProject() {

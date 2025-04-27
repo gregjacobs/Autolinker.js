@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import Autolinker from '../src/autolinker';
 import { generateLinkTests } from './util/generate-link-tests';
 
@@ -139,41 +140,41 @@ describe('Phone Number Matching >', () => {
         ]);
 
         it('should automatically link numbers when there are extensions with ,<numbers>#, but exclude anything after too many separators', function () {
-            expect(autolinker.link('+22016350659,;,55#;;234   ,  3334443323')).toBe(
+            expect(autolinker.link('+22016350659,;,55#;;234   ,  3334443323')).to.equal(
                 '<a href="tel:+22016350659,;,55#;;234">+22016350659,;,55#;;234</a>   ,  3334443323'
             );
         });
 
         // TODO: Is this definitely a case that should be excluded from matching?
         it('should NOT automatically link numbers when there are extensions with ,<numbers># followed by a number', function () {
-            expect(autolinker.link('+1-555-666-7777,234523#233')).toBe(
+            expect(autolinker.link('+1-555-666-7777,234523#233')).to.equal(
                 '+1-555-666-7777,234523#233'
             );
         });
 
         it(`should link up until a word character when there are letters after a pound sign ('#')`, () => {
-            expect(autolinker.link('+1-555-666-7777,234523#abc')).toBe(
+            expect(autolinker.link('+1-555-666-7777,234523#abc')).to.equal(
                 '<a href="tel:+15556667777,234523#">+1-555-666-7777,234523#</a>abc'
             );
-            expect(autolinker.link('+1-555-666-7777,234523#,234523#abc')).toBe(
+            expect(autolinker.link('+1-555-666-7777,234523#,234523#abc')).to.equal(
                 '<a href="tel:+15556667777,234523#,234523#">+1-555-666-7777,234523#,234523#</a>abc'
             );
         });
     });
 
     it("should NOT automatically link a phone number when there are no delimiters, since we don't know for sure if this is a phone number or some other number", function () {
-        expect(autolinker.link('5556667777')).toBe('5556667777');
-        expect(autolinker.link('15417543010')).toBe('15417543010');
+        expect(autolinker.link('5556667777')).to.equal('5556667777');
+        expect(autolinker.link('15417543010')).to.equal('15417543010');
     });
 
     it('should NOT automatically link numbers when there are non-single-space empty characters (such as newlines) in between', function () {
-        expect(autolinker.link('555 666  7777')).toBe('555 666  7777');
-        expect(autolinker.link('555	666 7777')).toBe('555	666 7777');
-        expect(autolinker.link('555\n666 7777')).toBe('555\n666 7777');
+        expect(autolinker.link('555 666  7777')).to.equal('555 666  7777');
+        expect(autolinker.link('555	666 7777')).to.equal('555	666 7777');
+        expect(autolinker.link('555\n666 7777')).to.equal('555\n666 7777');
     });
 
     it('should NOT link text that starts to look like a phone number, but is not', function () {
-        expect(autolinker.link('(555)abc 123')).toBe('(555)abc 123');
-        expect(autolinker.link('+1 (555)abc 123')).toBe('+1 (555)abc 123');
+        expect(autolinker.link('(555)abc 123')).to.equal('(555)abc 123');
+        expect(autolinker.link('+1 (555)abc 123')).to.equal('+1 (555)abc 123');
     });
 });

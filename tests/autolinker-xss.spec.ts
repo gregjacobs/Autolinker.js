@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import Autolinker, { AutolinkerConfig } from '../src/autolinker';
 
 describe('Autolinker XSS (Cross Site Scripting) check -', () => {
@@ -13,7 +14,7 @@ describe('Autolinker XSS (Cross Site Scripting) check -', () => {
         const autolinker = createAutolinker();
         const result = autolinker.link(`<img src="asdf.gif" onerror="alert('XSS!')">joe@joe.com`);
 
-        expect(result).toBe(
+        expect(result).to.equal(
             `<img src="asdf.gif" onerror="alert('XSS!')"><a href="mailto:joe@joe.com">joe@joe.com</a>`
         );
     });
@@ -22,7 +23,7 @@ describe('Autolinker XSS (Cross Site Scripting) check -', () => {
         const autolinker = createAutolinker({ sanitizeHtml: true });
         const result = autolinker.link(`<img src="asdf.gif" onerror="alert('XSS!')">joe@joe.com`);
 
-        expect(result).toBe(
+        expect(result).to.equal(
             `&lt;img src="asdf.gif" onerror="alert('XSS!')"&gt;<a href="mailto:joe@joe.com">joe@joe.com</a>`
         );
     });

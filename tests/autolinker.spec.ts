@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+import sinon from 'sinon';
 import * as _ from 'lodash';
 import Autolinker from '../src/autolinker';
 import { UrlMatch } from '../src/match/url-match';
@@ -17,7 +19,7 @@ describe('Autolinker', function () {
             const result = autolinker.link(
                 'Check out http://www.yahoo.com/some/long/path/to/a/file'
             );
-            expect(result).toBe(
+            expect(result).to.equal(
                 'Check out <a href="http://www.yahoo.com/some/long/path/to/a/file" title="http://www.yahoo.com/some/long/path/to/a/file">yahoo.com/some/long/pa&hellip;</a>'
             );
         });
@@ -26,7 +28,7 @@ describe('Autolinker', function () {
     describe('config checking', function () {
         describe('no configs', function () {
             it('should default to the default options if no `cfg` object is provided (namely, `newWindow: true`)', function () {
-                expect(Autolinker.link('Welcome to google.com')).toBe(
+                expect(Autolinker.link('Welcome to google.com')).to.equal(
                     'Welcome to <a href="http://google.com" target="_blank" rel="noopener noreferrer">google.com</a>'
                 );
             });
@@ -37,36 +39,36 @@ describe('Autolinker', function () {
                 expect(function () {
                     // @ts-expect-error Testing invalid value
                     new Autolinker({ hashtag: true }); // `true` is an invalid value - must be a service name
-                }).toThrowError("invalid `hashtag` cfg 'true' - see docs");
+                }).to.throw("invalid `hashtag` cfg 'true' - see docs");
 
                 expect(function () {
                     // @ts-expect-error Testing invalid value
                     new Autolinker({ hashtag: 'non-existent-service' });
-                }).toThrowError("invalid `hashtag` cfg 'non-existent-service' - see docs");
+                }).to.throw("invalid `hashtag` cfg 'non-existent-service' - see docs");
             });
 
             it("should not throw for the valid service name 'twitter'", function () {
                 expect(function () {
                     new Autolinker({ hashtag: 'twitter' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'facebook'", function () {
                 expect(function () {
                     new Autolinker({ hashtag: 'facebook' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'instagram'", function () {
                 expect(function () {
                     new Autolinker({ hashtag: 'instagram' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'tiktok'", function () {
                 expect(function () {
                     new Autolinker({ hashtag: 'tiktok' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
         });
 
@@ -75,36 +77,36 @@ describe('Autolinker', function () {
                 expect(function () {
                     // @ts-expect-error Testing invalid value
                     new Autolinker({ mention: true }); // `true` is an invalid value - must be a service name
-                }).toThrowError("invalid `mention` cfg 'true' - see docs");
+                }).to.throw("invalid `mention` cfg 'true' - see docs");
 
                 expect(function () {
                     // @ts-expect-error Testing invalid value
                     new Autolinker({ mention: 'non-existent-service' });
-                }).toThrowError("invalid `mention` cfg 'non-existent-service' - see docs");
+                }).to.throw("invalid `mention` cfg 'non-existent-service' - see docs");
             });
 
             it("should not throw for the valid service name 'twitter'", function () {
                 expect(function () {
                     new Autolinker({ mention: 'twitter' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'instagram'", function () {
                 expect(function () {
                     new Autolinker({ mention: 'instagram' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'soundcloud'", function () {
                 expect(function () {
                     new Autolinker({ mention: 'soundcloud' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
 
             it("should not throw for the valid service name 'tiktok'", function () {
                 expect(function () {
                     new Autolinker({ mention: 'tiktok' });
-                }).not.toThrow();
+                }).to.not.throw();
             });
         });
     });
@@ -123,12 +125,12 @@ describe('Autolinker', function () {
 
         it('should return an empty string when provided `undefined` as its argument', function () {
             // @ts-expect-error Testing invalid value
-            expect(autolinker.link(undefined)).toBe('');
+            expect(autolinker.link(undefined)).to.equal('');
         });
 
         it('should return an empty string when provided `null` as its argument', function () {
             // @ts-expect-error Testing invalid value
-            expect(autolinker.link(null)).toBe('');
+            expect(autolinker.link(null)).to.equal('');
         });
 
         describe('proper handling of HTML in the input string', function () {
@@ -136,7 +138,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and http://google.com'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p> and <a href="http://google.com">google.com</a>'
                 );
             });
@@ -145,19 +147,23 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>'
                 );
-                expect(result).toBe('<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>');
+                expect(result).to.equal(
+                    '<p>Joe went to <a href="http://www.yahoo.com">yahoo</a></p>'
+                );
             });
 
             it('should NOT automatically link URLs within the attributes of existing HTML tags when there are prefixed or suffixed spaces in the attribute values', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>'
                 );
-                expect(result).toBe('<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>');
+                expect(result).to.equal(
+                    '<p>Joe went to <a href=" http://www.yahoo.com">yahoo</a></p>'
+                );
 
                 const result2 = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com ">yahoo</a></p>'
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     '<p>Joe went to <a href="http://www.yahoo.com ">yahoo</a></p>'
                 );
             });
@@ -166,12 +172,14 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>'
                 );
-                expect(result).toBe('<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>');
+                expect(result).to.equal(
+                    '<p>Joe went to <a href=http://www.yahoo.com>yahoo</a></p>'
+                );
 
                 const result2 = autolinker.link(
                     '<p>Joe went to <a href=http://www.yahoo.com?query=1>yahoo</a></p>'
                 );
-                expect(result2).toBe(
+                expect(result2).to.equal(
                     '<p>Joe went to <a href=http://www.yahoo.com?query=1>yahoo</a></p>'
                 );
             });
@@ -180,7 +188,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Just a flower image <img src="https://farm9.staticflickr.com/8378/8578790632_83c6471f3f_b.jpg" />'
                 );
             });
@@ -189,7 +197,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <a href="http://www.yahoo.com">yahoo.com</a></p> yesterday.'
                 );
             });
@@ -198,7 +206,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <A href="http://www.yahoo.com">yahoo.com</A></p> yesterday.'
                 );
             });
@@ -207,7 +215,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<p>Joe went to google.com, <a href="http://www.yahoo.com">yahoo.com</a>, and weather.com</p> yesterday.'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <a href="http://google.com">google.com</a>, <a href="http://www.yahoo.com">yahoo.com</a>, and <a href="http://weather.com">weather.com</a></p> yesterday.'
                 );
             });
@@ -216,7 +224,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<img src="https://ssl.gstatic.com/welcome_calendar.png" alt="Calendar" style="display:block;"width="129"height="129"/>'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<img src="https://ssl.gstatic.com/welcome_calendar.png" alt="Calendar" style="display:block;"width="129"height="129"/>'
                 );
             });
@@ -225,7 +233,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a>'
                 );
             });
@@ -234,7 +242,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     'google.com looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at google.com)'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="http://google.com">google.com</a> looks like <a href="http://google.com"><img src="http://google.com/someImage.jpg" /></a> (at <a href="http://google.com">google.com</a>)'
                 );
             });
@@ -243,7 +251,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     'Testing with <style> .class { background-image: url("http://www.example.com/image.png"); } </style> tags'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Testing with <style> .class { background-image: url("http://www.example.com/image.png"); } </style> tags'
                 );
             });
@@ -252,7 +260,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     'Testing with <script> alert("http://google.com"); </script> tags'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Testing with <script> alert("http://google.com"); </script> tags'
                 );
             });
@@ -261,7 +269,7 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>"
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     "Testing <img src='http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg' style=' height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;'>"
                 );
             });
@@ -270,14 +278,14 @@ describe('Autolinker', function () {
                 const result = autolinker.link(
                     '<form class="approval-form" name="thumbsUp" ng-submit="postApproval()"> <button type="submit"> <img class="thumbs-up" ng-click="comment.body=\'<img src=\'http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png\' style=\'height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;\'>\'+comment.body;" ng-src="http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png"> </button> </form>'
                 );
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<form class="approval-form" name="thumbsUp" ng-submit="postApproval()"> <button type="submit"> <img class="thumbs-up" ng-click="comment.body=\'<img src=\'http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png\' style=\'height: 22px; background-color: rgb(0, 188, 204); border-radius: 7px; padding: 2px; margin: 0px 2px;\'>\'+comment.body;" ng-src="http://example.com/api-public/images/wg/w/Rating_and_Approval/icon-thumbs-up.png"> </button> </form>'
                 );
             });
 
             it('should NOT remove `br` tags from the output (Issue #46)', function () {
                 const result = autolinker.link('Testing<br /> with<br/> br<br> tags');
-                expect(result).toBe('Testing<br /> with<br/> br<br> tags');
+                expect(result).to.equal('Testing<br /> with<br/> br<br> tags');
             });
 
             it('should NOT automatically link anything in a !DOCTYPE tag (Issue #53)', function () {
@@ -285,19 +293,19 @@ describe('Autolinker', function () {
                     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
 
                 const result = autolinker.link(input);
-                expect(result).toBe(input);
+                expect(result).to.equal(input);
             });
 
             it('should NOT automatically link within comment tags', function () {
                 const result = autolinker.link('<!-- google.com -->');
 
-                expect(result).toBe('<!-- google.com -->');
+                expect(result).to.equal('<!-- google.com -->');
             });
 
             it('should NOT automatically link within multi-line comment tags', function () {
                 const result = autolinker.link('<!--\n\tgoogle.com\n\t-->');
 
-                expect(result).toBe('<!--\n\tgoogle.com\n\t-->');
+                expect(result).to.equal('<!--\n\tgoogle.com\n\t-->');
             });
 
             it('should automatically link between comment tags, but not the comment tags themselves', function () {
@@ -305,7 +313,7 @@ describe('Autolinker', function () {
                     '<!-- google.com -->\nweather.com\n<!-- http://yahoo.com -->'
                 );
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<!-- google.com -->\n<a href="http://weather.com">weather.com</a>\n<!-- http://yahoo.com -->'
                 );
             });
@@ -313,7 +321,7 @@ describe('Autolinker', function () {
             it('should NOT automatically link within comment tags, using part of the comment tag as the URL (Issue #88)', function () {
                 const result = autolinker.link('<!--.post-author-->');
 
-                expect(result).toBe('<!--.post-author-->');
+                expect(result).to.equal('<!--.post-author-->');
             });
 
             it('should automatically link tags after a !DOCTYPE tag', function () {
@@ -327,7 +335,7 @@ describe('Autolinker', function () {
                 ].join('');
 
                 const result = autolinker.link(input);
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
                         '<html>',
@@ -344,7 +352,7 @@ describe('Autolinker', function () {
                         'Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: http://dorcoshai.de/pb1205ro, und dann machst Du am Gewinnspiel mit! Gefallt mir klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)',
                     result = autolinker.link(inputStr);
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Shai ist endlich in Deutschland! Und wir haben gute Nachrichten! <3 Alle, die den Shai-Rasierer kostenlos probieren, machen am Gewinnspiel eines Jahresvorrates Klingen mit. Den Rasierer bekommst Du kostenlos durch diesen Link: <a href="http://dorcoshai.de/pb1205ro">dorcoshai.de/pb1205ro</a>, und dann machst Du am Gewinnspiel mit! Gefallt mir klicken, wenn Du gern einen Jahresvorrat Shai haben mochtest. (Y)'
                 );
             });
@@ -358,7 +366,7 @@ describe('Autolinker', function () {
                 ];
 
                 inputStrings.forEach(function (str) {
-                    expect(autolinker.link(str)).toBe(str); // no links in these, just making sure they don't fail with 100% cpu and an infinite loop
+                    expect(autolinker.link(str)).to.equal(str); // no links in these, just making sure they don't fail with 100% cpu and an infinite loop
                 });
             });
 
@@ -374,7 +382,7 @@ describe('Autolinker', function () {
                             'brigham@mtnhome.com'
                     );
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         [
                             '<<a href="mailto:US_Con_SL_RTNS@dell.com">US_Con_SL_RTNS@dell.com</a>',
                             "He gave me a 1-800 customer care number that I've called twice.  The last time I called, about 3 weeks ago, the customer rep said he would request an expedited response. He gave me a reference number which is  925767619. Thankyou very much for looking into this.",
@@ -395,7 +403,7 @@ describe('Autolinker', function () {
 
                     const result = autolinker.link(str);
 
-                    expect(result).toBe(str);
+                    expect(result).to.equal(str);
                 }
             );
 
@@ -409,7 +417,7 @@ describe('Autolinker', function () {
 
                     const result = autolinker.link(str);
 
-                    expect(result).toBe(str);
+                    expect(result).to.equal(str);
                 }
             );
 
@@ -421,7 +429,7 @@ describe('Autolinker', function () {
                             '<Office%20days:%20Tue.%20&%20Wed.%20(till%2015:30%20hr),%20Thu.%20(till%2017:30%20hr),%20Fri.%20(till%2012:30%20hr).%3c/a%3e%3cbr%3e%3c/td%3e%3ctd%20style=>',
                         result = autolinker.link(str);
 
-                    expect(result).toBe(str);
+                    expect(result).to.equal(str);
                 }
             );
 
@@ -438,7 +446,7 @@ describe('Autolinker', function () {
                     })();
 
                     const result = autolinker.link(testStr);
-                    expect(result).toBe(testStr);
+                    expect(result).to.equal(testStr);
                 }
             );
 
@@ -457,14 +465,14 @@ describe('Autolinker', function () {
                 ].join('');
 
                 const result = autolinker.link(input);
-                expect(result).toBe(input);
+                expect(result).to.equal(input);
             });
 
             it('should allow the full range of HTML attribute name characters as specified in the W3C HTML syntax document (http://www.w3.org/TR/html-markup/syntax.html)', function () {
                 // Note: We aren't actually expecting the HTML to be modified by this test
                 const inAndOutHtml =
                     '<ns:p>Foo <a data-qux-="" href="http://www.example.com">Bar</a> Baz</ns:p>';
-                expect(autolinker.link(inAndOutHtml)).toBe(inAndOutHtml);
+                expect(autolinker.link(inAndOutHtml)).to.equal(inAndOutHtml);
             });
 
             it('should properly autolink text within namespaced HTML elements, skipping over html elements with urls in attribute values', function () {
@@ -472,7 +480,7 @@ describe('Autolinker', function () {
                     '<ns:p>Go to google.com or <a data-qux-="test" href="http://www.example.com">Bar</a> Baz</ns:p>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<ns:p>Go to <a href="http://google.com">google.com</a> or <a data-qux-="test" href="http://www.example.com">Bar</a> Baz</ns:p>'
                 );
             });
@@ -482,7 +490,7 @@ describe('Autolinker', function () {
                     '<div google.com anotherAttr yahoo.com>My div that has an attribute of google.com</div>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<div google.com anotherAttr yahoo.com>My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
@@ -492,7 +500,7 @@ describe('Autolinker', function () {
                     '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of google.com</div>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<div google.com="yes" anotherAttr=true yahoo.com="true">My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
@@ -502,7 +510,7 @@ describe('Autolinker', function () {
                     '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of google.com</div>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<div  google.com="yes" \t\t anotherAttr=true   yahoo.com="true"  \t>My div that has an attribute of <a href="http://google.com">google.com</a></div>'
                 );
             });
@@ -512,7 +520,7 @@ describe('Autolinker', function () {
                     '<div url="google.com" email="asdf@asdf.com" mention="@asdf">google.com asdf@asdf.com @asdf</div>';
 
                 const result = twitterAutolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<div url="google.com" email="asdf@asdf.com" mention="@asdf">',
                         '<a href="http://google.com">google.com</a> ',
@@ -528,7 +536,7 @@ describe('Autolinker', function () {
                     '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">google.com asdf@asdf.com @asdf</div>';
 
                 const result = twitterAutolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<div google.com="google.com" asdf@asdf.com="asdf@asdf.com" @asdf="@asdf">',
                         '<a href="http://google.com">google.com</a> ',
@@ -543,14 +551,14 @@ describe('Autolinker', function () {
                 const html = '<a href="http://google.com"><b>google.com</b></a>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(html);
+                expect(result).to.equal(html);
             });
 
             it('should attempt to handle some invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags', function () {
                 const html = '</a><a href="http://google.com">google.com</a>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(html);
+                expect(result).to.equal(html);
             });
 
             it('should attempt to handle some more complex invalid HTML markup relating to <a> tags, esp if there are extraneous closing </a> tags', function () {
@@ -566,7 +574,7 @@ describe('Autolinker', function () {
                 ].join('');
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '</a>', // invalid - left alone
                         '<a href="http://google.com">google.com</a>', // valid tag - left alone
@@ -584,7 +592,7 @@ describe('Autolinker', function () {
                 const html = '<p>Joe went to yahoo.com&nbsp;and google.com&nbsp;today</p>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <a href="http://yahoo.com">yahoo.com</a>&nbsp;and <a href="http://google.com">google.com</a>&nbsp;today</p>'
                 );
             });
@@ -594,7 +602,7 @@ describe('Autolinker', function () {
                     'Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Joe went to <a href="http://yahoo.com">yahoo.com</a> and used HTML&nbsp;entities like &gt; and &lt; <a href="http://google.com">google.com</a>'
                 );
             });
@@ -603,7 +611,7 @@ describe('Autolinker', function () {
                 const html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
                 );
             });
@@ -613,7 +621,7 @@ describe('Autolinker', function () {
                     '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>'
                 );
             });
@@ -625,36 +633,42 @@ describe('Autolinker', function () {
                     'Joe learned about anchor tags on the &lt;a href=&quot;<a href="http://www.w3schools.com/aaa">w3schools.com/aaa</a>&quot;&gt;W3SCHOOLS&lt;/a&gt; site ...';
 
                 const result = autolinker.link(html);
-                expect(result).toBe(tobe);
+                expect(result).to.equal(tobe);
             });
         });
 
         describe('HTML entity character handling', () => {
             it('should handle an HTML entity at the beginning of the string', function () {
                 const result = autolinker.link('&amp;now go to google.com');
-                expect(result).toBe('&amp;now go to <a href="http://google.com">google.com</a>');
+                expect(result).to.equal(
+                    '&amp;now go to <a href="http://google.com">google.com</a>'
+                );
             });
 
             it('should handle an HTML entity at the end of the string', function () {
                 const result = autolinker.link('now go to google.com &amp;');
-                expect(result).toBe('now go to <a href="http://google.com">google.com</a> &amp;');
+                expect(result).to.equal(
+                    'now go to <a href="http://google.com">google.com</a> &amp;'
+                );
             });
 
             it('should handle an HTML entity at the beginning and end of the string', function () {
                 const result = autolinker.link('&amp;now go to google.com &amp;');
-                expect(result).toBe(
+                expect(result).to.equal(
                     '&amp;now go to <a href="http://google.com">google.com</a> &amp;'
                 );
             });
 
             it('should handle an HTML entity in the middle of the string', function () {
                 const result = autolinker.link('now &amp;go to google.com');
-                expect(result).toBe('now &amp;go to <a href="http://google.com">google.com</a>');
+                expect(result).to.equal(
+                    'now &amp;go to <a href="http://google.com">google.com</a>'
+                );
             });
 
             it('should handle a string with only an HTML entity', function () {
                 const result = autolinker.link('&amp;');
-                expect(result).toBe('&amp;');
+                expect(result).to.equal('&amp;');
             });
         });
 
@@ -663,14 +677,14 @@ describe('Autolinker', function () {
                 const result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
                 });
-                expect(result).toBe('Test <a href="http://url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://url.com">url.com</a>');
             });
 
             it('should add target="_blank" and rel="noopener noreferrer" when the \'newWindow\' option is set to true (see https://mathiasbynens.github.io/rel-noopener/ about the \'rel\' attribute, which prevents a potential phishing attack)', function () {
                 const result = Autolinker.link('Test http://url.com', {
                     newWindow: true,
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Test <a href="http://url.com" target="_blank" rel="noopener noreferrer">url.com</a>'
                 );
             });
@@ -682,7 +696,7 @@ describe('Autolinker', function () {
                     stripPrefix: true,
                     newWindow: false,
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Test <a href="file://execute-virus.com">file://execute-virus.com</a>'
                 );
             });
@@ -692,7 +706,7 @@ describe('Autolinker', function () {
                     stripPrefix: true,
                     newWindow: false,
                 });
-                expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://www.url.com">url.com</a>');
             });
 
             it("should not remove 'http://www.' when the 'stripPrefix' option is set to `false`", function () {
@@ -700,7 +714,7 @@ describe('Autolinker', function () {
                     stripPrefix: false,
                     newWindow: false,
                 });
-                expect(result).toBe('Test <a href="http://www.url.com">http://www.url.com</a>');
+                expect(result).to.equal('Test <a href="http://www.url.com">http://www.url.com</a>');
             });
 
             it('should leave the original text as-is when the `stripPrefix` option is `false`', function () {
@@ -708,32 +722,32 @@ describe('Autolinker', function () {
                     stripPrefix: false,
                     newWindow: false,
                 });
-                expect(result1).toBe('My <a href="http://url.com">url.com</a>');
+                expect(result1).to.equal('My <a href="http://url.com">url.com</a>');
 
                 const result2 = Autolinker.link('My www.url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
-                expect(result2).toBe('My <a href="http://www.url.com">www.url.com</a>');
+                expect(result2).to.equal('My <a href="http://www.url.com">www.url.com</a>');
 
                 const result3 = Autolinker.link('My http://url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
-                expect(result3).toBe('My <a href="http://url.com">http://url.com</a>');
+                expect(result3).to.equal('My <a href="http://url.com">http://url.com</a>');
 
                 const result4 = Autolinker.link('My http://www.url.com', {
                     stripPrefix: false,
                     newWindow: false,
                 });
-                expect(result4).toBe('My <a href="http://www.url.com">http://www.url.com</a>');
+                expect(result4).to.equal('My <a href="http://www.url.com">http://www.url.com</a>');
             });
 
             it('should remove the prefix by default', function () {
                 const result = Autolinker.link('Test http://www.url.com', {
                     newWindow: false,
                 });
-                expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://www.url.com">url.com</a>');
             });
 
             it(
@@ -745,7 +759,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://www.url.com">www.url.com</a>');
+                    expect(result).to.equal('Test <a href="http://www.url.com">www.url.com</a>');
                 }
             );
 
@@ -758,7 +772,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://www.url.com">http://url.com</a>');
+                    expect(result).to.equal('Test <a href="http://www.url.com">http://url.com</a>');
                 }
             );
 
@@ -771,7 +785,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://url.com">http://url.com</a>');
+                    expect(result).to.equal('Test <a href="http://url.com">http://url.com</a>');
                 }
             );
 
@@ -784,7 +798,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
+                    expect(result).to.equal('Test <a href="http://www.url.com">url.com</a>');
                 }
             );
 
@@ -797,7 +811,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://www.url.com">url.com</a>');
+                    expect(result).to.equal('Test <a href="http://www.url.com">url.com</a>');
                 }
             );
 
@@ -810,7 +824,9 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('Test <a href="http://www.url.com">http://www.url.com</a>');
+                    expect(result).to.equal(
+                        'Test <a href="http://www.url.com">http://www.url.com</a>'
+                    );
                 }
             );
         });
@@ -823,7 +839,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe('<a href="http://google.com/">http://google.com</a>');
+                expect(result).to.equal('<a href="http://google.com/">http://google.com</a>');
             });
 
             it('when provided as `true`, should remove the trailing slash', function () {
@@ -833,7 +849,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe('<a href="http://google.com/">http://google.com</a>');
+                expect(result).to.equal('<a href="http://google.com/">http://google.com</a>');
             });
 
             it(
@@ -845,7 +861,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe('<a href="http://google.com/">http://google.com/</a>');
+                    expect(result).to.equal('<a href="http://google.com/">http://google.com/</a>');
                 }
             );
         });
@@ -858,7 +874,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="https://en.wikipedia.org/wiki/San_Jos%C3%A9">https://en.wikipedia.org/wiki/San_José</a>'
                 );
             });
@@ -870,7 +886,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="https://en.wikipedia.org/wiki/San_Jos%C3%A9">https://en.wikipedia.org/wiki/San_José</a>'
                 );
             });
@@ -882,7 +898,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     '<a href="https://en.wikipedia.org/wiki/San_Jos%C3%A9">https://en.wikipedia.org/wiki/San_Jos%C3%A9</a>'
                 );
             });
@@ -895,7 +911,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -906,7 +922,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -917,7 +933,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>'
                     );
                 });
@@ -928,7 +944,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     }); // the exact length of the link
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -939,7 +955,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     }); // just a random high number
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -952,7 +968,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -963,7 +979,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path">url.com/with/path</a>'
                     );
                 });
@@ -974,7 +990,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>'
                     );
                 });
@@ -985,7 +1001,7 @@ describe('Autolinker', function () {
                         newWindow: false,
                     });
 
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/w&hellip;</a>'
                     );
                 });
@@ -995,7 +1011,7 @@ describe('Autolinker', function () {
                         truncate: { length: 12, location: 'middle' },
                         newWindow: false,
                     });
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.c&hellip;path</a>'
                     );
                 });
@@ -1005,7 +1021,7 @@ describe('Autolinker', function () {
                         truncate: { length: 12, location: 'smart' },
                         newWindow: false,
                     });
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         'Test <a href="http://url.com/with/path" title="http://url.com/with/path">url.com/&hellip;h</a>'
                     );
                 });
@@ -1017,7 +1033,7 @@ describe('Autolinker', function () {
                 let result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
                 });
-                expect(result).toBe('Test <a href="http://url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://url.com">url.com</a>');
 
                 result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
@@ -1025,13 +1041,13 @@ describe('Autolinker', function () {
                     // @ts-expect-error Testing invalid value
                     className: null,
                 });
-                expect(result).toBe('Test <a href="http://url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://url.com">url.com</a>');
 
                 result = Autolinker.link('Test http://url.com', {
                     newWindow: false,
                     className: '',
                 });
-                expect(result).toBe('Test <a href="http://url.com">url.com</a>');
+                expect(result).to.equal('Test <a href="http://url.com">url.com</a>');
             });
 
             it('should add className to links', function () {
@@ -1039,7 +1055,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Test <a href="http://url.com" class="myLink myLink-url">url.com</a>'
                 );
             });
@@ -1050,7 +1066,7 @@ describe('Autolinker', function () {
                     email: true,
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Iggy\'s email is <a href="mailto:mr@iggypop.com" class="myLink myLink-email">mr@iggypop.com</a>'
                 );
             });
@@ -1061,7 +1077,7 @@ describe('Autolinker', function () {
                     mention: 'twitter',
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-mention myLink-twitter">@iggypopschest</a>'
                 );
             });
@@ -1072,7 +1088,7 @@ describe('Autolinker', function () {
                     mention: 'twitter',
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'hi from <a href="https://twitter.com/iggypopschest" class="myLink myLink-mention myLink-twitter">@iggypopschest</a>'
                 );
 
@@ -1081,7 +1097,7 @@ describe('Autolinker', function () {
                     mention: 'instagram',
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'hi from <a href="https://instagram.com/iggypopschest" class="myLink myLink-mention myLink-instagram">@iggypopschest</a>'
                 );
 
@@ -1090,7 +1106,7 @@ describe('Autolinker', function () {
                     mention: 'soundcloud',
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'hi from <a href="https://soundcloud.com/iggypopschest" class="myLink myLink-mention myLink-soundcloud">@iggypopschest</a>'
                 );
 
@@ -1099,7 +1115,7 @@ describe('Autolinker', function () {
                     mention: 'tiktok',
                     className: 'myLink',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     'hi from <a href="https://www.tiktok.com/@iggypopschest" class="myLink myLink-mention myLink-tiktok">@iggypopschest</a>'
                 );
             });
@@ -1115,7 +1131,7 @@ describe('Autolinker', function () {
                     urls: true,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<a href="http://google.com">http://google.com</a>',
                         '<a href="http://google.com">google.com</a>',
@@ -1131,7 +1147,9 @@ describe('Autolinker', function () {
                     urls: false,
                 });
 
-                expect(result).toBe(['http://google.com', 'google.com', '192.168.0.1'].join(' '));
+                expect(result).to.equal(
+                    ['http://google.com', 'google.com', '192.168.0.1'].join(' ')
+                );
             });
 
             it('should only link scheme URLs if `schemeMatches` is the only `urls` option that is `true`', function () {
@@ -1145,7 +1163,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<a href="http://google.com">http://google.com</a>',
                         'google.com',
@@ -1165,7 +1183,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'http://google.com',
                         '<a href="http://google.com">google.com</a>',
@@ -1185,7 +1203,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'http://google.com',
                         'google.com',
@@ -1205,7 +1223,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<a href="http://google.com">http://google.com</a>',
                         'google.com',
@@ -1225,7 +1243,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         '<a href="http://google.com">http://google.com</a>',
                         '<a href="http://google.com">google.com</a>',
@@ -1245,7 +1263,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'http://google.com',
                         '<a href="http://google.com">google.com</a>',
@@ -1265,7 +1283,9 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(['http://google.com', 'google.com', '192.168.0.1'].join(' '));
+                expect(result).to.equal(
+                    ['http://google.com', 'google.com', '192.168.0.1'].join(' ')
+                );
             });
         });
 
@@ -1284,7 +1304,7 @@ describe('Autolinker', function () {
                     mention: 'twitter',
                     newWindow: false,
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1301,7 +1321,7 @@ describe('Autolinker', function () {
                     hashtag: 'twitter',
                     mention: 'twitter',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1316,7 +1336,7 @@ describe('Autolinker', function () {
                     hashtag: 'twitter',
                     mention: 'instagram',
                 });
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1335,7 +1355,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: asdf.com',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1354,7 +1374,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: asdf@asdf.com',
@@ -1373,7 +1393,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1391,7 +1411,7 @@ describe('Autolinker', function () {
                     mention: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1409,7 +1429,7 @@ describe('Autolinker', function () {
                     newWindow: false,
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1428,10 +1448,10 @@ describe('Autolinker', function () {
             const returnFalseFn = function () {
                 return false;
             };
-            let replaceFnSpy: jasmine.Spy;
+            let replaceFnSpy: sinon.SinonSpy;
 
             beforeEach(function () {
-                replaceFnSpy = jasmine.createSpy('replaceFnSpy');
+                replaceFnSpy = sinon.spy();
             });
 
             it(
@@ -1443,8 +1463,8 @@ describe('Autolinker', function () {
                     });
                     replaceFnAutolinker.link('asdf.com'); // will call the `replaceFn`
 
-                    expect(replaceFnSpy).toHaveBeenCalled();
-                    expect(replaceFnSpy.calls.first().object).toBe(replaceFnAutolinker);
+                    expect(replaceFnSpy.callCount).to.equal(1);
+                    expect(replaceFnSpy.firstCall.thisValue).to.equal(replaceFnAutolinker);
                 }
             );
 
@@ -1459,8 +1479,8 @@ describe('Autolinker', function () {
                     });
                     replaceFnAutolinker.link('asdf.com'); // will call the `replaceFn`
 
-                    expect(replaceFnSpy).toHaveBeenCalled();
-                    expect(replaceFnSpy.calls.first().object).toBe(contextObj);
+                    expect(replaceFnSpy.callCount).to.equal(1);
+                    expect(replaceFnSpy.firstCall.thisValue).to.equal(contextObj);
                 }
             );
 
@@ -1471,12 +1491,12 @@ describe('Autolinker', function () {
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
-                        expect(match.getMatchedText()).toBe('asdf.com');
-                        expect((match as UrlMatch).getUrl()).toBe('http://asdf.com');
+                        expect(match.getMatchedText()).to.equal('asdf.com');
+                        expect((match as UrlMatch).getUrl()).to.equal('http://asdf.com');
                     },
                 });
 
-                expect(replaceFnCallCount).toBe(1); // make sure the replaceFn was called
+                expect(replaceFnCallCount).to.equal(1); // make sure the replaceFn was called
             });
 
             it('should populate an EmailMatch object with the appropriate properties', function () {
@@ -1486,12 +1506,12 @@ describe('Autolinker', function () {
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
-                        expect(match.getMatchedText()).toBe('asdf@asdf.com');
-                        expect((match as EmailMatch).getEmail()).toBe('asdf@asdf.com');
+                        expect(match.getMatchedText()).to.equal('asdf@asdf.com');
+                        expect((match as EmailMatch).getEmail()).to.equal('asdf@asdf.com');
                     },
                 });
 
-                expect(replaceFnCallCount).toBe(1); // make sure the replaceFn was called
+                expect(replaceFnCallCount).to.equal(1); // make sure the replaceFn was called
             });
 
             it('should populate a HashtagMatch object with the appropriate properties', function () {
@@ -1502,13 +1522,13 @@ describe('Autolinker', function () {
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
-                        expect(match.getType()).toBe('hashtag');
-                        expect(match.getMatchedText()).toBe('#myHashtag');
-                        expect((match as HashtagMatch).getHashtag()).toBe('myHashtag');
+                        expect(match.getType()).to.equal('hashtag');
+                        expect(match.getMatchedText()).to.equal('#myHashtag');
+                        expect((match as HashtagMatch).getHashtag()).to.equal('myHashtag');
                     },
                 });
 
-                expect(replaceFnCallCount).toBe(1); // make sure the replaceFn was called
+                expect(replaceFnCallCount).to.equal(1); // make sure the replaceFn was called
             });
 
             it('should populate a TwitterMatch object with the appropriate properties', function () {
@@ -1519,12 +1539,12 @@ describe('Autolinker', function () {
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
-                        expect(match.getMatchedText()).toBe('@myTwitter');
-                        expect((match as MentionMatch).getMention()).toBe('myTwitter');
+                        expect(match.getMatchedText()).to.equal('@myTwitter');
+                        expect((match as MentionMatch).getMention()).to.equal('myTwitter');
                     },
                 });
 
-                expect(replaceFnCallCount).toBe(1); // make sure the replaceFn was called
+                expect(replaceFnCallCount).to.equal(1); // make sure the replaceFn was called
             });
 
             it('should populate a MentionMatch object with the appropriate properties', function () {
@@ -1535,12 +1555,12 @@ describe('Autolinker', function () {
                     replaceFn: function (match: Match) {
                         replaceFnCallCount++;
 
-                        expect(match.getMatchedText()).toBe('@myTwitter');
-                        expect((match as MentionMatch).getMention()).toBe('myTwitter');
+                        expect(match.getMatchedText()).to.equal('@myTwitter');
+                        expect((match as MentionMatch).getMention()).to.equal('myTwitter');
                     },
                 });
 
-                expect(replaceFnCallCount).toBe(1); // make sure the replaceFn was called
+                expect(replaceFnCallCount).to.equal(1); // make sure the replaceFn was called
             });
 
             it('should replace the match as Autolinker would normally do when `true` is returned from the `replaceFn`', function () {
@@ -1553,7 +1573,7 @@ describe('Autolinker', function () {
                     }
                 );
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1572,7 +1592,7 @@ describe('Autolinker', function () {
                     }
                 );
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     [
                         'Website: <a href="http://asdf.com">asdf.com</a>',
                         'EmailMatch: <a href="mailto:asdf@asdf.com">asdf@asdf.com</a>',
@@ -1590,7 +1610,7 @@ describe('Autolinker', function () {
                     }
                 );
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     ['Website: asdf.com', 'EmailMatch: asdf@asdf.com', 'Twitter: @asdf'].join(', ')
                 );
             });
@@ -1606,7 +1626,7 @@ describe('Autolinker', function () {
                     }
                 );
 
-                expect(result).toBe('Website: test, EmailMatch: test, Twitter: test');
+                expect(result).to.equal('Website: test, EmailMatch: test, Twitter: test');
             });
 
             it('should allow an Autolinker.HtmlTag instance to be returned from the `replaceFn`, and use that as the HTML to be replaced from the input', function () {
@@ -1620,7 +1640,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe('Website: <a href="http://asdf.com">asdf!</a>');
+                expect(result).to.equal('Website: <a href="http://asdf.com">asdf!</a>');
             });
 
             it('should allow an Autolinker.HtmlTag instance to be modified before being returned from the `replaceFn`', function () {
@@ -1636,7 +1656,7 @@ describe('Autolinker', function () {
                     },
                 });
 
-                expect(result).toBe(
+                expect(result).to.equal(
                     'Website: <a href="http://asdf.com" class="test test2" rel="nofollow">asdf.com</a>'
                 );
             });
@@ -1647,7 +1667,7 @@ describe('Autolinker', function () {
                     replaceFn: returnFalseFn,
                 });
 
-                expect(result).toBe('Go to the website (asdf.com) and see');
+                expect(result).to.equal('Go to the website (asdf.com) and see');
             });
 
             describe('special cases which check the `prefixStr` and `suffixStr` vars in the code', function () {
@@ -1655,26 +1675,26 @@ describe('Autolinker', function () {
                     const result = Autolinker.link('@asdf', {
                         replaceFn: returnFalseFn,
                     });
-                    expect(result).toBe('@asdf');
+                    expect(result).to.equal('@asdf');
 
                     const result2 = Autolinker.link('Twitter: @asdf', {
                         mention: 'twitter',
                         replaceFn: returnFalseFn,
                     });
-                    expect(result2).toBe('Twitter: @asdf');
+                    expect(result2).to.equal('Twitter: @asdf');
                 });
 
                 it('should leave the match as-is when the `replaceFn` returns `false`, and the URL was wrapped in parenthesis', function () {
                     const result = Autolinker.link('Go to (yahoo.com) my friend', {
                         replaceFn: returnFalseFn,
                     });
-                    expect(result).toBe('Go to (yahoo.com) my friend');
+                    expect(result).to.equal('Go to (yahoo.com) my friend');
 
                     const result2 = Autolinker.link(
                         'Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend',
                         { replaceFn: returnFalseFn }
                     );
-                    expect(result2).toBe(
+                    expect(result2).to.equal(
                         'Go to en.wikipedia.org/wiki/IANA_(disambiguation) my friend'
                     );
 
@@ -1682,7 +1702,7 @@ describe('Autolinker', function () {
                         'Go to (en.wikipedia.org/wiki/IANA_(disambiguation)) my friend',
                         { replaceFn: returnFalseFn }
                     );
-                    expect(result3).toBe(
+                    expect(result3).to.equal(
                         'Go to (en.wikipedia.org/wiki/IANA_(disambiguation)) my friend'
                     );
                 });
@@ -1691,7 +1711,7 @@ describe('Autolinker', function () {
                     const result = Autolinker.link('Go to //yahoo.com my friend', {
                         replaceFn: returnFalseFn,
                     });
-                    expect(result).toBe('Go to //yahoo.com my friend');
+                    expect(result).to.equal('Go to //yahoo.com my friend');
                 });
             });
         });
@@ -1797,7 +1817,7 @@ describe('Autolinker', function () {
                         resultLines = result.split('\n'), // splitting line-by-line to make it easier to see where a failure is
                         expectedLines = generateExpectedLines(cfg);
 
-                    expect(resultLines.length).toBe(expectedLines.length); // just in case
+                    expect(resultLines.length).to.equal(expectedLines.length); // just in case
 
                     for (let j = 0, jlen = expectedLines.length; j < jlen; j++) {
                         if (resultLines[j] !== expectedLines[j]) {
@@ -1860,7 +1880,7 @@ describe('Autolinker', function () {
                 })();
 
                 const result = Autolinker.link(testStr);
-                expect(result).toBe(testStr);
+                expect(result).to.equal(testStr);
             });
         });
 
@@ -1868,35 +1888,35 @@ describe('Autolinker', function () {
             describe('starting with an email >', () => {
                 it(`followed by a URL if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('stuff@stuff.com/http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="http://google.com">google.com</a>'
                     );
                 });
 
                 it(`followed by an email if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('stuff@stuff.com/things@things.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="mailto:things@things.com">things@things.com</a>'
                     );
                 });
 
                 it(`followed by a hashtag if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('stuff@stuff.com/#Stuff');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>'
                     );
                 });
 
                 it(`followed by a mention if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('stuff@stuff.com/@stuff');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="https://twitter.com/stuff">@stuff</a>'
                     );
                 });
 
                 it(`followed by a phone number if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('stuff@stuff.com/123-456-7890');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="mailto:stuff@stuff.com">stuff@stuff.com</a>/<a href="tel:1234567890">123-456-7890</a>'
                     );
                 });
@@ -1905,14 +1925,14 @@ describe('Autolinker', function () {
             describe('starting with phone number >', () => {
                 it('should parse a phone number directly next to a scheme-prefixed URL', function () {
                     const result = autolinker.link('+1123123123http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a><a href="http://google.com">google.com</a>'
                     );
                 });
 
                 it(`should parse a phone number followed by a URL if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="http://google.com">google.com</a>'
                     );
                 });
@@ -1923,40 +1943,40 @@ describe('Autolinker', function () {
                 // TODO: Should this definitely be the case?
                 it('should parse a phone number directly next to a TLD URL', function () {
                     const result = autolinker.link('+1123123123google.com');
-                    expect(result).toBe('<a href="tel:+1123123123">+1123123123</a>google.com');
+                    expect(result).to.equal('<a href="tel:+1123123123">+1123123123</a>google.com');
                 });
 
                 it(`followed by a URL if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="http://google.com">google.com</a>'
                     );
                 });
 
                 it(`followed by an email if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/things@things.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="mailto:things@things.com">things@things.com</a>'
                     );
                 });
 
                 it(`followed by a hashtag if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/#Stuff');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>'
                     );
                 });
 
                 it(`followed by a mention if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/@stuff');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="https://twitter.com/stuff">@stuff</a>'
                     );
                 });
 
                 it(`followed by a phone number if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('+1123123123/123-456-7890');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="tel:+1123123123">+1123123123</a>/<a href="tel:1234567890">123-456-7890</a>'
                     );
                 });
@@ -1965,35 +1985,35 @@ describe('Autolinker', function () {
             describe('starting with a hashtag >', () => {
                 it(`followed by a URL if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('#Stuff/http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="http://google.com">google.com</a>'
                     );
                 });
 
                 it(`followed by an email if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('#Stuff/things@things.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="mailto:things@things.com">things@things.com</a>'
                     );
                 });
 
                 it(`followed by a hashtag if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('#Stuff/#Things');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="https://twitter.com/hashtag/Things">#Things</a>'
                     );
                 });
 
                 it(`followed by a mention if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('#Stuff/@things');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="https://twitter.com/things">@things</a>'
                     );
                 });
 
                 it(`followed by a phone number if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('#Stuff/123-456-7890');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/hashtag/Stuff">#Stuff</a>/<a href="tel:1234567890">123-456-7890</a>'
                     );
                 });
@@ -2002,35 +2022,35 @@ describe('Autolinker', function () {
             describe('starting with a mention', () => {
                 it(`followed by a URL if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('@stuff/http://google.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/stuff">@stuff</a>/<a href="http://google.com">google.com</a>'
                     );
                 });
 
                 it(`followed by an email if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('@stuff/things@things.com');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/stuff">@stuff</a>/<a href="mailto:things@things.com">things@things.com</a>'
                     );
                 });
 
                 it(`followed by a hashtag if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('@stuff/#Things');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/stuff">@stuff</a>/<a href="https://twitter.com/hashtag/Things">#Things</a>'
                     );
                 });
 
                 it(`followed by a mention if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('@stuff/@things');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/stuff">@stuff</a>/<a href="https://twitter.com/things">@things</a>'
                     );
                 });
 
                 it(`followed by a phone number if separated by a '/'`, () => {
                     const result = twitterAutolinker.link('@stuff/123-456-7890');
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         '<a href="https://twitter.com/stuff">@stuff</a>/<a href="tel:1234567890">123-456-7890</a>'
                     );
                 });
@@ -2053,22 +2073,22 @@ describe('Autolinker', function () {
                 mention: 'twitter',
             });
 
-            expect(matches.length).toBe(5);
+            expect(matches.length).to.equal(5);
 
-            expect(matches[0].getType()).toBe('url');
-            expect((matches[0] as UrlMatch).getUrl()).toBe('http://asdf.com');
+            expect(matches[0].getType()).to.equal('url');
+            expect((matches[0] as UrlMatch).getUrl()).to.equal('http://asdf.com');
 
-            expect(matches[1].getType()).toBe('email');
-            expect((matches[1] as EmailMatch).getEmail()).toBe('asdf@asdf.com');
+            expect(matches[1].getType()).to.equal('email');
+            expect((matches[1] as EmailMatch).getEmail()).to.equal('asdf@asdf.com');
 
-            expect(matches[2].getType()).toBe('phone');
-            expect((matches[2] as PhoneMatch).getNumber()).toBe('1234567890');
+            expect(matches[2].getType()).to.equal('phone');
+            expect((matches[2] as PhoneMatch).getNumber()).to.equal('1234567890');
 
-            expect(matches[3].getType()).toBe('mention');
-            expect((matches[3] as MentionMatch).getMention()).toBe('asdf1');
+            expect(matches[3].getType()).to.equal('mention');
+            expect((matches[3] as MentionMatch).getMention()).to.equal('asdf1');
 
-            expect(matches[4].getType()).toBe('hashtag');
-            expect((matches[4] as HashtagMatch).getHashtag()).toBe('asdf2');
+            expect(matches[4].getType()).to.equal('hashtag');
+            expect((matches[4] as HashtagMatch).getHashtag()).to.equal('asdf2');
         });
     });
 
@@ -2095,7 +2115,7 @@ describe('Autolinker', function () {
             ].join(' ');
             const matches = autolinker.parse(text);
 
-            expect(matches.length).toBe(9);
+            expect(matches.length).to.equal(9);
 
             const [
                 schemeMatch,
@@ -2137,108 +2157,108 @@ describe('Autolinker', function () {
                 throw new Error('matches[8] should be a hashtag match');
             }
 
-            expect(schemeMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
-            expect(schemeMatch.getMatchedText()).toBe('http://asdf.com');
-            expect(schemeMatch.getOffset()).toBe(16);
-            expect(schemeMatch.getAnchorHref()).toBe('http://asdf.com');
-            expect(schemeMatch.getAnchorText()).toBe('asdf.com');
-            expect(schemeMatch.getCssClassSuffixes()).toEqual(['url']);
-            expect(schemeMatch.getUrlMatchType()).toBe('scheme');
-            expect(schemeMatch.getUrl()).toBe('http://asdf.com');
-            expect(schemeMatch.buildTag().toAnchorString()).toBe(
+            expect(schemeMatch.getType()).to.equal('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(schemeMatch.getMatchedText()).to.equal('http://asdf.com');
+            expect(schemeMatch.getOffset()).to.equal(16);
+            expect(schemeMatch.getAnchorHref()).to.equal('http://asdf.com');
+            expect(schemeMatch.getAnchorText()).to.equal('asdf.com');
+            expect(schemeMatch.getCssClassSuffixes()).to.deep.equal(['url']);
+            expect(schemeMatch.getUrlMatchType()).to.equal('scheme');
+            expect(schemeMatch.getUrl()).to.equal('http://asdf.com');
+            expect(schemeMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="http://asdf.com">asdf.com</a>'
             );
 
-            expect(tldMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
-            expect(tldMatch.getMatchedText()).toBe('asdf.com');
-            expect(tldMatch.getOffset()).toBe(42);
-            expect(tldMatch.getAnchorHref()).toBe('http://asdf.com');
-            expect(tldMatch.getAnchorText()).toBe('asdf.com');
-            expect(tldMatch.getCssClassSuffixes()).toEqual(['url']);
-            expect(tldMatch.getUrlMatchType()).toBe('tld');
-            expect(tldMatch.getUrl()).toBe('http://asdf.com');
-            expect(tldMatch.buildTag().toAnchorString()).toBe(
+            expect(tldMatch.getType()).to.equal('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(tldMatch.getMatchedText()).to.equal('asdf.com');
+            expect(tldMatch.getOffset()).to.equal(42);
+            expect(tldMatch.getAnchorHref()).to.equal('http://asdf.com');
+            expect(tldMatch.getAnchorText()).to.equal('asdf.com');
+            expect(tldMatch.getCssClassSuffixes()).to.deep.equal(['url']);
+            expect(tldMatch.getUrlMatchType()).to.equal('tld');
+            expect(tldMatch.getUrl()).to.equal('http://asdf.com');
+            expect(tldMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="http://asdf.com">asdf.com</a>'
             );
 
-            expect(subdomainTldMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
-            expect(subdomainTldMatch.getMatchedText()).toBe('subdomain.asdf.com');
-            expect(subdomainTldMatch.getOffset()).toBe(61);
-            expect(subdomainTldMatch.getAnchorHref()).toBe('http://subdomain.asdf.com');
-            expect(subdomainTldMatch.getAnchorText()).toBe('subdomain.asdf.com');
-            expect(subdomainTldMatch.getCssClassSuffixes()).toEqual(['url']);
-            expect(subdomainTldMatch.getUrlMatchType()).toBe('tld');
-            expect(subdomainTldMatch.getUrl()).toBe('http://subdomain.asdf.com');
-            expect(subdomainTldMatch.buildTag().toAnchorString()).toBe(
+            expect(subdomainTldMatch.getType()).to.equal('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(subdomainTldMatch.getMatchedText()).to.equal('subdomain.asdf.com');
+            expect(subdomainTldMatch.getOffset()).to.equal(61);
+            expect(subdomainTldMatch.getAnchorHref()).to.equal('http://subdomain.asdf.com');
+            expect(subdomainTldMatch.getAnchorText()).to.equal('subdomain.asdf.com');
+            expect(subdomainTldMatch.getCssClassSuffixes()).to.deep.equal(['url']);
+            expect(subdomainTldMatch.getUrlMatchType()).to.equal('tld');
+            expect(subdomainTldMatch.getUrl()).to.equal('http://subdomain.asdf.com');
+            expect(subdomainTldMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="http://subdomain.asdf.com">subdomain.asdf.com</a>'
             );
 
-            expect(protocolRelativeMatch.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
-            expect(protocolRelativeMatch.getMatchedText()).toBe('//asdf.com');
-            expect(protocolRelativeMatch.getOffset()).toBe(90);
-            expect(protocolRelativeMatch.getAnchorHref()).toBe('//asdf.com');
-            expect(protocolRelativeMatch.getAnchorText()).toBe('asdf.com');
-            expect(protocolRelativeMatch.getCssClassSuffixes()).toEqual(['url']);
-            expect(protocolRelativeMatch.getUrlMatchType()).toBe('tld');
-            expect(protocolRelativeMatch.getUrl()).toBe('//asdf.com');
-            expect(protocolRelativeMatch.buildTag().toAnchorString()).toBe(
+            expect(protocolRelativeMatch.getType()).to.equal('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(protocolRelativeMatch.getMatchedText()).to.equal('//asdf.com');
+            expect(protocolRelativeMatch.getOffset()).to.equal(90);
+            expect(protocolRelativeMatch.getAnchorHref()).to.equal('//asdf.com');
+            expect(protocolRelativeMatch.getAnchorText()).to.equal('asdf.com');
+            expect(protocolRelativeMatch.getCssClassSuffixes()).to.deep.equal(['url']);
+            expect(protocolRelativeMatch.getUrlMatchType()).to.equal('tld');
+            expect(protocolRelativeMatch.getUrl()).to.equal('//asdf.com');
+            expect(protocolRelativeMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="//asdf.com">asdf.com</a>'
             );
 
-            expect(ipV4Match.getType()).toBe('url'); // backward compatibility method - 'type' property replaces getType()
-            expect(ipV4Match.getMatchedText()).toBe('192.168.0.1');
-            expect(ipV4Match.getOffset()).toBe(111);
-            expect(ipV4Match.getAnchorHref()).toBe('http://192.168.0.1');
-            expect(ipV4Match.getAnchorText()).toBe('192.168.0.1');
-            expect(ipV4Match.getCssClassSuffixes()).toEqual(['url']);
-            expect(ipV4Match.getUrlMatchType()).toBe('ipV4');
-            expect(ipV4Match.getUrl()).toBe('http://192.168.0.1');
-            expect(ipV4Match.buildTag().toAnchorString()).toBe(
+            expect(ipV4Match.getType()).to.equal('url'); // backward compatibility method - 'type' property replaces getType()
+            expect(ipV4Match.getMatchedText()).to.equal('192.168.0.1');
+            expect(ipV4Match.getOffset()).to.equal(111);
+            expect(ipV4Match.getAnchorHref()).to.equal('http://192.168.0.1');
+            expect(ipV4Match.getAnchorText()).to.equal('192.168.0.1');
+            expect(ipV4Match.getCssClassSuffixes()).to.deep.equal(['url']);
+            expect(ipV4Match.getUrlMatchType()).to.equal('ipV4');
+            expect(ipV4Match.getUrl()).to.equal('http://192.168.0.1');
+            expect(ipV4Match.buildTag().toAnchorString()).to.equal(
                 '<a href="http://192.168.0.1">192.168.0.1</a>'
             );
 
-            expect(emailMatch.getType()).toBe('email'); // backward compatibility method - 'type' property replaces getType()
-            expect(emailMatch.getMatchedText()).toBe('asdf@asdf.com');
-            expect(emailMatch.getOffset()).toBe(135);
-            expect(emailMatch.getAnchorHref()).toBe('mailto:asdf@asdf.com');
-            expect(emailMatch.getAnchorText()).toBe('asdf@asdf.com');
-            expect(emailMatch.getCssClassSuffixes()).toEqual(['email']);
-            expect(emailMatch.getEmail()).toBe('asdf@asdf.com');
-            expect(emailMatch.buildTag().toAnchorString()).toBe(
+            expect(emailMatch.getType()).to.equal('email'); // backward compatibility method - 'type' property replaces getType()
+            expect(emailMatch.getMatchedText()).to.equal('asdf@asdf.com');
+            expect(emailMatch.getOffset()).to.equal(135);
+            expect(emailMatch.getAnchorHref()).to.equal('mailto:asdf@asdf.com');
+            expect(emailMatch.getAnchorText()).to.equal('asdf@asdf.com');
+            expect(emailMatch.getCssClassSuffixes()).to.deep.equal(['email']);
+            expect(emailMatch.getEmail()).to.equal('asdf@asdf.com');
+            expect(emailMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="mailto:asdf@asdf.com">asdf@asdf.com</a>'
             );
 
-            expect(phoneMatch.getType()).toBe('phone'); // backward compatibility method - 'type' property replaces getType()
-            expect(phoneMatch.getMatchedText()).toBe('(123) 456-7890');
-            expect(phoneMatch.getOffset()).toBe(156);
-            expect(phoneMatch.getAnchorHref()).toBe('tel:1234567890');
-            expect(phoneMatch.getAnchorText()).toBe('(123) 456-7890');
-            expect(phoneMatch.getCssClassSuffixes()).toEqual(['phone']);
-            expect(phoneMatch.getPhoneNumber()).toBe('1234567890');
-            expect(phoneMatch.getNumber()).toBe('1234567890');
-            expect(phoneMatch.buildTag().toAnchorString()).toBe(
+            expect(phoneMatch.getType()).to.equal('phone'); // backward compatibility method - 'type' property replaces getType()
+            expect(phoneMatch.getMatchedText()).to.equal('(123) 456-7890');
+            expect(phoneMatch.getOffset()).to.equal(156);
+            expect(phoneMatch.getAnchorHref()).to.equal('tel:1234567890');
+            expect(phoneMatch.getAnchorText()).to.equal('(123) 456-7890');
+            expect(phoneMatch.getCssClassSuffixes()).to.deep.equal(['phone']);
+            expect(phoneMatch.getPhoneNumber()).to.equal('1234567890');
+            expect(phoneMatch.getNumber()).to.equal('1234567890');
+            expect(phoneMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="tel:1234567890">(123) 456-7890</a>'
             );
 
-            expect(mentionMatch.getType()).toBe('mention'); // backward compatibility method - 'type' property replaces getType()
-            expect(mentionMatch.getMatchedText()).toBe('@asdf1');
-            expect(mentionMatch.getOffset()).toBe(180);
-            expect(mentionMatch.getAnchorHref()).toBe('https://instagram.com/asdf1');
-            expect(mentionMatch.getAnchorText()).toBe('@asdf1');
-            expect(mentionMatch.getCssClassSuffixes()).toEqual(['mention', 'instagram']);
-            expect(mentionMatch.getServiceName()).toBe('instagram');
-            expect(mentionMatch.buildTag().toAnchorString()).toBe(
+            expect(mentionMatch.getType()).to.equal('mention'); // backward compatibility method - 'type' property replaces getType()
+            expect(mentionMatch.getMatchedText()).to.equal('@asdf1');
+            expect(mentionMatch.getOffset()).to.equal(180);
+            expect(mentionMatch.getAnchorHref()).to.equal('https://instagram.com/asdf1');
+            expect(mentionMatch.getAnchorText()).to.equal('@asdf1');
+            expect(mentionMatch.getCssClassSuffixes()).to.deep.equal(['mention', 'instagram']);
+            expect(mentionMatch.getServiceName()).to.equal('instagram');
+            expect(mentionMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="https://instagram.com/asdf1">@asdf1</a>'
             );
 
-            expect(hashtagMatch.getType()).toBe('hashtag'); // backward compatibility method - 'type' property replaces getType()
-            expect(hashtagMatch.getMatchedText()).toBe('#asdf2');
-            expect(hashtagMatch.getOffset()).toBe(201);
-            expect(hashtagMatch.getAnchorHref()).toBe('https://www.tiktok.com/tag/asdf2');
-            expect(hashtagMatch.getAnchorText()).toBe('#asdf2');
-            expect(hashtagMatch.getCssClassSuffixes()).toEqual(['hashtag', 'tiktok']);
-            expect(hashtagMatch.getServiceName()).toBe('tiktok');
-            expect(hashtagMatch.buildTag().toAnchorString()).toBe(
+            expect(hashtagMatch.getType()).to.equal('hashtag'); // backward compatibility method - 'type' property replaces getType()
+            expect(hashtagMatch.getMatchedText()).to.equal('#asdf2');
+            expect(hashtagMatch.getOffset()).to.equal(201);
+            expect(hashtagMatch.getAnchorHref()).to.equal('https://www.tiktok.com/tag/asdf2');
+            expect(hashtagMatch.getAnchorText()).to.equal('#asdf2');
+            expect(hashtagMatch.getCssClassSuffixes()).to.deep.equal(['hashtag', 'tiktok']);
+            expect(hashtagMatch.getServiceName()).to.equal('tiktok');
+            expect(hashtagMatch.buildTag().toAnchorString()).to.equal(
                 '<a href="https://www.tiktok.com/tag/asdf2">#asdf2</a>'
             );
         });

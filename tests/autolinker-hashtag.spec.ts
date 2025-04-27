@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import _ from 'lodash';
 import Autolinker from '../src/autolinker';
 import { HashtagService } from '../src/parser/hashtag-utils';
@@ -63,13 +64,13 @@ describe(`Hashtag Matching >`, () => {
     it(`should NOT autolink hashtags by default for both backward compatibility, 
 		 and because we don't know which service (twitter, facebook, etc.) to 
 		 point them to`, () => {
-        expect(noDefaultHashtagAutolinker.link(`#test`)).toBe(`#test`);
+        expect(noDefaultHashtagAutolinker.link(`#test`)).to.equal(`#test`);
     });
 
     it(`should NOT autolink hashtags the 'hashtag' cfg is explicitly false`, () => {
         const result = Autolinker.link(`#test`, { hashtag: false });
 
-        expect(result).toBe(`#test`);
+        expect(result).to.equal(`#test`);
     });
 
     describe('all services tests >', () => {
@@ -109,14 +110,14 @@ describe(`Hashtag Matching >`, () => {
                     const bHashtag = _.repeat('b', 140); // too long - don't link
 
                     const result = autolinker.link(`#${aHashtag} and #${bHashtag}`);
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         `<a href="${urlPrefix}/${aHashtag}">#${aHashtag}</a> and #${bHashtag}`
                     );
                 });
 
                 it(`should automatically link multiple hashtags separated by slashes`, () => {
                     const result = autolinker.link(`#Stuff/#Things`);
-                    expect(result).toBe(
+                    expect(result).to.equal(
                         `<a href="${urlPrefix}/Stuff">#Stuff</a>/<a href="${urlPrefix}/Things">#Things</a>`
                     );
                 });
@@ -124,19 +125,21 @@ describe(`Hashtag Matching >`, () => {
                 it(`should NOT automatically link a hashtag when the '#' belongs to part of another string`, () => {
                     const result = autolinker.link(`test as#df test`);
 
-                    expect(result).toBe(`test as#df test`);
+                    expect(result).to.equal(`test as#df test`);
                 });
 
                 it(`should NOT automatically link a hash symbol followed by another hash symbol`, () => {
                     const result = autolinker.link(`Hello ## stuff`);
 
-                    expect(result).toBe(`Hello ## stuff`);
+                    expect(result).to.equal(`Hello ## stuff`);
                 });
 
                 it(`should NOT automatically link a hashtag that is actually a named anchor within a URL`, () => {
                     const result = autolinker.link(`http://google.com/#link`);
 
-                    expect(result).toBe(`<a href="http://google.com/#link">google.com/#link</a>`);
+                    expect(result).to.equal(
+                        `<a href="http://google.com/#link">google.com/#link</a>`
+                    );
                 });
 
                 it(`should NOT automatically link a hashtag that is actually a 
@@ -148,7 +151,7 @@ describe(`Hashtag Matching >`, () => {
                     });
                     const result = noUrlTwitterHashtagAutolinker.link(`http://google.com/#link`);
 
-                    expect(result).toBe(`http://google.com/#link`);
+                    expect(result).to.equal(`http://google.com/#link`);
                 });
             });
         });
