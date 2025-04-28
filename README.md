@@ -19,27 +19,28 @@ Output: "Visit <a href="https://google.com">google.com</a>"
 ```
 
 Because I had so much trouble finding a good auto-linking implementation out in
-the wild, I decided to roll my own. It seemed that everything I found out there
-was either an implementation that didn't cover every case, or was just limited
-in one way or another.
+the wild, I decided to roll my own. It seemed that everything I found was either 
+an implementation that didn't cover every case, had many false positives linked, 
+or was just limited in one way or another.
 
 So, this utility attempts to handle everything. It:
 
 - Autolinks URLs, whether or not they start with the protocol (i.e. 'http://').
   In other words, it will automatically link the text "google.com", as well as
-  "http://google.com"
-- Will properly handle URLs with query parameters, named anchors (i.e. hash),
-  and special characters
+  "http://google.com". Will also autolink IPv4 addresses.
+- Will properly handle URLs with query params, anchors,
+  and special characters, and not include things like a trailing `.` at the end
+  of a sentence, or a `)` char if the URL is inside parenenthesis.
 - Will autolink email addresses
 - Will autolink phone numbers
 - Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok, Youtube)
 - Will autolink hashtags (Twitter, Instagram, Facebook, TikTok, Youtube)
-- Will properly handle HTML input. The utility will not overwrite the `href`
-  attribute inside anchor (`<a>`) tags (or any other tag/attribute), 
-  and will not accidentally wrap the inner text of anchor/script/style tags 
-  with a new one (which would cause doubly-nested anchor tags)
+- **Will properly handle HTML input.** The utility will not overwrite an `href`
+  attribute inside anchor (`<a>`) tags (or any other tag/attribute), and will not 
+  accidentally wrap the inner text of `<a>`/`<script>`/`<style>` tags with a new 
+  one (which cause doubly-nested anchor tags, or mess with scripts)
 - Will do all of this in `O(n)` (linear) time with low constant factors and
-  without the possibility of RegExp backtracking
+  without the possibility of RegExp backtracking, making it extremely fast.
 
 Hope that this utility helps you as well!
 
@@ -546,45 +547,32 @@ The full API docs for Autolinker may be referenced at:
 
 ## Developing / Contributing
 
-Pull requests definitely welcome. To setup the project, make
-sure you have [Node.js](https://nodejs.org) installed. Then
-open up a command prompt and type the following:
+Pull requests definitely welcome. To setup the project, make sure you have 
+[Node.js](https://nodejs.org) installed. Then open up a command prompt and type 
+the following:
 
-```
-cd Autolinker.js     # where you cloned the project
-npm install
+```sh
+npm install -g pnpm@latest   # this project uses pnpm workspaces, and pnpm is a faster npm anyway :)
+
+cd Autolinker.js             # where you cloned the project
+pnpm install
 ```
 
 To run the tests:
 
-```
-npm run test
+```sh
+pnpm run test
 ```
 
 - Make sure to add tests to check your new functionality/bugfix
-- Run the `npm run test` command to test
-
-
-#### Building the Project Fully
-
-For this you will need [Ruby](https://www.ruby-lang.org) installed (note: Ruby
-comes pre-installed on MacOS), with the [JSDuck](https://github.com/senchalabs/jsduck) 
-gem. 
-
-See https://github.com/senchalabs/jsduck#getting-it for installation 
-instructions on Windows/Mac/Linux
-
-[JSDuck](https://github.com/senchalabs/jsduck) is used to build the project's
-API/documentation site. See [Documentation Generator Notes](#Documentation Generator Notes)
-for more info.
-
+- Run the `pnpm run test` command to test
 
 #### Running the Live Example Page Locally
 
 Run:
 
-```
-yarn serve
+```sh
+pnpm run devserver
 ```
 
 Then open your browser to: http://localhost:8080/docs/examples/index.html
@@ -592,9 +580,13 @@ Then open your browser to: http://localhost:8080/docs/examples/index.html
 You should be able to make a change to source files, and refresh the page to see
 the changes.
 
-Note: If anyone wants to submit a PR converting `gulp watch` to `webpack` with 
-the live development server, that would be much appreciated :)
+#### Running the benchmarks
 
+Run:
+
+```sh
+pnpm run benchmarks
+```
 
 #### Documentation Generator Notes
 
@@ -634,6 +626,12 @@ documentation comes out right:
    ```
 2. The `@constructor` tag must be replaced with `@method constructor`
 
+To build the documentation, you will need [Ruby](https://www.ruby-lang.org) 
+installed (note: Ruby comes pre-installed on MacOS), with the 
+[JSDuck](https://github.com/senchalabs/jsduck) gem. 
+
+See https://github.com/senchalabs/jsduck#getting-it for installation 
+instructions on Windows/Mac/Linux.
 
 ## Changelog
 

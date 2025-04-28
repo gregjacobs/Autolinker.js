@@ -87,20 +87,12 @@ export abstract class Option {
     }
 
     /**
-     * Retrieves the value for the option.
-     *
-     * @abstract
-     * @return {*}
-     */
-    abstract getValue(): boolean | string | string[] | undefined;
-
-    /**
      * Registers a callback to call when the option is changed.
      *
      * @param {Function} callbackFn
      * @chainable
      */
-    public onChange(callbackFn: () => void): Option {
+    public onChange(callbackFn: () => void): this {
         this.changeCallbacks.push(callbackFn);
         return this;
     }

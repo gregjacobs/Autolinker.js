@@ -21,6 +21,10 @@ jobs:
             - name: build
               run: pnpm run build
 
+            # Not deploying the example here, but make sure it builds without errors
+            - name: build-example
+              run: pnpm run build:live-example
+
             - name: test
               run: pnpm run test:ci
 

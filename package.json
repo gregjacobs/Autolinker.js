@@ -9,7 +9,7 @@
         "dist"
     ],
     "scripts": {
-        "benchmark": "ts-node benchmark/benchmark.ts",
+        "benchmarks": "ts-node benchmarks/benchmarks.ts",
         "build": "npm-run-all clean update-tld-regex build:src",
         "build:docs": "npm-run-all build:docs-site build:live-example",
         "build:docs-site": "ts-node scripts/build-docs.ts",

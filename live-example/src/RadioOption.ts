@@ -1,10 +1,8 @@
 import { Option, OptionCfg } from './Option';
 
-type RadioOptionValue = boolean | string;
-
-interface RadioOptionCfg extends OptionCfg {
-    options: RadioOptionValue[];
-    defaultValue?: RadioOptionValue;
+interface RadioOptionCfg<ValueType extends string | boolean> extends OptionCfg {
+    options: ValueType[];
+    defaultValue: ValueType;
 }
 
 /**
@@ -12,7 +10,7 @@ interface RadioOptionCfg extends OptionCfg {
  *
  * A radio option for the live example.
  */
-export class RadioOption extends Option {
+export class RadioOption<ValueType extends string | boolean> extends Option {
     /**
      * @cfg {Array} options
      *
@@ -22,14 +20,14 @@ export class RadioOption extends Option {
      * Any data type may be passed as the elements, and {@link #getValue} will
      * return that value/type.
      */
-    private options: RadioOptionValue[];
+    private options: ValueType[];
 
     /**
      * @cfg {*} [defaultValue=false]
      *
      * The value in {@link #options} to select by default.
      */
-    private defaultValue: RadioOptionValue = false;
+    private defaultValue: ValueType;
 
     private $valueDisplayEl: JQuery;
 
@@ -38,11 +36,11 @@ export class RadioOption extends Option {
      * @param {Object} cfg The configuration options for this class, specified
      *   in an Object (map).
      */
-    constructor(cfg: RadioOptionCfg) {
+    constructor(cfg: RadioOptionCfg<ValueType>) {
         super(cfg);
 
         this.options = cfg.options;
-        this.defaultValue = cfg.defaultValue || false;
+        this.defaultValue = cfg.defaultValue;
 
         this.$containerEl.html(this.generateHtml());
         this.$valueDisplayEl = this.$containerEl.find('#' + this.containerId + '-value');
@@ -77,7 +75,7 @@ export class RadioOption extends Option {
      * @param {*} defaultValue
      * @return {String[]}
      */
-    createRadiosHtml(options: RadioOptionValue[], defaultValue: RadioOptionValue) {
+    createRadiosHtml(options: ValueType[], defaultValue: ValueType) {
         return options.map((option, idx) => {
             return `
 				<input type="radio" id="${this.containerId}-radio-${option}" name="${
@@ -99,9 +97,9 @@ export class RadioOption extends Option {
     }
 
     /**
-     * @return {Boolean}
+     * @return {String|Boolean}
      */
-    getValue() {
+    getValue(): ValueType {
         const optionIdx = this.$containerEl.find(':radio:checked').data('option-idx');
 
         return this.options[optionIdx];

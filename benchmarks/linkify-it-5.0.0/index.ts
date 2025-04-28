@@ -3,7 +3,6 @@ import tlds from 'tlds';
 import { inputText } from '../input-text';
 
 const linkify = new LinkifyIt();
-console.log(linkify.match(inputText));
 
 // Reload full tlds list & add unofficial `.onion` domain.
 linkify
@@ -12,5 +11,6 @@ linkify
 
 export function run() {
     linkify.match(inputText);
-    // NOTE: produces matches array, but doesn't link in the text
+    // NOTE: produces matches array, but doesn't link in the text (so
+    // technically it does less work than Autolinker at the moment)
 }

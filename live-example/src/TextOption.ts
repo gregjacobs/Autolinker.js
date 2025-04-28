@@ -65,7 +65,7 @@ export class TextOption extends Option {
     /**
      * @return {String}
      */
-    getValue() {
-        return this.$textEl.val();
+    getValue(): string {
+        return this.$textEl.val() as string;
     }
 }

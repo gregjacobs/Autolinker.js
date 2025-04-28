@@ -14,20 +14,20 @@ const suite = new Benchmark.Suite();
 
 // add tests
 suite
-    .add('Autolinker Current', runAutolinkerCurrent)
-    .add('Autolinker 4.1.0', runAutolinker4_1_0)
-    .add('Autolinker 4.0.2', runAutolinker4_0_2)
-    .add('Autolinker 4.0.1', runAutolinker4_0_1)
-    .add('Autolinker 4.0.0', runAutolinker4_0_0)
-    .add('Autolinker 3.16.2', runAutolinker3_16_2)
-    .add('Autolinker 2.2.2', runAutolinker2_2_2)
-    .add('Autolinker 1.8.3', runAutolinker1_8_3)
-    .add('Linkify-it 5.0.0', runLinkifyIt5_0_0)
+    .add('Autolinker@current', runAutolinkerCurrent)
+    .add('Autolinker@4.1.0', runAutolinker4_1_0)
+    .add('Autolinker@4.0.2', runAutolinker4_0_2)
+    .add('Autolinker@4.0.1', runAutolinker4_0_1)
+    .add('Autolinker@4.0.0', runAutolinker4_0_0)
+    .add('Autolinker@3.16.2', runAutolinker3_16_2)
+    .add('Autolinker@2.2.2', runAutolinker2_2_2)
+    .add('Autolinker@1.8.3', runAutolinker1_8_3)
+    .add('Linkify-it@5.0.0', runLinkifyIt5_0_0)
 
     .on('cycle', (event: Benchmark.Event) => {
         console.log(String(event.target));
     })
     .on('complete', () => {
-        console.log('Fastest is ' + suite.filter('fastest').map('name'));
+        console.log('Fastest is: ' + suite.filter('fastest').map('name'));
     })
     .run({ async: true, minSamples: 100 });

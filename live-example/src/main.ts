@@ -1,5 +1,4 @@
-import { Autolinker } from '../../src';
-import { Option } from './Option';
+import { Autolinker, HashtagConfig, MentionConfig, TruncateConfigObj } from '../../src';
 import { CheckboxOption } from './CheckboxOption';
 import { RadioOption } from './RadioOption';
 import { TextOption } from './TextOption';
@@ -11,19 +10,19 @@ $(document).ready(function () {
     const $outputEl = $('#output');
     const $optionsOutputEl = $('#options-output');
 
-    let urlsSchemeOption: Option,
-        urlsTldOption: Option,
-        urlsIpV4Option: Option,
-        emailOption: Option,
-        phoneOption: Option,
-        mentionOption: Option,
-        hashtagOption: Option,
-        newWindowOption: Option,
-        stripPrefixOption: Option,
-        stripTrailingSlashOption: Option,
-        truncateLengthOption: Option,
-        truncationLocationOption: Option,
-        classNameOption: Option;
+    let urlsSchemeOption: CheckboxOption,
+        urlsTldOption: CheckboxOption,
+        urlsIpV4Option: CheckboxOption,
+        emailOption: CheckboxOption,
+        phoneOption: CheckboxOption,
+        mentionOption: RadioOption<MentionConfig>,
+        hashtagOption: RadioOption<HashtagConfig>,
+        newWindowOption: CheckboxOption,
+        stripPrefixOption: CheckboxOption,
+        stripTrailingSlashOption: CheckboxOption,
+        truncateLengthOption: TextOption,
+        truncationLocationOption: RadioOption<NonNullable<TruncateConfigObj['location']>>,
+        classNameOption: TextOption;
 
     init();
 
@@ -145,7 +144,7 @@ $(document).ready(function () {
             stripTrailingSlash: stripTrailingSlashOption.getValue(),
             className: classNameOption.getValue(),
             truncate: {
-                length: +truncateLengthOption.getValue(),
+                length: +truncateLengthOption.getValue()!,
                 location: truncationLocationOption.getValue(),
             },
         };
