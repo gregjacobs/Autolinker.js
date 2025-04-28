@@ -9,6 +9,7 @@
         "dist"
     ],
     "scripts": {
+        "benchmark": "ts-node benchmark/benchmark.ts",
         "build": "npm-run-all clean update-tld-regex build:src",
         "build:docs": "npm-run-all build:docs-site build:live-example",
         "build:docs-site": "ts-node scripts/build-docs.ts",
@@ -19,6 +20,7 @@
         "devserver": "webpack-dev-server",
         "lint": "eslint src tests scripts",
         "lint:fix": "npm run lint -- --fix",
+        "preinstall": "npx -y only-allow pnpm",
         "prepublishOnly": "npm-run-all build test",
         "start": "webpack serve --open",
         "test": "npm-run-all test:unit test:integration",
@@ -32,6 +34,9 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/gregjacobs/Autolinker.js.git"
+    },
+    "engines": {
+        "pnpm": ">=10.10.0"
     },
     "keywords": [
         "auto",

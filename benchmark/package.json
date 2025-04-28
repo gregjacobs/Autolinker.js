@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "@types/benchmark": "^2.1.4",
+        "benchmark": "^2.1.4"
+    }
+}
