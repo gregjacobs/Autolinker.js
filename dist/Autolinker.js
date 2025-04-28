@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v4.1.0
+ * v4.1.1
  *
  * Copyright(c) 2025 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -89,7 +89,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '4.1.0';
+    var version = '4.1.1';
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     /**
@@ -2997,117 +2997,127 @@
             // And also remove any punctuation chars at the end such as:
             //     '?', ',', ':', '.', etc.
             matchedText = excludeUnbalancedTrailingBracesAndPunctuation(matchedText);
-            if (stateMachine.type === 'url') {
-                // We don't want to accidentally match a URL that is preceded by an
-                // '@' character, which would be an email address
-                var charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
-                if (charBeforeUrlMatch === '@') {
-                    return;
-                }
-                // For the purpose of this parser, we've generalized 'www'
-                // matches as part of 'tld' matches. However, for backward
-                // compatibility, we distinguish beween TLD matches and matches
-                // that begin with 'www.' so that users may turn off 'www'
-                // matches. As such, we need to correct for that now if the
-                // URL begins with 'www.'
-                var urlMatchType = stateMachine.matchType;
-                if (urlMatchType === 'scheme') {
-                    // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
-                    // However, in cases where a URL is missing whitespace before an obvious link,
-                    // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
-                    // at the http:// part. We will check if the match contains a common scheme and then
-                    // shift the match to start from there.
-                    var httpSchemeMatch = httpSchemeRe.exec(matchedText);
-                    if (httpSchemeMatch) {
-                        // If we found an overmatched URL, we want to find the index
-                        // of where the match should start and shift the match to
-                        // start from the beginning of the common scheme
-                        startIdx = startIdx + httpSchemeMatch.index;
-                        matchedText = matchedText.slice(httpSchemeMatch.index);
+            switch (stateMachine.type) {
+                case 'url': {
+                    // We don't want to accidentally match a URL that is preceded by an
+                    // '@' character, which would be an email address
+                    var charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
+                    if (charBeforeUrlMatch === '@') {
+                        return;
                     }
-                    if (!isValidSchemeUrl(matchedText)) {
-                        return; // not a valid match
+                    // For the purpose of this parser, we've generalized 'www'
+                    // matches as part of 'tld' matches. However, for backward
+                    // compatibility, we distinguish beween TLD matches and matches
+                    // that begin with 'www.' so that users may turn off 'www'
+                    // matches. As such, we need to correct for that now if the
+                    // URL begins with 'www.'
+                    var urlMatchType = stateMachine.matchType;
+                    switch (urlMatchType) {
+                        case 'scheme': {
+                            // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
+                            // However, in cases where a URL is missing whitespace before an obvious link,
+                            // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
+                            // at the http:// part. We will check if the match contains a common scheme and then
+                            // shift the match to start from there.
+                            var httpSchemeMatch = httpSchemeRe.exec(matchedText);
+                            if (httpSchemeMatch) {
+                                // If we found an overmatched URL, we want to find the index
+                                // of where the match should start and shift the match to
+                                // start from the beginning of the common scheme
+                                startIdx = startIdx + httpSchemeMatch.index;
+                                matchedText = matchedText.slice(httpSchemeMatch.index);
+                            }
+                            if (!isValidSchemeUrl(matchedText)) {
+                                return; // not a valid match
+                            }
+                            break;
+                        }
+                        case 'tld': {
+                            if (!isValidTldMatch(matchedText)) {
+                                return; // not a valid match
+                            }
+                            break;
+                        }
+                        case 'ipV4': {
+                            if (!isValidIpV4Address(matchedText)) {
+                                return; // not a valid match
+                            }
+                            break;
+                        }
+                        /* istanbul ignore next */
+                        default:
+                            assertNever(urlMatchType);
                     }
-                }
-                else if (urlMatchType === 'tld') {
-                    if (!isValidTldMatch(matchedText)) {
-                        return; // not a valid match
-                    }
-                }
-                else if (urlMatchType === 'ipV4') {
-                    if (!isValidIpV4Address(matchedText)) {
-                        return; // not a valid match
-                    }
-                }
-                else {
-                    /* istanbul ignore next */
-                    assertNever(urlMatchType);
-                }
-                matches.push(new UrlMatch({
-                    tagBuilder: tagBuilder,
-                    matchedText: matchedText,
-                    offset: startIdx,
-                    urlMatchType: urlMatchType,
-                    url: matchedText,
-                    protocolRelativeMatch: matchedText.slice(0, 2) === '//',
-                    // TODO: Do these settings need to be passed to the match,
-                    // or should we handle them here in UrlMatcher?
-                    stripPrefix: stripPrefix,
-                    stripTrailingSlash: stripTrailingSlash,
-                    decodePercentEncoding: decodePercentEncoding,
-                }));
-            }
-            else if (stateMachine.type === 'email') {
-                // if the email address has a valid TLD, add it to the list of matches
-                if (isValidEmail(matchedText)) {
-                    matches.push(new EmailMatch({
+                    matches.push(new UrlMatch({
                         tagBuilder: tagBuilder,
                         matchedText: matchedText,
                         offset: startIdx,
-                        email: matchedText.replace(mailtoSchemePrefixRe, ''),
+                        urlMatchType: urlMatchType,
+                        url: matchedText,
+                        protocolRelativeMatch: matchedText.slice(0, 2) === '//',
+                        // TODO: Do these settings need to be passed to the match,
+                        // or should we handle them here in UrlMatcher?
+                        stripPrefix: stripPrefix,
+                        stripTrailingSlash: stripTrailingSlash,
+                        decodePercentEncoding: decodePercentEncoding,
                     }));
+                    break;
                 }
-            }
-            else if (stateMachine.type === 'hashtag') {
-                if (isValidHashtag(matchedText)) {
-                    matches.push(new HashtagMatch({
-                        tagBuilder: tagBuilder,
-                        matchedText: matchedText,
-                        offset: startIdx,
-                        serviceName: hashtagServiceName,
-                        hashtag: matchedText.slice(1),
-                    }));
+                case 'email': {
+                    // if the email address has a valid TLD, add it to the list of matches
+                    if (isValidEmail(matchedText)) {
+                        matches.push(new EmailMatch({
+                            tagBuilder: tagBuilder,
+                            matchedText: matchedText,
+                            offset: startIdx,
+                            email: matchedText.replace(mailtoSchemePrefixRe, ''),
+                        }));
+                    }
+                    break;
                 }
-            }
-            else if (stateMachine.type === 'mention') {
-                if (isValidMention(matchedText, mentionServiceName)) {
-                    matches.push(new MentionMatch({
-                        tagBuilder: tagBuilder,
-                        matchedText: matchedText,
-                        offset: startIdx,
-                        serviceName: mentionServiceName,
-                        mention: matchedText.slice(1), // strip off the '@' character at the beginning
-                    }));
+                case 'hashtag': {
+                    if (isValidHashtag(matchedText)) {
+                        matches.push(new HashtagMatch({
+                            tagBuilder: tagBuilder,
+                            matchedText: matchedText,
+                            offset: startIdx,
+                            serviceName: hashtagServiceName,
+                            hashtag: matchedText.slice(1),
+                        }));
+                    }
+                    break;
                 }
-            }
-            else if (stateMachine.type === 'phone') {
-                // remove any trailing spaces that were considered as "separator"
-                // chars by the state machine
-                matchedText = matchedText.replace(/ +$/g, '');
-                if (isValidPhoneNumber(matchedText)) {
-                    var cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''); // strip out non-digit characters exclude comma semicolon and #
-                    matches.push(new PhoneMatch({
-                        tagBuilder: tagBuilder,
-                        matchedText: matchedText,
-                        offset: startIdx,
-                        number: cleanNumber,
-                        plusSign: matchedText.charAt(0) === '+',
-                    }));
+                case 'mention': {
+                    if (isValidMention(matchedText, mentionServiceName)) {
+                        matches.push(new MentionMatch({
+                            tagBuilder: tagBuilder,
+                            matchedText: matchedText,
+                            offset: startIdx,
+                            serviceName: mentionServiceName,
+                            mention: matchedText.slice(1), // strip off the '@' character at the beginning
+                        }));
+                    }
+                    break;
                 }
-            }
-            else {
+                case 'phone': {
+                    // remove any trailing spaces that were considered as "separator"
+                    // chars by the state machine
+                    matchedText = matchedText.replace(/ +$/g, '');
+                    if (isValidPhoneNumber(matchedText)) {
+                        var cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''); // strip out non-digit characters exclude comma semicolon and #
+                        matches.push(new PhoneMatch({
+                            tagBuilder: tagBuilder,
+                            matchedText: matchedText,
+                            offset: startIdx,
+                            number: cleanNumber,
+                            plusSign: matchedText.charAt(0) === '+',
+                        }));
+                    }
+                    break;
+                }
                 /* istanbul ignore next */
-                assertNever(stateMachine);
+                default:
+                    assertNever(stateMachine);
             }
         }
     }
@@ -3612,6 +3622,8 @@
             }
             else ;
         }
+        // Called after a double-quoted or single-quoted attribute value is read
+        // (i.e. after the closing quote character)
         // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
         function stateAfterAttributeValueQuoted(char) {
             if (whitespaceRe.test(char)) {
@@ -3644,7 +3656,13 @@
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
             else {
-                state = 4 /* State.BeforeAttributeName */;
+                // Note: the spec calls for a character after a '/' within a start
+                // tag to go back into the BeforeAttributeName state (in order to
+                // read more attributes, but for the purposes of Autolinker, this is
+                // most likely not a valid HTML tag. For example: "<something / other>"
+                // state = State.BeforeAttributeName;
+                // Instead, just treat as regular text
+                resetToDataState();
             }
         }
         // https://www.w3.org/TR/html51/syntax.html#markup-declaration-open-state
@@ -4419,8 +4437,11 @@
                 onDoctype: function ( /*_offset: number*/) { }, // no need to process doctype nodes
             });
             // After we have found all matches, remove subsequent matches that
-            // overlap with a previous match. This can happen for instance with URLs,
-            // where the url 'google.com/#link' would match '#link' as a hashtag.
+            // overlap with a previous match. This can happen for instance with an
+            // email address where the local-part of the email is also a top-level
+            // domain, such as in "google.com@aaa.com". In this case, the entire
+            // email address should be linked rather than just the 'google.com'
+            // part.
             matches = this.compactMatches(matches);
             // And finally, remove matches for match types that have been turned
             // off. We needed to have all match types turned on initially so that
@@ -4431,35 +4452,54 @@
         };
         /**
          * After we have found all matches, we need to remove matches that overlap
-         * with a previous match. This can happen for instance with URLs, where the
-         * url 'google.com/#link' would match '#link' as a hashtag. Because the
-         * '#link' part is contained in a larger match that comes before the HashTag
-         * match, we'll remove the HashTag match.
+         * with a previous match. This can happen for instance with an
+         * email address where the local-part of the email is also a top-level
+         * domain, such as in "google.com@aaa.com". In this case, the entire email
+         * address should be linked rather than just the 'google.com' part.
          *
          * @private
          * @param {Autolinker.match.Match[]} matches
          * @return {Autolinker.match.Match[]}
          */
         Autolinker.prototype.compactMatches = function (matches) {
-            // First, the matches need to be sorted in order of offset
-            matches.sort(function (a, b) {
-                return a.getOffset() - b.getOffset();
-            });
+            // First, the matches need to be sorted in order of offset in the input
+            // string
+            matches.sort(byMatchOffset);
             var i = 0;
             while (i < matches.length - 1) {
-                var match = matches[i], offset = match.getOffset(), matchedTextLength = match.getMatchedText().length, endIdx = offset + matchedTextLength;
+                var match = matches[i];
+                var offset = match.getOffset();
+                var matchedTextLength = match.getMatchedText().length;
                 if (i + 1 < matches.length) {
                     // Remove subsequent matches that equal offset with current match
+                    // This can happen when matching the text "google.com@aaa.com"
+                    // where we have both a URL ('google.com') and an email. We
+                    // should only keep the email match in this case.
                     if (matches[i + 1].getOffset() === offset) {
+                        // Remove the shorter match
                         var removeIdx = matches[i + 1].getMatchedText().length > matchedTextLength ? i : i + 1;
                         matches.splice(removeIdx, 1);
                         continue;
                     }
                     // Remove subsequent matches that overlap with the current match
-                    if (matches[i + 1].getOffset() < endIdx) {
-                        matches.splice(i + 1, 1);
-                        continue;
-                    }
+                    //
+                    // NOTE: This was a fundamental snippet of the Autolinker.js v3
+                    // algorithm where we had multiple regular expressions searching
+                    // the input string for matches. The regexes would sometimes
+                    // overlap such as in the case of "google.com/#link", where we
+                    // would have both a URL match and a hashtag match.
+                    //
+                    // However, the Autolinker.js v4 algorithm uses a state machine
+                    // parser and knows that the '#link' part of 'google.com/#link'
+                    // is part of the URL that precedes it, so we don't need this
+                    // piece of code any more. Keeping it here commented for now in
+                    // case we need to put it back at some point, but none of the
+                    // test cases are currently able to trigger the need for it.
+                    // const endIdx = offset + matchedTextLength;
+                    // if (matches[i + 1].getOffset() < endIdx) {
+                    //     matches.splice(i + 1, 1);
+                    //     continue;
+                    // }
                 }
                 i++;
             }
@@ -4535,7 +4575,6 @@
          *   given input `text`.
          */
         Autolinker.prototype.parseText = function (text, offset) {
-            if (offset === void 0) { offset = 0; }
             offset = offset || 0;
             var matches = parseMatches(text, {
                 tagBuilder: this.getTagBuilder(),
@@ -4726,6 +4765,13 @@
             // object, or undefined/null
             return __assign({ length: Number.POSITIVE_INFINITY, location: 'end' }, truncate);
         }
+    }
+    /**
+     * Helper function for Array.prototype.sort() to sort the Matches by
+     * their offset in the input string.
+     */
+    function byMatchOffset(a, b) {
+        return a.getOffset() - b.getOffset();
     }
 
     return Autolinker;
