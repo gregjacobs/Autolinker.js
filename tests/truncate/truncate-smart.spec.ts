@@ -21,6 +21,12 @@ describe('Truncate.truncate.truncateSmart', function () {
         expect(truncatedUrl.length).to.equal(72);
     });
 
+    it(`when just a scheme+hostname present and it's exactly the truncate length, should return it as-is`, () => {
+        const truncatedUrl = truncateSmart('http://yahoo.com', 'http://yahoo.com'.length, '..');
+
+        expect(truncatedUrl).to.equal('http://yahoo.com');
+    });
+
     it(`when just a hostname is present and it's exactly the truncate length, should return it as-is`, () => {
         const truncatedUrl = truncateSmart('yahoo.com', 'yahoo.com'.length, '..');
 
