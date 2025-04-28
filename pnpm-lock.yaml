@@ -214,6 +214,12 @@ importers:
         specifier: 4.1.1
         version: 4.1.1
 
+  benchmarks/linkify-html-4.2.0:
+    dependencies:
+      linkify-html:
+        specifier: 4.2.0
+        version: 4.2.0(linkifyjs@4.2.0)
+
   benchmarks/linkify-it-5.0.0:
     dependencies:
       '@types/linkify-it':
@@ -226,9 +232,9 @@ importers:
         specifier: 1.257.0
         version: 1.257.0
 
-  benchmarks/linkify-js-4.2.0:
+  benchmarks/linkify-string-4.2.0:
     dependencies:
-      linkify-html:
+      linkify-string:
         specifier: 4.2.0
         version: 4.2.0(linkifyjs@4.2.0)
 
@@ -2369,6 +2375,11 @@ packages:
 
   linkify-it@5.0.0:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+
+  linkify-string@4.2.0:
+    resolution: {integrity: sha512-LqOKk0+RlqibFkxjPAGOL7Mfssqj6/SdG9QWGvzeVDpoWXhaw9OXxseCtFanjIl7C6UyTTZizhyGr4IWLfijiw==}
+    peerDependencies:
+      linkifyjs: ^4.0.0
 
   linkifyjs@4.2.0:
     resolution: {integrity: sha512-pCj3PrQyATaoTYKHrgWRF3SJwsm61udVh+vuls/Rl6SptiDhgE7ziUIudAedRY9QEfynmM7/RmLEfPUyw1HPCw==}
@@ -6107,6 +6118,10 @@ snapshots:
   linkify-it@5.0.0:
     dependencies:
       uc.micro: 2.1.0
+
+  linkify-string@4.2.0(linkifyjs@4.2.0):
+    dependencies:
+      linkifyjs: 4.2.0
 
   linkifyjs@4.2.0: {}
 
