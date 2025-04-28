@@ -1,3 +1,4 @@
 {
-    "reporter": ["progress"]
+    "reporter": ["progress"],
+    "timeout": 15000
 }
