@@ -435,7 +435,7 @@ describe('General URL Matching behavior (other) >', () => {
     });
 
     describe('emails in URL', () => {
-        it('should autolink a url with multiple email in the query string', () => {
+        it('should autolink a url with multiple emails in the query string without also autolinking the email addresses themselves', () => {
             const result = autolinker.link(
                 'https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y'
             );

@@ -34,6 +34,48 @@ describe('Autolinker', function () {
             });
         });
 
+        describe('`url` cfg', () => {
+            it(`when 'urls' is true, should default to matching all 3 scheme-prefixed, top-level domain, and IPv4 URLs`, () => {
+                const autolinker = new Autolinker({ urls: true, newWindow: false });
+                const result = autolinker.link(`
+                    Welcome to https://google.com
+                    Welcome to google.com
+                    Welcome to 127.0.0.1
+                `);
+                expect(result).to.equal(`
+                    Welcome to <a href="https://google.com">google.com</a>
+                    Welcome to <a href="http://google.com">google.com</a>
+                    Welcome to <a href="http://127.0.0.1">127.0.0.1</a>
+                `);
+            });
+
+            it(`when 'urls' is an empty object, should default to matching all 3 scheme-prefixed, top-level domain, and IPv4 URLs`, () => {
+                const autolinker = new Autolinker({ urls: {}, newWindow: false });
+                const result = autolinker.link(`
+                    Welcome to https://google.com
+                    Welcome to google.com
+                    Welcome to 127.0.0.1
+                `);
+                expect(result).to.equal(`
+                    Welcome to <a href="https://google.com">google.com</a>
+                    Welcome to <a href="http://google.com">google.com</a>
+                    Welcome to <a href="http://127.0.0.1">127.0.0.1</a>
+                `);
+            });
+
+            it(`when 'urls' is false, should not match any URLs`, () => {
+                const autolinker = new Autolinker({ urls: false, newWindow: false });
+
+                const inputStr = `
+                    Welcome to https://google.com
+                    Welcome to google.com
+                    Welcome to 127.0.0.1
+                `;
+                const result = autolinker.link(inputStr);
+                expect(result).to.equal(inputStr);
+            });
+        });
+
         describe('`hashtag` cfg', function () {
             it('should throw if `hashtag` is a value other than `false` or one of the valid service names', function () {
                 expect(function () {
@@ -107,6 +149,44 @@ describe('Autolinker', function () {
                 expect(function () {
                     new Autolinker({ mention: 'tiktok' });
                 }).to.not.throw();
+            });
+        });
+
+        describe(`'stripPrefix' cfg`, () => {
+            it(`when 'stripPrefix' is true, should strip both the scheme and any 'www.' prefix from URLs for display`, () => {
+                const autolinker = new Autolinker({ stripPrefix: true, newWindow: false });
+                const result = autolinker.link(`
+                    Welcome to https://google.com
+                    Welcome to www.google.com
+                `);
+                expect(result).to.equal(`
+                    Welcome to <a href="https://google.com">google.com</a>
+                    Welcome to <a href="http://www.google.com">google.com</a>
+                `);
+            });
+
+            it(`when 'stripPrefix' is an empty object, should default to strip both the scheme and any 'www.' prefix from URLs for display`, () => {
+                const autolinker = new Autolinker({ stripPrefix: {}, newWindow: false });
+                const result = autolinker.link(`
+                    Welcome to https://google.com
+                    Welcome to www.google.com
+                `);
+                expect(result).to.equal(`
+                    Welcome to <a href="https://google.com">google.com</a>
+                    Welcome to <a href="http://www.google.com">google.com</a>
+                `);
+            });
+
+            it(`when 'stripPrefix' is false, should not strip the prefix from URLs for display`, () => {
+                const autolinker = new Autolinker({ stripPrefix: false, newWindow: false });
+                const result = autolinker.link(`
+                    Welcome to https://google.com
+                    Welcome to www.google.com
+                `);
+                expect(result).to.equal(`
+                    Welcome to <a href="https://google.com">https://google.com</a>
+                    Welcome to <a href="http://www.google.com">www.google.com</a>
+                `);
             });
         });
     });
@@ -691,7 +771,7 @@ describe('Autolinker', function () {
         });
 
         describe('`stripPrefix` option', function () {
-            it('should not remove the prefix for non-http protocols', function () {
+            it('should not remove the prefix for non-http protocols even when true', function () {
                 const result = Autolinker.link('Test file://execute-virus.com', {
                     stripPrefix: true,
                     newWindow: false,

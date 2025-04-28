@@ -597,8 +597,11 @@ export default class Autolinker {
         });
 
         // After we have found all matches, remove subsequent matches that
-        // overlap with a previous match. This can happen for instance with URLs,
-        // where the url 'google.com/#link' would match '#link' as a hashtag.
+        // overlap with a previous match. This can happen for instance with an
+        // email address where the local-part of the email is also a top-level
+        // domain, such as in "google.com@aaa.com". In this case, the entire
+        // email address should be linked rather than just the 'google.com'
+        // part.
         matches = this.compactMatches(matches);
 
         // And finally, remove matches for match types that have been turned
@@ -612,31 +615,33 @@ export default class Autolinker {
 
     /**
      * After we have found all matches, we need to remove matches that overlap
-     * with a previous match. This can happen for instance with URLs, where the
-     * url 'google.com/#link' would match '#link' as a hashtag. Because the
-     * '#link' part is contained in a larger match that comes before the HashTag
-     * match, we'll remove the HashTag match.
+     * with a previous match. This can happen for instance with an
+     * email address where the local-part of the email is also a top-level
+     * domain, such as in "google.com@aaa.com". In this case, the entire email
+     * address should be linked rather than just the 'google.com' part.
      *
      * @private
      * @param {Autolinker.match.Match[]} matches
      * @return {Autolinker.match.Match[]}
      */
     private compactMatches(matches: Match[]) {
-        // First, the matches need to be sorted in order of offset
-        matches.sort((a, b) => {
-            return a.getOffset() - b.getOffset();
-        });
+        // First, the matches need to be sorted in order of offset in the input
+        // string
+        matches.sort(byMatchOffset);
 
         let i = 0;
         while (i < matches.length - 1) {
-            const match = matches[i],
-                offset = match.getOffset(),
-                matchedTextLength = match.getMatchedText().length,
-                endIdx = offset + matchedTextLength;
+            const match = matches[i];
+            const offset = match.getOffset();
+            const matchedTextLength = match.getMatchedText().length;
 
             if (i + 1 < matches.length) {
                 // Remove subsequent matches that equal offset with current match
+                // This can happen when matching the text "google.com@aaa.com"
+                // where we have both a URL ('google.com') and an email. We
+                // should only keep the email match in this case.
                 if (matches[i + 1].getOffset() === offset) {
+                    // Remove the shorter match
                     const removeIdx =
                         matches[i + 1].getMatchedText().length > matchedTextLength ? i : i + 1;
                     matches.splice(removeIdx, 1);
@@ -644,10 +649,24 @@ export default class Autolinker {
                 }
 
                 // Remove subsequent matches that overlap with the current match
-                if (matches[i + 1].getOffset() < endIdx) {
-                    matches.splice(i + 1, 1);
-                    continue;
-                }
+                //
+                // NOTE: This was a fundamental snippet of the Autolinker.js v3
+                // algorithm where we had multiple regular expressions searching
+                // the input string for matches. The regexes would sometimes
+                // overlap such as in the case of "google.com/#link", where we
+                // would have both a URL match and a hashtag match.
+                //
+                // However, the Autolinker.js v4 algorithm uses a state machine
+                // parser and knows that the '#link' part of 'google.com/#link'
+                // is part of the URL that precedes it, so we don't need this
+                // piece of code any more. Keeping it here commented for now in
+                // case we need to put it back at some point, but none of the
+                // test cases are currently able to trigger the need for it.
+                // const endIdx = offset + matchedTextLength;
+                // if (matches[i + 1].getOffset() < endIdx) {
+                //     matches.splice(i + 1, 1);
+                //     continue;
+                // }
             }
             i++;
         }
@@ -734,7 +753,7 @@ export default class Autolinker {
      * @return {Autolinker.match.Match[]} The array of Matches found in the
      *   given input `text`.
      */
-    private parseText(text: string, offset = 0) {
+    private parseText(text: string, offset: number) {
         offset = offset || 0;
         const matches: Match[] = parseMatches(text, {
             tagBuilder: this.getTagBuilder(),
@@ -932,6 +951,14 @@ function normalizeTruncateCfg(truncate: TruncateConfig | undefined): Required<Tr
             ...truncate,
         };
     }
+}
+
+/**
+ * Helper function for Array.prototype.sort() to sort the Matches by
+ * their offset in the input string.
+ */
+function byMatchOffset(a: Match, b: Match) {
+    return a.getOffset() - b.getOffset();
 }
 
 export interface AutolinkerConfig {

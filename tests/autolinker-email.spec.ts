@@ -79,11 +79,21 @@ describe('Autolinker Email Matching >', () => {
         expect(result).to.equal('Hi there@stuff');
     });
 
-    it('should automatically link an email address with tld matched localpart', function () {
-        const result = autolinker.link('My email is busueng.kim@aaa.com');
+    it(`should automatically link an email address with tld matched localpart (we should not autolink the URL 'busueng.kim', but rather the entire email address)`, function () {
+        const result = autolinker.link('My email is google.com@aaa.com');
 
         expect(result).to.equal(
-            'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>'
+            'My email is <a href="mailto:google.com@aaa.com">google.com@aaa.com</a>'
+        );
+    });
+
+    it(`should automatically link an email address with tld matched localpart - from issue raised (we should not autolink the URL 'busueng.kim', but rather the entire email address)`, function () {
+        const result = autolinker.link(
+            'My email is busueng.kim@aaa.com, which is also another TLD'
+        );
+
+        expect(result).to.equal(
+            'My email is <a href="mailto:busueng.kim@aaa.com">busueng.kim@aaa.com</a>, which is also another TLD'
         );
     });
 
