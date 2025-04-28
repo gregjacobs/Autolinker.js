@@ -9,11 +9,11 @@
 Automatic linking of URLs, emails, phone numbers, mentions, and hashtags in text.
 
 ```
-Input: "Visit google.com" 
+Input:  "Visit google.com" 
          
-          |
-          |
-          v
+               |
+               |
+               v
 
 Output: "Visit <a href="https://google.com">google.com</a>"
 ```
