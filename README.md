@@ -7,13 +7,13 @@
 [![GitHub License](https://img.shields.io/github/license/gregjacobs/Autolinker.js)](https://github.com/gregjacobs/Autolinker.js/blob/master/LICENSE)
 
 ```
-"Visit google.com" 
+Input: "Visit google.com" 
          
           |
           |
           v
 
-"Visit <a href="https://google.com">google.com</a>"
+Output: "Visit <a href="https://google.com">google.com</a>"
 ```
 
 Because I had so much trouble finding a good auto-linking implementation out in
