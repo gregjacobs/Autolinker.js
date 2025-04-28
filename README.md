@@ -38,6 +38,8 @@ So, this utility attempts to handle everything. It:
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
   and will not accidentally wrap the inner text of an anchor tag with a
   new one (which would cause doubly-nested anchor tags).
+- Will do all of this in linear time (`O(n)`) with low constant factors and
+  without the possibility of RegExp backtracking.
 
 Hope that this utility helps you as well!
 
