@@ -27,19 +27,19 @@ So, this utility attempts to handle everything. It:
 
 - Autolinks URLs, whether or not they start with the protocol (i.e. 'http://').
   In other words, it will automatically link the text "google.com", as well as
-  "http://google.com".
+  "http://google.com"
 - Will properly handle URLs with special characters
 - Will properly handle URLs with query parameters or a named anchor (i.e. hash)
-- Will autolink email addresses.
-- Will autolink phone numbers.
-- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok).
-- Will autolink hashtags.
+- Will autolink email addresses
+- Will autolink phone numbers
+- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok)
+- Will autolink hashtags
 - Will properly handle HTML input. The utility will not change the `href`
   attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
   and will not accidentally wrap the inner text of an anchor tag with a
-  new one (which would cause doubly-nested anchor tags).
+  new one (which would cause doubly-nested anchor tags)
 - Will do all of this in linear time (`O(n)`) with low constant factors and
-  without the possibility of RegExp backtracking.
+  without the possibility of RegExp backtracking
 
 Hope that this utility helps you as well!
 
