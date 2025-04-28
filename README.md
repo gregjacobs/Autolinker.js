@@ -34,10 +34,10 @@ So, this utility attempts to handle everything. It:
 - Will autolink phone numbers
 - Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok)
 - Will autolink hashtags
-- Will properly handle HTML input. The utility will not change the `href`
-  attribute inside anchor (&lt;a&gt;) tags (or any other tag/attribute), 
-  and will not accidentally wrap the inner text of an anchor tag with a
-  new one (which would cause doubly-nested anchor tags)
+- Will properly handle HTML input. The utility will not overwrite the `href`
+  attribute inside anchor (`<a>`) tags (or any other tag/attribute), 
+  and will not accidentally wrap the inner text of anchor/script/style tags 
+  with a new one (which would cause doubly-nested anchor tags)
 - Will do all of this in linear time (`O(n)`) with low constant factors and
   without the possibility of RegExp backtracking
 
