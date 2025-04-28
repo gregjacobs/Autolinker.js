@@ -1,6 +1,6 @@
 packages:
-  - benchmark
-  - benchmark/*
+  - benchmarks
+  - benchmarks/*
 ignoredBuiltDependencies:
   - spawn-sync
 onlyBuiltDependencies:
