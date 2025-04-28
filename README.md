@@ -28,12 +28,12 @@ So, this utility attempts to handle everything. It:
 - Autolinks URLs, whether or not they start with the protocol (i.e. 'http://').
   In other words, it will automatically link the text "google.com", as well as
   "http://google.com"
-- Will properly handle URLs with special characters
-- Will properly handle URLs with query parameters or a named anchor (i.e. hash)
+- Will properly handle URLs with query parameters, named anchors (i.e. hash),
+  and special characters
 - Will autolink email addresses
 - Will autolink phone numbers
-- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok)
-- Will autolink hashtags
+- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok, Youtube)
+- Will autolink hashtags (Twitter, Instagram, Facebook, TikTok, Youtube)
 - Will properly handle HTML input. The utility will not overwrite the `href`
   attribute inside anchor (`<a>`) tags (or any other tag/attribute), 
   and will not accidentally wrap the inner text of anchor/script/style tags 
@@ -465,8 +465,10 @@ The full API docs for Autolinker may be referenced at:
    TypeScript type narrowing of `Match` objects returned by the `parse()` 
    method or inside the `replaceFn`.
 1. The `Matcher` classes have been removed in favor of a single finite state
-   machine parser, greatly improving the performance of Autolinker but removing 
-   some of the customizability of the old regular expressions. Will address this customizability in a future release.
+   machine parser, greatly improving the performance of Autolinker (3x 
+   performance improvement over the 3.x branch), but removing some of the 
+   customizability of the old regular expressions. Will address this 
+   customizability in a future release.
 1. `Autolinker.AnchorTagBuilder`, `Autolinker.HtmlTag`, and `Autolinker.match.*`
    references have been removed. These shouldn't be needed as public APIs, but
    please raise a GitHub issue if these are for some reason needed.
