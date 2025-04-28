@@ -6,6 +6,8 @@
 [![codecov](https://codecov.io/github/gregjacobs/Autolinker.js/graph/badge.svg?token=6sqLqa2oeb)](https://codecov.io/github/gregjacobs/Autolinker.js)
 [![GitHub License](https://img.shields.io/github/license/gregjacobs/Autolinker.js)](https://github.com/gregjacobs/Autolinker.js/blob/master/LICENSE)
 
+Automatic linking of URLs, emails, phone numbers, mentions, and hashtags in text.
+
 ```
 Input: "Visit google.com" 
          
