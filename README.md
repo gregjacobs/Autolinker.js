@@ -34,7 +34,9 @@ So, this utility attempts to handle everything. It:
 - Will autolink phone numbers
 - Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok)
 - Will autolink hashtags
-- Will properly handle HTML input. The utility will not overwrite the `href`
+- Will properly handle HTML input. 
+
+  The utility will not overwrite the `href`
   attribute inside anchor (`<a>`) tags (or any other tag/attribute), 
   and will not accidentally wrap the inner text of anchor/script/style tags 
   with a new one (which would cause doubly-nested anchor tags)
