@@ -40,9 +40,9 @@ import type { StripPrefixConfigObj } from '../autolinker';
 
 /**
  * Context object containing all the state needed by the state machine functions.
- * 
+ *
  * ## Historical note
- * 
+ *
  * In v4.1.1, we used nested functions to handle the context via closures, but
  * this necessitated re-creating the functions for each call to `parseMatches()`,
  * which made them difficult for v8 to JIT optimize. In v4.1.2, we lifted all of
@@ -273,7 +273,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
         //     String(charIdx),
         //     char,
         //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
-        //     stateMachines.map(machine => `${machine.type}${'matchType' in machine ? ` (${machine.matchType})` : ''}`).join('\n') || '(none)',
+        //     stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
         //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
         //     String(charIdx),
         //     stateMachines.map(m => m.startIdx).join('\n'),
@@ -1102,7 +1102,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
     matchedText = excludeUnbalancedTrailingBracesAndPunctuation(matchedText);
 
     switch (stateMachine.type) {
-        case 'url': {
+        case StateMachineType.Url: {
             // We don't want to accidentally match a URL that is preceded by an
             // '@' character, which would be an email address
             const charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
@@ -1116,9 +1116,8 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
             // that begin with 'www.' so that users may turn off 'www'
             // matches. As such, we need to correct for that now if the
             // URL begins with 'www.'
-            const urlMatchType: UrlMatchType = stateMachine.matchType;
-            switch (urlMatchType) {
-                case 'scheme': {
+            switch (stateMachine.matchType) {
+                case UrlStateMachineMatchType.Scheme: {
                     // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
                     // However, in cases where a URL is missing whitespace before an obvious link,
                     // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
@@ -1139,14 +1138,14 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
                     break;
                 }
 
-                case 'tld': {
+                case UrlStateMachineMatchType.Tld: {
                     if (!isValidTldMatch(matchedText)) {
                         return; // not a valid match
                     }
                     break;
                 }
 
-                case 'ipV4': {
+                case UrlStateMachineMatchType.IpV4: {
                     if (!isValidIpV4Address(matchedText)) {
                         return; // not a valid match
                     }
@@ -1155,7 +1154,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
 
                 /* istanbul ignore next */
                 default:
-                    assertNever(urlMatchType);
+                    assertNever(stateMachine);
             }
 
             matches.push(
@@ -1163,7 +1162,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
                     tagBuilder: tagBuilder,
                     matchedText: matchedText,
                     offset: startIdx,
-                    urlMatchType: urlMatchType,
+                    urlMatchType: toUrlMatchType(stateMachine.matchType),
                     url: matchedText,
                     protocolRelativeMatch: matchedText.slice(0, 2) === '//',
 
@@ -1177,7 +1176,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
             break;
         }
 
-        case 'email': {
+        case StateMachineType.Email: {
             // if the email address has a valid TLD, add it to the list of matches
             if (isValidEmail(matchedText)) {
                 matches.push(
@@ -1192,7 +1191,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
             break;
         }
 
-        case 'hashtag': {
+        case StateMachineType.Hashtag: {
             if (isValidHashtag(matchedText)) {
                 matches.push(
                     new HashtagMatch({
@@ -1207,7 +1206,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
             break;
         }
 
-        case 'mention': {
+        case StateMachineType.Mention: {
             if (isValidMention(matchedText, mentionServiceName)) {
                 matches.push(
                     new MentionMatch({
@@ -1222,7 +1221,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
             break;
         }
 
-        case 'phone': {
+        case StateMachineType.Phone: {
             // remove any trailing spaces that were considered as "separator"
             // chars by the state machine
             matchedText = matchedText.replace(/ +$/g, '');
@@ -1265,6 +1264,25 @@ const oppositeBrace: { [char: string]: string } = {
     '}': '{',
     ']': '[',
 };
+
+/**
+ * Helper function to convert a UrlStateMachineMatchType value to its
+ * UrlMatchType equivalent.
+ */
+function toUrlMatchType(stateMachineMatchType: UrlStateMachineMatchType): UrlMatchType {
+    switch (stateMachineMatchType) {
+        case UrlStateMachineMatchType.Scheme:
+            return 'scheme';
+        case UrlStateMachineMatchType.Tld:
+            return 'tld';
+        case UrlStateMachineMatchType.IpV4:
+            return 'ipV4';
+
+        /* istanbul ignore next */
+        default:
+            assertNever(stateMachineMatchType);
+    }
+}
 
 /**
  * Determines if a match found has unmatched closing parenthesis,
@@ -1398,6 +1416,16 @@ const enum State {
     PhoneNumberPoundChar, // '#' for pound character
 }
 
+// The type of state machine
+// For debugging: temporarily remove `const` from `const enum`
+const enum StateMachineType {
+    Url = 0,
+    Email,
+    Hashtag,
+    Mention,
+    Phone,
+}
+
 type StateMachine =
     | UrlStateMachine
     | EmailStateMachine
@@ -1411,8 +1439,16 @@ interface AbstractStateMachine {
     acceptStateReached: boolean;
 }
 
+// The type of URL state machine
+// For debugging: temporarily remove `const` from `const enum`
+const enum UrlStateMachineMatchType {
+    Scheme = 0, // http://, https://, file://, etc. match
+    Tld, // Top-level Domain (TLD)
+    IpV4, // 192.168.0.1
+}
+
 interface AbstractUrlStateMachine extends AbstractStateMachine {
-    readonly type: 'url';
+    readonly type: StateMachineType.Url;
 }
 
 type UrlStateMachine = SchemeUrlStateMachine | TldUrlStateMachine | IpV4UrlStateMachine;
@@ -1421,14 +1457,14 @@ type UrlStateMachine = SchemeUrlStateMachine | TldUrlStateMachine | IpV4UrlState
  * State machine with metadata for capturing TLD (top-level domain) URLs.
  */
 interface SchemeUrlStateMachine extends AbstractUrlStateMachine {
-    readonly matchType: 'scheme';
+    readonly matchType: UrlStateMachineMatchType.Scheme;
 }
 
 /**
  * State machine with metadata for capturing TLD (top-level domain) URLs.
  */
 interface TldUrlStateMachine extends AbstractUrlStateMachine {
-    readonly matchType: 'tld';
+    readonly matchType: UrlStateMachineMatchType.Tld;
 }
 
 /**
@@ -1436,7 +1472,7 @@ interface TldUrlStateMachine extends AbstractUrlStateMachine {
  * scheme (such as 'http://').
  */
 interface IpV4UrlStateMachine extends AbstractUrlStateMachine {
-    readonly matchType: 'ipV4';
+    readonly matchType: UrlStateMachineMatchType.IpV4;
     octetsEncountered: number; // if we encounter a number of octets other than 4, it's not an IPv4 address
 }
 
@@ -1444,21 +1480,21 @@ interface IpV4UrlStateMachine extends AbstractUrlStateMachine {
  * State machine for capturing email addresses.
  */
 interface EmailStateMachine extends AbstractStateMachine {
-    readonly type: 'email';
+    readonly type: StateMachineType.Email;
 }
 
 /**
  * State machine for capturing hashtags.
  */
 interface HashtagStateMachine extends AbstractStateMachine {
-    readonly type: 'hashtag';
+    readonly type: StateMachineType.Hashtag;
 }
 
 /**
  * State machine for capturing hashtags.
  */
 interface MentionStateMachine extends AbstractStateMachine {
-    readonly type: 'mention';
+    readonly type: StateMachineType.Mention;
 }
 
 /**
@@ -1469,43 +1505,43 @@ interface MentionStateMachine extends AbstractStateMachine {
  * otherwise potentially think a phone number is part of a domain label.
  */
 interface PhoneNumberStateMachine extends AbstractStateMachine {
-    readonly type: 'phone';
+    readonly type: StateMachineType.Phone;
 }
 
 function createSchemeUrlStateMachine(startIdx: number, state: State): SchemeUrlStateMachine {
     return {
-        type: 'url',
+        type: StateMachineType.Url,
         startIdx,
         state,
         acceptStateReached: false,
-        matchType: 'scheme',
+        matchType: UrlStateMachineMatchType.Scheme,
     };
 }
 
 function createTldUrlStateMachine(startIdx: number, state: State): TldUrlStateMachine {
     return {
-        type: 'url',
+        type: StateMachineType.Url,
         startIdx,
         state,
         acceptStateReached: false,
-        matchType: 'tld',
+        matchType: UrlStateMachineMatchType.Tld,
     };
 }
 
 function createIpV4UrlStateMachine(startIdx: number, state: State): IpV4UrlStateMachine {
     return {
-        type: 'url',
+        type: StateMachineType.Url,
         startIdx,
         state,
         acceptStateReached: false,
-        matchType: 'ipV4',
+        matchType: UrlStateMachineMatchType.IpV4,
         octetsEncountered: 1, // starts at 1 because we create this machine when encountering the first octet
     };
 }
 
 function createEmailStateMachine(startIdx: number, state: State): EmailStateMachine {
     return {
-        type: 'email',
+        type: StateMachineType.Email,
         startIdx,
         state,
         acceptStateReached: false,
@@ -1514,7 +1550,7 @@ function createEmailStateMachine(startIdx: number, state: State): EmailStateMach
 
 function createHashtagStateMachine(startIdx: number, state: State): HashtagStateMachine {
     return {
-        type: 'hashtag',
+        type: StateMachineType.Hashtag,
         startIdx,
         state,
         acceptStateReached: false,
@@ -1523,7 +1559,7 @@ function createHashtagStateMachine(startIdx: number, state: State): HashtagState
 
 function createMentionStateMachine(startIdx: number, state: State): MentionStateMachine {
     return {
-        type: 'mention',
+        type: StateMachineType.Mention,
         startIdx,
         state,
         acceptStateReached: false,
@@ -1532,7 +1568,7 @@ function createMentionStateMachine(startIdx: number, state: State): MentionState
 
 function createPhoneNumberStateMachine(startIdx: number, state: State): PhoneNumberStateMachine {
     return {
-        type: 'phone',
+        type: StateMachineType.Phone,
         startIdx,
         state,
         acceptStateReached: false,
@@ -1540,5 +1576,8 @@ function createPhoneNumberStateMachine(startIdx: number, state: State): PhoneNum
 }
 
 function isSchemeUrlStateMachine(machine: StateMachine): machine is SchemeUrlStateMachine {
-    return machine.type === 'url' && machine.matchType === 'scheme';
+    return (
+        machine.type === StateMachineType.Url &&
+        machine.matchType === UrlStateMachineMatchType.Scheme
+    );
 }
