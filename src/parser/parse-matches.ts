@@ -98,6 +98,11 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
             for (let stateIdx = context.stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
                 const stateMachine = context.stateMachines[stateIdx];
 
+                // Performance note: tried turning this switch/case into a lookup
+                // table, but resulted in ~350 fewer ops/sec in benchmarks.
+                // Switch/case may be more efficient due to potential function
+                // inlining by the engine? Either way, run benchmarks if
+                // attempting to change again.
                 switch (stateMachine.state) {
                     // Protocol-relative URL states
                     case State.ProtocolRelativeSlash1:
@@ -137,7 +142,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         stateIpV4Digit(context, stateMachine as IpV4UrlStateMachine, char);
                         break;
                     case State.IpV4Dot:
-                        stateIPv4Dot(context, stateMachine as IpV4UrlStateMachine, char);
+                        stateIpV4Dot(context, stateMachine as IpV4UrlStateMachine, char);
                         break;
 
                     case State.PortColon:
@@ -556,7 +561,7 @@ function stateIpV4Digit(
     }
 }
 
-function stateIPv4Dot(
+function stateIpV4Dot(
     context: ParseMatchesContext,
     stateMachine: IpV4UrlStateMachine,
     char: string

@@ -19,7 +19,7 @@ const suite = new Benchmark.Suite();
 
 // add tests
 suite
-    .add('autolinker@current', runAutolinkerCurrent)
+    .add('autolinker@current-src', runAutolinkerCurrent)
     .add('autolinker@4.1.2', runAutolinker4_1_2)
     // .add('autolinker@4.1.1', runAutolinker4_1_1)
     // .add('autolinker@4.1.0', runAutolinker4_1_0)
