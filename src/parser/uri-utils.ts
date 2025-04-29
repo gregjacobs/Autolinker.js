@@ -1,5 +1,5 @@
-import { alphaNumericAndMarksRe, digitRe } from '../regex-lib';
-import { isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
+import { alphaNumericAndMarksRe } from '../regex-lib';
+import { isDigitChar, isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
 import { tldRegex } from './known-tlds';
 
 /**
@@ -90,7 +90,7 @@ export const isSchemeStartCharCode: (code: number) => boolean = isLetterCharCode
  * {@link isSchemeStartChar}.
  */
 export function isSchemeChar(char: string): boolean {
-    return isLetterChar(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.';
+    return isLetterChar(char) || isDigitChar(char) || char === '+' || char === '-' || char === '.';
 }
 
 /**

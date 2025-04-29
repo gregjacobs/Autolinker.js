@@ -1,4 +1,4 @@
-import { alphaNumericAndMarksRe, digitRe } from '../regex-lib';
+import { alphaNumericAndMarksRe } from '../regex-lib';
 import { UrlMatch, UrlMatchType } from '../match/url-match';
 import { Match } from '../match/match';
 import { removeFromArray, assertNever } from '../utils';
@@ -35,6 +35,7 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
+import { isDigitChar } from '../string-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -356,7 +357,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string): void {
     } else if (char === '(') {
         context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberOpenParen));
     } else {
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             // A digit could start a phone number
             context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberDigit));
 
@@ -569,7 +570,7 @@ function stateIpV4Digit(
     } else if (char === ':') {
         // Beginning of a port number
         stateMachine.state = State.PortColon;
-    } else if (digitRe.test(char)) {
+    } else if (isDigitChar(char)) {
         // stay in the IPv4 digit state
     } else if (isUrlSuffixStartChar(char)) {
         stateMachine.state = State.Path;
@@ -587,7 +588,7 @@ function stateIpV4Dot(
     stateMachine: IpV4UrlStateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.octetsEncountered++;
 
         // Once we have encountered 4 octets, it's *potentially* a valid
@@ -605,7 +606,7 @@ function stateIpV4Dot(
 }
 
 function statePortColon(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PortNumber;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -613,7 +614,7 @@ function statePortColon(context: ParseMatchesContext, stateMachine: StateMachine
 }
 
 function statePortNumber(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         // Stay in port number state
     } else if (isUrlSuffixStartChar(char)) {
         // '/', '?', or '#'
@@ -893,7 +894,7 @@ function statePhoneNumberPlus(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         context.removeMachine(stateMachine);
@@ -908,7 +909,7 @@ function statePhoneNumberOpenParen(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit1;
     } else {
         context.removeMachine(stateMachine);
@@ -924,7 +925,7 @@ function statePhoneNumberAreaCodeDigit1(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit2;
     } else {
         context.removeMachine(stateMachine);
@@ -936,7 +937,7 @@ function statePhoneNumberAreaCodeDigit2(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit3;
     } else {
         context.removeMachine(stateMachine);
@@ -960,7 +961,7 @@ function statePhoneNumberCloseParen(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (isPhoneNumberSeparatorChar(char)) {
         stateMachine.state = State.PhoneNumberSeparator;
@@ -987,7 +988,7 @@ function statePhoneNumberDigit(
         stateMachine.state = State.PhoneNumberControlChar;
     } else if (char === '#') {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (digitRe.test(char)) {
+    } else if (isDigitChar(char)) {
         // Stay in the phone number digit state
     } else if (char === '(') {
         stateMachine.state = State.PhoneNumberOpenParen;
@@ -1009,7 +1010,7 @@ function statePhoneNumberSeparator(
     stateMachine: StateMachine,
     char: string
 ) {
-    if (digitRe.test(char)) {
+    if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (char === '(') {
         stateMachine.state = State.PhoneNumberOpenParen;
@@ -1032,7 +1033,7 @@ function statePhoneNumberControlChar(
         // Stay in the "control char" state
     } else if (char === '#') {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (digitRe.test(char)) {
+    } else if (isDigitChar(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -1047,7 +1048,7 @@ function statePhoneNumberPoundChar(
 ) {
     if (isPhoneNumberControlChar(char)) {
         stateMachine.state = State.PhoneNumberControlChar;
-    } else if (digitRe.test(char)) {
+    } else if (isDigitChar(char)) {
         // According to some of the older tests, if there's a digit
         // after a '#' sign, the match is invalid. TODO: Revisit if this is true
         context.removeMachine(stateMachine);

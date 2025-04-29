@@ -7,18 +7,6 @@
  */
 
 /**
- * Regular expression to match ASCII digits
- */
-// TODO: Remove and replace with isDigit() function
-export const digitRe = /[\d]/;
-
-/**
- * Regular expression to match everything *except* ASCII digits
- */
-// TODO: Remove and replace with !isDigit() function call
-export const nonDigitRe = /[\D]/;
-
-/**
  * Regular expression to match whitespace
  */
 export const whitespaceRe = /\s/;

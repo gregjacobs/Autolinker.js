@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { isLetterChar, isLetterCharCode } from '../src/string-utils';
+import { isLetterChar, isLetterCharCode, isDigitChar, isDigitCharCode } from '../src/string-utils';
 
 describe(`isLetterChar()`, () => {
     it(`when given letter characters A-Z and a-z, should return true`, () => {
@@ -76,5 +76,79 @@ describe(`isLetterCharCodeCode()`, () => {
         expect(isLetterCharCode('>'.charCodeAt(0))).to.equal(false);
         expect(isLetterCharCode('='.charCodeAt(0))).to.equal(false);
         expect(isLetterCharCode('-'.charCodeAt(0))).to.equal(false);
+    });
+});
+
+describe(`isDigitChar()`, () => {
+    it(`when given letter characters A-Z and a-z, should return true`, () => {
+        expect(isDigitChar('0')).to.equal(true);
+        expect(isDigitChar('1')).to.equal(true);
+        expect(isDigitChar('2')).to.equal(true);
+        expect(isDigitChar('3')).to.equal(true);
+        expect(isDigitChar('4')).to.equal(true);
+        expect(isDigitChar('5')).to.equal(true);
+        expect(isDigitChar('6')).to.equal(true);
+        expect(isDigitChar('7')).to.equal(true);
+        expect(isDigitChar('8')).to.equal(true);
+        expect(isDigitChar('9')).to.equal(true);
+    });
+
+    it(`when given non-letter characters (i.e. not A-Z or a-z), should return false`, () => {
+        expect(isDigitChar('A')).to.equal(false);
+        expect(isDigitChar('M')).to.equal(false);
+        expect(isDigitChar('Z')).to.equal(false);
+        expect(isDigitChar('a')).to.equal(false);
+        expect(isDigitChar('m')).to.equal(false);
+        expect(isDigitChar('z')).to.equal(false);
+        expect(isDigitChar('!')).to.equal(false);
+        expect(isDigitChar('[')).to.equal(false);
+        expect(isDigitChar('_')).to.equal(false);
+        expect(isDigitChar('`')).to.equal(false);
+        expect(isDigitChar(' ')).to.equal(false);
+        expect(isDigitChar('{')).to.equal(false);
+        expect(isDigitChar('}')).to.equal(false);
+        expect(isDigitChar(':')).to.equal(false);
+        expect(isDigitChar(';')).to.equal(false);
+        expect(isDigitChar('<')).to.equal(false);
+        expect(isDigitChar('>')).to.equal(false);
+        expect(isDigitChar('=')).to.equal(false);
+        expect(isDigitChar('-')).to.equal(false);
+    });
+});
+
+describe(`isDigitCharCodeCode()`, () => {
+    it(`when given digit characters 0-9, should return true`, () => {
+        expect(isDigitCharCode('0'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('1'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('2'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('3'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('4'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('5'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('6'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('7'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('8'.charCodeAt(0))).to.equal(true);
+        expect(isDigitCharCode('9'.charCodeAt(0))).to.equal(true);
+    });
+
+    it(`when given non-digit characters, should return false`, () => {
+        expect(isDigitCharCode('A'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('M'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('Z'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('a'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('m'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('z'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('!'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('['.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('_'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('`'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode(' '.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('{'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('}'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode(':'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode(';'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('<'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('>'.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('='.charCodeAt(0))).to.equal(false);
+        expect(isDigitCharCode('-'.charCodeAt(0))).to.equal(false);
     });
 });

@@ -1,5 +1,5 @@
-import { isLetterChar } from '../string-utils';
-import { digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
+import { isDigitChar, isLetterChar } from '../string-utils';
+import { whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
@@ -245,7 +245,7 @@ export function parseHtml(
                 name: captureTagName(),
             });
             emitTagAndPreviousTextNode(); // resets to Data state as well
-        } else if (!isLetterChar(char) && !digitRe.test(char) && char !== ':') {
+        } else if (!isLetterChar(char) && !isDigitChar(char) && char !== ':') {
             // Anything else that does not form an html tag. Note: the colon
             // character is accepted for XML namespaced tags
             resetToDataState();

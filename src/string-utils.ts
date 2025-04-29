@@ -28,7 +28,7 @@ export const letterRe = /[A-Za-z]/;
 export function isLetterChar(char: string): boolean {
     // Previous implementation of this function was just testing against the
     // /[A-Za-z]/ regexp, but this is 90% slower than testing by char code
-    // ranges as numbers according to jsperf
+    // ranges as ASCII values according to jsperf
     //return letterRe.test(char);
 
     return isLetterCharCode(char.charCodeAt(0));
@@ -40,4 +40,25 @@ export function isLetterChar(char: string): boolean {
  */
 export function isLetterCharCode(code: number): boolean {
     return (code >= Char.A && code <= Char.Z) || (code >= Char.a && code <= Char.z);
+}
+
+/**
+ * Determines if the given character is a digit char which matches the RegExp
+ * `/[\d]/`
+ */
+export function isDigitChar(char: string): boolean {
+    // Previous implementation of this function was just testing against the
+    // /[\d]/ regexp, but this is 95% slower than testing by char code
+    // range as ASCII values according to jsperf
+    //return letterRe.test(char);
+
+    return isDigitCharCode(char.charCodeAt(0));
+}
+
+/**
+ * Determines if the given character code represents a digit char which matches
+ * the RegExp `/[\d]/`
+ */
+export function isDigitCharCode(code: number): boolean {
+    return code >= Char.Zero && code <= Char.Nine;
 }
