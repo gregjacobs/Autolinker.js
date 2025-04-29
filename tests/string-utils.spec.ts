@@ -1,5 +1,12 @@
 import { expect } from 'chai';
-import { isLetterChar, isLetterCharCode, isDigitChar, isDigitCharCode } from '../src/string-utils';
+import {
+    isLetterChar,
+    isLetterCharCode,
+    isDigitChar,
+    isDigitCharCode,
+    isQuoteChar,
+    isQuoteCharCode,
+} from '../src/string-utils';
 
 describe(`isLetterChar()`, () => {
     it(`when given letter characters A-Z and a-z, should return true`, () => {
@@ -150,5 +157,69 @@ describe(`isDigitCharCodeCode()`, () => {
         expect(isDigitCharCode('>'.charCodeAt(0))).to.equal(false);
         expect(isDigitCharCode('='.charCodeAt(0))).to.equal(false);
         expect(isDigitCharCode('-'.charCodeAt(0))).to.equal(false);
+    });
+});
+
+describe(`isQuoteChar()`, () => {
+    it(`when given single or double quote characters, should return true`, () => {
+        expect(isQuoteChar(`"`)).to.equal(true);
+        expect(isQuoteChar(`'`)).to.equal(true);
+    });
+
+    it(`when given non-quote characters, should return false`, () => {
+        expect(isQuoteChar('`')).to.equal(false); // note: this is a "quote" character in JavaScript, but not in HTML, and thus we don't want to match it as such for the HTML parsing functionality
+        expect(isQuoteChar('A')).to.equal(false);
+        expect(isQuoteChar('M')).to.equal(false);
+        expect(isQuoteChar('Z')).to.equal(false);
+        expect(isQuoteChar('a')).to.equal(false);
+        expect(isQuoteChar('m')).to.equal(false);
+        expect(isQuoteChar('z')).to.equal(false);
+        expect(isQuoteChar('1')).to.equal(false);
+        expect(isQuoteChar('5')).to.equal(false);
+        expect(isQuoteChar('9')).to.equal(false);
+        expect(isQuoteChar('!')).to.equal(false);
+        expect(isQuoteChar('[')).to.equal(false);
+        expect(isQuoteChar('_')).to.equal(false);
+        expect(isQuoteChar(' ')).to.equal(false);
+        expect(isQuoteChar('{')).to.equal(false);
+        expect(isQuoteChar('}')).to.equal(false);
+        expect(isQuoteChar(':')).to.equal(false);
+        expect(isQuoteChar(';')).to.equal(false);
+        expect(isQuoteChar('<')).to.equal(false);
+        expect(isQuoteChar('>')).to.equal(false);
+        expect(isQuoteChar('=')).to.equal(false);
+        expect(isQuoteChar('-')).to.equal(false);
+    });
+});
+
+describe(`isQuoteCharCodeCode()`, () => {
+    it(`when given single or double quote character codes, should return true`, () => {
+        expect(isQuoteCharCode(`"`.charCodeAt(0))).to.equal(true);
+        expect(isQuoteCharCode(`'`.charCodeAt(0))).to.equal(true);
+    });
+
+    it(`when given non-quote character codes, should return false`, () => {
+        expect(isQuoteCharCode('`'.charCodeAt(0))).to.equal(false); // note: this is a "quote" character in JavaScript, but not in HTML, and thus we don't want to match it as such for the HTML parsing functionality
+        expect(isQuoteCharCode('A'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('M'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('Z'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('a'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('m'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('z'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('1'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('5'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('9'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('!'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('['.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('_'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode(' '.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('{'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('}'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode(':'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode(';'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('<'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('>'.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('='.charCodeAt(0))).to.equal(false);
+        expect(isQuoteCharCode('-'.charCodeAt(0))).to.equal(false);
     });
 });

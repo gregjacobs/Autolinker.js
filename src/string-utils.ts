@@ -9,6 +9,8 @@ const enum Char {
     Z = 90,
     a = 97,
     z = 122,
+    DoubleQuote = 34, // char code for "
+    SingleQuote = 39, // char code for '
     Zero = 48, // char code for '0'
     Nine = 57, // char code for '9'
 }
@@ -29,7 +31,7 @@ export function isLetterChar(char: string): boolean {
     // Previous implementation of this function was just testing against the
     // /[A-Za-z]/ regexp, but this is 90% slower than testing by char code
     // ranges as ASCII values according to jsperf
-    //return letterRe.test(char);
+    //return /[A-Za-z]/.test(char);
 
     return isLetterCharCode(char.charCodeAt(0));
 }
@@ -50,7 +52,7 @@ export function isDigitChar(char: string): boolean {
     // Previous implementation of this function was just testing against the
     // /[\d]/ regexp, but this is 95% slower than testing by char code
     // range as ASCII values according to jsperf
-    //return letterRe.test(char);
+    //return /[\d]/.test(char);
 
     return isDigitCharCode(char.charCodeAt(0));
 }
@@ -61,4 +63,25 @@ export function isDigitChar(char: string): boolean {
  */
 export function isDigitCharCode(code: number): boolean {
     return code >= Char.Zero && code <= Char.Nine;
+}
+
+/**
+ * Determines if the given character is a single quote (') or double quote (")
+ * char which matches the RegExp `/['"]/`
+ */
+export function isQuoteChar(char: string): boolean {
+    // Previous implementation of this function was just testing against the
+    // /['"]/ regexp, but this is 94% slower than testing by char codes
+    // as ASCII values according to jsperf
+    //return /['"]/.test(char);
+
+    return isQuoteCharCode(char.charCodeAt(0));
+}
+
+/**
+ * Determines if the given character code represents a digit char which matches
+ * the RegExp `/[\d]/`
+ */
+export function isQuoteCharCode(code: number): boolean {
+    return code === Char.DoubleQuote || code === Char.SingleQuote;
 }

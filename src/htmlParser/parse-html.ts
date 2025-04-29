@@ -1,5 +1,5 @@
-import { isDigitChar, isLetterChar } from '../string-utils';
-import { whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
+import { isDigitChar, isLetterChar, isQuoteChar } from '../string-utils';
+import { whitespaceRe, controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
@@ -279,7 +279,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (char === `=` || quoteRe.test(char) || controlCharsRe.test(char)) {
+        } else if (char === `=` || isQuoteChar(char) || controlCharsRe.test(char)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -303,7 +303,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (quoteRe.test(char)) {
+        } else if (isQuoteChar(char)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -326,7 +326,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (quoteRe.test(char)) {
+        } else if (isQuoteChar(char)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag

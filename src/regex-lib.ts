@@ -12,11 +12,6 @@
 export const whitespaceRe = /\s/;
 
 /**
- * Regular expression to match quote characters
- */
-export const quoteRe = /['"]/;
-
-/**
  * Regular expression to match the range of ASCII control characters (0-31), and
  * the backspace char (127).
  *
