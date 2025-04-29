@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v4.1.2
+ * v4.1.4
  *
  * Copyright(c) 2025 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -89,7 +89,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '4.1.2';
+    var version = '4.1.4';
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     /**
@@ -133,7 +133,7 @@
      * @param arr The array to remove elements from. This array is mutated.
      * @param fn The element to remove.
      */
-    function remove(arr, item) {
+    function removeFromArray(arr, item) {
         for (var i = arr.length - 1; i >= 0; i--) {
             if (arr[i] === item) {
                 arr.splice(i, 1);
@@ -175,21 +175,9 @@
      * regular expressions that are shared between source files.
      */
     /**
-     * Regular expression to match upper and lowercase ASCII letters
-     */
-    var letterRe = /[A-Za-z]/;
-    /**
-     * Regular expression to match ASCII digits
-     */
-    var digitRe = /[\d]/;
-    /**
      * Regular expression to match whitespace
      */
     var whitespaceRe = /\s/;
-    /**
-     * Regular expression to match quote characters
-     */
-    var quoteRe = /['"]/;
     /**
      * Regular expression to match the range of ASCII control characters (0-31), and
      * the backspace char (127).
@@ -1157,10 +1145,71 @@
         return AbstractMatch;
     }());
 
+    /**
+     * Regular expression to match one or more upper and lowercase ASCII letters.
+     *
+     * Do not use for single letter checks. The {@link #isLetterChar} and
+     * {@link #isLetterCharCode} functions are 10x faster.
+     */
+    var letterRe = /[A-Za-z]/;
+    /**
+     * Determines if the given character is a letter char which matches the RegExp
+     * `/[A-Za-z]/`
+     */
+    function isLetterChar(char) {
+        // Previous implementation of this function was just testing against the
+        // /[A-Za-z]/ regexp, but this is 90% slower than testing by char code
+        // ranges as ASCII values according to jsperf
+        //return /[A-Za-z]/.test(char);
+        return isLetterCharCode(char.charCodeAt(0));
+    }
+    /**
+     * Determines if the given character code represents a letter char which matches
+     * the RegExp `/[A-Za-z]/`
+     */
+    function isLetterCharCode(code) {
+        return (code >= 65 /* Char.A */ && code <= 90 /* Char.Z */) || (code >= 97 /* Char.a */ && code <= 122 /* Char.z */);
+    }
+    /**
+     * Determines if the given character is a digit char which matches the RegExp
+     * `/[\d]/`
+     */
+    function isDigitChar(char) {
+        // Previous implementation of this function was just testing against the
+        // /[\d]/ regexp, but this is 95% slower than testing by char code
+        // range as ASCII values according to jsperf
+        //return /[\d]/.test(char);
+        return isDigitCharCode(char.charCodeAt(0));
+    }
+    /**
+     * Determines if the given character code represents a digit char which matches
+     * the RegExp `/[\d]/`
+     */
+    function isDigitCharCode(code) {
+        return code >= 48 /* Char.Zero */ && code <= 57 /* Char.Nine */;
+    }
+    /**
+     * Determines if the given character is a single quote (') or double quote (")
+     * char which matches the RegExp `/['"]/`
+     */
+    function isQuoteChar(char) {
+        // Previous implementation of this function was just testing against the
+        // /['"]/ regexp, but this is 94% slower than testing by char codes
+        // as ASCII values according to jsperf
+        //return /['"]/.test(char);
+        return isQuoteCharCode(char.charCodeAt(0));
+    }
+    /**
+     * Determines if the given character code represents a digit char which matches
+     * the RegExp `/[\d]/`
+     */
+    function isQuoteCharCode(code) {
+        return code === 34 /* Char.DoubleQuote */ || code === 39 /* Char.SingleQuote */;
+    }
+
     // NOTE: THIS IS A GENERATED FILE
-    // To update with the latest TLD list, run `npm run update-tld-regex`
-    var tldRegexStr = '(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|banamex|bauhaus|bestbuy|booking|brother|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|yamaxun|youtube|zuerich|католик|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kindle|kosher|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|nagoya|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|loans|locus|lotte|lotto|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|scb|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)';
-    var tldRegex = new RegExp('^' + tldRegexStr + '$');
+    // To update with the latest TLD list, run `npm run update-known-tlds`
+    var tldRegex = /^(?:xn--vermgensberatung-pwb|xn--vermgensberater-ctb|xn--clchc0ea0b2g2a9gcd|xn--w4r85el8fhu5dnra|travelersinsurance|vermögensberatung|xn--5su34j936bgsg|xn--bck1b9a5dre4c|xn--mgbah1a3hjkrd|xn--mgbai9azgqp6j|xn--mgberp4a5d4ar|xn--xkc2dl3a5ee0h|vermögensberater|xn--fzys8d69uvgm|xn--mgba7c0bbn0a|xn--mgbcpq6gpa1a|xn--xkc2al3hye2a|americanexpress|kerryproperties|sandvikcoromant|xn--i1b6b1a6a2e|xn--kcrx77d1x4a|xn--lgbbat1ad8j|xn--mgba3a4f16a|xn--mgbc0a9azcg|xn--nqv7fs00ema|americanfamily|weatherchannel|xn--54b7fta0cc|xn--6qq986b3xl|xn--80aqecdr1a|xn--b4w605ferd|xn--fiq228c5hs|xn--h2breg3eve|xn--jlq480n2rg|xn--mgba3a3ejt|xn--mgbaam7a8h|xn--mgbayh7gpa|xn--mgbbh1a71e|xn--mgbca7dzdo|xn--mgbi4ecexp|xn--mgbx4cd0ab|xn--rvc1e0am3e|international|lifeinsurance|wolterskluwer|xn--cckwcxetd|xn--eckvdtc9d|xn--fpcrj9c3d|xn--fzc2c9e2c|xn--h2brj9c8c|xn--tiq49xqyj|xn--yfro4i67o|xn--ygbi2ammx|construction|lplfinancial|scholarships|versicherung|xn--3e0b707e|xn--45br5cyl|xn--4dbrk0ce|xn--80adxhks|xn--80asehdb|xn--8y0a063a|xn--gckr3f0f|xn--mgb9awbf|xn--mgbab2bd|xn--mgbgu82a|xn--mgbpl2fh|xn--mgbt3dhd|xn--mk1bu44c|xn--ngbc5azd|xn--ngbe9e0a|xn--ogbpf8fl|xn--qcka1pmc|accountants|barclaycard|blackfriday|blockbuster|bridgestone|calvinklein|contractors|creditunion|engineering|enterprises|investments|kerryhotels|lamborghini|motorcycles|olayangroup|photography|playstation|productions|progressive|redumbrella|williamhill|xn--11b4c3d|xn--1ck2e1b|xn--1qqw23a|xn--2scrj9c|xn--3bst00m|xn--3ds443g|xn--3hcrj9c|xn--42c2d9a|xn--45brj9c|xn--55qw42g|xn--6frz82g|xn--80ao21a|xn--9krt00a|xn--cck2b3b|xn--czr694b|xn--d1acj3b|xn--efvy88h|xn--fct429k|xn--fjq720a|xn--flw351e|xn--g2xx48c|xn--gecrj9c|xn--gk3at1e|xn--h2brj9c|xn--hxt814e|xn--imr513n|xn--j6w193g|xn--jvr189m|xn--kprw13d|xn--kpry57d|xn--mgbbh1a|xn--mgbtx2b|xn--mix891f|xn--nyqy26a|xn--otu796d|xn--pgbs0dh|xn--q9jyb4c|xn--rhqv96g|xn--rovu88b|xn--s9brj9c|xn--ses554g|xn--t60b56a|xn--vuq861b|xn--w4rs40l|xn--xhq521b|xn--zfr164b|சிங்கப்பூர்|accountant|apartments|associates|basketball|bnpparibas|boehringer|capitalone|consulting|creditcard|cuisinella|eurovision|extraspace|foundation|healthcare|immobilien|industries|management|mitsubishi|nextdirect|properties|protection|prudential|realestate|republican|restaurant|schaeffler|tatamotors|technology|university|vlaanderen|xn--30rr7y|xn--3pxu8k|xn--45q11c|xn--4gbrim|xn--55qx5d|xn--5tzm5g|xn--80aswg|xn--90a3ac|xn--9dbq2a|xn--9et52u|xn--c2br7g|xn--cg4bki|xn--czrs0t|xn--czru2d|xn--fiq64b|xn--fiqs8s|xn--fiqz9s|xn--io0a7i|xn--kput3i|xn--mxtq1m|xn--o3cw4h|xn--pssy2u|xn--q7ce6a|xn--unup4y|xn--wgbh1c|xn--wgbl6a|xn--y9a3aq|accenture|allfinanz|amsterdam|analytics|aquarelle|barcelona|bloomberg|christmas|community|directory|education|equipment|fairwinds|financial|firestone|fresenius|furniture|goldpoint|hisamitsu|homedepot|homegoods|homesense|institute|insurance|kuokgroup|lancaster|landrover|lifestyle|marketing|marshalls|melbourne|microsoft|panasonic|pramerica|richardli|shangrila|solutions|statebank|statefarm|stockholm|travelers|vacations|xn--90ais|xn--c1avg|xn--d1alf|xn--e1a4c|xn--fhbei|xn--j1aef|xn--j1amh|xn--l1acc|xn--ngbrx|xn--nqv7f|xn--p1acf|xn--qxa6a|xn--tckwe|xn--vhquv|yodobashi|موريتانيا|abudhabi|airforce|allstate|attorney|barclays|barefoot|bargains|baseball|boutique|bradesco|broadway|brussels|builders|business|capetown|catering|catholic|cipriani|cleaning|clinique|clothing|commbank|computer|delivery|deloitte|democrat|diamonds|discount|discover|download|engineer|ericsson|exchange|feedback|fidelity|firmdale|football|frontier|goodyear|grainger|graphics|hdfcbank|helsinki|holdings|hospital|infiniti|ipiranga|istanbul|jpmorgan|lighting|lundbeck|marriott|mckinsey|memorial|merckmsd|mortgage|observer|partners|pharmacy|pictures|plumbing|property|redstone|reliance|saarland|samsclub|security|services|shopping|softbank|software|stcgroup|supplies|training|vanguard|ventures|verisign|woodside|xn--90ae|xn--node|xn--p1ai|xn--qxam|yokohama|السعودية|abogado|academy|agakhan|alibaba|android|athleta|auction|audible|auspost|banamex|bauhaus|bestbuy|booking|brother|capital|caravan|careers|channel|charity|chintai|citadel|clubmed|college|cologne|company|compare|contact|cooking|corsica|country|coupons|courses|cricket|cruises|dentist|digital|domains|exposed|express|farmers|fashion|ferrari|ferrero|finance|fishing|fitness|flights|florist|flowers|forsale|frogans|fujitsu|gallery|genting|godaddy|grocery|guitars|hamburg|hangout|hitachi|holiday|hosting|hotmail|hyundai|ismaili|jewelry|juniper|kitchen|komatsu|lacaixa|lanxess|lasalle|latrobe|leclerc|limited|lincoln|markets|monster|netbank|netflix|network|neustar|okinawa|organic|origins|philips|pioneer|politie|realtor|recipes|rentals|reviews|rexroth|samsung|sandvik|schmidt|schwarz|science|shiksha|singles|staples|storage|support|surgery|systems|temasek|theater|theatre|tickets|toshiba|trading|walmart|wanggou|watches|weather|website|wedding|whoswho|windows|winners|yamaxun|youtube|zuerich|католик|البحرين|الجزائر|العليان|پاکستان|كاثوليك|இந்தியா|abbott|abbvie|africa|agency|airbus|airtel|alipay|alsace|alstom|amazon|anquan|aramco|author|bayern|beauty|berlin|bharti|bostik|boston|broker|camera|career|casino|center|chanel|chrome|church|circle|claims|clinic|coffee|comsec|condos|coupon|credit|cruise|dating|datsun|dealer|degree|dental|design|direct|doctor|dunlop|dupont|durban|emerck|energy|estate|events|expert|family|flickr|futbol|gallup|garden|george|giving|global|google|gratis|health|hermes|hiphop|hockey|hotels|hughes|imamat|insure|intuit|jaguar|joburg|juegos|kaufen|kindle|kosher|latino|lawyer|lefrak|living|locker|london|luxury|madrid|maison|makeup|market|mattel|mobile|monash|mormon|moscow|museum|nagoya|nissan|nissay|norton|nowruz|office|olayan|online|oracle|orange|otsuka|pfizer|photos|physio|pictet|quebec|racing|realty|reisen|repair|report|review|rogers|ryukyu|safety|sakura|sanofi|school|schule|search|secure|select|shouji|soccer|social|stream|studio|supply|suzuki|swatch|sydney|taipei|taobao|target|tattoo|tennis|tienda|tjmaxx|tkmaxx|toyota|travel|unicom|viajes|viking|villas|virgin|vision|voting|voyage|walter|webcam|xihuan|yachts|yandex|zappos|москва|онлайн|ابوظبي|ارامكو|الاردن|المغرب|امارات|فلسطين|مليسيا|भारतम्|இலங்கை|ファッション|actor|adult|aetna|amfam|amica|apple|archi|audio|autos|azure|baidu|beats|bible|bingo|black|boats|bosch|build|canon|cards|chase|cheap|cisco|citic|click|cloud|coach|codes|crown|cymru|dance|deals|delta|drive|dubai|earth|edeka|email|epson|faith|fedex|final|forex|forum|gallo|games|gifts|gives|glass|globo|gmail|green|gripe|group|gucci|guide|homes|honda|horse|house|hyatt|ikano|irish|jetzt|koeln|kyoto|lamer|lease|legal|lexus|lilly|loans|locus|lotte|lotto|mango|media|miami|money|movie|music|nexus|nikon|ninja|nokia|nowtv|omega|osaka|paris|parts|party|phone|photo|pizza|place|poker|praxi|press|prime|promo|quest|radio|rehab|reise|ricoh|rocks|rodeo|rugby|salon|sener|seven|sharp|shell|shoes|skype|sling|smart|smile|solar|space|sport|stada|store|study|style|sucks|swiss|tatar|tires|tirol|tmall|today|tokyo|tools|toray|total|tours|trade|trust|tunes|tushu|ubank|vegas|video|vodka|volvo|wales|watch|weber|weibo|works|world|xerox|yahoo|ישראל|ایران|بازار|بھارت|سودان|سورية|همراه|भारोत|संगठन|বাংলা|భారత్|ഭാരതം|嘉里大酒店|aarp|able|aero|akdn|ally|amex|arab|army|arpa|arte|asda|asia|audi|auto|baby|band|bank|bbva|beer|best|bike|bing|blog|blue|bofa|bond|book|buzz|cafe|call|camp|care|cars|casa|case|cash|cbre|cern|chat|citi|city|club|cool|coop|cyou|data|date|dclk|deal|dell|desi|diet|dish|docs|dvag|erni|fage|fail|fans|farm|fast|fido|film|fire|fish|flir|food|ford|free|fund|game|gbiz|gent|ggee|gift|gmbh|gold|golf|goog|guge|guru|hair|haus|hdfc|help|here|host|hsbc|icbc|ieee|imdb|immo|info|itau|java|jeep|jobs|jprs|kddi|kids|kiwi|kpmg|kred|land|lego|lgbt|lidl|life|like|limo|link|live|loan|love|ltda|luxe|maif|meet|meme|menu|mini|mint|mobi|moda|moto|name|navy|news|next|nico|nike|ollo|open|page|pars|pccw|pics|ping|pink|play|plus|pohl|porn|post|prod|prof|qpon|read|reit|rent|rest|rich|room|rsvp|ruhr|safe|sale|sarl|save|saxo|scot|seat|seek|sexy|shia|shop|show|silk|sina|site|skin|sncf|sohu|song|sony|spot|star|surf|talk|taxi|team|tech|teva|tiaa|tips|town|toys|tube|vana|visa|viva|vivo|vote|voto|wang|weir|wien|wiki|wine|work|xbox|yoga|zara|zero|zone|дети|сайт|بارت|بيتك|ڀارت|تونس|شبكة|عراق|عمان|موقع|भारत|ভারত|ভাৰত|ਭਾਰਤ|ભારત|ଭାରତ|ಭಾರತ|ලංකා|アマゾン|グーグル|クラウド|ポイント|组织机构|電訊盈科|香格里拉|aaa|abb|abc|aco|ads|aeg|afl|aig|anz|aol|app|art|aws|axa|bar|bbc|bbt|bcg|bcn|bet|bid|bio|biz|bms|bmw|bom|boo|bot|box|buy|bzh|cab|cal|cam|car|cat|cba|cbn|ceo|cfa|cfd|com|cpa|crs|dad|day|dds|dev|dhl|diy|dnp|dog|dot|dtv|dvr|eat|eco|edu|esq|eus|fan|fit|fly|foo|fox|frl|ftr|fun|fyi|gal|gap|gay|gdn|gea|gle|gmo|gmx|goo|gop|got|gov|hbo|hiv|hkt|hot|how|ibm|ice|icu|ifm|inc|ing|ink|int|ist|itv|jcb|jio|jll|jmp|jnj|jot|joy|kfh|kia|kim|kpn|krd|lat|law|lds|llc|llp|lol|lpl|ltd|man|map|mba|med|men|mil|mit|mlb|mls|mma|moe|moi|mom|mov|msd|mtn|mtr|nab|nba|nec|net|new|nfl|ngo|nhk|now|nra|nrw|ntt|nyc|obi|one|ong|onl|ooo|org|ott|ovh|pay|pet|phd|pid|pin|pnc|pro|pru|pub|pwc|red|ren|ril|rio|rip|run|rwe|sap|sas|sbi|sbs|scb|sew|sex|sfr|ski|sky|soy|spa|srl|stc|tab|tax|tci|tdk|tel|thd|tjx|top|trv|tui|tvs|ubs|uno|uol|ups|vet|vig|vin|vip|wed|win|wme|wow|wtc|wtf|xin|xxx|xyz|you|yun|zip|бел|ком|қаз|мкд|мон|орг|рус|срб|укр|հայ|קום|عرب|قطر|كوم|مصر|कॉम|नेट|คอม|ไทย|ລາວ|ストア|セール|みんな|中文网|亚马逊|天主教|我爱你|新加坡|淡马锡|飞利浦|ac|ad|ae|af|ag|ai|al|am|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw|ελ|ευ|бг|ею|рф|გე|닷넷|닷컴|삼성|한국|コム|世界|中信|中国|中國|企业|佛山|信息|健康|八卦|公司|公益|台湾|台灣|商城|商店|商标|嘉里|在线|大拿|娱乐|家電|广东|微博|慈善|手机|招聘|政务|政府|新闻|时尚|書籍|机构|游戏|澳門|点看|移动|网址|网店|网站|网络|联通|谷歌|购物|通販|集团|食品|餐厅|香港)$/;
 
     /**
      * The set of characters that will start a URL suffix (i.e. the path, query, and
@@ -1217,18 +1266,21 @@
     // See https://www.rfc-editor.org/rfc/rfc3986#appendix-A for terminology
     var tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative '//' chars
     /**
-     * Determines if the given character may start a scheme (ex: 'http').
+     * Determines if the given character may start a scheme (ex: the 'h' in 'http').
      */
-    function isSchemeStartChar(char) {
-        return letterRe.test(char);
-    }
+    var isSchemeStartChar = isLetterChar; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
+    /**
+     * Determines if the given character code represents a character that may start
+     * a scheme (ex: the 'h' in 'http')
+     */
+    var isSchemeStartCharCode = isLetterCharCode; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
     /**
      * Determines if the given character is a valid character in a scheme (such as
      * 'http' or 'ssh+git'), but only after the start char (which is handled by
      * {@link isSchemeStartChar}.
      */
     function isSchemeChar(char) {
-        return (letterRe.test(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.');
+        return isLetterChar(char) || isDigitChar(char) || char === '+' || char === '-' || char === '.';
     }
     /**
      * Determines if the character can begin a domain label, which must be an
@@ -1278,7 +1330,7 @@
         return urlSuffixStartCharsRe.test(char);
     }
     /**
-     * Determines if the TLD read in the host is a known TLD (Top-Level Domain).
+     * Determines if the top-level domain (TLD) read in the host is a known TLD.
      *
      * Example: 'com' would be a known TLD (for a host of 'google.com'), but
      * 'local' would not (for a domain name of 'my-computer.local').
@@ -1318,6 +1370,7 @@
         //   - git:something ('something' doesn't look like a host)
         //   - version:1.0   ('1.0' doesn't look like a host)
         if (host.indexOf('.') === -1 || !letterRe.test(host)) {
+            // `letterRe` RegExp checks for a letter anywhere in the host string
             return false;
         }
         return true;
@@ -2175,28 +2228,71 @@
         return PhoneMatch;
     }(AbstractMatch));
 
+    // For debugging: search for and uncomment other "For debugging" lines
+    // import CliTable from 'cli-table';
+    /**
+     * Context object containing all the state needed by the state machine functions.
+     *
+     * ## Historical note
+     *
+     * In v4.1.1, we used nested functions to handle the context via closures, but
+     * this necessitated re-creating the functions for each call to `parseMatches()`,
+     * which made them difficult for v8 to JIT optimize. In v4.1.2, we lifted all of
+     * the functions to the top-level scope and passed the context object between
+     * them, which allows the functions to be JIT compiled once and reused.
+     */
+    var ParseMatchesContext = /** @class */ (function () {
+        function ParseMatchesContext(text, args) {
+            this.charIdx = 0; // Current character index being processed
+            this._stateMachines = []; // Array of active state machines
+            this.matches = []; // Collection of matches found
+            this.schemeUrlMachinesCount = 0; // part of an optimization to remove the need to go into a slow code block when unnecessary. Since it's been so long since the initial implementation, not sure that this can ever go above 1, but keeping it as a counter to be safe
+            this.text = text;
+            this.textLen = text.length;
+            this.tagBuilder = args.tagBuilder;
+            this.stripPrefix = args.stripPrefix;
+            this.stripTrailingSlash = args.stripTrailingSlash;
+            this.decodePercentEncoding = args.decodePercentEncoding;
+            this.hashtagServiceName = args.hashtagServiceName;
+            this.mentionServiceName = args.mentionServiceName;
+        }
+        Object.defineProperty(ParseMatchesContext.prototype, "stateMachines", {
+            get: function () {
+                return this._stateMachines;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        ParseMatchesContext.prototype.addMachine = function (stateMachine) {
+            this._stateMachines.push(stateMachine);
+            if (isSchemeUrlStateMachine(stateMachine)) {
+                this.schemeUrlMachinesCount++;
+            }
+        };
+        ParseMatchesContext.prototype.removeMachine = function (stateMachine) {
+            removeFromArray(this._stateMachines, stateMachine);
+            // If we've removed the URL state machine, set the flag to false.
+            // This flag is a quick test that helps us skip a slow section of
+            // code when there is already a URL state machine present.
+            if (isSchemeUrlStateMachine(stateMachine)) {
+                this.schemeUrlMachinesCount--;
+            }
+        };
+        ParseMatchesContext.prototype.hasSchemeUrlMachine = function () {
+            return this.schemeUrlMachinesCount > 0;
+        };
+        return ParseMatchesContext;
+    }());
     /**
      * Parses URL, email, twitter, mention, and hashtag matches from the given
      * `text`.
      */
     function parseMatches(text, args) {
         // Create the context object that will be passed to all state functions
-        var context = {
-            text: text,
-            textLen: text.length,
-            charIdx: 0,
-            stateMachines: [],
-            matches: [],
-            tagBuilder: args.tagBuilder,
-            stripPrefix: args.stripPrefix,
-            stripTrailingSlash: args.stripTrailingSlash,
-            decodePercentEncoding: args.decodePercentEncoding,
-            hashtagServiceName: args.hashtagServiceName,
-            mentionServiceName: args.mentionServiceName,
-        };
+        var context = new ParseMatchesContext(text, args);
         // For debugging: search for and uncomment other "For debugging" lines
         // const table = new CliTable({
-        //     head: ['charIdx', 'char', 'code', 'type', 'states', 'charIdx', 'startIdx', 'reached accept state'],
+        //     head: ['charIdx', 'char', 'code', 'type', 'states', 'startIdx', 'reached accept state'],
         // });
         for (; context.charIdx < context.textLen; context.charIdx++) {
             var char = context.text.charAt(context.charIdx);
@@ -2208,6 +2304,11 @@
                 // is removed
                 for (var stateIdx = context.stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
                     var stateMachine = context.stateMachines[stateIdx];
+                    // Performance note: tried turning this switch/case into a lookup
+                    // table, but resulted in ~350 fewer ops/sec in benchmarks.
+                    // Switch/case may be more efficient due to potential function
+                    // inlining by the engine? Either way, run benchmarks if
+                    // attempting to change again.
                     switch (stateMachine.state) {
                         // Protocol-relative URL states
                         case 11 /* State.ProtocolRelativeSlash1 */:
@@ -2244,7 +2345,7 @@
                             stateIpV4Digit(context, stateMachine, char);
                             break;
                         case 14 /* State.IpV4Dot */:
-                            stateIPv4Dot(context, stateMachine, char);
+                            stateIpV4Dot(context, stateMachine, char);
                             break;
                         case 8 /* State.PortColon */:
                             statePortColon(context, stateMachine, char);
@@ -2353,26 +2454,30 @@
                 // would be interpreted as a port ':' char. Also, only start a new
                 // scheme url machine if there isn't currently one so we don't start
                 // new ones for colons inside a url
-                // TODO: The addition of this snippet (to fix the bug) lost us ~500
-                // ops/sec on the benchmarks. Need to solve the bug in a different way
-                if (context.charIdx > 0 && isSchemeStartChar(char)) {
-                    var prevChar = context.text.charAt(context.charIdx - 1);
-                    if (!isSchemeStartChar(prevChar) &&
-                        !context.stateMachines.some(isSchemeUrlStateMachine)) {
-                        context.stateMachines.push(createSchemeUrlStateMachine(context.charIdx, 0 /* State.SchemeChar */));
+                //
+                // TODO: The addition of this snippet (to fix the bug) in 4.0.1 lost
+                // us ~500 ops/sec on the benchmarks. Optimizing it with the
+                // hasSchemeUrlMachine() flag and optimizing the isSchemeStartChar()
+                // method for 4.1.3 got us back about ~400ops/sec. One potential way
+                // to improve this even ore is to add this snippet to individual
+                // state handler functions where it can occur to prevent running it
+                // on every loop interation.
+                if (!context.hasSchemeUrlMachine() && context.charIdx > 0 && isSchemeStartChar(char)) {
+                    var prevCharCode = context.text.charCodeAt(context.charIdx - 1);
+                    if (!isSchemeStartCharCode(prevCharCode)) {
+                        context.addMachine(createSchemeUrlStateMachine(context.charIdx, 0 /* State.SchemeChar */));
                     }
                 }
             }
             // For debugging: search for and uncomment other "For debugging" lines
             // table.push([
-            //     String(charIdx),
+            //     String(context.charIdx),
             //     char,
             //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
-            //     stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
-            //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
-            //     String(charIdx),
-            //     stateMachines.map(m => m.startIdx).join('\n'),
-            //     stateMachines.map(m => m.acceptStateReached).join('\n'),
+            //     context.stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
+            //     context.stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
+            //     context.stateMachines.map(m => m.startIdx).join('\n'),
+            //     context.stateMachines.map(m => m.acceptStateReached).join('\n'),
             // ]);
         }
         // Capture any valid match at the end of the string
@@ -2394,47 +2499,47 @@
      * Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
      */
     function stateNoMatch(context, char) {
-        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        var charIdx = context.charIdx;
         if (char === '#') {
             // Hash char, start a Hashtag match
-            stateMachines.push(createHashtagStateMachine(charIdx, 28 /* State.HashtagHashChar */));
+            context.addMachine(createHashtagStateMachine(charIdx, 28 /* State.HashtagHashChar */));
         }
         else if (char === '@') {
             // '@' char, start a Mention match
-            stateMachines.push(createMentionStateMachine(charIdx, 30 /* State.MentionAtChar */));
+            context.addMachine(createMentionStateMachine(charIdx, 30 /* State.MentionAtChar */));
         }
         else if (char === '/') {
             // A slash could begin a protocol-relative URL
-            stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
+            context.addMachine(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
         }
         else if (char === '+') {
             // A '+' char can start a Phone number
-            stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* State.PhoneNumberPlus */));
+            context.addMachine(createPhoneNumberStateMachine(charIdx, 37 /* State.PhoneNumberPlus */));
         }
         else if (char === '(') {
-            stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* State.PhoneNumberOpenParen */));
+            context.addMachine(createPhoneNumberStateMachine(charIdx, 32 /* State.PhoneNumberOpenParen */));
         }
         else {
-            if (digitRe.test(char)) {
+            if (isDigitChar(char)) {
                 // A digit could start a phone number
-                stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* State.PhoneNumberDigit */));
+                context.addMachine(createPhoneNumberStateMachine(charIdx, 38 /* State.PhoneNumberDigit */));
                 // A digit could start an IP address
-                stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* State.IpV4Digit */));
+                context.addMachine(createIpV4UrlStateMachine(charIdx, 13 /* State.IpV4Digit */));
             }
             if (isEmailLocalPartStartChar(char)) {
                 // Any email local part. An 'm' character in particular could
                 // start a 'mailto:' match
                 var startState = char.toLowerCase() === 'm' ? 15 /* State.EmailMailto_M */ : 22 /* State.EmailLocalPart */;
-                stateMachines.push(createEmailStateMachine(charIdx, startState));
+                context.addMachine(createEmailStateMachine(charIdx, startState));
             }
             if (isSchemeStartChar(char)) {
                 // An uppercase or lowercase letter may start a scheme match
-                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
+                context.addMachine(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
             }
             if (alphaNumericAndMarksRe.test(char)) {
                 // A unicode alpha character or digit could start a domain name
                 // label for a TLD match
-                stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* State.DomainLabelChar */));
+                context.addMachine(createTldUrlStateMachine(charIdx, 5 /* State.DomainLabelChar */));
             }
         }
         // Anything else, remain in the "non-url" state by not creating any
@@ -2442,7 +2547,6 @@
     }
     // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
     function stateSchemeChar(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === ':') {
             stateMachine.state = 2 /* State.SchemeColon */;
         }
@@ -2452,35 +2556,35 @@
         else if (isSchemeChar(char)) ;
         else {
             // Any other character, not a scheme
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function stateSchemeHyphen(context, stateMachine, char) {
-        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        var charIdx = context.charIdx;
         if (char === '-') ;
         else if (char === '/') {
             // Not a valid scheme match, but may be the start of a
             // protocol-relative match (such as //google.com)
-            remove(stateMachines, stateMachine);
-            stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
+            context.removeMachine(stateMachine);
+            context.addMachine(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
         }
         else if (isSchemeChar(char)) {
             stateMachine.state = 0 /* State.SchemeChar */;
         }
         else {
             // Any other character, not a scheme
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // https://tools.ietf.org/html/rfc3986#appendix-A
     function stateSchemeColon(context, stateMachine, char) {
-        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        var charIdx = context.charIdx;
         if (char === '/') {
             stateMachine.state = 3 /* State.SchemeSlash1 */;
         }
         else if (char === '.') {
             // We've read something like 'hello:.' - don't capture
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else if (isDomainLabelStartChar(char)) {
             stateMachine.state = 5 /* State.DomainLabelChar */;
@@ -2490,11 +2594,11 @@
             //     "The link:http://google.com"
             // Hence, start a new machine to capture this match if so
             if (isSchemeStartChar(char)) {
-                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
+                context.addMachine(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
             }
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // https://tools.ietf.org/html/rfc3986#appendix-A
@@ -2511,7 +2615,6 @@
         }
     }
     function stateSchemeSlash2(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === '/') {
             // 3rd slash, must be an absolute path (`path-absolute` in the
             // ABNF), such as in "file:///c:/windows/etc". See
@@ -2526,30 +2629,28 @@
         }
         else {
             // not valid
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles after we've read a '/' from the NonUrl state
     function stateProtocolRelativeSlash1(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === '/') {
             stateMachine.state = 12 /* State.ProtocolRelativeSlash2 */;
         }
         else {
             // Anything else, cannot be the start of a protocol-relative
             // URL.
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles after we've read a second '/', which could start a protocol-relative URL
     function stateProtocolRelativeSlash2(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isDomainLabelStartChar(char)) {
             stateMachine.state = 5 /* State.DomainLabelChar */;
         }
         else {
             // Anything else, not a URL
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles when we have read a domain label character
@@ -2605,7 +2706,6 @@
         }
     }
     function stateIpV4Digit(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === '.') {
             stateMachine.state = 14 /* State.IpV4Dot */;
         }
@@ -2613,21 +2713,21 @@
             // Beginning of a port number
             stateMachine.state = 8 /* State.PortColon */;
         }
-        else if (digitRe.test(char)) ;
+        else if (isDigitChar(char)) ;
         else if (isUrlSuffixStartChar(char)) {
             stateMachine.state = 10 /* State.Path */;
         }
         else if (alphaNumericAndMarksRe.test(char)) {
             // If we hit an alpha character, must not be an IPv4
             // Example of this: 1.2.3.4abc
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else {
             captureMatchIfValidAndRemove(context, stateMachine);
         }
     }
-    function stateIPv4Dot(context, stateMachine, char) {
-        if (digitRe.test(char)) {
+    function stateIpV4Dot(context, stateMachine, char) {
+        if (isDigitChar(char)) {
             stateMachine.octetsEncountered++;
             // Once we have encountered 4 octets, it's *potentially* a valid
             // IPv4 address. Our IPv4 regex will confirm the match later
@@ -2643,7 +2743,7 @@
         }
     }
     function statePortColon(context, stateMachine, char) {
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 9 /* State.PortNumber */;
         }
         else {
@@ -2651,7 +2751,7 @@
         }
     }
     function statePortNumber(context, stateMachine, char) {
-        if (digitRe.test(char)) ;
+        if (isDigitChar(char)) ;
         else if (isUrlSuffixStartChar(char)) {
             // '/', '?', or '#'
             stateMachine.state = 10 /* State.Path */;
@@ -2716,18 +2816,16 @@
         }
     }
     function stateEmailMailtoColon(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isEmailLocalPartChar(char)) {
             stateMachine.state = 22 /* State.EmailLocalPart */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles the state when we're currently in the "local part" of an
     // email address (as opposed to the "domain part")
     function stateEmailLocalPart(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === '.') {
             stateMachine.state = 23 /* State.EmailLocalPartDot */;
         }
@@ -2743,39 +2841,37 @@
         }
         else {
             // not an email address character
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles the state where we've read a '.' character in the local part of
     // the email address (i.e. the part before the '@' character)
     function stateEmailLocalPartDot(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === '.') {
             // We read a second '.' in a row, not a valid email address
             // local part
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else if (char === '@') {
             // We read the '@' character immediately after a dot ('.'), not
             // an email address
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else if (isEmailLocalPartChar(char)) {
             stateMachine.state = 22 /* State.EmailLocalPart */;
         }
         else {
             // Anything else, not an email address
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function stateEmailAtSign(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isDomainLabelStartChar(char)) {
             stateMachine.state = 25 /* State.EmailDomainChar */;
         }
         else {
             // Anything else, not an email address
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function stateEmailDomainChar(context, stateMachine, char) {
@@ -2825,14 +2921,13 @@
     }
     // Handles the state when we've just encountered a '#' character
     function stateHashtagHashChar(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isHashtagTextChar(char)) {
             // '#' char with valid hash text char following
             stateMachine.state = 29 /* State.HashtagTextChar */;
             stateMachine.acceptStateReached = true;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles the state when we're currently in the hash tag's text chars
@@ -2844,94 +2939,86 @@
     }
     // Handles the state when we've just encountered a '@' character
     function stateMentionAtChar(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isMentionTextChar(char)) {
             // '@' char with valid mention text char following
             stateMachine.state = 31 /* State.MentionTextChar */;
             stateMachine.acceptStateReached = true;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     // Handles the state when we're currently in the mention's text chars
     function stateMentionTextChar(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isMentionTextChar(char)) ;
         else if (alphaNumericAndMarksRe.test(char)) {
             // Char is invalid for a mention text char, not a valid match.
             // Note that ascii alphanumeric chars are okay (which are tested
             // in the previous 'if' statement, but others are not)
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else {
             captureMatchIfValidAndRemove(context, stateMachine);
         }
     }
     function statePhoneNumberPlus(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 38 /* State.PhoneNumberDigit */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
             // This character may start a new match. Add states for it
             stateNoMatch(context, char);
         }
     }
     function statePhoneNumberOpenParen(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 33 /* State.PhoneNumberAreaCodeDigit1 */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         // It's also possible that the paren was just an open brace for
         // a piece of text. Start other machines
         stateNoMatch(context, char);
     }
     function statePhoneNumberAreaCodeDigit1(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 34 /* State.PhoneNumberAreaCodeDigit2 */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function statePhoneNumberAreaCodeDigit2(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 35 /* State.PhoneNumberAreaCodeDigit3 */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function statePhoneNumberAreaCodeDigit3(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (char === ')') {
             stateMachine.state = 36 /* State.PhoneNumberCloseParen */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function statePhoneNumberCloseParen(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 38 /* State.PhoneNumberDigit */;
         }
         else if (isPhoneNumberSeparatorChar(char)) {
             stateMachine.state = 39 /* State.PhoneNumberSeparator */;
         }
         else {
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
     }
     function statePhoneNumberDigit(context, stateMachine, char) {
-        var stateMachines = context.stateMachines, charIdx = context.charIdx;
+        var charIdx = context.charIdx;
         // For now, if we've reached any digits, we'll say that the machine
         // has reached its accept state. The phone regex will confirm the
         // match later.
@@ -2944,7 +3031,7 @@
         else if (char === '#') {
             stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
         }
-        else if (digitRe.test(char)) ;
+        else if (isDigitChar(char)) ;
         else if (char === '(') {
             stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
         }
@@ -2956,12 +3043,12 @@
             // The transition from a digit character to a letter can be the
             // start of a new scheme URL match
             if (isSchemeStartChar(char)) {
-                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
+                context.addMachine(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
             }
         }
     }
     function statePhoneNumberSeparator(context, stateMachine, char) {
-        if (digitRe.test(char)) {
+        if (isDigitChar(char)) {
             stateMachine.state = 38 /* State.PhoneNumberDigit */;
         }
         else if (char === '(') {
@@ -2980,7 +3067,7 @@
         else if (char === '#') {
             stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
         }
-        else if (digitRe.test(char)) {
+        else if (isDigitChar(char)) {
             stateMachine.state = 38 /* State.PhoneNumberDigit */;
         }
         else {
@@ -2989,14 +3076,13 @@
     }
     // The "#" characters is "pound" in a phone number
     function statePhoneNumberPoundChar(context, stateMachine, char) {
-        var stateMachines = context.stateMachines;
         if (isPhoneNumberControlChar(char)) {
             stateMachine.state = 40 /* State.PhoneNumberControlChar */;
         }
-        else if (digitRe.test(char)) {
+        else if (isDigitChar(char)) {
             // According to some of the older tests, if there's a digit
             // after a '#' sign, the match is invalid. TODO: Revisit if this is true
-            remove(stateMachines, stateMachine);
+            context.removeMachine(stateMachine);
         }
         else {
             captureMatchIfValidAndRemove(context, stateMachine);
@@ -3008,11 +3094,11 @@
      * keep reading characters in order to make a full match.
      */
     function captureMatchIfValidAndRemove(context, stateMachine) {
-        var stateMachines = context.stateMachines, matches = context.matches, text = context.text, charIdx = context.charIdx, tagBuilder = context.tagBuilder, stripPrefix = context.stripPrefix, stripTrailingSlash = context.stripTrailingSlash, decodePercentEncoding = context.decodePercentEncoding, hashtagServiceName = context.hashtagServiceName, mentionServiceName = context.mentionServiceName;
+        var matches = context.matches, text = context.text, charIdx = context.charIdx, tagBuilder = context.tagBuilder, stripPrefix = context.stripPrefix, stripTrailingSlash = context.stripTrailingSlash, decodePercentEncoding = context.decodePercentEncoding, hashtagServiceName = context.hashtagServiceName, mentionServiceName = context.mentionServiceName;
         // Remove the state machine first. There are a number of code paths
         // which return out of this function early, so make sure we have
         // this done
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
         // Make sure the state machine being checked has actually reached an
         // "accept" state. If it hasn't reach one, it can't be a match
         if (!stateMachine.acceptStateReached) {
@@ -3489,7 +3575,7 @@
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
             }
-            else if (letterRe.test(char)) {
+            else if (isLetterChar(char)) {
                 // tag name start (and no '/' read)
                 state = 3 /* State.TagName */;
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { isOpening: true }));
@@ -3520,7 +3606,7 @@
                 currentTag = new CurrentTag(__assign(__assign({}, currentTag), { name: captureTagName() }));
                 emitTagAndPreviousTextNode(); // resets to Data state as well
             }
-            else if (!letterRe.test(char) && !digitRe.test(char) && char !== ':') {
+            else if (!isLetterChar(char) && !isDigitChar(char) && char !== ':') {
                 // Anything else that does not form an html tag. Note: the colon
                 // character is accepted for XML namespaced tags
                 resetToDataState();
@@ -3534,7 +3620,7 @@
                 // parse error. Encountered "</>". Skip it without treating as a tag
                 resetToDataState();
             }
-            else if (letterRe.test(char)) {
+            else if (isLetterChar(char)) {
                 state = 3 /* State.TagName */;
             }
             else {
@@ -3555,7 +3641,7 @@
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
             }
-            else if (char === "=" || quoteRe.test(char) || controlCharsRe.test(char)) {
+            else if (char === "=" || isQuoteChar(char) || controlCharsRe.test(char)) {
                 // "Parse error" characters that, according to the spec, should be
                 // appended to the attribute name, but we'll treat these characters
                 // as not forming a real HTML tag
@@ -3584,7 +3670,7 @@
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
             }
-            else if (quoteRe.test(char)) {
+            else if (isQuoteChar(char)) {
                 // "Parse error" characters that, according to the spec, should be
                 // appended to the attribute name, but we'll treat these characters
                 // as not forming a real HTML tag
@@ -3608,7 +3694,7 @@
                 // start of another tag (ignore the previous, incomplete one)
                 startNewTag();
             }
-            else if (quoteRe.test(char)) {
+            else if (isQuoteChar(char)) {
                 // "Parse error" characters that, according to the spec, should be
                 // appended to the attribute name, but we'll treat these characters
                 // as not forming a real HTML tag
