@@ -44,7 +44,7 @@ export function ellipsis(str: string, truncateLen: number, ellipsisChars?: strin
  * @param arr The array to remove elements from. This array is mutated.
  * @param fn The element to remove.
  */
-export function remove<T>(arr: T[], item: T) {
+export function removeFromArray<T>(arr: T[], item: T) {
     for (let i = arr.length - 1; i >= 0; i--) {
         if (arr[i] === item) {
             arr.splice(i, 1);

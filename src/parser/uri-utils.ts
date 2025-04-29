@@ -1,4 +1,5 @@
 import { alphaNumericAndMarksRe, letterRe, digitRe } from '../regex-lib';
+import { isLetterChar, isLetterCharCode } from '../string-utils';
 import { tldRegex } from './known-tlds';
 
 /**
@@ -73,11 +74,15 @@ export const schemeUrlRe = /^[A-Za-z][-.+A-Za-z0-9]*:(\/\/)?([^:/]*)/;
 export const tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative '//' chars
 
 /**
- * Determines if the given character may start a scheme (ex: 'http').
+ * Determines if the given character may start a scheme (ex: the 'h' in 'http').
  */
-export function isSchemeStartChar(char: string): boolean {
-    return letterRe.test(char);
-}
+export const isSchemeStartChar: (char: string) => boolean = isLetterChar; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
+
+/**
+ * Determines if the given character code represents a character that may start
+ * a scheme (ex: the 'h' in 'http')
+ */
+export const isSchemeStartCharCode: (code: number) => boolean = isLetterCharCode; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
 
 /**
  * Determines if the given character is a valid character in a scheme (such as

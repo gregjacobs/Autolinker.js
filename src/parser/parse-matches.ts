@@ -1,7 +1,7 @@
 import { alphaNumericAndMarksRe, digitRe } from '../regex-lib';
 import { UrlMatch, UrlMatchType } from '../match/url-match';
 import { Match } from '../match/match';
-import { remove, assertNever } from '../utils';
+import { removeFromArray, assertNever } from '../utils';
 import {
     httpSchemeRe,
     isDomainLabelChar,
@@ -9,6 +9,7 @@ import {
     isPathChar,
     isSchemeChar,
     isSchemeStartChar,
+    isSchemeStartCharCode,
     isUrlSuffixStartChar,
     isValidIpV4Address,
     isValidSchemeUrl,
@@ -49,18 +50,58 @@ import type { StripPrefixConfigObj } from '../autolinker';
  * the functions to the top-level scope and passed the context object between
  * them, which allows the functions to be JIT compiled once and reused.
  */
-interface ParseMatchesContext {
-    text: string; // The input text being parsed
-    textLen: number; // Length of the text
-    charIdx: number; // Current character index being processed
-    stateMachines: StateMachine[]; // Array of active state machines
-    matches: Match[]; // Collection of matches found
-    tagBuilder: AnchorTagBuilder; // For building anchor tags
-    stripPrefix: Required<StripPrefixConfigObj>; // Strip prefix configuration
-    stripTrailingSlash: boolean; // Whether to strip trailing slashes
-    decodePercentEncoding: boolean; // Whether to decode percent encoding
-    hashtagServiceName: HashtagService; // Service name for hashtags
-    mentionServiceName: MentionService; // Service name for mentions
+class ParseMatchesContext {
+    public charIdx = 0; // Current character index being processed
+
+    public readonly text: string; // The input text being parsed
+    public readonly textLen: number; // Length of the text
+    private readonly _stateMachines: StateMachine[] = []; // Array of active state machines
+    public readonly matches: Match[] = []; // Collection of matches found
+    public readonly tagBuilder: AnchorTagBuilder; // For building anchor tags
+    public readonly stripPrefix: Required<StripPrefixConfigObj>; // Strip prefix configuration
+    public readonly stripTrailingSlash: boolean; // Whether to strip trailing slashes
+    public readonly decodePercentEncoding: boolean; // Whether to decode percent encoding
+    public readonly hashtagServiceName: HashtagService; // Service name for hashtags
+    public readonly mentionServiceName: MentionService; // Service name for mentions
+    private schemeUrlMachinesCount = 0; // part of an optimization to remove the need to go into a slow code block when unnecessary. Since it's been so long since the initial implementation, not sure that this can ever go above 1, but keeping it as a counter to be safe
+
+    constructor(text: string, args: ParseMatchesArgs) {
+        this.text = text;
+        this.textLen = text.length;
+        this.tagBuilder = args.tagBuilder;
+        this.stripPrefix = args.stripPrefix;
+        this.stripTrailingSlash = args.stripTrailingSlash;
+        this.decodePercentEncoding = args.decodePercentEncoding;
+        this.hashtagServiceName = args.hashtagServiceName;
+        this.mentionServiceName = args.mentionServiceName;
+    }
+
+    public get stateMachines(): ReadonlyArray<StateMachine> {
+        return this._stateMachines;
+    }
+
+    public addMachine(stateMachine: StateMachine): void {
+        this._stateMachines.push(stateMachine);
+
+        if (isSchemeUrlStateMachine(stateMachine)) {
+            this.schemeUrlMachinesCount++;
+        }
+    }
+
+    public removeMachine(stateMachine: StateMachine): void {
+        removeFromArray(this._stateMachines, stateMachine);
+
+        // If we've removed the URL state machine, set the flag to false.
+        // This flag is a quick test that helps us skip a slow section of
+        // code when there is already a URL state machine present.
+        if (isSchemeUrlStateMachine(stateMachine)) {
+            this.schemeUrlMachinesCount--;
+        }
+    }
+
+    public hasSchemeUrlMachine(): boolean {
+        return this.schemeUrlMachinesCount > 0;
+    }
 }
 
 /**
@@ -69,23 +110,11 @@ interface ParseMatchesContext {
  */
 export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
     // Create the context object that will be passed to all state functions
-    const context: ParseMatchesContext = {
-        text,
-        textLen: text.length,
-        charIdx: 0,
-        stateMachines: [],
-        matches: [],
-        tagBuilder: args.tagBuilder,
-        stripPrefix: args.stripPrefix,
-        stripTrailingSlash: args.stripTrailingSlash,
-        decodePercentEncoding: args.decodePercentEncoding,
-        hashtagServiceName: args.hashtagServiceName,
-        mentionServiceName: args.mentionServiceName,
-    };
+    const context = new ParseMatchesContext(text, args);
 
     // For debugging: search for and uncomment other "For debugging" lines
     // const table = new CliTable({
-    //     head: ['charIdx', 'char', 'code', 'type', 'states', 'charIdx', 'startIdx', 'reached accept state'],
+    //     head: ['charIdx', 'char', 'code', 'type', 'states', 'startIdx', 'reached accept state'],
     // });
     for (; context.charIdx < context.textLen; context.charIdx++) {
         const char = context.text.charAt(context.charIdx);
@@ -258,15 +287,18 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
             // would be interpreted as a port ':' char. Also, only start a new
             // scheme url machine if there isn't currently one so we don't start
             // new ones for colons inside a url
-            // TODO: The addition of this snippet (to fix the bug) lost us ~500
-            // ops/sec on the benchmarks. Need to solve the bug in a different way
-            if (context.charIdx > 0 && isSchemeStartChar(char)) {
-                const prevChar = context.text.charAt(context.charIdx - 1);
-                if (
-                    !isSchemeStartChar(prevChar) &&
-                    !context.stateMachines.some(isSchemeUrlStateMachine)
-                ) {
-                    context.stateMachines.push(
+            //
+            // TODO: The addition of this snippet (to fix the bug) in 4.0.1 lost
+            // us ~500 ops/sec on the benchmarks. Optimizing it with the
+            // hasSchemeUrlMachine() flag and optimizing the isSchemeStartChar()
+            // method for 4.1.3 got us back about ~400ops/sec. One potential way
+            // to improve this even ore is to add this snippet to individual
+            // state handler functions where it can occur to prevent running it
+            // on every loop interation.
+            if (!context.hasSchemeUrlMachine() && context.charIdx > 0 && isSchemeStartChar(char)) {
+                const prevCharCode = context.text.charCodeAt(context.charIdx - 1);
+                if (!isSchemeStartCharCode(prevCharCode)) {
+                    context.addMachine(
                         createSchemeUrlStateMachine(context.charIdx, State.SchemeChar)
                     );
                 }
@@ -275,14 +307,13 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
         // For debugging: search for and uncomment other "For debugging" lines
         // table.push([
-        //     String(charIdx),
+        //     String(context.charIdx),
         //     char,
         //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
-        //     stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
-        //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
-        //     String(charIdx),
-        //     stateMachines.map(m => m.startIdx).join('\n'),
-        //     stateMachines.map(m => m.acceptStateReached).join('\n'),
+        //     context.stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
+        //     context.stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
+        //     context.stateMachines.map(m => m.startIdx).join('\n'),
+        //     context.stateMachines.map(m => m.acceptStateReached).join('\n'),
         // ]);
     }
 
@@ -308,29 +339,29 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
  * Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
  */
 function stateNoMatch(context: ParseMatchesContext, char: string): void {
-    const { charIdx, stateMachines } = context;
+    const { charIdx } = context;
 
     if (char === '#') {
         // Hash char, start a Hashtag match
-        stateMachines.push(createHashtagStateMachine(charIdx, State.HashtagHashChar));
+        context.addMachine(createHashtagStateMachine(charIdx, State.HashtagHashChar));
     } else if (char === '@') {
         // '@' char, start a Mention match
-        stateMachines.push(createMentionStateMachine(charIdx, State.MentionAtChar));
+        context.addMachine(createMentionStateMachine(charIdx, State.MentionAtChar));
     } else if (char === '/') {
         // A slash could begin a protocol-relative URL
-        stateMachines.push(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
+        context.addMachine(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
     } else if (char === '+') {
         // A '+' char can start a Phone number
-        stateMachines.push(createPhoneNumberStateMachine(charIdx, State.PhoneNumberPlus));
+        context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberPlus));
     } else if (char === '(') {
-        stateMachines.push(createPhoneNumberStateMachine(charIdx, State.PhoneNumberOpenParen));
+        context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberOpenParen));
     } else {
         if (digitRe.test(char)) {
             // A digit could start a phone number
-            stateMachines.push(createPhoneNumberStateMachine(charIdx, State.PhoneNumberDigit));
+            context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberDigit));
 
             // A digit could start an IP address
-            stateMachines.push(createIpV4UrlStateMachine(charIdx, State.IpV4Digit));
+            context.addMachine(createIpV4UrlStateMachine(charIdx, State.IpV4Digit));
         }
 
         if (isEmailLocalPartStartChar(char)) {
@@ -338,18 +369,18 @@ function stateNoMatch(context: ParseMatchesContext, char: string): void {
             // start a 'mailto:' match
             const startState =
                 char.toLowerCase() === 'm' ? State.EmailMailto_M : State.EmailLocalPart;
-            stateMachines.push(createEmailStateMachine(charIdx, startState));
+            context.addMachine(createEmailStateMachine(charIdx, startState));
         }
 
         if (isSchemeStartChar(char)) {
             // An uppercase or lowercase letter may start a scheme match
-            stateMachines.push(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
+            context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
 
         if (alphaNumericAndMarksRe.test(char)) {
             // A unicode alpha character or digit could start a domain name
             // label for a TLD match
-            stateMachines.push(createTldUrlStateMachine(charIdx, State.DomainLabelChar));
+            context.addMachine(createTldUrlStateMachine(charIdx, State.DomainLabelChar));
         }
     }
 
@@ -359,8 +390,6 @@ function stateNoMatch(context: ParseMatchesContext, char: string): void {
 
 // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 function stateSchemeChar(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    const { stateMachines } = context;
-
     if (char === ':') {
         stateMachine.state = State.SchemeColon;
     } else if (char === '-') {
@@ -369,12 +398,12 @@ function stateSchemeChar(context: ParseMatchesContext, stateMachine: StateMachin
         // Stay in SchemeChar state
     } else {
         // Any other character, not a scheme
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
 function stateSchemeHyphen(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    const { charIdx, stateMachines } = context;
+    const { charIdx } = context;
 
     if (char === '-') {
         // Stay in SchemeHyphen state
@@ -384,25 +413,25 @@ function stateSchemeHyphen(context: ParseMatchesContext, stateMachine: StateMach
     } else if (char === '/') {
         // Not a valid scheme match, but may be the start of a
         // protocol-relative match (such as //google.com)
-        remove(stateMachines, stateMachine);
-        stateMachines.push(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
+        context.removeMachine(stateMachine);
+        context.addMachine(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
     } else if (isSchemeChar(char)) {
         stateMachine.state = State.SchemeChar;
     } else {
         // Any other character, not a scheme
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
 // https://tools.ietf.org/html/rfc3986#appendix-A
 function stateSchemeColon(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    const { charIdx, stateMachines } = context;
+    const { charIdx } = context;
 
     if (char === '/') {
         stateMachine.state = State.SchemeSlash1;
     } else if (char === '.') {
         // We've read something like 'hello:.' - don't capture
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else if (isDomainLabelStartChar(char)) {
         stateMachine.state = State.DomainLabelChar;
 
@@ -412,10 +441,10 @@ function stateSchemeColon(context: ParseMatchesContext, stateMachine: StateMachi
         //     "The link:http://google.com"
         // Hence, start a new machine to capture this match if so
         if (isSchemeStartChar(char)) {
-            stateMachines.push(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
+            context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -432,8 +461,6 @@ function stateSchemeSlash1(context: ParseMatchesContext, stateMachine: StateMach
 }
 
 function stateSchemeSlash2(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    const { stateMachines } = context;
-
     if (char === '/') {
         // 3rd slash, must be an absolute path (`path-absolute` in the
         // ABNF), such as in "file:///c:/windows/etc". See
@@ -446,7 +473,7 @@ function stateSchemeSlash2(context: ParseMatchesContext, stateMachine: StateMach
         stateMachine.acceptStateReached = true;
     } else {
         // not valid
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -456,14 +483,12 @@ function stateProtocolRelativeSlash1(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (char === '/') {
         stateMachine.state = State.ProtocolRelativeSlash2;
     } else {
         // Anything else, cannot be the start of a protocol-relative
         // URL.
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -473,13 +498,11 @@ function stateProtocolRelativeSlash2(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isDomainLabelStartChar(char)) {
         stateMachine.state = State.DomainLabelChar;
     } else {
         // Anything else, not a URL
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -541,8 +564,6 @@ function stateIpV4Digit(
     stateMachine: IpV4UrlStateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (char === '.') {
         stateMachine.state = State.IpV4Dot;
     } else if (char === ':') {
@@ -555,7 +576,7 @@ function stateIpV4Digit(
     } else if (alphaNumericAndMarksRe.test(char)) {
         // If we hit an alpha character, must not be an IPv4
         // Example of this: 1.2.3.4abc
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
     }
@@ -688,12 +709,10 @@ function stateEmailMailtoColon(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isEmailLocalPartChar(char)) {
         stateMachine.state = State.EmailLocalPart;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -704,8 +723,6 @@ function stateEmailLocalPart(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (char === '.') {
         stateMachine.state = State.EmailLocalPartDot;
     } else if (char === '@') {
@@ -718,7 +735,7 @@ function stateEmailLocalPart(
         stateMachine.state = State.EmailLocalPart;
     } else {
         // not an email address character
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -729,32 +746,28 @@ function stateEmailLocalPartDot(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (char === '.') {
         // We read a second '.' in a row, not a valid email address
         // local part
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else if (char === '@') {
         // We read the '@' character immediately after a dot ('.'), not
         // an email address
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else if (isEmailLocalPartChar(char)) {
         stateMachine.state = State.EmailLocalPart;
     } else {
         // Anything else, not an email address
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
 function stateEmailAtSign(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    const { stateMachines } = context;
-
     if (isDomainLabelStartChar(char)) {
         stateMachine.state = State.EmailDomainChar;
     } else {
         // Anything else, not an email address
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -820,14 +833,12 @@ function stateHashtagHashChar(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isHashtagTextChar(char)) {
         // '#' char with valid hash text char following
         stateMachine.state = State.HashtagTextChar;
         stateMachine.acceptStateReached = true;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -850,14 +861,12 @@ function stateMentionAtChar(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isMentionTextChar(char)) {
         // '@' char with valid mention text char following
         stateMachine.state = State.MentionTextChar;
         stateMachine.acceptStateReached = true;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -867,15 +876,13 @@ function stateMentionTextChar(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isMentionTextChar(char)) {
         // Continue reading characters in the HashtagText state
     } else if (alphaNumericAndMarksRe.test(char)) {
         // Char is invalid for a mention text char, not a valid match.
         // Note that ascii alphanumeric chars are okay (which are tested
         // in the previous 'if' statement, but others are not)
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
     }
@@ -886,12 +893,10 @@ function statePhoneNumberPlus(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (digitRe.test(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
 
         // This character may start a new match. Add states for it
         stateNoMatch(context, char);
@@ -903,12 +908,10 @@ function statePhoneNumberOpenParen(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (digitRe.test(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit1;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 
     // It's also possible that the paren was just an open brace for
@@ -921,12 +924,10 @@ function statePhoneNumberAreaCodeDigit1(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (digitRe.test(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit2;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -935,12 +936,10 @@ function statePhoneNumberAreaCodeDigit2(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (digitRe.test(char)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit3;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -949,12 +948,10 @@ function statePhoneNumberAreaCodeDigit3(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (char === ')') {
         stateMachine.state = State.PhoneNumberCloseParen;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -963,14 +960,12 @@ function statePhoneNumberCloseParen(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (digitRe.test(char)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (isPhoneNumberSeparatorChar(char)) {
         stateMachine.state = State.PhoneNumberSeparator;
     } else {
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     }
 }
 
@@ -979,7 +974,7 @@ function statePhoneNumberDigit(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines, charIdx } = context;
+    const { charIdx } = context;
 
     // For now, if we've reached any digits, we'll say that the machine
     // has reached its accept state. The phone regex will confirm the
@@ -1004,7 +999,7 @@ function statePhoneNumberDigit(
         // The transition from a digit character to a letter can be the
         // start of a new scheme URL match
         if (isSchemeStartChar(char)) {
-            stateMachines.push(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
+            context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     }
 }
@@ -1050,14 +1045,12 @@ function statePhoneNumberPoundChar(
     stateMachine: StateMachine,
     char: string
 ) {
-    const { stateMachines } = context;
-
     if (isPhoneNumberControlChar(char)) {
         stateMachine.state = State.PhoneNumberControlChar;
     } else if (digitRe.test(char)) {
         // According to some of the older tests, if there's a digit
         // after a '#' sign, the match is invalid. TODO: Revisit if this is true
-        remove(stateMachines, stateMachine);
+        context.removeMachine(stateMachine);
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
     }
@@ -1070,7 +1063,6 @@ function statePhoneNumberPoundChar(
  */
 function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine: StateMachine) {
     const {
-        stateMachines,
         matches,
         text,
         charIdx,
@@ -1085,7 +1077,7 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
     // Remove the state machine first. There are a number of code paths
     // which return out of this function early, so make sure we have
     // this done
-    remove(stateMachines, stateMachine);
+    context.removeMachine(stateMachine);
 
     // Make sure the state machine being checked has actually reached an
     // "accept" state. If it hasn't reach one, it can't be a match
