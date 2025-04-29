@@ -20,7 +20,6 @@
         "devserver": "webpack-dev-server",
         "lint": "eslint src tests scripts",
         "lint:fix": "npm run lint -- --fix",
-        "preinstall": "npx -y only-allow pnpm",
         "prepublishOnly": "npm-run-all build test",
         "start": "webpack serve --open",
         "test": "npm-run-all test:unit test:integration",

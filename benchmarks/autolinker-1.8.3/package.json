@@ -1,5 +1,5 @@
 {
-    "dependencies": {
+    "devDependencies": {
         "autolinker": "1.8.3"
     }
 }

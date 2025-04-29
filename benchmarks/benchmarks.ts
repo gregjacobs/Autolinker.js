@@ -2,6 +2,7 @@ import Benchmark from 'benchmark';
 import CliTable from 'cli-table';
 
 import { run as runAutolinkerCurrent } from './autolinker-current/index';
+import { run as runAutolinker4_1_3 } from './autolinker-4.1.3/index';
 import { run as runAutolinker4_1_2 } from './autolinker-4.1.2/index';
 // import { run as runAutolinker4_1_1 } from './autolinker-4.1.1/index';
 // import { run as runAutolinker4_1_0 } from './autolinker-4.1.0/index';
@@ -20,6 +21,7 @@ const suite = new Benchmark.Suite();
 // add tests
 suite
     .add('autolinker@current-src', runAutolinkerCurrent)
+    .add('autolinker@4.1.3', runAutolinker4_1_3)
     .add('autolinker@4.1.2', runAutolinker4_1_2)
     // .add('autolinker@4.1.1', runAutolinker4_1_1)
     // .add('autolinker@4.1.0', runAutolinker4_1_0)

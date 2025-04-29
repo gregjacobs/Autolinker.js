@@ -1,5 +1,5 @@
 {
-    "dependencies": {
+    "devDependencies": {
         "@types/linkify-it": "5.0.0",
         "linkify-it": "5.0.0",
         "tlds": "1.257.0"

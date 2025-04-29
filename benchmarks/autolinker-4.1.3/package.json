@@ -1,5 +1,5 @@
 {
     "devDependencies": {
-        "linkify-html": "4.2.0"
+        "autolinker": "4.1.3"
     }
 }
