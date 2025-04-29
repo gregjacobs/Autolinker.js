@@ -1,6 +1,7 @@
 .tmp
 
 # Ignore artifacts:
+coverage
 dist
 docs
 tsconfig.json
@@ -8,4 +9,4 @@ package-lock.json
 *.md
 
 # Generated file
-src/parser/tld-regex.ts
+src/parser/known-tlds.ts

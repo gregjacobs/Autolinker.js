@@ -1,5 +1,5 @@
 import { alphaNumericAndMarksRe, letterRe, digitRe } from '../regex-lib';
-import { tldRegex } from './tld-regex';
+import { tldRegex } from './known-tlds';
 
 /**
  * A regular expression that is simply the character class of the characters
@@ -144,7 +144,7 @@ export function isUrlSuffixStartChar(char: string) {
 }
 
 /**
- * Determines if the TLD read in the host is a known TLD (Top-Level Domain).
+ * Determines if the top-level domain (TLD) read in the host is a known TLD.
  *
  * Example: 'com' would be a known TLD (for a host of 'google.com'), but
  * 'local' would not (for a domain name of 'my-computer.local').

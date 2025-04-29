@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "benchmarks": "ts-node benchmarks/benchmarks.ts",
-        "build": "npm-run-all clean update-tld-regex build:src",
+        "build": "npm-run-all clean update-known-tlds build:src",
         "build:docs": "npm-run-all build:docs-site build:live-example",
         "build:docs-site": "ts-node scripts/build-docs.ts",
         "build:src": "ts-node scripts/build.ts",
@@ -28,7 +28,7 @@
         "test:unit": "mocha --require=ts-node/register \"tests/**/*.spec.ts\"",
         "test:unit:debug": "mocha --inspect-brk --require=ts-node/register \"tests/**/*.spec.ts\"",
         "test:integration": "ts-node scripts/test-integration.ts",
-        "update-tld-regex": "ts-node scripts/update-tld-regex.ts",
+        "update-known-tlds": "ts-node scripts/update-known-tlds.ts",
         "prepare": "husky install"
     },
     "repository": {
