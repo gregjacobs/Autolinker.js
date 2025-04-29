@@ -1,6 +1,6 @@
 /*!
  * Autolinker.js
- * v4.1.1
+ * v4.1.2
  *
  * Copyright(c) 2025 Gregory Jacobs <greg@greg-jacobs.com>
  * MIT License
@@ -89,7 +89,7 @@
 
     // Important: this file is generated from the 'build' script and should not be
     // edited directly
-    var version = '4.1.1';
+    var version = '4.1.2';
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     /**
@@ -2175,170 +2175,170 @@
         return PhoneMatch;
     }(AbstractMatch));
 
-    // For debugging: search for and uncomment other "For debugging" lines
-    // import CliTable from 'cli-table';
     /**
      * Parses URL, email, twitter, mention, and hashtag matches from the given
      * `text`.
      */
     function parseMatches(text, args) {
-        var tagBuilder = args.tagBuilder;
-        var stripPrefix = args.stripPrefix;
-        var stripTrailingSlash = args.stripTrailingSlash;
-        var decodePercentEncoding = args.decodePercentEncoding;
-        var hashtagServiceName = args.hashtagServiceName;
-        var mentionServiceName = args.mentionServiceName;
-        var matches = [];
-        var textLen = text.length;
-        // An array of all active state machines. Empty array means we're in the
-        // "no url" state
-        var stateMachines = [];
+        // Create the context object that will be passed to all state functions
+        var context = {
+            text: text,
+            textLen: text.length,
+            charIdx: 0,
+            stateMachines: [],
+            matches: [],
+            tagBuilder: args.tagBuilder,
+            stripPrefix: args.stripPrefix,
+            stripTrailingSlash: args.stripTrailingSlash,
+            decodePercentEncoding: args.decodePercentEncoding,
+            hashtagServiceName: args.hashtagServiceName,
+            mentionServiceName: args.mentionServiceName,
+        };
         // For debugging: search for and uncomment other "For debugging" lines
         // const table = new CliTable({
         //     head: ['charIdx', 'char', 'code', 'type', 'states', 'charIdx', 'startIdx', 'reached accept state'],
         // });
-        var charIdx = 0;
-        for (; charIdx < textLen; charIdx++) {
-            var char = text.charAt(charIdx);
-            if (stateMachines.length === 0) {
-                stateNoMatch(char);
+        for (; context.charIdx < context.textLen; context.charIdx++) {
+            var char = context.text.charAt(context.charIdx);
+            if (context.stateMachines.length === 0) {
+                stateNoMatch(context, char);
             }
             else {
                 // Must loop through the state machines backwards for when one
                 // is removed
-                for (var stateIdx = stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
-                    var stateMachine = stateMachines[stateIdx];
+                for (var stateIdx = context.stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
+                    var stateMachine = context.stateMachines[stateIdx];
                     switch (stateMachine.state) {
                         // Protocol-relative URL states
                         case 11 /* State.ProtocolRelativeSlash1 */:
-                            stateProtocolRelativeSlash1(stateMachine, char);
+                            stateProtocolRelativeSlash1(context, stateMachine, char);
                             break;
                         case 12 /* State.ProtocolRelativeSlash2 */:
-                            stateProtocolRelativeSlash2(stateMachine, char);
+                            stateProtocolRelativeSlash2(context, stateMachine, char);
                             break;
                         case 0 /* State.SchemeChar */:
-                            stateSchemeChar(stateMachine, char);
+                            stateSchemeChar(context, stateMachine, char);
                             break;
                         case 1 /* State.SchemeHyphen */:
-                            stateSchemeHyphen(stateMachine, char);
+                            stateSchemeHyphen(context, stateMachine, char);
                             break;
                         case 2 /* State.SchemeColon */:
-                            stateSchemeColon(stateMachine, char);
+                            stateSchemeColon(context, stateMachine, char);
                             break;
                         case 3 /* State.SchemeSlash1 */:
-                            stateSchemeSlash1(stateMachine, char);
+                            stateSchemeSlash1(context, stateMachine, char);
                             break;
                         case 4 /* State.SchemeSlash2 */:
-                            stateSchemeSlash2(stateMachine, char);
+                            stateSchemeSlash2(context, stateMachine, char);
                             break;
                         case 5 /* State.DomainLabelChar */:
-                            stateDomainLabelChar(stateMachine, char);
+                            stateDomainLabelChar(context, stateMachine, char);
                             break;
                         case 6 /* State.DomainHyphen */:
-                            stateDomainHyphen(stateMachine, char);
+                            stateDomainHyphen(context, stateMachine, char);
                             break;
                         case 7 /* State.DomainDot */:
-                            stateDomainDot(stateMachine, char);
+                            stateDomainDot(context, stateMachine, char);
                             break;
                         case 13 /* State.IpV4Digit */:
-                            stateIpV4Digit(stateMachine, char);
+                            stateIpV4Digit(context, stateMachine, char);
                             break;
                         case 14 /* State.IpV4Dot */:
-                            stateIPv4Dot(stateMachine, char);
+                            stateIPv4Dot(context, stateMachine, char);
                             break;
                         case 8 /* State.PortColon */:
-                            statePortColon(stateMachine, char);
+                            statePortColon(context, stateMachine, char);
                             break;
                         case 9 /* State.PortNumber */:
-                            statePortNumber(stateMachine, char);
+                            statePortNumber(context, stateMachine, char);
                             break;
                         case 10 /* State.Path */:
-                            statePath(stateMachine, char);
+                            statePath(context, stateMachine, char);
                             break;
                         // Email States
                         case 15 /* State.EmailMailto_M */:
-                            stateEmailMailto_M(stateMachine, char);
+                            stateEmailMailto_M(context, stateMachine, char);
                             break;
                         case 16 /* State.EmailMailto_A */:
-                            stateEmailMailto_A(stateMachine, char);
+                            stateEmailMailto_A(context, stateMachine, char);
                             break;
                         case 17 /* State.EmailMailto_I */:
-                            stateEmailMailto_I(stateMachine, char);
+                            stateEmailMailto_I(context, stateMachine, char);
                             break;
                         case 18 /* State.EmailMailto_L */:
-                            stateEmailMailto_L(stateMachine, char);
+                            stateEmailMailto_L(context, stateMachine, char);
                             break;
                         case 19 /* State.EmailMailto_T */:
-                            stateEmailMailto_T(stateMachine, char);
+                            stateEmailMailto_T(context, stateMachine, char);
                             break;
                         case 20 /* State.EmailMailto_O */:
-                            stateEmailMailto_O(stateMachine, char);
+                            stateEmailMailto_O(context, stateMachine, char);
                             break;
                         case 21 /* State.EmailMailto_Colon */:
-                            stateEmailMailtoColon(stateMachine, char);
+                            stateEmailMailtoColon(context, stateMachine, char);
                             break;
                         case 22 /* State.EmailLocalPart */:
-                            stateEmailLocalPart(stateMachine, char);
+                            stateEmailLocalPart(context, stateMachine, char);
                             break;
                         case 23 /* State.EmailLocalPartDot */:
-                            stateEmailLocalPartDot(stateMachine, char);
+                            stateEmailLocalPartDot(context, stateMachine, char);
                             break;
                         case 24 /* State.EmailAtSign */:
-                            stateEmailAtSign(stateMachine, char);
+                            stateEmailAtSign(context, stateMachine, char);
                             break;
                         case 25 /* State.EmailDomainChar */:
-                            stateEmailDomainChar(stateMachine, char);
+                            stateEmailDomainChar(context, stateMachine, char);
                             break;
                         case 26 /* State.EmailDomainHyphen */:
-                            stateEmailDomainHyphen(stateMachine, char);
+                            stateEmailDomainHyphen(context, stateMachine, char);
                             break;
                         case 27 /* State.EmailDomainDot */:
-                            stateEmailDomainDot(stateMachine, char);
+                            stateEmailDomainDot(context, stateMachine, char);
                             break;
                         // Hashtag states
                         case 28 /* State.HashtagHashChar */:
-                            stateHashtagHashChar(stateMachine, char);
+                            stateHashtagHashChar(context, stateMachine, char);
                             break;
                         case 29 /* State.HashtagTextChar */:
-                            stateHashtagTextChar(stateMachine, char);
+                            stateHashtagTextChar(context, stateMachine, char);
                             break;
                         // Mention states
                         case 30 /* State.MentionAtChar */:
-                            stateMentionAtChar(stateMachine, char);
+                            stateMentionAtChar(context, stateMachine, char);
                             break;
                         case 31 /* State.MentionTextChar */:
-                            stateMentionTextChar(stateMachine, char);
+                            stateMentionTextChar(context, stateMachine, char);
                             break;
                         // Phone number states
                         case 32 /* State.PhoneNumberOpenParen */:
-                            statePhoneNumberOpenParen(stateMachine, char);
+                            statePhoneNumberOpenParen(context, stateMachine, char);
                             break;
                         case 33 /* State.PhoneNumberAreaCodeDigit1 */:
-                            statePhoneNumberAreaCodeDigit1(stateMachine, char);
+                            statePhoneNumberAreaCodeDigit1(context, stateMachine, char);
                             break;
                         case 34 /* State.PhoneNumberAreaCodeDigit2 */:
-                            statePhoneNumberAreaCodeDigit2(stateMachine, char);
+                            statePhoneNumberAreaCodeDigit2(context, stateMachine, char);
                             break;
                         case 35 /* State.PhoneNumberAreaCodeDigit3 */:
-                            statePhoneNumberAreaCodeDigit3(stateMachine, char);
+                            statePhoneNumberAreaCodeDigit3(context, stateMachine, char);
                             break;
                         case 36 /* State.PhoneNumberCloseParen */:
-                            statePhoneNumberCloseParen(stateMachine, char);
+                            statePhoneNumberCloseParen(context, stateMachine, char);
                             break;
                         case 37 /* State.PhoneNumberPlus */:
-                            statePhoneNumberPlus(stateMachine, char);
+                            statePhoneNumberPlus(context, stateMachine, char);
                             break;
                         case 38 /* State.PhoneNumberDigit */:
-                            statePhoneNumberDigit(stateMachine, char);
+                            statePhoneNumberDigit(context, stateMachine, char);
                             break;
                         case 39 /* State.PhoneNumberSeparator */:
-                            statePhoneNumberSeparator(stateMachine, char);
+                            statePhoneNumberSeparator(context, stateMachine, char);
                             break;
                         case 40 /* State.PhoneNumberControlChar */:
-                            statePhoneNumberControlChar(stateMachine, char);
+                            statePhoneNumberControlChar(context, stateMachine, char);
                             break;
                         case 41 /* State.PhoneNumberPoundChar */:
-                            statePhoneNumberPoundChar(stateMachine, char);
+                            statePhoneNumberPoundChar(context, stateMachine, char);
                             break;
                         /* istanbul ignore next */
                         default:
@@ -2353,10 +2353,13 @@
                 // would be interpreted as a port ':' char. Also, only start a new
                 // scheme url machine if there isn't currently one so we don't start
                 // new ones for colons inside a url
-                if (charIdx > 0 && isSchemeStartChar(char)) {
-                    var prevChar = text.charAt(charIdx - 1);
-                    if (!isSchemeStartChar(prevChar) && !stateMachines.some(isSchemeUrlStateMachine)) {
-                        stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
+                // TODO: The addition of this snippet (to fix the bug) lost us ~500
+                // ops/sec on the benchmarks. Need to solve the bug in a different way
+                if (context.charIdx > 0 && isSchemeStartChar(char)) {
+                    var prevChar = context.text.charAt(context.charIdx - 1);
+                    if (!isSchemeStartChar(prevChar) &&
+                        !context.stateMachines.some(isSchemeUrlStateMachine)) {
+                        context.stateMachines.push(createSchemeUrlStateMachine(context.charIdx, 0 /* State.SchemeChar */));
                     }
                 }
             }
@@ -2365,7 +2368,7 @@
             //     String(charIdx),
             //     char,
             //     `10: ${char.charCodeAt(0)}\n0x: ${char.charCodeAt(0).toString(16)}\nU+${char.codePointAt(0)}`,
-            //     stateMachines.map(machine => `${machine.type}${'matchType' in machine ? ` (${machine.matchType})` : ''}`).join('\n') || '(none)',
+            //     stateMachines.map(machine => `${StateMachineType[machine.type]}${'matchType' in machine ? ` (${UrlStateMachineMatchType[machine.matchType]})` : ''}`).join('\n') || '(none)',
             //     stateMachines.map(machine => State[machine.state]).join('\n') || '(none)',
             //     String(charIdx),
             //     stateMachines.map(m => m.startIdx).join('\n'),
@@ -2377,748 +2380,775 @@
         // captureMatchIfValidAndRemove() removes state machines from the array
         // and we'll end up skipping every other one if we remove while looping
         // forward
-        for (var i = stateMachines.length - 1; i >= 0; i--) {
-            stateMachines.forEach(function (stateMachine) { return captureMatchIfValidAndRemove(stateMachine); });
+        for (var i = context.stateMachines.length - 1; i >= 0; i--) {
+            context.stateMachines.forEach(function (stateMachine) {
+                return captureMatchIfValidAndRemove(context, stateMachine);
+            });
         }
         // For debugging: search for and uncomment other "For debugging" lines
         // console.log(`\nRead string:\n  ${text}`);
         // console.log(table.toString());
-        return matches;
-        // Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
-        function stateNoMatch(char) {
-            if (char === '#') {
-                // Hash char, start a Hashtag match
-                stateMachines.push(createHashtagStateMachine(charIdx, 28 /* State.HashtagHashChar */));
-            }
-            else if (char === '@') {
-                // '@' char, start a Mention match
-                stateMachines.push(createMentionStateMachine(charIdx, 30 /* State.MentionAtChar */));
-            }
-            else if (char === '/') {
-                // A slash could begin a protocol-relative URL
-                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
-            }
-            else if (char === '+') {
-                // A '+' char can start a Phone number
-                stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* State.PhoneNumberPlus */));
-            }
-            else if (char === '(') {
-                stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* State.PhoneNumberOpenParen */));
-            }
-            else {
-                if (digitRe.test(char)) {
-                    // A digit could start a phone number
-                    stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* State.PhoneNumberDigit */));
-                    // A digit could start an IP address
-                    stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* State.IpV4Digit */));
-                }
-                if (isEmailLocalPartStartChar(char)) {
-                    // Any email local part. An 'm' character in particular could
-                    // start a 'mailto:' match
-                    var startState = char.toLowerCase() === 'm' ? 15 /* State.EmailMailto_M */ : 22 /* State.EmailLocalPart */;
-                    stateMachines.push(createEmailStateMachine(charIdx, startState));
-                }
-                if (isSchemeStartChar(char)) {
-                    // An uppercase or lowercase letter may start a scheme match
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
-                }
-                if (alphaNumericAndMarksRe.test(char)) {
-                    // A unicode alpha character or digit could start a domain name
-                    // label for a TLD match
-                    stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* State.DomainLabelChar */));
-                }
-            }
-            // Anything else, remain in the "non-url" state by not creating any
-            // state machines
+        return context.matches;
+    }
+    /**
+     * Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
+     */
+    function stateNoMatch(context, char) {
+        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        if (char === '#') {
+            // Hash char, start a Hashtag match
+            stateMachines.push(createHashtagStateMachine(charIdx, 28 /* State.HashtagHashChar */));
         }
-        // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-        function stateSchemeChar(stateMachine, char) {
-            if (char === ':') {
-                stateMachine.state = 2 /* State.SchemeColon */;
-            }
-            else if (char === '-') {
-                stateMachine.state = 1 /* State.SchemeHyphen */;
-            }
-            else if (isSchemeChar(char)) ;
-            else {
-                // Any other character, not a scheme
-                remove(stateMachines, stateMachine);
-            }
+        else if (char === '@') {
+            // '@' char, start a Mention match
+            stateMachines.push(createMentionStateMachine(charIdx, 30 /* State.MentionAtChar */));
         }
-        function stateSchemeHyphen(stateMachine, char) {
-            if (char === '-') ;
-            else if (char === '/') {
-                // Not a valid scheme match, but may be the start of a
-                // protocol-relative match (such as //google.com)
-                remove(stateMachines, stateMachine);
-                stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
-            }
-            else if (isSchemeChar(char)) {
-                stateMachine.state = 0 /* State.SchemeChar */;
-            }
-            else {
-                // Any other character, not a scheme
-                remove(stateMachines, stateMachine);
-            }
+        else if (char === '/') {
+            // A slash could begin a protocol-relative URL
+            stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
         }
-        // https://tools.ietf.org/html/rfc3986#appendix-A
-        function stateSchemeColon(stateMachine, char) {
-            if (char === '/') {
-                stateMachine.state = 3 /* State.SchemeSlash1 */;
-            }
-            else if (char === '.') {
-                // We've read something like 'hello:.' - don't capture
-                remove(stateMachines, stateMachine);
-            }
-            else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* State.DomainLabelChar */;
-                // It's possible that we read an "introduction" piece of text,
-                // and the character after the current colon actually starts an
-                // actual scheme. An example of this is:
-                //     "The link:http://google.com"
-                // Hence, start a new machine to capture this match if so
-                if (isSchemeStartChar(char)) {
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
-                }
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
+        else if (char === '+') {
+            // A '+' char can start a Phone number
+            stateMachines.push(createPhoneNumberStateMachine(charIdx, 37 /* State.PhoneNumberPlus */));
         }
-        // https://tools.ietf.org/html/rfc3986#appendix-A
-        function stateSchemeSlash1(stateMachine, char) {
-            if (char === '/') {
-                stateMachine.state = 4 /* State.SchemeSlash2 */;
-            }
-            else if (isPathChar(char)) {
-                stateMachine.state = 10 /* State.Path */;
-                stateMachine.acceptStateReached = true;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
+        else if (char === '(') {
+            stateMachines.push(createPhoneNumberStateMachine(charIdx, 32 /* State.PhoneNumberOpenParen */));
         }
-        function stateSchemeSlash2(stateMachine, char) {
-            if (char === '/') {
-                // 3rd slash, must be an absolute path (`path-absolute` in the
-                // ABNF), such as in "file:///c:/windows/etc". See
-                // https://tools.ietf.org/html/rfc3986#appendix-A
-                stateMachine.state = 10 /* State.Path */;
-                stateMachine.acceptStateReached = true;
-            }
-            else if (isDomainLabelStartChar(char)) {
-                // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
-                stateMachine.state = 5 /* State.DomainLabelChar */;
-                stateMachine.acceptStateReached = true;
-            }
-            else {
-                // not valid
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles after we've read a '/' from the NonUrl state
-        function stateProtocolRelativeSlash1(stateMachine, char) {
-            if (char === '/') {
-                stateMachine.state = 12 /* State.ProtocolRelativeSlash2 */;
-            }
-            else {
-                // Anything else, cannot be the start of a protocol-relative
-                // URL.
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles after we've read a second '/', which could start a protocol-relative URL
-        function stateProtocolRelativeSlash2(stateMachine, char) {
-            if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* State.DomainLabelChar */;
-            }
-            else {
-                // Anything else, not a URL
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles when we have read a domain label character
-        function stateDomainLabelChar(stateMachine, char) {
-            if (char === '.') {
-                stateMachine.state = 7 /* State.DomainDot */;
-            }
-            else if (char === '-') {
-                stateMachine.state = 6 /* State.DomainHyphen */;
-            }
-            else if (char === ':') {
-                // Beginning of a port number, end the domain name
-                stateMachine.state = 8 /* State.PortColon */;
-            }
-            else if (isUrlSuffixStartChar(char)) {
-                // '/', '?', or '#'
-                stateMachine.state = 10 /* State.Path */;
-            }
-            else if (isDomainLabelChar(char)) ;
-            else {
-                // Anything else, end the domain name
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateDomainHyphen(stateMachine, char) {
-            if (char === '-') ;
-            else if (char === '.') {
-                // Not valid to have a '-.' in a domain label
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-            else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* State.DomainLabelChar */;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateDomainDot(stateMachine, char) {
-            if (char === '.') {
-                // domain names cannot have multiple '.'s next to each other.
-                // It's possible we've already read a valid domain name though,
-                // and that the '..' sequence just forms an ellipsis at the end
-                // of a sentence
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-            else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 5 /* State.DomainLabelChar */;
-                stateMachine.acceptStateReached = true; // after hitting a dot, and then another domain label, we've reached an accept state
-            }
-            else {
-                // Anything else, end the domain name
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateIpV4Digit(stateMachine, char) {
-            if (char === '.') {
-                stateMachine.state = 14 /* State.IpV4Dot */;
-            }
-            else if (char === ':') {
-                // Beginning of a port number
-                stateMachine.state = 8 /* State.PortColon */;
-            }
-            else if (digitRe.test(char)) ;
-            else if (isUrlSuffixStartChar(char)) {
-                stateMachine.state = 10 /* State.Path */;
-            }
-            else if (alphaNumericAndMarksRe.test(char)) {
-                // If we hit an alpha character, must not be an IPv4
-                // Example of this: 1.2.3.4abc
-                remove(stateMachines, stateMachine);
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateIPv4Dot(stateMachine, char) {
+        else {
             if (digitRe.test(char)) {
-                stateMachine.octetsEncountered++;
-                // Once we have encountered 4 octets, it's *potentially* a valid
-                // IPv4 address. Our IPv4 regex will confirm the match later
-                // though to make sure each octet is in the 0-255 range, and
-                // there's exactly 4 octets (not 5 or more)
-                if (stateMachine.octetsEncountered === 4) {
-                    stateMachine.acceptStateReached = true;
-                }
-                stateMachine.state = 13 /* State.IpV4Digit */;
+                // A digit could start a phone number
+                stateMachines.push(createPhoneNumberStateMachine(charIdx, 38 /* State.PhoneNumberDigit */));
+                // A digit could start an IP address
+                stateMachines.push(createIpV4UrlStateMachine(charIdx, 13 /* State.IpV4Digit */));
             }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
+            if (isEmailLocalPartStartChar(char)) {
+                // Any email local part. An 'm' character in particular could
+                // start a 'mailto:' match
+                var startState = char.toLowerCase() === 'm' ? 15 /* State.EmailMailto_M */ : 22 /* State.EmailLocalPart */;
+                stateMachines.push(createEmailStateMachine(charIdx, startState));
             }
-        }
-        function statePortColon(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 9 /* State.PortNumber */;
+            if (isSchemeStartChar(char)) {
+                // An uppercase or lowercase letter may start a scheme match
+                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
             }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function statePortNumber(stateMachine, char) {
-            if (digitRe.test(char)) ;
-            else if (isUrlSuffixStartChar(char)) {
-                // '/', '?', or '#'
-                stateMachine.state = 10 /* State.Path */;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
+            if (alphaNumericAndMarksRe.test(char)) {
+                // A unicode alpha character or digit could start a domain name
+                // label for a TLD match
+                stateMachines.push(createTldUrlStateMachine(charIdx, 5 /* State.DomainLabelChar */));
             }
         }
-        function statePath(stateMachine, char) {
-            if (isPathChar(char)) ;
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
+        // Anything else, remain in the "non-url" state by not creating any
+        // state machines
+    }
+    // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+    function stateSchemeChar(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === ':') {
+            stateMachine.state = 2 /* State.SchemeColon */;
         }
-        // Handles if we're reading a 'mailto:' prefix on the string
-        function stateEmailMailto_M(stateMachine, char) {
-            if (char.toLowerCase() === 'a') {
-                stateMachine.state = 16 /* State.EmailMailto_A */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
+        else if (char === '-') {
+            stateMachine.state = 1 /* State.SchemeHyphen */;
         }
-        function stateEmailMailto_A(stateMachine, char) {
-            if (char.toLowerCase() === 'i') {
-                stateMachine.state = 17 /* State.EmailMailto_I */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
-        }
-        function stateEmailMailto_I(stateMachine, char) {
-            if (char.toLowerCase() === 'l') {
-                stateMachine.state = 18 /* State.EmailMailto_L */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
-        }
-        function stateEmailMailto_L(stateMachine, char) {
-            if (char.toLowerCase() === 't') {
-                stateMachine.state = 19 /* State.EmailMailto_T */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
-        }
-        function stateEmailMailto_T(stateMachine, char) {
-            if (char.toLowerCase() === 'o') {
-                stateMachine.state = 20 /* State.EmailMailto_O */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
-        }
-        function stateEmailMailto_O(stateMachine, char) {
-            if (char.toLowerCase() === ':') {
-                stateMachine.state = 21 /* State.EmailMailto_Colon */;
-            }
-            else {
-                stateEmailLocalPart(stateMachine, char);
-            }
-        }
-        function stateEmailMailtoColon(stateMachine, char) {
-            if (isEmailLocalPartChar(char)) {
-                stateMachine.state = 22 /* State.EmailLocalPart */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles the state when we're currently in the "local part" of an
-        // email address (as opposed to the "domain part")
-        function stateEmailLocalPart(stateMachine, char) {
-            if (char === '.') {
-                stateMachine.state = 23 /* State.EmailLocalPartDot */;
-            }
-            else if (char === '@') {
-                stateMachine.state = 24 /* State.EmailAtSign */;
-            }
-            else if (isEmailLocalPartChar(char)) {
-                // stay in the "local part" of the email address
-                // Note: because stateEmailLocalPart() is called from the
-                // 'mailto' states (when the 'mailto' prefix itself has been
-                // broken), make sure to set the state to EmailLocalPart
-                stateMachine.state = 22 /* State.EmailLocalPart */;
-            }
-            else {
-                // not an email address character
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles the state where we've read a '.' character in the local part of
-        // the email address (i.e. the part before the '@' character)
-        function stateEmailLocalPartDot(stateMachine, char) {
-            if (char === '.') {
-                // We read a second '.' in a row, not a valid email address
-                // local part
-                remove(stateMachines, stateMachine);
-            }
-            else if (char === '@') {
-                // We read the '@' character immediately after a dot ('.'), not
-                // an email address
-                remove(stateMachines, stateMachine);
-            }
-            else if (isEmailLocalPartChar(char)) {
-                stateMachine.state = 22 /* State.EmailLocalPart */;
-            }
-            else {
-                // Anything else, not an email address
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function stateEmailAtSign(stateMachine, char) {
-            if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 25 /* State.EmailDomainChar */;
-            }
-            else {
-                // Anything else, not an email address
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function stateEmailDomainChar(stateMachine, char) {
-            if (char === '.') {
-                stateMachine.state = 27 /* State.EmailDomainDot */;
-            }
-            else if (char === '-') {
-                stateMachine.state = 26 /* State.EmailDomainHyphen */;
-            }
-            else if (isDomainLabelChar(char)) ;
-            else {
-                // Anything else, we potentially matched if the criteria has
-                // been met
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateEmailDomainHyphen(stateMachine, char) {
-            if (char === '-' || char === '.') {
-                // Not valid to have two hyphens ("--") or hypen+dot ("-.")
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-            else if (isDomainLabelChar(char)) {
-                stateMachine.state = 25 /* State.EmailDomainChar */;
-            }
-            else {
-                // Anything else
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function stateEmailDomainDot(stateMachine, char) {
-            if (char === '.' || char === '-') {
-                // not valid to have two dots ("..") or dot+hypen (".-")
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-            else if (isDomainLabelStartChar(char)) {
-                stateMachine.state = 25 /* State.EmailDomainChar */;
-                // After having read a '.' and then a valid domain character,
-                // we now know that the domain part of the email is valid, and
-                // we have found at least a partial EmailMatch (however, the
-                // email address may have additional characters from this point)
-                stateMachine.acceptStateReached = true;
-            }
-            else {
-                // Anything else
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        // Handles the state when we've just encountered a '#' character
-        function stateHashtagHashChar(stateMachine, char) {
-            if (isHashtagTextChar(char)) {
-                // '#' char with valid hash text char following
-                stateMachine.state = 29 /* State.HashtagTextChar */;
-                stateMachine.acceptStateReached = true;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles the state when we're currently in the hash tag's text chars
-        function stateHashtagTextChar(stateMachine, char) {
-            if (isHashtagTextChar(char)) ;
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        // Handles the state when we've just encountered a '@' character
-        function stateMentionAtChar(stateMachine, char) {
-            if (isMentionTextChar(char)) {
-                // '@' char with valid mention text char following
-                stateMachine.state = 31 /* State.MentionTextChar */;
-                stateMachine.acceptStateReached = true;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        // Handles the state when we're currently in the mention's text chars
-        function stateMentionTextChar(stateMachine, char) {
-            if (isMentionTextChar(char)) ;
-            else if (alphaNumericAndMarksRe.test(char)) {
-                // Char is invalid for a mention text char, not a valid match.
-                // Note that ascii alphanumeric chars are okay (which are tested
-                // in the previous 'if' statement, but others are not)
-                remove(stateMachines, stateMachine);
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        function statePhoneNumberPlus(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 38 /* State.PhoneNumberDigit */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-                // This character may start a new match. Add states for it
-                stateNoMatch(char);
-            }
-        }
-        function statePhoneNumberOpenParen(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 33 /* State.PhoneNumberAreaCodeDigit1 */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-            // It's also possible that the paren was just an open brace for
-            // a piece of text. Start other machines
-            stateNoMatch(char);
-        }
-        function statePhoneNumberAreaCodeDigit1(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 34 /* State.PhoneNumberAreaCodeDigit2 */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function statePhoneNumberAreaCodeDigit2(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 35 /* State.PhoneNumberAreaCodeDigit3 */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function statePhoneNumberAreaCodeDigit3(stateMachine, char) {
-            if (char === ')') {
-                stateMachine.state = 36 /* State.PhoneNumberCloseParen */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function statePhoneNumberCloseParen(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 38 /* State.PhoneNumberDigit */;
-            }
-            else if (isPhoneNumberSeparatorChar(char)) {
-                stateMachine.state = 39 /* State.PhoneNumberSeparator */;
-            }
-            else {
-                remove(stateMachines, stateMachine);
-            }
-        }
-        function statePhoneNumberDigit(stateMachine, char) {
-            // For now, if we've reached any digits, we'll say that the machine
-            // has reached its accept state. The phone regex will confirm the
-            // match later.
-            // Alternatively, we could count the number of digits to avoid
-            // invoking the phone number regex
-            stateMachine.acceptStateReached = true;
-            if (isPhoneNumberControlChar(char)) {
-                stateMachine.state = 40 /* State.PhoneNumberControlChar */;
-            }
-            else if (char === '#') {
-                stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
-            }
-            else if (digitRe.test(char)) ;
-            else if (char === '(') {
-                stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
-            }
-            else if (isPhoneNumberSeparatorChar(char)) {
-                stateMachine.state = 39 /* State.PhoneNumberSeparator */;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-                // The transition from a digit character to a letter can be the
-                // start of a new scheme URL match
-                if (isSchemeStartChar(char)) {
-                    stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
-                }
-            }
-        }
-        function statePhoneNumberSeparator(stateMachine, char) {
-            if (digitRe.test(char)) {
-                stateMachine.state = 38 /* State.PhoneNumberDigit */;
-            }
-            else if (char === '(') {
-                stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-                // This character may start a new match. Add states for it
-                stateNoMatch(char);
-            }
-        }
-        // The ";" characters is "wait" in a phone number
-        // The "," characters is "pause" in a phone number
-        function statePhoneNumberControlChar(stateMachine, char) {
-            if (isPhoneNumberControlChar(char)) ;
-            else if (char === '#') {
-                stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
-            }
-            else if (digitRe.test(char)) {
-                stateMachine.state = 38 /* State.PhoneNumberDigit */;
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        // The "#" characters is "pound" in a phone number
-        function statePhoneNumberPoundChar(stateMachine, char) {
-            if (isPhoneNumberControlChar(char)) {
-                stateMachine.state = 40 /* State.PhoneNumberControlChar */;
-            }
-            else if (digitRe.test(char)) {
-                // According to some of the older tests, if there's a digit
-                // after a '#' sign, the match is invalid. TODO: Revisit if this is true
-                remove(stateMachines, stateMachine);
-            }
-            else {
-                captureMatchIfValidAndRemove(stateMachine);
-            }
-        }
-        /*
-         * Captures a match if it is valid (i.e. has a full domain name for a
-         * TLD match). If a match is not valid, it is possible that we want to
-         * keep reading characters in order to make a full match.
-         */
-        function captureMatchIfValidAndRemove(stateMachine) {
-            // Remove the state machine first. There are a number of code paths
-            // which return out of this function early, so make sure we have
-            // this done
+        else if (isSchemeChar(char)) ;
+        else {
+            // Any other character, not a scheme
             remove(stateMachines, stateMachine);
-            // Make sure the state machine being checked has actually reached an
-            // "accept" state. If it hasn't reach one, it can't be a match
-            if (!stateMachine.acceptStateReached) {
-                return;
+        }
+    }
+    function stateSchemeHyphen(context, stateMachine, char) {
+        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        if (char === '-') ;
+        else if (char === '/') {
+            // Not a valid scheme match, but may be the start of a
+            // protocol-relative match (such as //google.com)
+            remove(stateMachines, stateMachine);
+            stateMachines.push(createTldUrlStateMachine(charIdx, 11 /* State.ProtocolRelativeSlash1 */));
+        }
+        else if (isSchemeChar(char)) {
+            stateMachine.state = 0 /* State.SchemeChar */;
+        }
+        else {
+            // Any other character, not a scheme
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // https://tools.ietf.org/html/rfc3986#appendix-A
+    function stateSchemeColon(context, stateMachine, char) {
+        var charIdx = context.charIdx, stateMachines = context.stateMachines;
+        if (char === '/') {
+            stateMachine.state = 3 /* State.SchemeSlash1 */;
+        }
+        else if (char === '.') {
+            // We've read something like 'hello:.' - don't capture
+            remove(stateMachines, stateMachine);
+        }
+        else if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 5 /* State.DomainLabelChar */;
+            // It's possible that we read an "introduction" piece of text,
+            // and the character after the current colon actually starts an
+            // actual scheme. An example of this is:
+            //     "The link:http://google.com"
+            // Hence, start a new machine to capture this match if so
+            if (isSchemeStartChar(char)) {
+                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
             }
-            var startIdx = stateMachine.startIdx;
-            var matchedText = text.slice(stateMachine.startIdx, charIdx);
-            // Handle any unbalanced braces (parens, square brackets, or curly
-            // brackets) inside the URL. This handles situations like:
-            //     The link (google.com)
-            // and
-            //     Check out this link here (en.wikipedia.org/wiki/IANA_(disambiguation))
-            //
-            // And also remove any punctuation chars at the end such as:
-            //     '?', ',', ':', '.', etc.
-            matchedText = excludeUnbalancedTrailingBracesAndPunctuation(matchedText);
-            switch (stateMachine.type) {
-                case 'url': {
-                    // We don't want to accidentally match a URL that is preceded by an
-                    // '@' character, which would be an email address
-                    var charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
-                    if (charBeforeUrlMatch === '@') {
-                        return;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // https://tools.ietf.org/html/rfc3986#appendix-A
+    function stateSchemeSlash1(context, stateMachine, char) {
+        if (char === '/') {
+            stateMachine.state = 4 /* State.SchemeSlash2 */;
+        }
+        else if (isPathChar(char)) {
+            stateMachine.state = 10 /* State.Path */;
+            stateMachine.acceptStateReached = true;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateSchemeSlash2(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === '/') {
+            // 3rd slash, must be an absolute path (`path-absolute` in the
+            // ABNF), such as in "file:///c:/windows/etc". See
+            // https://tools.ietf.org/html/rfc3986#appendix-A
+            stateMachine.state = 10 /* State.Path */;
+            stateMachine.acceptStateReached = true;
+        }
+        else if (isDomainLabelStartChar(char)) {
+            // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
+            stateMachine.state = 5 /* State.DomainLabelChar */;
+            stateMachine.acceptStateReached = true;
+        }
+        else {
+            // not valid
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles after we've read a '/' from the NonUrl state
+    function stateProtocolRelativeSlash1(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === '/') {
+            stateMachine.state = 12 /* State.ProtocolRelativeSlash2 */;
+        }
+        else {
+            // Anything else, cannot be the start of a protocol-relative
+            // URL.
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles after we've read a second '/', which could start a protocol-relative URL
+    function stateProtocolRelativeSlash2(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 5 /* State.DomainLabelChar */;
+        }
+        else {
+            // Anything else, not a URL
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles when we have read a domain label character
+    function stateDomainLabelChar(context, stateMachine, char) {
+        if (char === '.') {
+            stateMachine.state = 7 /* State.DomainDot */;
+        }
+        else if (char === '-') {
+            stateMachine.state = 6 /* State.DomainHyphen */;
+        }
+        else if (char === ':') {
+            // Beginning of a port number, end the domain name
+            stateMachine.state = 8 /* State.PortColon */;
+        }
+        else if (isUrlSuffixStartChar(char)) {
+            // '/', '?', or '#'
+            stateMachine.state = 10 /* State.Path */;
+        }
+        else if (isDomainLabelChar(char)) ;
+        else {
+            // Anything else, end the domain name
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateDomainHyphen(context, stateMachine, char) {
+        if (char === '-') ;
+        else if (char === '.') {
+            // Not valid to have a '-.' in a domain label
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+        else if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 5 /* State.DomainLabelChar */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateDomainDot(context, stateMachine, char) {
+        if (char === '.') {
+            // domain names cannot have multiple '.'s next to each other.
+            // It's possible we've already read a valid domain name though,
+            // and that the '..' sequence just forms an ellipsis at the end
+            // of a sentence
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+        else if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 5 /* State.DomainLabelChar */;
+            stateMachine.acceptStateReached = true; // after hitting a dot, and then another domain label, we've reached an accept state
+        }
+        else {
+            // Anything else, end the domain name
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateIpV4Digit(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === '.') {
+            stateMachine.state = 14 /* State.IpV4Dot */;
+        }
+        else if (char === ':') {
+            // Beginning of a port number
+            stateMachine.state = 8 /* State.PortColon */;
+        }
+        else if (digitRe.test(char)) ;
+        else if (isUrlSuffixStartChar(char)) {
+            stateMachine.state = 10 /* State.Path */;
+        }
+        else if (alphaNumericAndMarksRe.test(char)) {
+            // If we hit an alpha character, must not be an IPv4
+            // Example of this: 1.2.3.4abc
+            remove(stateMachines, stateMachine);
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateIPv4Dot(context, stateMachine, char) {
+        if (digitRe.test(char)) {
+            stateMachine.octetsEncountered++;
+            // Once we have encountered 4 octets, it's *potentially* a valid
+            // IPv4 address. Our IPv4 regex will confirm the match later
+            // though to make sure each octet is in the 0-255 range, and
+            // there's exactly 4 octets (not 5 or more)
+            if (stateMachine.octetsEncountered === 4) {
+                stateMachine.acceptStateReached = true;
+            }
+            stateMachine.state = 13 /* State.IpV4Digit */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function statePortColon(context, stateMachine, char) {
+        if (digitRe.test(char)) {
+            stateMachine.state = 9 /* State.PortNumber */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function statePortNumber(context, stateMachine, char) {
+        if (digitRe.test(char)) ;
+        else if (isUrlSuffixStartChar(char)) {
+            // '/', '?', or '#'
+            stateMachine.state = 10 /* State.Path */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function statePath(context, stateMachine, char) {
+        if (isPathChar(char)) ;
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    // Handles if we're reading a 'mailto:' prefix on the string
+    function stateEmailMailto_M(context, stateMachine, char) {
+        if (char.toLowerCase() === 'a') {
+            stateMachine.state = 16 /* State.EmailMailto_A */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailto_A(context, stateMachine, char) {
+        if (char.toLowerCase() === 'i') {
+            stateMachine.state = 17 /* State.EmailMailto_I */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailto_I(context, stateMachine, char) {
+        if (char.toLowerCase() === 'l') {
+            stateMachine.state = 18 /* State.EmailMailto_L */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailto_L(context, stateMachine, char) {
+        if (char.toLowerCase() === 't') {
+            stateMachine.state = 19 /* State.EmailMailto_T */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailto_T(context, stateMachine, char) {
+        if (char.toLowerCase() === 'o') {
+            stateMachine.state = 20 /* State.EmailMailto_O */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailto_O(context, stateMachine, char) {
+        if (char.toLowerCase() === ':') {
+            stateMachine.state = 21 /* State.EmailMailto_Colon */;
+        }
+        else {
+            stateEmailLocalPart(context, stateMachine, char);
+        }
+    }
+    function stateEmailMailtoColon(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isEmailLocalPartChar(char)) {
+            stateMachine.state = 22 /* State.EmailLocalPart */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles the state when we're currently in the "local part" of an
+    // email address (as opposed to the "domain part")
+    function stateEmailLocalPart(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === '.') {
+            stateMachine.state = 23 /* State.EmailLocalPartDot */;
+        }
+        else if (char === '@') {
+            stateMachine.state = 24 /* State.EmailAtSign */;
+        }
+        else if (isEmailLocalPartChar(char)) {
+            // stay in the "local part" of the email address
+            // Note: because stateEmailLocalPart() is called from the
+            // 'mailto' states (when the 'mailto' prefix itself has been
+            // broken), make sure to set the state to EmailLocalPart
+            stateMachine.state = 22 /* State.EmailLocalPart */;
+        }
+        else {
+            // not an email address character
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles the state where we've read a '.' character in the local part of
+    // the email address (i.e. the part before the '@' character)
+    function stateEmailLocalPartDot(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === '.') {
+            // We read a second '.' in a row, not a valid email address
+            // local part
+            remove(stateMachines, stateMachine);
+        }
+        else if (char === '@') {
+            // We read the '@' character immediately after a dot ('.'), not
+            // an email address
+            remove(stateMachines, stateMachine);
+        }
+        else if (isEmailLocalPartChar(char)) {
+            stateMachine.state = 22 /* State.EmailLocalPart */;
+        }
+        else {
+            // Anything else, not an email address
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function stateEmailAtSign(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 25 /* State.EmailDomainChar */;
+        }
+        else {
+            // Anything else, not an email address
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function stateEmailDomainChar(context, stateMachine, char) {
+        if (char === '.') {
+            stateMachine.state = 27 /* State.EmailDomainDot */;
+        }
+        else if (char === '-') {
+            stateMachine.state = 26 /* State.EmailDomainHyphen */;
+        }
+        else if (isDomainLabelChar(char)) ;
+        else {
+            // Anything else, we potentially matched if the criteria has
+            // been met
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateEmailDomainHyphen(context, stateMachine, char) {
+        if (char === '-' || char === '.') {
+            // Not valid to have two hyphens ("--") or hypen+dot ("-.")
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+        else if (isDomainLabelChar(char)) {
+            stateMachine.state = 25 /* State.EmailDomainChar */;
+        }
+        else {
+            // Anything else
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function stateEmailDomainDot(context, stateMachine, char) {
+        if (char === '.' || char === '-') {
+            // not valid to have two dots ("..") or dot+hypen (".-")
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+        else if (isDomainLabelStartChar(char)) {
+            stateMachine.state = 25 /* State.EmailDomainChar */;
+            // After having read a '.' and then a valid domain character,
+            // we now know that the domain part of the email is valid, and
+            // we have found at least a partial EmailMatch (however, the
+            // email address may have additional characters from this point)
+            stateMachine.acceptStateReached = true;
+        }
+        else {
+            // Anything else
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    // Handles the state when we've just encountered a '#' character
+    function stateHashtagHashChar(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isHashtagTextChar(char)) {
+            // '#' char with valid hash text char following
+            stateMachine.state = 29 /* State.HashtagTextChar */;
+            stateMachine.acceptStateReached = true;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles the state when we're currently in the hash tag's text chars
+    function stateHashtagTextChar(context, stateMachine, char) {
+        if (isHashtagTextChar(char)) ;
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    // Handles the state when we've just encountered a '@' character
+    function stateMentionAtChar(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isMentionTextChar(char)) {
+            // '@' char with valid mention text char following
+            stateMachine.state = 31 /* State.MentionTextChar */;
+            stateMachine.acceptStateReached = true;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    // Handles the state when we're currently in the mention's text chars
+    function stateMentionTextChar(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isMentionTextChar(char)) ;
+        else if (alphaNumericAndMarksRe.test(char)) {
+            // Char is invalid for a mention text char, not a valid match.
+            // Note that ascii alphanumeric chars are okay (which are tested
+            // in the previous 'if' statement, but others are not)
+            remove(stateMachines, stateMachine);
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    function statePhoneNumberPlus(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (digitRe.test(char)) {
+            stateMachine.state = 38 /* State.PhoneNumberDigit */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+            // This character may start a new match. Add states for it
+            stateNoMatch(context, char);
+        }
+    }
+    function statePhoneNumberOpenParen(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (digitRe.test(char)) {
+            stateMachine.state = 33 /* State.PhoneNumberAreaCodeDigit1 */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+        // It's also possible that the paren was just an open brace for
+        // a piece of text. Start other machines
+        stateNoMatch(context, char);
+    }
+    function statePhoneNumberAreaCodeDigit1(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (digitRe.test(char)) {
+            stateMachine.state = 34 /* State.PhoneNumberAreaCodeDigit2 */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function statePhoneNumberAreaCodeDigit2(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (digitRe.test(char)) {
+            stateMachine.state = 35 /* State.PhoneNumberAreaCodeDigit3 */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function statePhoneNumberAreaCodeDigit3(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (char === ')') {
+            stateMachine.state = 36 /* State.PhoneNumberCloseParen */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function statePhoneNumberCloseParen(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (digitRe.test(char)) {
+            stateMachine.state = 38 /* State.PhoneNumberDigit */;
+        }
+        else if (isPhoneNumberSeparatorChar(char)) {
+            stateMachine.state = 39 /* State.PhoneNumberSeparator */;
+        }
+        else {
+            remove(stateMachines, stateMachine);
+        }
+    }
+    function statePhoneNumberDigit(context, stateMachine, char) {
+        var stateMachines = context.stateMachines, charIdx = context.charIdx;
+        // For now, if we've reached any digits, we'll say that the machine
+        // has reached its accept state. The phone regex will confirm the
+        // match later.
+        // Alternatively, we could count the number of digits to avoid
+        // invoking the phone number regex
+        stateMachine.acceptStateReached = true;
+        if (isPhoneNumberControlChar(char)) {
+            stateMachine.state = 40 /* State.PhoneNumberControlChar */;
+        }
+        else if (char === '#') {
+            stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
+        }
+        else if (digitRe.test(char)) ;
+        else if (char === '(') {
+            stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
+        }
+        else if (isPhoneNumberSeparatorChar(char)) {
+            stateMachine.state = 39 /* State.PhoneNumberSeparator */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+            // The transition from a digit character to a letter can be the
+            // start of a new scheme URL match
+            if (isSchemeStartChar(char)) {
+                stateMachines.push(createSchemeUrlStateMachine(charIdx, 0 /* State.SchemeChar */));
+            }
+        }
+    }
+    function statePhoneNumberSeparator(context, stateMachine, char) {
+        if (digitRe.test(char)) {
+            stateMachine.state = 38 /* State.PhoneNumberDigit */;
+        }
+        else if (char === '(') {
+            stateMachine.state = 32 /* State.PhoneNumberOpenParen */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+            // This character may start a new match. Add states for it
+            stateNoMatch(context, char);
+        }
+    }
+    // The ";" characters is "wait" in a phone number
+    // The "," characters is "pause" in a phone number
+    function statePhoneNumberControlChar(context, stateMachine, char) {
+        if (isPhoneNumberControlChar(char)) ;
+        else if (char === '#') {
+            stateMachine.state = 41 /* State.PhoneNumberPoundChar */;
+        }
+        else if (digitRe.test(char)) {
+            stateMachine.state = 38 /* State.PhoneNumberDigit */;
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    // The "#" characters is "pound" in a phone number
+    function statePhoneNumberPoundChar(context, stateMachine, char) {
+        var stateMachines = context.stateMachines;
+        if (isPhoneNumberControlChar(char)) {
+            stateMachine.state = 40 /* State.PhoneNumberControlChar */;
+        }
+        else if (digitRe.test(char)) {
+            // According to some of the older tests, if there's a digit
+            // after a '#' sign, the match is invalid. TODO: Revisit if this is true
+            remove(stateMachines, stateMachine);
+        }
+        else {
+            captureMatchIfValidAndRemove(context, stateMachine);
+        }
+    }
+    /*
+     * Captures a match if it is valid (i.e. has a full domain name for a
+     * TLD match). If a match is not valid, it is possible that we want to
+     * keep reading characters in order to make a full match.
+     */
+    function captureMatchIfValidAndRemove(context, stateMachine) {
+        var stateMachines = context.stateMachines, matches = context.matches, text = context.text, charIdx = context.charIdx, tagBuilder = context.tagBuilder, stripPrefix = context.stripPrefix, stripTrailingSlash = context.stripTrailingSlash, decodePercentEncoding = context.decodePercentEncoding, hashtagServiceName = context.hashtagServiceName, mentionServiceName = context.mentionServiceName;
+        // Remove the state machine first. There are a number of code paths
+        // which return out of this function early, so make sure we have
+        // this done
+        remove(stateMachines, stateMachine);
+        // Make sure the state machine being checked has actually reached an
+        // "accept" state. If it hasn't reach one, it can't be a match
+        if (!stateMachine.acceptStateReached) {
+            return;
+        }
+        var startIdx = stateMachine.startIdx;
+        var matchedText = text.slice(stateMachine.startIdx, charIdx);
+        // Handle any unbalanced braces (parens, square brackets, or curly
+        // brackets) inside the URL. This handles situations like:
+        //     The link (google.com)
+        // and
+        //     Check out this link here (en.wikipedia.org/wiki/IANA_(disambiguation))
+        //
+        // And also remove any punctuation chars at the end such as:
+        //     '?', ',', ':', '.', etc.
+        matchedText = excludeUnbalancedTrailingBracesAndPunctuation(matchedText);
+        switch (stateMachine.type) {
+            case 0 /* StateMachineType.Url */: {
+                // We don't want to accidentally match a URL that is preceded by an
+                // '@' character, which would be an email address
+                var charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
+                if (charBeforeUrlMatch === '@') {
+                    return;
+                }
+                // For the purpose of this parser, we've generalized 'www'
+                // matches as part of 'tld' matches. However, for backward
+                // compatibility, we distinguish beween TLD matches and matches
+                // that begin with 'www.' so that users may turn off 'www'
+                // matches. As such, we need to correct for that now if the
+                // URL begins with 'www.'
+                switch (stateMachine.matchType) {
+                    case 0 /* UrlStateMachineMatchType.Scheme */: {
+                        // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
+                        // However, in cases where a URL is missing whitespace before an obvious link,
+                        // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
+                        // at the http:// part. We will check if the match contains a common scheme and then
+                        // shift the match to start from there.
+                        var httpSchemeMatch = httpSchemeRe.exec(matchedText);
+                        if (httpSchemeMatch) {
+                            // If we found an overmatched URL, we want to find the index
+                            // of where the match should start and shift the match to
+                            // start from the beginning of the common scheme
+                            startIdx = startIdx + httpSchemeMatch.index;
+                            matchedText = matchedText.slice(httpSchemeMatch.index);
+                        }
+                        if (!isValidSchemeUrl(matchedText)) {
+                            return; // not a valid match
+                        }
+                        break;
                     }
-                    // For the purpose of this parser, we've generalized 'www'
-                    // matches as part of 'tld' matches. However, for backward
-                    // compatibility, we distinguish beween TLD matches and matches
-                    // that begin with 'www.' so that users may turn off 'www'
-                    // matches. As such, we need to correct for that now if the
-                    // URL begins with 'www.'
-                    var urlMatchType = stateMachine.matchType;
-                    switch (urlMatchType) {
-                        case 'scheme': {
-                            // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).
-                            // However, in cases where a URL is missing whitespace before an obvious link,
-                            // (for example: `nowhitespacehttp://www.test.com`), we only want the match to start
-                            // at the http:// part. We will check if the match contains a common scheme and then
-                            // shift the match to start from there.
-                            var httpSchemeMatch = httpSchemeRe.exec(matchedText);
-                            if (httpSchemeMatch) {
-                                // If we found an overmatched URL, we want to find the index
-                                // of where the match should start and shift the match to
-                                // start from the beginning of the common scheme
-                                startIdx = startIdx + httpSchemeMatch.index;
-                                matchedText = matchedText.slice(httpSchemeMatch.index);
-                            }
-                            if (!isValidSchemeUrl(matchedText)) {
-                                return; // not a valid match
-                            }
-                            break;
+                    case 1 /* UrlStateMachineMatchType.Tld */: {
+                        if (!isValidTldMatch(matchedText)) {
+                            return; // not a valid match
                         }
-                        case 'tld': {
-                            if (!isValidTldMatch(matchedText)) {
-                                return; // not a valid match
-                            }
-                            break;
-                        }
-                        case 'ipV4': {
-                            if (!isValidIpV4Address(matchedText)) {
-                                return; // not a valid match
-                            }
-                            break;
-                        }
-                        /* istanbul ignore next */
-                        default:
-                            assertNever(urlMatchType);
+                        break;
                     }
-                    matches.push(new UrlMatch({
+                    case 2 /* UrlStateMachineMatchType.IpV4 */: {
+                        if (!isValidIpV4Address(matchedText)) {
+                            return; // not a valid match
+                        }
+                        break;
+                    }
+                    /* istanbul ignore next */
+                    default:
+                        assertNever(stateMachine);
+                }
+                matches.push(new UrlMatch({
+                    tagBuilder: tagBuilder,
+                    matchedText: matchedText,
+                    offset: startIdx,
+                    urlMatchType: toUrlMatchType(stateMachine.matchType),
+                    url: matchedText,
+                    protocolRelativeMatch: matchedText.slice(0, 2) === '//',
+                    // TODO: Do these settings need to be passed to the match,
+                    // or should we handle them here in UrlMatcher?
+                    stripPrefix: stripPrefix,
+                    stripTrailingSlash: stripTrailingSlash,
+                    decodePercentEncoding: decodePercentEncoding,
+                }));
+                break;
+            }
+            case 1 /* StateMachineType.Email */: {
+                // if the email address has a valid TLD, add it to the list of matches
+                if (isValidEmail(matchedText)) {
+                    matches.push(new EmailMatch({
                         tagBuilder: tagBuilder,
                         matchedText: matchedText,
                         offset: startIdx,
-                        urlMatchType: urlMatchType,
-                        url: matchedText,
-                        protocolRelativeMatch: matchedText.slice(0, 2) === '//',
-                        // TODO: Do these settings need to be passed to the match,
-                        // or should we handle them here in UrlMatcher?
-                        stripPrefix: stripPrefix,
-                        stripTrailingSlash: stripTrailingSlash,
-                        decodePercentEncoding: decodePercentEncoding,
+                        email: matchedText.replace(mailtoSchemePrefixRe, ''),
                     }));
-                    break;
                 }
-                case 'email': {
-                    // if the email address has a valid TLD, add it to the list of matches
-                    if (isValidEmail(matchedText)) {
-                        matches.push(new EmailMatch({
-                            tagBuilder: tagBuilder,
-                            matchedText: matchedText,
-                            offset: startIdx,
-                            email: matchedText.replace(mailtoSchemePrefixRe, ''),
-                        }));
-                    }
-                    break;
-                }
-                case 'hashtag': {
-                    if (isValidHashtag(matchedText)) {
-                        matches.push(new HashtagMatch({
-                            tagBuilder: tagBuilder,
-                            matchedText: matchedText,
-                            offset: startIdx,
-                            serviceName: hashtagServiceName,
-                            hashtag: matchedText.slice(1),
-                        }));
-                    }
-                    break;
-                }
-                case 'mention': {
-                    if (isValidMention(matchedText, mentionServiceName)) {
-                        matches.push(new MentionMatch({
-                            tagBuilder: tagBuilder,
-                            matchedText: matchedText,
-                            offset: startIdx,
-                            serviceName: mentionServiceName,
-                            mention: matchedText.slice(1), // strip off the '@' character at the beginning
-                        }));
-                    }
-                    break;
-                }
-                case 'phone': {
-                    // remove any trailing spaces that were considered as "separator"
-                    // chars by the state machine
-                    matchedText = matchedText.replace(/ +$/g, '');
-                    if (isValidPhoneNumber(matchedText)) {
-                        var cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''); // strip out non-digit characters exclude comma semicolon and #
-                        matches.push(new PhoneMatch({
-                            tagBuilder: tagBuilder,
-                            matchedText: matchedText,
-                            offset: startIdx,
-                            number: cleanNumber,
-                            plusSign: matchedText.charAt(0) === '+',
-                        }));
-                    }
-                    break;
-                }
-                /* istanbul ignore next */
-                default:
-                    assertNever(stateMachine);
+                break;
             }
+            case 2 /* StateMachineType.Hashtag */: {
+                if (isValidHashtag(matchedText)) {
+                    matches.push(new HashtagMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: startIdx,
+                        serviceName: hashtagServiceName,
+                        hashtag: matchedText.slice(1),
+                    }));
+                }
+                break;
+            }
+            case 3 /* StateMachineType.Mention */: {
+                if (isValidMention(matchedText, mentionServiceName)) {
+                    matches.push(new MentionMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: startIdx,
+                        serviceName: mentionServiceName,
+                        mention: matchedText.slice(1), // strip off the '@' character at the beginning
+                    }));
+                }
+                break;
+            }
+            case 4 /* StateMachineType.Phone */: {
+                // remove any trailing spaces that were considered as "separator"
+                // chars by the state machine
+                matchedText = matchedText.replace(/ +$/g, '');
+                if (isValidPhoneNumber(matchedText)) {
+                    var cleanNumber = matchedText.replace(/[^0-9,;#]/g, ''); // strip out non-digit characters exclude comma semicolon and #
+                    matches.push(new PhoneMatch({
+                        tagBuilder: tagBuilder,
+                        matchedText: matchedText,
+                        offset: startIdx,
+                        number: cleanNumber,
+                        plusSign: matchedText.charAt(0) === '+',
+                    }));
+                }
+                break;
+            }
+            /* istanbul ignore next */
+            default:
+                assertNever(stateMachine);
         }
     }
     var openBraceRe = /[({[]/;
@@ -3128,6 +3158,23 @@
         '}': '{',
         ']': '[',
     };
+    /**
+     * Helper function to convert a UrlStateMachineMatchType value to its
+     * UrlMatchType equivalent.
+     */
+    function toUrlMatchType(stateMachineMatchType) {
+        switch (stateMachineMatchType) {
+            case 0 /* UrlStateMachineMatchType.Scheme */:
+                return 'scheme';
+            case 1 /* UrlStateMachineMatchType.Tld */:
+                return 'tld';
+            case 2 /* UrlStateMachineMatchType.IpV4 */:
+                return 'ipV4';
+            /* istanbul ignore next */
+            default:
+                assertNever(stateMachineMatchType);
+        }
+    }
     /**
      * Determines if a match found has unmatched closing parenthesis,
      * square brackets or curly brackets. If so, these unbalanced symbol(s) will be
@@ -3198,35 +3245,35 @@
     }
     function createSchemeUrlStateMachine(startIdx, state) {
         return {
-            type: 'url',
+            type: 0 /* StateMachineType.Url */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
-            matchType: 'scheme',
+            matchType: 0 /* UrlStateMachineMatchType.Scheme */,
         };
     }
     function createTldUrlStateMachine(startIdx, state) {
         return {
-            type: 'url',
+            type: 0 /* StateMachineType.Url */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
-            matchType: 'tld',
+            matchType: 1 /* UrlStateMachineMatchType.Tld */,
         };
     }
     function createIpV4UrlStateMachine(startIdx, state) {
         return {
-            type: 'url',
+            type: 0 /* StateMachineType.Url */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
-            matchType: 'ipV4',
+            matchType: 2 /* UrlStateMachineMatchType.IpV4 */,
             octetsEncountered: 1, // starts at 1 because we create this machine when encountering the first octet
         };
     }
     function createEmailStateMachine(startIdx, state) {
         return {
-            type: 'email',
+            type: 1 /* StateMachineType.Email */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
@@ -3234,7 +3281,7 @@
     }
     function createHashtagStateMachine(startIdx, state) {
         return {
-            type: 'hashtag',
+            type: 2 /* StateMachineType.Hashtag */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
@@ -3242,7 +3289,7 @@
     }
     function createMentionStateMachine(startIdx, state) {
         return {
-            type: 'mention',
+            type: 3 /* StateMachineType.Mention */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
@@ -3250,14 +3297,15 @@
     }
     function createPhoneNumberStateMachine(startIdx, state) {
         return {
-            type: 'phone',
+            type: 4 /* StateMachineType.Phone */,
             startIdx: startIdx,
             state: state,
             acceptStateReached: false,
         };
     }
     function isSchemeUrlStateMachine(machine) {
-        return machine.type === 'url' && machine.matchType === 'scheme';
+        return (machine.type === 0 /* StateMachineType.Url */ &&
+            machine.matchType === 0 /* UrlStateMachineMatchType.Scheme */);
     }
 
     // For debugging: search for other "For debugging" lines
