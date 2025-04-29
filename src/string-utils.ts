@@ -9,16 +9,26 @@ const enum Char {
     Z = 90,
     a = 97,
     z = 122,
+    Zero = 48, // char code for '0'
+    Nine = 57, // char code for '9'
 }
+
+/**
+ * Regular expression to match one or more upper and lowercase ASCII letters.
+ *
+ * Do not use for single letter checks. The {@link #isLetterChar} and
+ * {@link #isLetterCharCode} functions are 10x faster.
+ */
+export const letterRe = /[A-Za-z]/;
 
 /**
  * Determines if the given character is a letter char which matches the RegExp
  * `/[A-Za-z]/`
  */
 export function isLetterChar(char: string): boolean {
-    // Previous implementation of this function was using the /[A-Za-z]/ regexp,
-    // but this is 90% slower than testing by char code ranges as numbers
-    // according to jsperf
+    // Previous implementation of this function was just testing against the
+    // /[A-Za-z]/ regexp, but this is 90% slower than testing by char code
+    // ranges as numbers according to jsperf
     //return letterRe.test(char);
 
     return isLetterCharCode(char.charCodeAt(0));

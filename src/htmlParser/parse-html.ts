@@ -1,4 +1,5 @@
-import { letterRe, digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
+import { isLetterChar } from '../string-utils';
+import { digitRe, whitespaceRe, quoteRe, controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
@@ -208,7 +209,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (letterRe.test(char)) {
+        } else if (isLetterChar(char)) {
             // tag name start (and no '/' read)
             state = State.TagName;
             currentTag = new CurrentTag({ ...currentTag, isOpening: true });
@@ -244,7 +245,7 @@ export function parseHtml(
                 name: captureTagName(),
             });
             emitTagAndPreviousTextNode(); // resets to Data state as well
-        } else if (!letterRe.test(char) && !digitRe.test(char) && char !== ':') {
+        } else if (!isLetterChar(char) && !digitRe.test(char) && char !== ':') {
             // Anything else that does not form an html tag. Note: the colon
             // character is accepted for XML namespaced tags
             resetToDataState();
@@ -259,7 +260,7 @@ export function parseHtml(
         if (char === '>') {
             // parse error. Encountered "</>". Skip it without treating as a tag
             resetToDataState();
-        } else if (letterRe.test(char)) {
+        } else if (isLetterChar(char)) {
             state = State.TagName;
         } else {
             // some other non-tag-like character, don't treat this as a tag

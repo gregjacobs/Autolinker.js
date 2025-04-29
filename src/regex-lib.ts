@@ -7,18 +7,15 @@
  */
 
 /**
- * Regular expression to match upper and lowercase ASCII letters
- */
-export const letterRe = /[A-Za-z]/;
-
-/**
  * Regular expression to match ASCII digits
  */
+// TODO: Remove and replace with isDigit() function
 export const digitRe = /[\d]/;
 
 /**
  * Regular expression to match everything *except* ASCII digits
  */
+// TODO: Remove and replace with !isDigit() function call
 export const nonDigitRe = /[\D]/;
 
 /**

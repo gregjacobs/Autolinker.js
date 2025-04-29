@@ -1,5 +1,5 @@
-import { alphaNumericAndMarksRe, letterRe, digitRe } from '../regex-lib';
-import { isLetterChar, isLetterCharCode } from '../string-utils';
+import { alphaNumericAndMarksRe, digitRe } from '../regex-lib';
+import { isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
 import { tldRegex } from './known-tlds';
 
 /**
@@ -90,9 +90,7 @@ export const isSchemeStartCharCode: (code: number) => boolean = isLetterCharCode
  * {@link isSchemeStartChar}.
  */
 export function isSchemeChar(char: string): boolean {
-    return (
-        letterRe.test(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.'
-    );
+    return isLetterChar(char) || digitRe.test(char) || char === '+' || char === '-' || char === '.';
 }
 
 /**
@@ -193,6 +191,7 @@ export function isValidSchemeUrl(url: string): boolean {
     //   - git:something ('something' doesn't look like a host)
     //   - version:1.0   ('1.0' doesn't look like a host)
     if (host.indexOf('.') === -1 || !letterRe.test(host)) {
+        // `letterRe` RegExp checks for a letter anywhere in the host string
         return false;
     }
     return true;
