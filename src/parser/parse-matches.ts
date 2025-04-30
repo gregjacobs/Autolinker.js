@@ -7,10 +7,10 @@ import {
     isDomainLabelChar,
     isDomainLabelStartChar,
     isPathChar,
-    isSchemeChar,
+    isSchemeCharCode,
     isSchemeStartChar,
     isSchemeStartCharCode,
-    isUrlSuffixStartChar,
+    isUrlSuffixStartCharCode,
     isValidIpV4Address,
     isValidSchemeUrl,
     isValidTldMatch,
@@ -35,7 +35,7 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
-import { isDigitChar } from '../string-utils';
+import { Char, isDigitChar, isDigitCharCode } from '../string-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -118,10 +118,11 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
     //     head: ['charIdx', 'char', 'code', 'type', 'states', 'startIdx', 'reached accept state'],
     // });
     for (; context.charIdx < context.textLen; context.charIdx++) {
-        const char = context.text.charAt(context.charIdx);
+        const char = text.charAt(context.charIdx);
+        const charCode = text.charCodeAt(context.charIdx);
 
         if (context.stateMachines.length === 0) {
-            stateNoMatch(context, char);
+            stateNoMatch(context, char, charCode);
         } else {
             // Must loop through the state machines backwards for when one
             // is removed
@@ -136,50 +137,55 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                 switch (stateMachine.state) {
                     // Protocol-relative URL states
                     case State.ProtocolRelativeSlash1:
-                        stateProtocolRelativeSlash1(context, stateMachine, char);
+                        stateProtocolRelativeSlash1(context, stateMachine, charCode);
                         break;
                     case State.ProtocolRelativeSlash2:
                         stateProtocolRelativeSlash2(context, stateMachine, char);
                         break;
 
                     case State.SchemeChar:
-                        stateSchemeChar(context, stateMachine, char);
+                        stateSchemeChar(context, stateMachine, charCode);
                         break;
                     case State.SchemeHyphen:
-                        stateSchemeHyphen(context, stateMachine, char);
+                        stateSchemeHyphen(context, stateMachine, charCode);
                         break;
                     case State.SchemeColon:
-                        stateSchemeColon(context, stateMachine, char);
+                        stateSchemeColon(context, stateMachine, char, charCode);
                         break;
                     case State.SchemeSlash1:
-                        stateSchemeSlash1(context, stateMachine, char);
+                        stateSchemeSlash1(context, stateMachine, char, charCode);
                         break;
                     case State.SchemeSlash2:
-                        stateSchemeSlash2(context, stateMachine, char);
+                        stateSchemeSlash2(context, stateMachine, char, charCode);
                         break;
 
                     case State.DomainLabelChar:
-                        stateDomainLabelChar(context, stateMachine, char);
+                        stateDomainLabelChar(context, stateMachine, char, charCode);
                         break;
                     case State.DomainHyphen:
-                        stateDomainHyphen(context, stateMachine, char);
+                        stateDomainHyphen(context, stateMachine, char, charCode);
                         break;
                     case State.DomainDot:
-                        stateDomainDot(context, stateMachine, char);
+                        stateDomainDot(context, stateMachine, char, charCode);
                         break;
 
                     case State.IpV4Digit:
-                        stateIpV4Digit(context, stateMachine as IpV4UrlStateMachine, char);
+                        stateIpV4Digit(
+                            context,
+                            stateMachine as IpV4UrlStateMachine,
+                            char,
+                            charCode
+                        );
                         break;
                     case State.IpV4Dot:
-                        stateIpV4Dot(context, stateMachine as IpV4UrlStateMachine, char);
+                        stateIpV4Dot(context, stateMachine as IpV4UrlStateMachine, charCode);
                         break;
 
                     case State.PortColon:
-                        statePortColon(context, stateMachine, char);
+                        statePortColon(context, stateMachine, charCode);
                         break;
                     case State.PortNumber:
-                        statePortNumber(context, stateMachine, char);
+                        statePortNumber(context, stateMachine, charCode);
                         break;
                     case State.Path:
                         statePath(context, stateMachine, char);
@@ -187,43 +193,43 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
                     // Email States
                     case State.EmailMailto_M:
-                        stateEmailMailto_M(context, stateMachine, char);
+                        stateEmailMailto_M(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_A:
-                        stateEmailMailto_A(context, stateMachine, char);
+                        stateEmailMailto_A(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_I:
-                        stateEmailMailto_I(context, stateMachine, char);
+                        stateEmailMailto_I(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_L:
-                        stateEmailMailto_L(context, stateMachine, char);
+                        stateEmailMailto_L(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_T:
-                        stateEmailMailto_T(context, stateMachine, char);
+                        stateEmailMailto_T(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_O:
-                        stateEmailMailto_O(context, stateMachine, char);
+                        stateEmailMailto_O(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_Colon:
                         stateEmailMailtoColon(context, stateMachine, char);
                         break;
                     case State.EmailLocalPart:
-                        stateEmailLocalPart(context, stateMachine, char);
+                        stateEmailLocalPart(context, stateMachine, char, charCode);
                         break;
                     case State.EmailLocalPartDot:
-                        stateEmailLocalPartDot(context, stateMachine, char);
+                        stateEmailLocalPartDot(context, stateMachine, char, charCode);
                         break;
                     case State.EmailAtSign:
                         stateEmailAtSign(context, stateMachine, char);
                         break;
                     case State.EmailDomainChar:
-                        stateEmailDomainChar(context, stateMachine, char);
+                        stateEmailDomainChar(context, stateMachine, char, charCode);
                         break;
                     case State.EmailDomainHyphen:
-                        stateEmailDomainHyphen(context, stateMachine, char);
+                        stateEmailDomainHyphen(context, stateMachine, char, charCode);
                         break;
                     case State.EmailDomainDot:
-                        stateEmailDomainDot(context, stateMachine, char);
+                        stateEmailDomainDot(context, stateMachine, char, charCode);
                         break;
 
                     // Hashtag states
@@ -244,34 +250,34 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
                     // Phone number states
                     case State.PhoneNumberOpenParen:
-                        statePhoneNumberOpenParen(context, stateMachine, char);
+                        statePhoneNumberOpenParen(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberAreaCodeDigit1:
-                        statePhoneNumberAreaCodeDigit1(context, stateMachine, char);
+                        statePhoneNumberAreaCodeDigit1(context, stateMachine, charCode);
                         break;
                     case State.PhoneNumberAreaCodeDigit2:
-                        statePhoneNumberAreaCodeDigit2(context, stateMachine, char);
+                        statePhoneNumberAreaCodeDigit2(context, stateMachine, charCode);
                         break;
                     case State.PhoneNumberAreaCodeDigit3:
-                        statePhoneNumberAreaCodeDigit3(context, stateMachine, char);
+                        statePhoneNumberAreaCodeDigit3(context, stateMachine, charCode);
                         break;
                     case State.PhoneNumberCloseParen:
-                        statePhoneNumberCloseParen(context, stateMachine, char);
+                        statePhoneNumberCloseParen(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberPlus:
-                        statePhoneNumberPlus(context, stateMachine, char);
+                        statePhoneNumberPlus(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberDigit:
-                        statePhoneNumberDigit(context, stateMachine, char);
+                        statePhoneNumberDigit(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberSeparator:
-                        statePhoneNumberSeparator(context, stateMachine, char);
+                        statePhoneNumberSeparator(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberControlChar:
                         statePhoneNumberControlChar(context, stateMachine, char);
                         break;
                     case State.PhoneNumberPoundChar:
-                        statePhoneNumberPoundChar(context, stateMachine, char);
+                        statePhoneNumberPoundChar(context, stateMachine, char, charCode);
                         break;
 
                     /* istanbul ignore next */
@@ -339,25 +345,25 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 /**
  * Handles the state when we're not in a URL/email/etc. (i.e. when no state machines exist)
  */
-function stateNoMatch(context: ParseMatchesContext, char: string): void {
+function stateNoMatch(context: ParseMatchesContext, char: string, charCode: number): void {
     const { charIdx } = context;
 
-    if (char === '#') {
+    if (charCode === Char.NumberSign /* '#' */) {
         // Hash char, start a Hashtag match
         context.addMachine(createHashtagStateMachine(charIdx, State.HashtagHashChar));
-    } else if (char === '@') {
+    } else if (charCode === Char.AtSign /* '@' */) {
         // '@' char, start a Mention match
         context.addMachine(createMentionStateMachine(charIdx, State.MentionAtChar));
-    } else if (char === '/') {
+    } else if (charCode === Char.Slash /* '/' */) {
         // A slash could begin a protocol-relative URL
         context.addMachine(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
-    } else if (char === '+') {
+    } else if (charCode === Char.Plus /* '+' */) {
         // A '+' char can start a Phone number
         context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberPlus));
-    } else if (char === '(') {
+    } else if (charCode === Char.OpenParen /* '(' */) {
         context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberOpenParen));
     } else {
-        if (isDigitChar(char)) {
+        if (isDigitCharCode(charCode)) {
             // A digit could start a phone number
             context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberDigit));
 
@@ -373,7 +379,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string): void {
             context.addMachine(createEmailStateMachine(charIdx, startState));
         }
 
-        if (isSchemeStartChar(char)) {
+        if (isSchemeStartCharCode(charCode)) {
             // An uppercase or lowercase letter may start a scheme match
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
@@ -390,12 +396,16 @@ function stateNoMatch(context: ParseMatchesContext, char: string): void {
 }
 
 // Implements ABNF: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-function stateSchemeChar(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (char === ':') {
+function stateSchemeChar(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    charCode: number
+) {
+    if (charCode === Char.Colon /* ':' */) {
         stateMachine.state = State.SchemeColon;
-    } else if (char === '-') {
+    } else if (charCode === Char.Dash /* '-' */) {
         stateMachine.state = State.SchemeHyphen;
-    } else if (isSchemeChar(char)) {
+    } else if (isSchemeCharCode(charCode)) {
         // Stay in SchemeChar state
     } else {
         // Any other character, not a scheme
@@ -403,20 +413,24 @@ function stateSchemeChar(context: ParseMatchesContext, stateMachine: StateMachin
     }
 }
 
-function stateSchemeHyphen(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
+function stateSchemeHyphen(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    charCode: number
+) {
     const { charIdx } = context;
 
-    if (char === '-') {
+    if (charCode === Char.Dash /* '-' */) {
         // Stay in SchemeHyphen state
         // TODO: Should a colon following a dash be counted as the end of the scheme?
         // } else if (char === ':') {
         //     stateMachine.state = State.SchemeColon;
-    } else if (char === '/') {
+    } else if (charCode === Char.Slash /* '/' */) {
         // Not a valid scheme match, but may be the start of a
         // protocol-relative match (such as //google.com)
         context.removeMachine(stateMachine);
         context.addMachine(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
-    } else if (isSchemeChar(char)) {
+    } else if (isSchemeCharCode(charCode)) {
         stateMachine.state = State.SchemeChar;
     } else {
         // Any other character, not a scheme
@@ -425,12 +439,17 @@ function stateSchemeHyphen(context: ParseMatchesContext, stateMachine: StateMach
 }
 
 // https://tools.ietf.org/html/rfc3986#appendix-A
-function stateSchemeColon(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
+function stateSchemeColon(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    char: string,
+    charCode: number
+) {
     const { charIdx } = context;
 
-    if (char === '/') {
+    if (charCode === Char.Slash /* '/' */) {
         stateMachine.state = State.SchemeSlash1;
-    } else if (char === '.') {
+    } else if (charCode === Char.Dot /* '.' */) {
         // We've read something like 'hello:.' - don't capture
         context.removeMachine(stateMachine);
     } else if (isDomainLabelStartChar(char)) {
@@ -441,7 +460,7 @@ function stateSchemeColon(context: ParseMatchesContext, stateMachine: StateMachi
         // actual scheme. An example of this is:
         //     "The link:http://google.com"
         // Hence, start a new machine to capture this match if so
-        if (isSchemeStartChar(char)) {
+        if (isSchemeStartCharCode(charCode)) {
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     } else {
@@ -450,8 +469,13 @@ function stateSchemeColon(context: ParseMatchesContext, stateMachine: StateMachi
 }
 
 // https://tools.ietf.org/html/rfc3986#appendix-A
-function stateSchemeSlash1(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (char === '/') {
+function stateSchemeSlash1(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    char: string,
+    charCode: number
+) {
+    if (charCode === Char.Slash /* '/' */) {
         stateMachine.state = State.SchemeSlash2;
     } else if (isPathChar(char)) {
         stateMachine.state = State.Path;
@@ -461,8 +485,13 @@ function stateSchemeSlash1(context: ParseMatchesContext, stateMachine: StateMach
     }
 }
 
-function stateSchemeSlash2(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (char === '/') {
+function stateSchemeSlash2(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    char: string,
+    charCode: number
+) {
+    if (charCode === Char.Slash /* '/' */) {
         // 3rd slash, must be an absolute path (`path-absolute` in the
         // ABNF), such as in "file:///c:/windows/etc". See
         // https://tools.ietf.org/html/rfc3986#appendix-A
@@ -482,9 +511,9 @@ function stateSchemeSlash2(context: ParseMatchesContext, stateMachine: StateMach
 function stateProtocolRelativeSlash1(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (char === '/') {
+    if (charCode === Char.Slash /* '/' */) {
         stateMachine.state = State.ProtocolRelativeSlash2;
     } else {
         // Anything else, cannot be the start of a protocol-relative
@@ -511,16 +540,17 @@ function stateProtocolRelativeSlash2(
 function stateDomainLabelChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.') {
+    if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.DomainDot;
-    } else if (char === '-') {
+    } else if (charCode === Char.Dash /* '-' */) {
         stateMachine.state = State.DomainHyphen;
-    } else if (char === ':') {
+    } else if (charCode === Char.Colon /* ':' */) {
         // Beginning of a port number, end the domain name
         stateMachine.state = State.PortColon;
-    } else if (isUrlSuffixStartChar(char)) {
+    } else if (isUrlSuffixStartCharCode(charCode)) {
         // '/', '?', or '#'
         stateMachine.state = State.Path;
     } else if (isDomainLabelChar(char)) {
@@ -531,10 +561,15 @@ function stateDomainLabelChar(
     }
 }
 
-function stateDomainHyphen(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (char === '-') {
+function stateDomainHyphen(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    char: string,
+    charCode: number
+) {
+    if (charCode === Char.Dash /* '-' */) {
         // Remain in the DomainHyphen state
-    } else if (char === '.') {
+    } else if (charCode === Char.Dot /* '.' */) {
         // Not valid to have a '-.' in a domain label
         captureMatchIfValidAndRemove(context, stateMachine);
     } else if (isDomainLabelStartChar(char)) {
@@ -544,8 +579,13 @@ function stateDomainHyphen(context: ParseMatchesContext, stateMachine: StateMach
     }
 }
 
-function stateDomainDot(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (char === '.') {
+function stateDomainDot(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    char: string,
+    charCode: number
+) {
+    if (charCode === Char.Dot /* '.' */) {
         // domain names cannot have multiple '.'s next to each other.
         // It's possible we've already read a valid domain name though,
         // and that the '..' sequence just forms an ellipsis at the end
@@ -563,16 +603,17 @@ function stateDomainDot(context: ParseMatchesContext, stateMachine: StateMachine
 function stateIpV4Digit(
     context: ParseMatchesContext,
     stateMachine: IpV4UrlStateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.') {
+    if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.IpV4Dot;
-    } else if (char === ':') {
+    } else if (charCode === Char.Colon /* ':' */) {
         // Beginning of a port number
         stateMachine.state = State.PortColon;
-    } else if (isDigitChar(char)) {
+    } else if (isDigitCharCode(charCode)) {
         // stay in the IPv4 digit state
-    } else if (isUrlSuffixStartChar(char)) {
+    } else if (isUrlSuffixStartCharCode(charCode)) {
         stateMachine.state = State.Path;
     } else if (alphaNumericAndMarksRe.test(char)) {
         // If we hit an alpha character, must not be an IPv4
@@ -586,9 +627,9 @@ function stateIpV4Digit(
 function stateIpV4Dot(
     context: ParseMatchesContext,
     stateMachine: IpV4UrlStateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.octetsEncountered++;
 
         // Once we have encountered 4 octets, it's *potentially* a valid
@@ -605,18 +646,26 @@ function stateIpV4Dot(
     }
 }
 
-function statePortColon(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (isDigitChar(char)) {
+function statePortColon(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    charCode: number
+) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PortNumber;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
     }
 }
 
-function statePortNumber(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (isDigitChar(char)) {
+function statePortNumber(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    charCode: number
+) {
+    if (isDigitCharCode(charCode)) {
         // Stay in port number state
-    } else if (isUrlSuffixStartChar(char)) {
+    } else if (isUrlSuffixStartCharCode(charCode)) {
         // '/', '?', or '#'
         stateMachine.state = State.Path;
     } else {
@@ -636,72 +685,78 @@ function statePath(context: ParseMatchesContext, stateMachine: StateMachine, cha
 function stateEmailMailto_M(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (char.toLowerCase() === 'a') {
         stateMachine.state = State.EmailMailto_A;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
 function stateEmailMailto_A(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (char.toLowerCase() === 'i') {
         stateMachine.state = State.EmailMailto_I;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
 function stateEmailMailto_I(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (char.toLowerCase() === 'l') {
         stateMachine.state = State.EmailMailto_L;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
 function stateEmailMailto_L(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (char.toLowerCase() === 't') {
         stateMachine.state = State.EmailMailto_T;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
 function stateEmailMailto_T(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (char.toLowerCase() === 'o') {
         stateMachine.state = State.EmailMailto_O;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
 function stateEmailMailto_O(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char.toLowerCase() === ':') {
+    if (charCode === Char.Colon /* ':' */) {
         stateMachine.state = State.EmailMailto_Colon;
     } else {
-        stateEmailLocalPart(context, stateMachine, char);
+        stateEmailLocalPart(context, stateMachine, char, charCode);
     }
 }
 
@@ -722,11 +777,12 @@ function stateEmailMailtoColon(
 function stateEmailLocalPart(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.') {
+    if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.EmailLocalPartDot;
-    } else if (char === '@') {
+    } else if (charCode === Char.AtSign /* '@' */) {
         stateMachine.state = State.EmailAtSign;
     } else if (isEmailLocalPartChar(char)) {
         // stay in the "local part" of the email address
@@ -745,13 +801,14 @@ function stateEmailLocalPart(
 function stateEmailLocalPartDot(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.') {
+    if (charCode === Char.Dot /* '.' */) {
         // We read a second '.' in a row, not a valid email address
         // local part
         context.removeMachine(stateMachine);
-    } else if (char === '@') {
+    } else if (charCode === Char.AtSign /* '@' */) {
         // We read the '@' character immediately after a dot ('.'), not
         // an email address
         context.removeMachine(stateMachine);
@@ -775,11 +832,12 @@ function stateEmailAtSign(context: ParseMatchesContext, stateMachine: StateMachi
 function stateEmailDomainChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.') {
+    if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.EmailDomainDot;
-    } else if (char === '-') {
+    } else if (charCode === Char.Dash /* '-' */) {
         stateMachine.state = State.EmailDomainHyphen;
     } else if (isDomainLabelChar(char)) {
         // Stay in the DomainChar state
@@ -793,9 +851,10 @@ function stateEmailDomainChar(
 function stateEmailDomainHyphen(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '-' || char === '.') {
+    if (charCode === Char.Dash /* '-' */ || charCode === Char.Dot /* '.' */) {
         // Not valid to have two hyphens ("--") or hypen+dot ("-.")
         captureMatchIfValidAndRemove(context, stateMachine);
     } else if (isDomainLabelChar(char)) {
@@ -809,9 +868,10 @@ function stateEmailDomainHyphen(
 function stateEmailDomainDot(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (char === '.' || char === '-') {
+    if (charCode === Char.Dot /* '.' */ || charCode === Char.Dash /* '-' */) {
         // not valid to have two dots ("..") or dot+hypen (".-")
         captureMatchIfValidAndRemove(context, stateMachine);
     } else if (isDomainLabelStartChar(char)) {
@@ -892,24 +952,26 @@ function stateMentionTextChar(
 function statePhoneNumberPlus(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         context.removeMachine(stateMachine);
 
         // This character may start a new match. Add states for it
-        stateNoMatch(context, char);
+        stateNoMatch(context, char, charCode);
     }
 }
 
 function statePhoneNumberOpenParen(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit1;
     } else {
         context.removeMachine(stateMachine);
@@ -917,15 +979,15 @@ function statePhoneNumberOpenParen(
 
     // It's also possible that the paren was just an open brace for
     // a piece of text. Start other machines
-    stateNoMatch(context, char);
+    stateNoMatch(context, char, charCode);
 }
 
 function statePhoneNumberAreaCodeDigit1(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit2;
     } else {
         context.removeMachine(stateMachine);
@@ -935,9 +997,9 @@ function statePhoneNumberAreaCodeDigit1(
 function statePhoneNumberAreaCodeDigit2(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit3;
     } else {
         context.removeMachine(stateMachine);
@@ -947,9 +1009,9 @@ function statePhoneNumberAreaCodeDigit2(
 function statePhoneNumberAreaCodeDigit3(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (char === ')') {
+    if (charCode === Char.CloseParen /* ')' */) {
         stateMachine.state = State.PhoneNumberCloseParen;
     } else {
         context.removeMachine(stateMachine);
@@ -959,9 +1021,10 @@ function statePhoneNumberAreaCodeDigit3(
 function statePhoneNumberCloseParen(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (isPhoneNumberSeparatorChar(char)) {
         stateMachine.state = State.PhoneNumberSeparator;
@@ -973,7 +1036,8 @@ function statePhoneNumberCloseParen(
 function statePhoneNumberDigit(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     const { charIdx } = context;
 
@@ -986,11 +1050,11 @@ function statePhoneNumberDigit(
 
     if (isPhoneNumberControlChar(char)) {
         stateMachine.state = State.PhoneNumberControlChar;
-    } else if (char === '#') {
+    } else if (charCode === Char.NumberSign /* '#' */) {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (isDigitChar(char)) {
+    } else if (isDigitCharCode(charCode)) {
         // Stay in the phone number digit state
-    } else if (char === '(') {
+    } else if (charCode === Char.OpenParen /* '(' */) {
         stateMachine.state = State.PhoneNumberOpenParen;
     } else if (isPhoneNumberSeparatorChar(char)) {
         stateMachine.state = State.PhoneNumberSeparator;
@@ -999,7 +1063,7 @@ function statePhoneNumberDigit(
 
         // The transition from a digit character to a letter can be the
         // start of a new scheme URL match
-        if (isSchemeStartChar(char)) {
+        if (isSchemeStartCharCode(charCode)) {
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     }
@@ -1008,17 +1072,18 @@ function statePhoneNumberDigit(
 function statePhoneNumberSeparator(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (isDigitChar(char)) {
+    if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
-    } else if (char === '(') {
+    } else if (charCode === Char.OpenParen /* '(' */) {
         stateMachine.state = State.PhoneNumberOpenParen;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
 
         // This character may start a new match. Add states for it
-        stateNoMatch(context, char);
+        stateNoMatch(context, char, charCode);
     }
 }
 
@@ -1044,11 +1109,12 @@ function statePhoneNumberControlChar(
 function statePhoneNumberPoundChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
     if (isPhoneNumberControlChar(char)) {
         stateMachine.state = State.PhoneNumberControlChar;
-    } else if (isDigitChar(char)) {
+    } else if (isDigitCharCode(charCode)) {
         // According to some of the older tests, if there's a digit
         // after a '#' sign, the match is invalid. TODO: Revisit if this is true
         context.removeMachine(stateMachine);

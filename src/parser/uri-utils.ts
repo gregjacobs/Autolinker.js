@@ -1,5 +1,12 @@
 import { alphaNumericAndMarksRe } from '../regex-lib';
-import { isDigitChar, isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
+import {
+    Char,
+    isDigitChar,
+    isDigitCharCode,
+    isLetterChar,
+    isLetterCharCode,
+    letterRe,
+} from '../string-utils';
 import { tldRegex } from './known-tlds';
 
 /**
@@ -7,12 +14,6 @@ import { tldRegex } from './known-tlds';
  * that may be used in a domain name, minus the '-' or '.'
  */
 export const domainNameCharRegex = alphaNumericAndMarksRe;
-
-/**
- * The set of characters that will start a URL suffix (i.e. the path, query, and
- * hash part of the URL)
- */
-export const urlSuffixStartCharsRe = /[/?#]/;
 
 /**
  * The set of characters that are allowed in the URL suffix (i.e. the path,
@@ -89,8 +90,14 @@ export const isSchemeStartCharCode: (code: number) => boolean = isLetterCharCode
  * 'http' or 'ssh+git'), but only after the start char (which is handled by
  * {@link isSchemeStartChar}.
  */
-export function isSchemeChar(char: string): boolean {
-    return isLetterChar(char) || isDigitChar(char) || char === '+' || char === '-' || char === '.';
+export function isSchemeCharCode(charCode: number): boolean {
+    return (
+        isLetterCharCode(charCode) ||
+        isDigitCharCode(charCode) ||
+        charCode === Char.Plus || // '+'
+        charCode === Char.Dash || // '-'
+        charCode === Char.Dot // '.'
+    );
 }
 
 /**
@@ -142,8 +149,12 @@ export function isPathChar(char: string): boolean {
  *
  * See https://tools.ietf.org/html/rfc3986#appendix-A
  */
-export function isUrlSuffixStartChar(char: string) {
-    return urlSuffixStartCharsRe.test(char);
+export function isUrlSuffixStartCharCode(charCode: number): boolean {
+    return (
+        charCode === Char.Slash || // '/'
+        charCode === Char.Question || // '?'
+        charCode === Char.NumberSign // '#'
+    );
 }
 
 /**

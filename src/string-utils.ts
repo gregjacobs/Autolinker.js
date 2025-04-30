@@ -5,7 +5,7 @@
  * the code when TypeScript is compiled.
  */
 // prettier-ignore
-const enum Char {
+export const enum Char {
     // Letter chars (usually used for scheme testing)
     A = 65,
     Z = 90,
@@ -19,6 +19,18 @@ const enum Char {
     // Digit chars (used for parsing matches)
     Zero = 48, // char code for '0'
     Nine = 57, // char code for '9'
+
+    // Semantically meaningful characters for HTML and Match parsing
+    NumberSign = 35, // '#' char
+    OpenParen = 40,  // '(' char
+    CloseParen = 41, // ')' char
+    Plus = 43,       // '+' char
+    Dash = 45,       // '-' char
+    Dot = 46,        // '.' char
+    Slash = 47,      // '/' char
+    Colon = 58,      // ':' char
+    Question = 63,   // '?' char
+    AtSign = 64,     // '@' char
 
     // Whitespace and Line Terminator chars (all used by the /\s/ RegExp escape) 
     // These are used for parsing both HTML and matches.
