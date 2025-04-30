@@ -1,5 +1,8 @@
+// NOTE: THIS FILE IS GENERATED. DO NOT EDIT.
+// INSTEAD, RUN: npm run generate-char-utils
+
 /**
- * Common UTF-16 character codes used by the string functions.
+ * Common UTF-16 character codes used in the program.
  *
  * This is a 'const' enum, meaning that the numerical value will be inlined into
  * the code when TypeScript is compiled.
@@ -70,121 +73,71 @@ export const enum Char {
 }
 
 /**
- * Regular expression to match one or more upper and lowercase ASCII letters.
+ * Determines if the given character `c` matches the regular expression /[A-Za-z]/
+ * by checking it via character code in a binary search fashion.
  *
- * Do not use for single letter checks. The {@link #isLetterChar} and
- * {@link #isLetterCharCode} functions are 10x faster.
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test()
+ * on the character itself.
+ *
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run:
+ *
+ *     npm run generate-char-utils
  */
-export const letterRe = /[A-Za-z]/;
-
-/**
- * Determines if the given character is a letter char which matches the RegExp
- * `/[A-Za-z]/`
- */
-export function isLetterChar(char: string): boolean {
-    // Previous implementation of this function was just testing against the
-    // `/[A-Za-z]/` regexp, but this is 90% slower than testing by char code
-    // ranges as ASCII values according to jsperf
-    //return /[A-Za-z]/.test(char);
-
-    return isLetterCharCode(char.charCodeAt(0));
+export function isAsciiLetterChar(c: number): boolean {
+    return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
 
 /**
- * Determines if the given character code represents a letter char which matches
- * the RegExp `/[A-Za-z]/`
+ * Determines if the given character `c` matches the regular expression /\d/
+ * by checking it via character code in a binary search fashion.
+ *
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test()
+ * on the character itself.
+ *
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run:
+ *
+ *     npm run generate-char-utils
  */
-export function isLetterCharCode(code: number): boolean {
-    return (code >= Char.A && code <= Char.Z) || (code >= Char.a && code <= Char.z);
+export function isDigitChar(c: number): boolean {
+    return c >= 48 && c <= 57;
 }
 
 /**
- * Determines if the given character is a digit char which matches the RegExp
- * `/\d/`
+ * Determines if the given character `c` matches the regular expression /['"]/
+ * by checking it via character code in a binary search fashion.
+ *
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test()
+ * on the character itself.
+ *
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run:
+ *
+ *     npm run generate-char-utils
  */
-export function isDigitChar(char: string): boolean {
-    // Previous implementation of this function was just testing against the
-    // `/\d/` regexp, but this is 95% slower than testing by char code
-    // range as ASCII values according to jsperf
-    //return /\d/.test(char);
-
-    return isDigitCharCode(char.charCodeAt(0));
+export function isQuoteChar(c: number): boolean {
+    return c == 34 || c == 39;
 }
 
 /**
- * Determines if the given character code represents a digit char which matches
- * the RegExp `/\d/`
+ * Determines if the given character `c` matches the regular expression /\s/
+ * by checking it via character code in a binary search fashion.
+ *
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test()
+ * on the character itself.
+ *
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run:
+ *
+ *     npm run generate-char-utils
  */
-export function isDigitCharCode(code: number): boolean {
-    return (
-        code >= Char.Zero && // '0'
-        code <= Char.Nine // '9'
-    );
-}
-
-/**
- * Determines if the given character is a single quote (') or double quote (")
- * char which matches the RegExp `/['"]/`
- */
-export function isQuoteChar(char: string): boolean {
-    // Previous implementation of this function was just testing against the
-    // `/['"]/` regexp, but this is 94% slower than testing by char codes
-    // as ASCII values according to jsperf
-    //return /['"]/.test(char);
-
-    return isQuoteCharCode(char.charCodeAt(0));
-}
-
-/**
- * Determines if the given character code represents a digit char which matches
- * the RegExp `/\d/`
- */
-export function isQuoteCharCode(code: number): boolean {
-    return code === Char.DoubleQuote || code === Char.SingleQuote;
-}
-
-/**
- * Determines if the given character is a whitespace or line terminator
- * character, which matches the RegExp `/\s/`
- */
-export function isWhitespaceChar(char: string): boolean {
-    // Previous implementation of this function was just testing against the
-    // `/\s/` regexp, but this is 88% slower than testing by char codes
-    // as UTF-16 values according to jsperf
-    //return /\s/.test(char);
-
-    return isWhitespaceCharCode(char.charCodeAt(0));
-}
-
-/**
- * Determines if the given character code represents a whitespace or line
- * terminator chararacter, which matches the RegExp `/\s/`
- */
-export function isWhitespaceCharCode(code: number): boolean {
-    // Binary search in code
-    // prettier-ignore
-    if (code < Char.EnQuad) { // 8192
-        if (code <= Char.CarriageReturn) { // 13
-            return code >= Char.Tab; // 9, i.e. the range 9-13
-        } else {
-            return (
-                code === Char.Space || // 32
-                code === Char.NoBreakSpace || // 160
-                code === Char.OghamSpace // 5760
-            );
-        }       
-    } else {
-        if (code <= Char.HairSpace) { // 8202
-            return true;  // 8192-8202 space chars
-        } else {
-            return (
-                code === Char.LineSeparator || // 8232
-                code === Char.ParagraphSeparator || // 8233
-                code === Char.NarrowNoBreakSpace || // 8239
-                code === Char.MediumMathematicalSpace || // 8287
-                code === Char.IdiographicSpace || // 12288
-                code === Char.ZeroWidthNoBreakSpace // 65279
-            );
-        }
-    }
+export function isWhitespaceChar(c: number): boolean {
+    return c < 8232
+        ? c < 160
+            ? (c >= 9 && c <= 13) || c == 32
+            : c < 5760
+              ? c == 160
+              : c == 5760 || (c >= 8192 && c <= 8202)
+        : c < 8287
+          ? (c >= 8232 && c <= 8233) || c == 8239
+          : c < 12288
+            ? c == 8287
+            : c == 12288 || c == 65279;
 }

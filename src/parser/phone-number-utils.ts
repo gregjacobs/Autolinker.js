@@ -1,6 +1,6 @@
 // Regex that specifies any delimiter char that allows us to treat the number as
 
-import { Char } from '../string-utils';
+import { Char } from '../char-utils';
 
 // a phone number rather than just any other number that could appear in text.
 const hasDelimCharsRe = /[-. ()]/;

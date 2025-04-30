@@ -1,5 +1,5 @@
 import { alphaNumericAndMarksRe } from '../regex-lib';
-import { Char, isDigitCharCode, isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
+import { Char, isDigitChar, isAsciiLetterChar } from '../char-utils';
 import { tldRegex } from './known-tlds';
 
 /**
@@ -68,25 +68,20 @@ export const schemeUrlRe = /^[A-Za-z][-.+A-Za-z0-9]*:(\/\/)?([^:/]*)/;
 export const tldUrlHostRe = /^(?:\/\/)?([^/#?:]+)/; // optionally prefixed with protocol-relative '//' chars
 
 /**
- * Determines if the given character may start a scheme (ex: the 'h' in 'http').
- */
-export const isSchemeStartChar: (char: string) => boolean = isLetterChar; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
-
-/**
  * Determines if the given character code represents a character that may start
  * a scheme (ex: the 'h' in 'http')
  */
-export const isSchemeStartCharCode: (code: number) => boolean = isLetterCharCode; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
+export const isSchemeStartChar: (code: number) => boolean = isAsciiLetterChar; // Equivalent to checking the RegExp `/[A-Za-z]/`, but aliased for clarity and maintainability
 
 /**
  * Determines if the given character is a valid character in a scheme (such as
  * 'http' or 'ssh+git'), but only after the start char (which is handled by
  * {@link isSchemeStartChar}.
  */
-export function isSchemeCharCode(charCode: number): boolean {
+export function isSchemeChar(charCode: number): boolean {
     return (
-        isLetterCharCode(charCode) ||
-        isDigitCharCode(charCode) ||
+        isAsciiLetterChar(charCode) ||
+        isDigitChar(charCode) ||
         charCode === Char.Plus || // '+'
         charCode === Char.Dash || // '-'
         charCode === Char.Dot // '.'
@@ -194,7 +189,7 @@ export function isValidSchemeUrl(url: string): boolean {
     // Do not accept:
     //   - git:something ('something' doesn't look like a host)
     //   - version:1.0   ('1.0' doesn't look like a host)
-    if (host.indexOf('.') === -1 || !letterRe.test(host)) {
+    if (host.indexOf('.') === -1 || !/[A-Za-z]/.test(host)) {
         // `letterRe` RegExp checks for a letter anywhere in the host string
         return false;
     }

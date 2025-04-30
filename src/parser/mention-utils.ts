@@ -1,4 +1,4 @@
-import { Char, isDigitCharCode, isLetterCharCode } from '../string-utils';
+import { Char, isDigitChar, isAsciiLetterChar } from '../char-utils';
 
 const mentionRegexes: { [serviceName in MentionService]: RegExp } = {
     twitter: /^@\w{1,15}$/,
@@ -29,8 +29,8 @@ export function isMentionTextChar(charCode: number): boolean {
         charCode === Char.Dash || // '-'
         charCode === Char.Dot || // '.'
         charCode === Char.Underscore || // '_'
-        isLetterCharCode(charCode) ||
-        isDigitCharCode(charCode)
+        isAsciiLetterChar(charCode) ||
+        isDigitChar(charCode)
     );
 }
 

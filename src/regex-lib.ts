@@ -130,7 +130,7 @@ export const decimalNumbersStr = /0-9\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u09
  * These would be the characters matched by unicode regex engines
  * `[\p{L}\p{Nd}]` escape ("all letters and decimal numbers")
  */
-export const alphaNumericCharsRe = new RegExp(`[${alphaCharsStr + decimalNumbersStr}]`);
+//export const alphaNumericCharsRe = new RegExp(`[${alphaCharsStr + decimalNumbersStr}]`);  -- unused
 
 /**
  * The string form of a regular expression that would match all of the

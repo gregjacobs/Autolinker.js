@@ -7,9 +7,8 @@ import {
     isDomainLabelChar,
     isDomainLabelStartChar,
     isPathChar,
-    isSchemeCharCode,
+    isSchemeChar,
     isSchemeStartChar,
-    isSchemeStartCharCode,
     isUrlSuffixStartCharCode,
     isValidIpV4Address,
     isValidSchemeUrl,
@@ -35,7 +34,7 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
-import { Char, isDigitCharCode } from '../string-utils';
+import { Char, isDigitChar } from '../char-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -302,9 +301,13 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
             // to improve this even ore is to add this snippet to individual
             // state handler functions where it can occur to prevent running it
             // on every loop interation.
-            if (!context.hasSchemeUrlMachine() && context.charIdx > 0 && isSchemeStartChar(char)) {
+            if (
+                !context.hasSchemeUrlMachine() &&
+                context.charIdx > 0 &&
+                isSchemeStartChar(charCode)
+            ) {
                 const prevCharCode = context.text.charCodeAt(context.charIdx - 1);
-                if (!isSchemeStartCharCode(prevCharCode)) {
+                if (!isSchemeStartChar(prevCharCode)) {
                     context.addMachine(
                         createSchemeUrlStateMachine(context.charIdx, State.SchemeChar)
                     );
@@ -363,7 +366,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string, charCode: numb
     } else if (charCode === Char.OpenParen /* '(' */) {
         context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberOpenParen));
     } else {
-        if (isDigitCharCode(charCode)) {
+        if (isDigitChar(charCode)) {
             // A digit could start a phone number
             context.addMachine(createPhoneNumberStateMachine(charIdx, State.PhoneNumberDigit));
 
@@ -379,7 +382,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string, charCode: numb
             context.addMachine(createEmailStateMachine(charIdx, startState));
         }
 
-        if (isSchemeStartCharCode(charCode)) {
+        if (isSchemeStartChar(charCode)) {
             // An uppercase or lowercase letter may start a scheme match
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
@@ -405,7 +408,7 @@ function stateSchemeChar(
         stateMachine.state = State.SchemeColon;
     } else if (charCode === Char.Dash /* '-' */) {
         stateMachine.state = State.SchemeHyphen;
-    } else if (isSchemeCharCode(charCode)) {
+    } else if (isSchemeChar(charCode)) {
         // Stay in SchemeChar state
     } else {
         // Any other character, not a scheme
@@ -430,7 +433,7 @@ function stateSchemeHyphen(
         // protocol-relative match (such as //google.com)
         context.removeMachine(stateMachine);
         context.addMachine(createTldUrlStateMachine(charIdx, State.ProtocolRelativeSlash1));
-    } else if (isSchemeCharCode(charCode)) {
+    } else if (isSchemeChar(charCode)) {
         stateMachine.state = State.SchemeChar;
     } else {
         // Any other character, not a scheme
@@ -460,7 +463,7 @@ function stateSchemeColon(
         // actual scheme. An example of this is:
         //     "The link:http://google.com"
         // Hence, start a new machine to capture this match if so
-        if (isSchemeStartCharCode(charCode)) {
+        if (isSchemeStartChar(charCode)) {
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     } else {
@@ -611,7 +614,7 @@ function stateIpV4Digit(
     } else if (charCode === Char.Colon /* ':' */) {
         // Beginning of a port number
         stateMachine.state = State.PortColon;
-    } else if (isDigitCharCode(charCode)) {
+    } else if (isDigitChar(charCode)) {
         // stay in the IPv4 digit state
     } else if (isUrlSuffixStartCharCode(charCode)) {
         stateMachine.state = State.Path;
@@ -629,7 +632,7 @@ function stateIpV4Dot(
     stateMachine: IpV4UrlStateMachine,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.octetsEncountered++;
 
         // Once we have encountered 4 octets, it's *potentially* a valid
@@ -651,7 +654,7 @@ function statePortColon(
     stateMachine: StateMachine,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PortNumber;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -663,7 +666,7 @@ function statePortNumber(
     stateMachine: StateMachine,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         // Stay in port number state
     } else if (isUrlSuffixStartCharCode(charCode)) {
         // '/', '?', or '#'
@@ -956,7 +959,7 @@ function statePhoneNumberPlus(
     char: string,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         context.removeMachine(stateMachine);
@@ -972,7 +975,7 @@ function statePhoneNumberOpenParen(
     char: string,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit1;
     } else {
         context.removeMachine(stateMachine);
@@ -988,7 +991,7 @@ function statePhoneNumberAreaCodeDigit1(
     stateMachine: StateMachine,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit2;
     } else {
         context.removeMachine(stateMachine);
@@ -1000,7 +1003,7 @@ function statePhoneNumberAreaCodeDigit2(
     stateMachine: StateMachine,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberAreaCodeDigit3;
     } else {
         context.removeMachine(stateMachine);
@@ -1025,7 +1028,7 @@ function statePhoneNumberCloseParen(
     char: string,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (isPhoneNumberSeparatorChar(charCode)) {
         stateMachine.state = State.PhoneNumberSeparator;
@@ -1053,7 +1056,7 @@ function statePhoneNumberDigit(
         stateMachine.state = State.PhoneNumberControlChar;
     } else if (charCode === Char.NumberSign /* '#' */) {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (isDigitCharCode(charCode)) {
+    } else if (isDigitChar(charCode)) {
         // Stay in the phone number digit state
     } else if (charCode === Char.OpenParen /* '(' */) {
         stateMachine.state = State.PhoneNumberOpenParen;
@@ -1064,7 +1067,7 @@ function statePhoneNumberDigit(
 
         // The transition from a digit character to a letter can be the
         // start of a new scheme URL match
-        if (isSchemeStartCharCode(charCode)) {
+        if (isSchemeStartChar(charCode)) {
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
     }
@@ -1076,7 +1079,7 @@ function statePhoneNumberSeparator(
     char: string,
     charCode: number
 ) {
-    if (isDigitCharCode(charCode)) {
+    if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else if (charCode === Char.OpenParen /* '(' */) {
         stateMachine.state = State.PhoneNumberOpenParen;
@@ -1099,7 +1102,7 @@ function statePhoneNumberControlChar(
         // Stay in the "control char" state
     } else if (charCode === Char.NumberSign /* '#' */) {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (isDigitCharCode(charCode)) {
+    } else if (isDigitChar(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -1114,7 +1117,7 @@ function statePhoneNumberPoundChar(
 ) {
     if (isPhoneNumberControlChar(charCode)) {
         stateMachine.state = State.PhoneNumberControlChar;
-    } else if (isDigitCharCode(charCode)) {
+    } else if (isDigitChar(charCode)) {
         // According to some of the older tests, if there's a digit
         // after a '#' sign, the match is invalid. TODO: Revisit if this is true
         context.removeMachine(stateMachine);

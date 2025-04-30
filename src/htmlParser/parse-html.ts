@@ -1,4 +1,4 @@
-import { isDigitChar, isLetterChar, isQuoteChar, isWhitespaceChar } from '../string-utils';
+import { isDigitChar, isAsciiLetterChar, isQuoteChar, isWhitespaceChar } from '../char-utils';
 import { controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
@@ -209,7 +209,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isLetterChar(char)) {
+        } else if (isAsciiLetterChar(char.charCodeAt(0))) {
             // tag name start (and no '/' read)
             state = State.TagName;
             currentTag = new CurrentTag({ ...currentTag, isOpening: true });
@@ -224,7 +224,7 @@ export function parseHtml(
     // this is to continue reading the tag name
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
     function stateTagName(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             currentTag = new CurrentTag({
                 ...currentTag,
                 name: captureTagName(),
@@ -245,7 +245,11 @@ export function parseHtml(
                 name: captureTagName(),
             });
             emitTagAndPreviousTextNode(); // resets to Data state as well
-        } else if (!isLetterChar(char) && !isDigitChar(char) && char !== ':') {
+        } else if (
+            !isAsciiLetterChar(char.charCodeAt(0)) &&
+            !isDigitChar(char.charCodeAt(0)) &&
+            char !== ':'
+        ) {
             // Anything else that does not form an html tag. Note: the colon
             // character is accepted for XML namespaced tags
             resetToDataState();
@@ -260,7 +264,7 @@ export function parseHtml(
         if (char === '>') {
             // parse error. Encountered "</>". Skip it without treating as a tag
             resetToDataState();
-        } else if (isLetterChar(char)) {
+        } else if (isAsciiLetterChar(char.charCodeAt(0))) {
             state = State.TagName;
         } else {
             // some other non-tag-like character, don't treat this as a tag
@@ -270,7 +274,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-name-state
     function stateBeforeAttributeName(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             // stay in BeforeAttributeName state - continue reading chars
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -279,7 +283,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (char === `=` || isQuoteChar(char) || controlCharsRe.test(char)) {
+        } else if (char === `=` || isQuoteChar(char.charCodeAt(0)) || controlCharsRe.test(char)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -292,7 +296,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
     function stateAttributeName(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             state = State.AfterAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -303,7 +307,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isQuoteChar(char)) {
+        } else if (isQuoteChar(char.charCodeAt(0))) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -315,7 +319,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-name-state
     function stateAfterAttributeName(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             // ignore the character - continue reading
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -326,7 +330,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isQuoteChar(char)) {
+        } else if (isQuoteChar(char.charCodeAt(0))) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -339,7 +343,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
     function stateBeforeAttributeValue(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             // ignore the character - continue reading
         } else if (char === `"`) {
             state = State.AttributeValueDoubleQuoted;
@@ -380,7 +384,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
     function stateAttributeValueUnquoted(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             state = State.BeforeAttributeName;
         } else if (char === '>') {
             emitTagAndPreviousTextNode();
@@ -396,7 +400,7 @@ export function parseHtml(
     // (i.e. after the closing quote character)
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
     function stateAfterAttributeValueQuoted(char: string) {
-        if (isWhitespaceChar(char)) {
+        if (isWhitespaceChar(char.charCodeAt(0))) {
             state = State.BeforeAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
