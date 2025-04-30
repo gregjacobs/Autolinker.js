@@ -32,8 +32,8 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
+import { Char } from '../char';
 import {
-    Char,
     isAlphaNumericOrMarkChar,
     isDigitChar,
     isUrlSuffixNotAllowedAsFinalChar,

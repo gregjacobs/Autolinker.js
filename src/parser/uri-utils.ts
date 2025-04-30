@@ -1,5 +1,5 @@
+import { Char } from '../char';
 import {
-    Char,
     isDigitChar,
     isAsciiLetterChar,
     isAlphaNumericOrMarkChar,

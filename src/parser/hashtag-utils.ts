@@ -1,4 +1,5 @@
-import { Char, isAlphaNumericOrMarkChar } from '../char-utils';
+import { Char } from '../char';
+import { isAlphaNumericOrMarkChar } from '../char-utils';
 
 /**
  * Determines if the given `char` is a an allowed character in a hashtag. These

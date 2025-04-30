@@ -1,4 +1,5 @@
-import { Char, isDigitChar, isAsciiLetterChar } from '../char-utils';
+import { Char } from '../char';
+import { isDigitChar, isAsciiLetterChar } from '../char-utils';
 
 const mentionRegexes: { [serviceName in MentionService]: RegExp } = {
     twitter: /^@\w{1,15}$/,
