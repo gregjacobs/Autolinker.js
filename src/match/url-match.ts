@@ -282,8 +282,10 @@ function removePercentEncoding(anchorText: string): string {
         /*if (match === '%3E' || match === '%3e')*/ return '&gt;'; // %3E: '>' char
     });
 
-    // Now attempt to decode the rest of the anchor text. However, decodeURIComponent()
-    // is a slow function. Only call if we have remaining %-encoded entities
+    // Now attempt to URL-decode the rest of the anchor text. However,
+    // decodeURIComponent() is a slow function. Only call it if we have
+    // remaining %-encoded entities. Adding this check added ~300 ops/sec to
+    // benchmark
     if (preProcessedEntityAnchorText.includes('%')) {
         try {
             return decodeURIComponent(preProcessedEntityAnchorText);
