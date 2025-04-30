@@ -1,3 +1,5 @@
+import { Char, isDigitCharCode, isLetterCharCode } from '../string-utils';
+
 const mentionRegexes: { [serviceName in MentionService]: RegExp } = {
     twitter: /^@\w{1,15}$/,
     instagram: /^@[_\w]{1,30}$/,
@@ -13,16 +15,23 @@ const mentionRegexes: { [serviceName in MentionService]: RegExp } = {
     youtube: /^@[-.·\w]{3,30}$/,
 };
 
-// Regex that allows for all possible mention characters for any service. We'll
-// confirm the match based on the user-configured service name after a match is
-// found.
-const mentionTextCharRe = /[-\w.]/;
-
 /**
  * Determines if the given character can be part of a mention's text characters.
+ *
+ * Accepts characters that match the RegExp `/[-\w.]/`, which are the possible
+ * mention characters for any service.
+ *
+ * We'll confirm the match based on the user-configured service name after the
+ * match is found.
  */
-export function isMentionTextChar(char: string): boolean {
-    return mentionTextCharRe.test(char);
+export function isMentionTextChar(charCode: number): boolean {
+    return (
+        charCode === Char.Dash || // '-'
+        charCode === Char.Dot || // '.'
+        charCode === Char.Underscore || // '_'
+        isLetterCharCode(charCode) ||
+        isDigitCharCode(charCode)
+    );
 }
 
 /**

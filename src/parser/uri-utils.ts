@@ -1,12 +1,5 @@
 import { alphaNumericAndMarksRe } from '../regex-lib';
-import {
-    Char,
-    isDigitChar,
-    isDigitCharCode,
-    isLetterChar,
-    isLetterCharCode,
-    letterRe,
-} from '../string-utils';
+import { Char, isDigitCharCode, isLetterChar, isLetterCharCode, letterRe } from '../string-utils';
 import { tldRegex } from './known-tlds';
 
 /**

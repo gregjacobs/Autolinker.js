@@ -35,7 +35,7 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
-import { Char, isDigitChar, isDigitCharCode } from '../string-utils';
+import { Char, isDigitCharCode } from '../string-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -242,10 +242,10 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
 
                     // Mention states
                     case State.MentionAtChar:
-                        stateMentionAtChar(context, stateMachine, char);
+                        stateMentionAtChar(context, stateMachine, charCode);
                         break;
                     case State.MentionTextChar:
-                        stateMentionTextChar(context, stateMachine, char);
+                        stateMentionTextChar(context, stateMachine, char, charCode);
                         break;
 
                     // Phone number states
@@ -274,10 +274,10 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         statePhoneNumberSeparator(context, stateMachine, char, charCode);
                         break;
                     case State.PhoneNumberControlChar:
-                        statePhoneNumberControlChar(context, stateMachine, char);
+                        statePhoneNumberControlChar(context, stateMachine, charCode);
                         break;
                     case State.PhoneNumberPoundChar:
-                        statePhoneNumberPoundChar(context, stateMachine, char, charCode);
+                        statePhoneNumberPoundChar(context, stateMachine, charCode);
                         break;
 
                     /* istanbul ignore next */
@@ -920,9 +920,9 @@ function stateHashtagTextChar(
 function stateMentionAtChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isMentionTextChar(char)) {
+    if (isMentionTextChar(charCode)) {
         // '@' char with valid mention text char following
         stateMachine.state = State.MentionTextChar;
         stateMachine.acceptStateReached = true;
@@ -935,9 +935,10 @@ function stateMentionAtChar(
 function stateMentionTextChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    char: string,
+    charCode: number
 ) {
-    if (isMentionTextChar(char)) {
+    if (isMentionTextChar(charCode)) {
         // Continue reading characters in the HashtagText state
     } else if (alphaNumericAndMarksRe.test(char)) {
         // Char is invalid for a mention text char, not a valid match.
@@ -1026,7 +1027,7 @@ function statePhoneNumberCloseParen(
 ) {
     if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
-    } else if (isPhoneNumberSeparatorChar(char)) {
+    } else if (isPhoneNumberSeparatorChar(charCode)) {
         stateMachine.state = State.PhoneNumberSeparator;
     } else {
         context.removeMachine(stateMachine);
@@ -1048,7 +1049,7 @@ function statePhoneNumberDigit(
     // invoking the phone number regex
     stateMachine.acceptStateReached = true;
 
-    if (isPhoneNumberControlChar(char)) {
+    if (isPhoneNumberControlChar(charCode)) {
         stateMachine.state = State.PhoneNumberControlChar;
     } else if (charCode === Char.NumberSign /* '#' */) {
         stateMachine.state = State.PhoneNumberPoundChar;
@@ -1056,7 +1057,7 @@ function statePhoneNumberDigit(
         // Stay in the phone number digit state
     } else if (charCode === Char.OpenParen /* '(' */) {
         stateMachine.state = State.PhoneNumberOpenParen;
-    } else if (isPhoneNumberSeparatorChar(char)) {
+    } else if (isPhoneNumberSeparatorChar(charCode)) {
         stateMachine.state = State.PhoneNumberSeparator;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -1092,13 +1093,13 @@ function statePhoneNumberSeparator(
 function statePhoneNumberControlChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isPhoneNumberControlChar(char)) {
+    if (isPhoneNumberControlChar(charCode)) {
         // Stay in the "control char" state
-    } else if (char === '#') {
+    } else if (charCode === Char.NumberSign /* '#' */) {
         stateMachine.state = State.PhoneNumberPoundChar;
-    } else if (isDigitChar(char)) {
+    } else if (isDigitCharCode(charCode)) {
         stateMachine.state = State.PhoneNumberDigit;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -1109,10 +1110,9 @@ function statePhoneNumberControlChar(
 function statePhoneNumberPoundChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
-    if (isPhoneNumberControlChar(char)) {
+    if (isPhoneNumberControlChar(charCode)) {
         stateMachine.state = State.PhoneNumberControlChar;
     } else if (isDigitCharCode(charCode)) {
         // According to some of the older tests, if there's a digit

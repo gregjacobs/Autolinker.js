@@ -25,12 +25,15 @@ export const enum Char {
     OpenParen = 40,  // '(' char
     CloseParen = 41, // ')' char
     Plus = 43,       // '+' char
+    Comma = 44,      // ',' char
     Dash = 45,       // '-' char
     Dot = 46,        // '.' char
     Slash = 47,      // '/' char
     Colon = 58,      // ':' char
+    SemiColon = 59,  // ';' char
     Question = 63,   // '?' char
     AtSign = 64,     // '@' char
+    Underscore = 95, // '_' char
 
     // Whitespace and Line Terminator chars (all used by the /\s/ RegExp escape) 
     // These are used for parsing both HTML and matches.
@@ -113,7 +116,10 @@ export function isDigitChar(char: string): boolean {
  * the RegExp `/\d/`
  */
 export function isDigitCharCode(code: number): boolean {
-    return code >= Char.Zero && code <= Char.Nine;
+    return (
+        code >= Char.Zero && // '0'
+        code <= Char.Nine // '9'
+    );
 }
 
 /**

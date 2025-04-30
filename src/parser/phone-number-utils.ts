@@ -1,12 +1,9 @@
-// Regex that holds the characters used to separate segments of a phone number
-const separatorCharRe = /[-. ]/;
-
 // Regex that specifies any delimiter char that allows us to treat the number as
+
+import { Char } from '../string-utils';
+
 // a phone number rather than just any other number that could appear in text.
 const hasDelimCharsRe = /[-. ()]/;
-
-// "Pause" and "Wait" control chars
-const controlCharRe = /[,;]/;
 
 // Over the years, many people have added to this regex, but it should have been
 // split up by country. Maybe one day we can break this down.
@@ -24,8 +21,12 @@ const validPhoneNumberRe = new RegExp(`^${mostPhoneNumbers.source}|${japanesePho
  * Determines if the character is a phone number separator character (i.e.
  * '-', '.', or ' ' (space))
  */
-export function isPhoneNumberSeparatorChar(char: string): boolean {
-    return separatorCharRe.test(char);
+export function isPhoneNumberSeparatorChar(charCode: number): boolean {
+    return (
+        charCode === Char.Dash || // '-'
+        charCode === Char.Dot || // '.'
+        charCode === Char.Space // ' '
+    );
 }
 
 /**
@@ -35,8 +36,11 @@ export function isPhoneNumberSeparatorChar(char: string): boolean {
  * - ',': A 1 second pause. Useful for dialing extensions once the main phone number has been reached
  * - ';': A "wait" that waits for the user to take action (tap something, for instance on a smart phone)
  */
-export function isPhoneNumberControlChar(char: string): boolean {
-    return controlCharRe.test(char);
+export function isPhoneNumberControlChar(charCode: number): boolean {
+    return (
+        charCode === Char.Comma || // ','
+        charCode === Char.SemiColon // ';'
+    );
 }
 
 /**
