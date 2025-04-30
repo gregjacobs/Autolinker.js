@@ -26,6 +26,8 @@ const { srcFileContents, specFileContents } = generateCharUtils([
     ['isWhitespaceChar', /\s/],
     ['isAlphaNumericOrMarkChar', alphaNumericAndMarksRe /*/[\p{Letter}\p{Mark}\p{Emoji}\p{Nd}]/u*/], // sadly the unicode regexp is not working, probably because the char codes are outside the range of 0-65535 for multi-char emojis and such, but not 100% sure. Need to investigate. Using the old regexp for now instead
     ['isValidEmailLocalPartSpecialChar', /[!#$%&'*+/=?^_`{|}~-]/], // special characters that are valid in an email address
+    ['isUrlSuffixAllowedSpecialChar', /[-+&@#/%=~_()|'$*[\]{}\u2713]/], // The set of characters that are allowed in the URL suffix (i.e. the path, query, and hash part of the URL) which may also form the ending character of the URL. The isUrlSuffixNotAllowedAsFinalChar() function allows for additional allowed URL suffix characters, but (generally) should not be the *last* character of a URL.
+    ['isUrlSuffixNotAllowedAsFinalChar', /[?!:,.;^]/], // URL suffix characters (i.e. path, query, and has part of the URL) that are not allowed as the *last character* in the URL suffix as they would normally form the end of a sentence. The isUrlSuffixAllowedSpecialChar() function contains additional allowed URL suffix characters which are allowed as the last character.
 ]);
 
 // console.log(srcFileContents);

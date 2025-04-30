@@ -8,5 +8,7 @@ tsconfig.json
 package-lock.json
 *.md
 
-# Generated file
+# Generated files
+src/char-utils.ts
 src/parser/known-tlds.ts
+tests/char-utils.spec.ts

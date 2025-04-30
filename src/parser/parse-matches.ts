@@ -12,7 +12,6 @@ import {
     isValidIpV4Address,
     isValidSchemeUrl,
     isValidTldMatch,
-    urlSuffixedCharsNotAllowedAtEndRe,
 } from './uri-utils';
 import {
     isEmailLocalPartChar,
@@ -33,7 +32,12 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
-import { Char, isAlphaNumericOrMarkChar, isDigitChar } from '../char-utils';
+import {
+    Char,
+    isAlphaNumericOrMarkChar,
+    isDigitChar,
+    isUrlSuffixNotAllowedAsFinalChar,
+} from '../char-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -1385,9 +1389,9 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
     }
 
     let endIdx = matchedText.length - 1;
-    let char: string;
     while (endIdx >= 0) {
-        char = matchedText.charAt(endIdx);
+        const char = matchedText.charAt(endIdx);
+        const charCode = matchedText.charCodeAt(endIdx);
 
         if (closeBraceRe.test(char)) {
             const oppositeBraceChar = oppositeBrace[char];
@@ -1398,7 +1402,7 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
             } else {
                 break;
             }
-        } else if (urlSuffixedCharsNotAllowedAtEndRe.test(char)) {
+        } else if (isUrlSuffixNotAllowedAsFinalChar(charCode)) {
             // Walk back a punctuation char like '?', ',', ':', '.', etc.
             endIdx--;
         } else {

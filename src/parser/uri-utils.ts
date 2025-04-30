@@ -1,25 +1,12 @@
-import { Char, isDigitChar, isAsciiLetterChar, isAlphaNumericOrMarkChar } from '../char-utils';
+import {
+    Char,
+    isDigitChar,
+    isAsciiLetterChar,
+    isAlphaNumericOrMarkChar,
+    isUrlSuffixAllowedSpecialChar,
+    isUrlSuffixNotAllowedAsFinalChar,
+} from '../char-utils';
 import { tldRegex } from './known-tlds';
-
-/**
- * The set of characters that are allowed in the URL suffix (i.e. the path,
- * query, and hash part of the URL) which may also form the ending character of
- * the URL.
- *
- * The {@link #urlSuffixNotAllowedAsLastCharRe} are additional allowed URL
- * suffix characters, but (generally) should not be the last character of a URL.
- */
-export const urlSuffixAllowedSpecialCharsRe = /[-+&@#/%=~_()|'$*[\]{}\u2713]/;
-
-/**
- * URL suffix characters (i.e. path, query, and has part of the URL) that are
- * not allowed as the *last character* in the URL suffix as they would normally
- * form the end of a sentence.
- *
- * The {@link #urlSuffixAllowedSpecialCharsRe} contains additional allowed URL
- * suffix characters which are allowed as the last character.
- */
-export const urlSuffixNotAllowedAsLastCharRe = /[?!:,.;^]/;
 
 /**
  * Regular expression to match an http:// or https:// scheme.
@@ -31,10 +18,6 @@ export const httpSchemeRe = /https?:\/\//i;
  * a string.
  */
 export const httpSchemePrefixRe = new RegExp('^' + httpSchemeRe.source, 'i');
-
-export const urlSuffixedCharsNotAllowedAtEndRe = new RegExp(
-    urlSuffixNotAllowedAsLastCharRe.source + '$'
-);
 
 /**
  * A regular expression used to determine the schemes we should not autolink
@@ -87,7 +70,7 @@ export function isSchemeChar(charCode: number): boolean {
  *
  * A domain label is a segment of a hostname such as subdomain.google.com.
  */
-export const isDomainLabelStartChar: (charCode: number) => boolean = isAlphaNumericOrMarkChar; // alias function
+export const isDomainLabelStartChar: (charCode: number) => boolean = isAlphaNumericOrMarkChar; // alias function for clarity
 
 /**
  * Determines if the character is part of a domain label (but not a domain label
@@ -114,12 +97,10 @@ export function isDomainLabelChar(charCode: number): boolean {
  * follows URL path characters found out in the wild (spec might be out of date?)
  */
 export function isPathChar(charCode: number): boolean {
-    const char = String.fromCharCode(charCode); // TEMPORARY: replace other regexps below
-
     return (
         isAlphaNumericOrMarkChar(charCode) ||
-        urlSuffixAllowedSpecialCharsRe.test(char) ||
-        urlSuffixNotAllowedAsLastCharRe.test(char)
+        isUrlSuffixAllowedSpecialChar(charCode) ||
+        isUrlSuffixNotAllowedAsFinalChar(charCode) // characters in addition to those allowed by isUrlSuffixAllowedSpecialChar()
     );
 }
 
