@@ -92,6 +92,7 @@ export function parseHtml(
 
     while (charIdx < len) {
         const char = html.charAt(charIdx);
+        const charCode = html.charCodeAt(charIdx);
 
         // For debugging: search for other "For debugging" lines
         // ALSO: Temporarily remove the 'const' keyword on the State enum
@@ -109,25 +110,25 @@ export function parseHtml(
                 stateData(char);
                 break;
             case State.TagOpen:
-                stateTagOpen(char);
+                stateTagOpen(char, charCode);
                 break;
             case State.EndTagOpen:
-                stateEndTagOpen(char);
+                stateEndTagOpen(char, charCode);
                 break;
             case State.TagName:
-                stateTagName(char);
+                stateTagName(char, charCode);
                 break;
             case State.BeforeAttributeName:
-                stateBeforeAttributeName(char);
+                stateBeforeAttributeName(char, charCode);
                 break;
             case State.AttributeName:
-                stateAttributeName(char);
+                stateAttributeName(char, charCode);
                 break;
             case State.AfterAttributeName:
-                stateAfterAttributeName(char);
+                stateAfterAttributeName(char, charCode);
                 break;
             case State.BeforeAttributeValue:
-                stateBeforeAttributeValue(char);
+                stateBeforeAttributeValue(char, charCode);
                 break;
             case State.AttributeValueDoubleQuoted:
                 stateAttributeValueDoubleQuoted(char);
@@ -136,10 +137,10 @@ export function parseHtml(
                 stateAttributeValueSingleQuoted(char);
                 break;
             case State.AttributeValueUnquoted:
-                stateAttributeValueUnquoted(char);
+                stateAttributeValueUnquoted(char, charCode);
                 break;
             case State.AfterAttributeValueQuoted:
-                stateAfterAttributeValueQuoted(char);
+                stateAfterAttributeValueQuoted(char, charCode);
                 break;
             case State.SelfClosingStartTag:
                 stateSelfClosingStartTag(char);
@@ -205,7 +206,7 @@ export function parseHtml(
 
     // Called after a '<' is read from the Data state
     // https://www.w3.org/TR/html51/syntax.html#tag-open-state
-    function stateTagOpen(char: string) {
+    function stateTagOpen(char: string, charCode: number) {
         if (char === '!') {
             state = State.MarkupDeclarationOpenState;
         } else if (char === '/') {
@@ -214,7 +215,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isAsciiLetterChar(char.charCodeAt(0))) {
+        } else if (isAsciiLetterChar(charCode)) {
             // tag name start (and no '/' read)
             state = State.TagName;
             currentTag = new CurrentTag({ ...currentTag, isOpening: true });
@@ -228,8 +229,8 @@ export function parseHtml(
     // After a '<x', '</x' sequence is read (where 'x' is a letter character),
     // this is to continue reading the tag name
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
-    function stateTagName(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateTagName(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             currentTag = new CurrentTag({
                 ...currentTag,
                 name: captureTagName(),
@@ -250,11 +251,7 @@ export function parseHtml(
                 name: captureTagName(),
             });
             emitTagAndPreviousTextNode(); // resets to Data state as well
-        } else if (
-            !isAsciiLetterChar(char.charCodeAt(0)) &&
-            !isDigitChar(char.charCodeAt(0)) &&
-            char !== ':'
-        ) {
+        } else if (!isAsciiLetterChar(charCode) && !isDigitChar(charCode) && char !== ':') {
             // Anything else that does not form an html tag. Note: the colon
             // character is accepted for XML namespaced tags
             resetToDataState();
@@ -265,11 +262,11 @@ export function parseHtml(
 
     // Called after the '/' is read from a '</' sequence
     // https://www.w3.org/TR/html51/syntax.html#end-tag-open-state
-    function stateEndTagOpen(char: string) {
+    function stateEndTagOpen(char: string, charCode: number) {
         if (char === '>') {
             // parse error. Encountered "</>". Skip it without treating as a tag
             resetToDataState();
-        } else if (isAsciiLetterChar(char.charCodeAt(0))) {
+        } else if (isAsciiLetterChar(charCode)) {
             state = State.TagName;
         } else {
             // some other non-tag-like character, don't treat this as a tag
@@ -278,8 +275,8 @@ export function parseHtml(
     }
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-name-state
-    function stateBeforeAttributeName(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateBeforeAttributeName(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             // stay in BeforeAttributeName state - continue reading chars
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -288,11 +285,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (
-            char === `=` ||
-            isQuoteChar(char.charCodeAt(0)) ||
-            isControlChar(char.charCodeAt(0))
-        ) {
+        } else if (char === `=` || isQuoteChar(charCode) || isControlChar(charCode)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -304,8 +297,8 @@ export function parseHtml(
     }
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
-    function stateAttributeName(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateAttributeName(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             state = State.AfterAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -316,7 +309,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isQuoteChar(char.charCodeAt(0))) {
+        } else if (isQuoteChar(charCode)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -327,8 +320,8 @@ export function parseHtml(
     }
 
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-name-state
-    function stateAfterAttributeName(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateAfterAttributeName(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             // ignore the character - continue reading
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -339,7 +332,7 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (isQuoteChar(char.charCodeAt(0))) {
+        } else if (isQuoteChar(charCode)) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag
@@ -351,8 +344,8 @@ export function parseHtml(
     }
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
-    function stateBeforeAttributeValue(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateBeforeAttributeValue(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             // ignore the character - continue reading
         } else if (char === `"`) {
             state = State.AttributeValueDoubleQuoted;
@@ -392,8 +385,8 @@ export function parseHtml(
     }
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
-    function stateAttributeValueUnquoted(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateAttributeValueUnquoted(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             state = State.BeforeAttributeName;
         } else if (char === '>') {
             emitTagAndPreviousTextNode();
@@ -408,8 +401,8 @@ export function parseHtml(
     // Called after a double-quoted or single-quoted attribute value is read
     // (i.e. after the closing quote character)
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
-    function stateAfterAttributeValueQuoted(char: string) {
-        if (isWhitespaceChar(char.charCodeAt(0))) {
+    function stateAfterAttributeValueQuoted(char: string, charCode: number) {
+        if (isWhitespaceChar(charCode)) {
             state = State.BeforeAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
