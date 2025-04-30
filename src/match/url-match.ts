@@ -272,19 +272,26 @@ function removePercentEncoding(anchorText: string): string {
     // First, convert a few of the known % encodings to the corresponding
     // HTML entities that could accidentally be interpretted as special
     // HTML characters
-    const preProcessedEntityAnchorText = anchorText
-        .replace(/%22/gi, '&quot;') // " char
-        .replace(/%26/gi, '&amp;') // & char
-        .replace(/%27/gi, '&#39;') // ' char
-        .replace(/%3C/gi, '&lt;') // < char
-        .replace(/%3E/gi, '&gt;'); // > char
+    // NOTE: This used to be written as 5 separate .replace() calls, but that
+    //       was 25% slower than the current form below according to jsperf
+    const preProcessedEntityAnchorText = anchorText.replace(/%(?:22|26|27|3C|3E)/gi, match => {
+        if (match === '%22') return '&quot;'; // %22: '"' char
+        if (match === '%26') return '&amp;'; // %26: '&' char
+        if (match === '%27') return '&#39;'; // %27: "'" char
+        if (match === '%3C' || match === '%3c') return '&lt;'; // %3C: '<' char
+        /*if (match === '%3E' || match === '%3e')*/ return '&gt;'; // %3E: '>' char
+    });
 
-    try {
-        // Now attempt to decode the rest of the anchor text
-        return decodeURIComponent(preProcessedEntityAnchorText);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: unknown) {
-        // Invalid % escape sequence in the anchor text
-        return preProcessedEntityAnchorText;
+    // Now attempt to decode the rest of the anchor text. However, decodeURIComponent()
+    // is a slow function. Only call if we have remaining %-encoded entities
+    if (preProcessedEntityAnchorText.includes('%')) {
+        try {
+            return decodeURIComponent(preProcessedEntityAnchorText);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error: unknown) {
+            // Invalid % escape sequence in the anchor text, we'll simply return
+            // the preProcessedEntityAnchorText below
+        }
     }
+    return preProcessedEntityAnchorText;
 }
