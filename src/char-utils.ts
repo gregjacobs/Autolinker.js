@@ -136,3 +136,33 @@ export function isUrlSuffixAllowedSpecialChar(c: number): boolean {
 export function isUrlSuffixNotAllowedAsFinalChar(c: number): boolean {
     return (c < 58 ? (c < 44 ? c == 33 : (c == 44 || c == 46)) : (c < 63 ? (c >= 58 && c <= 59) : (c == 63 || c == 94)));
 }
+
+/**
+ * Determines if the given character `c` matches the regular expression /[({[]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isOpenBraceChar(c: number): boolean {
+    return (c < 91 ? c == 40 : (c == 91 || c == 123));
+}
+
+/**
+ * Determines if the given character `c` matches the regular expression /[)}\]]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isCloseBraceChar(c: number): boolean {
+    return (c < 93 ? c == 41 : (c == 93 || c == 125));
+}

@@ -35,7 +35,9 @@ import type { StripPrefixConfigObj } from '../autolinker';
 import { Char } from '../char';
 import {
     isAlphaNumericOrMarkChar,
+    isCloseBraceChar,
     isDigitChar,
+    isOpenBraceChar,
     isUrlSuffixNotAllowedAsFinalChar,
 } from '../char-utils';
 
@@ -1313,14 +1315,6 @@ export interface ParseMatchesArgs {
     mentionServiceName: MentionService;
 }
 
-const openBraceRe = /[({[]/;
-const closeBraceRe = /[)}\]]/;
-const oppositeBrace: { [char: string]: string } = {
-    ')': '(',
-    '}': '{',
-    ']': '[',
-};
-
 /**
  * Helper function to convert a UrlStateMachineMatchType value to its
  * UrlMatchType equivalent.
@@ -1339,6 +1333,12 @@ function toUrlMatchType(stateMachineMatchType: UrlStateMachineMatchType): UrlMat
             assertNever(stateMachineMatchType);
     }
 }
+
+const oppositeBrace: { [char: string]: string } = {
+    ')': '(',
+    '}': '{',
+    ']': '[',
+};
 
 /**
  * Determines if a match found has unmatched closing parenthesis,
@@ -1378,10 +1378,11 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
 
     for (let i = 0; i < matchedText.length; i++) {
         const char = matchedText.charAt(i);
+        const charCode = matchedText.charCodeAt(i);
 
-        if (openBraceRe.test(char)) {
+        if (isOpenBraceChar(charCode)) {
             braceCounts[char]++;
-        } else if (closeBraceRe.test(char)) {
+        } else if (isCloseBraceChar(charCode)) {
             braceCounts[oppositeBrace[char]]--;
         }
     }
@@ -1391,7 +1392,7 @@ export function excludeUnbalancedTrailingBracesAndPunctuation(matchedText: strin
         const char = matchedText.charAt(endIdx);
         const charCode = matchedText.charCodeAt(endIdx);
 
-        if (closeBraceRe.test(char)) {
+        if (isCloseBraceChar(charCode)) {
             const oppositeBraceChar = oppositeBrace[char];
 
             if (braceCounts[oppositeBraceChar] < 0) {

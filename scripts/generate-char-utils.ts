@@ -28,6 +28,8 @@ const { srcFileContents, specFileContents } = generateCharUtils([
     ['isValidEmailLocalPartSpecialChar', /[!#$%&'*+/=?^_`{|}~-]/], // special characters that are valid in an email address
     ['isUrlSuffixAllowedSpecialChar', /[-+&@#/%=~_()|'$*[\]{}\u2713]/], // The set of characters that are allowed in the URL suffix (i.e. the path, query, and hash part of the URL) which may also form the ending character of the URL. The isUrlSuffixNotAllowedAsFinalChar() function allows for additional allowed URL suffix characters, but (generally) should not be the *last* character of a URL.
     ['isUrlSuffixNotAllowedAsFinalChar', /[?!:,.;^]/], // URL suffix characters (i.e. path, query, and has part of the URL) that are not allowed as the *last character* in the URL suffix as they would normally form the end of a sentence. The isUrlSuffixAllowedSpecialChar() function contains additional allowed URL suffix characters which are allowed as the last character.
+    ['isOpenBraceChar', /[({[]/],
+    ['isCloseBraceChar', /[)}\]]/],
 ]);
 
 // console.log(srcFileContents);

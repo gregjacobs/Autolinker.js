@@ -3,7 +3,7 @@
 // INSTEAD, RUN: npm run generate-char-utils
 
 import { expect } from 'chai';
-import { isControlChar, isAsciiLetterChar, isDigitChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar } from '../src/char-utils';
+import { isControlChar, isAsciiLetterChar, isDigitChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar, isOpenBraceChar, isCloseBraceChar } from '../src/char-utils';
 
 describe('isControlChar()', () => {
     it(`should appropriately return true/false to match the regular expression /[\\x00-\\x1F\\x7F]/`, () => {
@@ -107,6 +107,30 @@ describe('isUrlSuffixNotAllowedAsFinalChar()', () => {
             const char = String.fromCharCode(charCode);
             const fnResult = isUrlSuffixNotAllowedAsFinalChar(charCode);
             const regExpResult = /[?!:,.;^]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isOpenBraceChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[({[]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isOpenBraceChar(charCode);
+            const regExpResult = /[({[]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isCloseBraceChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[)}\\]]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isCloseBraceChar(charCode);
+            const regExpResult = /[)}\]]/.test(char);
 
             expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
         }
