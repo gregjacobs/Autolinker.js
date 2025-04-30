@@ -796,7 +796,7 @@ export default class Autolinker {
     link(textOrHtml: string) {
         if (!textOrHtml) {
             return '';
-        } // handle `null` and `undefined` (for JavaScript users that don't have TypeScript support)
+        } // handle `null` and `undefined` (for JavaScript users that don't have TypeScript support), and nothing to do with an empty string too
 
         /* We would want to sanitize the start and end characters of a tag
          * before processing the string in order to avoid an XSS scenario.
@@ -807,7 +807,7 @@ export default class Autolinker {
         }
 
         const matches = this.parse(textOrHtml);
-        const newHtml: string[] = [];
+        const newHtml = new Array<string>(matches.length * 2 + 1);
         let lastIndex = 0;
 
         for (let i = 0, len = matches.length; i < len; i++) {
