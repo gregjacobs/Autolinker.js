@@ -1164,17 +1164,11 @@ function captureMatchIfValidAndRemove(context: ParseMatchesContext, stateMachine
         case StateMachineType.Url: {
             // We don't want to accidentally match a URL that is preceded by an
             // '@' character, which would be an email address
-            const charBeforeUrlMatch = text.charAt(stateMachine.startIdx - 1);
-            if (charBeforeUrlMatch === '@') {
+            const charBeforeUrlMatch = text.charCodeAt(stateMachine.startIdx - 1);
+            if (charBeforeUrlMatch === Char.AtSign /* '@' */) {
                 return;
             }
 
-            // For the purpose of this parser, we've generalized 'www'
-            // matches as part of 'tld' matches. However, for backward
-            // compatibility, we distinguish beween TLD matches and matches
-            // that begin with 'www.' so that users may turn off 'www'
-            // matches. As such, we need to correct for that now if the
-            // URL begins with 'www.'
             switch (stateMachine.matchType) {
                 case UrlStateMachineMatchType.Scheme: {
                     // Autolinker accepts many characters in a url's scheme (like `fake://test.com`).

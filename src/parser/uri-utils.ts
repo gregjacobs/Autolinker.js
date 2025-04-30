@@ -205,6 +205,8 @@ export function isValidTldMatch(url: string): boolean {
 }
 
 // Regular expression to confirm a valid IPv4 address (ex: '192.168.0.1')
+// TODO: encode this into the state machine so that we don't need to run this
+//       regexp separately to confirm the match
 const ipV4Re =
     /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 

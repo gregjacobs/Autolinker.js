@@ -22,6 +22,7 @@
         "lint": "eslint src tests scripts",
         "lint:fix": "npm run lint -- --fix",
         "prepublishOnly": "npm-run-all build test",
+        "profile": "node --inspect --require ts-node/register benchmarks/profile.ts",
         "start": "webpack serve --open",
         "test": "npm-run-all test:unit test:integration",
         "test:ci": "npm-run-all coverage test:integration",
