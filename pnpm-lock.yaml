@@ -190,30 +190,6 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
 
-  benchmarks/autolinker-4.0.1:
-    devDependencies:
-      autolinker:
-        specifier: 4.0.1
-        version: 4.0.1
-
-  benchmarks/autolinker-4.0.2:
-    devDependencies:
-      autolinker:
-        specifier: 4.0.2
-        version: 4.0.2
-
-  benchmarks/autolinker-4.1.0:
-    devDependencies:
-      autolinker:
-        specifier: 4.1.0
-        version: 4.1.0
-
-  benchmarks/autolinker-4.1.1:
-    devDependencies:
-      autolinker:
-        specifier: 4.1.1
-        version: 4.1.1
-
   benchmarks/autolinker-4.1.2:
     devDependencies:
       autolinker:
@@ -225,12 +201,6 @@ importers:
       autolinker:
         specifier: 4.1.3
         version: 4.1.3
-
-  benchmarks/linkify-html-4.2.0:
-    devDependencies:
-      linkify-html:
-        specifier: 4.2.0
-        version: 4.2.0(linkifyjs@4.2.0)
 
   benchmarks/linkify-it-5.0.0:
     devDependencies:
@@ -244,8 +214,20 @@ importers:
         specifier: 1.257.0
         version: 1.257.0
 
-  benchmarks/linkify-string-4.2.0:
+  benchmarks/linkifyjs-4.2.0:
     devDependencies:
+      linkify-html:
+        specifier: 4.2.0
+        version: 4.2.0(linkifyjs@4.2.0)
+      linkify-plugin-hashtag:
+        specifier: 4.2.0
+        version: 4.2.0(linkifyjs@4.2.0)
+      linkify-plugin-ip:
+        specifier: 4.2.0
+        version: 4.2.0(linkifyjs@4.2.0)
+      linkify-plugin-mention:
+        specifier: 4.2.0
+        version: 4.2.0(linkifyjs@4.2.0)
       linkify-string:
         specifier: 4.2.0
         version: 4.2.0(linkifyjs@4.2.0)
@@ -1014,18 +996,6 @@ packages:
 
   autolinker@4.0.0:
     resolution: {integrity: sha512-fl5Kh6BmEEZx+IWBfEirnRUU5+cOiV0OK7PEt0RBKvJMJ8GaRseIOeDU3FKf4j3CE5HVefcjHmhYPOcaVt0bZw==}
-
-  autolinker@4.0.1:
-    resolution: {integrity: sha512-S2BgcgRyoCQisoXzvDentN2lgqWr/hs8oD+YdDrIBdV4VqLtQG8hVYTY13JD2g9LgmUbBpMJzAP/GH6HSkVnvw==}
-
-  autolinker@4.0.2:
-    resolution: {integrity: sha512-DC50ny84YwnZ3uzmf2EcrZWXmD/L6Bb2WqSyzD9iU3tuQ2U0W3LzUonAZ80/g4G8oEO8UiRItEugGjEU0xS2TA==}
-
-  autolinker@4.1.0:
-    resolution: {integrity: sha512-mYzdZMei1zIXcHVS/LjnuCJG+C/hNi8O+5m0R8YWtrIBWGrjL8CVzEZXxOfH0l1kioEXHNpUJRkgZdyL4GgIHQ==}
-
-  autolinker@4.1.1:
-    resolution: {integrity: sha512-yjILLi+M+Ue69J8iUaBQKjVfSujUPkWVy/1tbt97kI25aD7FZ23m6JL9QellmvaVZQ8Pr/4rXm19RZ4ns31TPQ==}
 
   autolinker@4.1.2:
     resolution: {integrity: sha512-tetWcncPmVvmzTpD85Jy4H5nw5PdDN7EBWQrOoJNEJ4VaQ5IE0Lv8k44iY1OlBMbA9O7BDRErozGfI/4L6iKCw==}
@@ -2395,6 +2365,21 @@ packages:
 
   linkify-it@5.0.0:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+
+  linkify-plugin-hashtag@4.2.0:
+    resolution: {integrity: sha512-qLgrxLA7LLKKi4cJPCvya/PlZZOercAqj6k4hi4jcl0zbquh+tNYyevzZ4his6YnpxhSYR8JJfXtDMwT3R9GSw==}
+    peerDependencies:
+      linkifyjs: ^4.0.0
+
+  linkify-plugin-ip@4.2.0:
+    resolution: {integrity: sha512-MAOw14MPKuibNvEBquZQlurcbeklwItafhu8ulmJpLTlgSDBMx+6eUWcmrMeXm7mu8trltVqlBk0w8dRmekBgA==}
+    peerDependencies:
+      linkifyjs: ^4.0.0
+
+  linkify-plugin-mention@4.2.0:
+    resolution: {integrity: sha512-cwe63BtvLCwKRmQJcoEbJILlm+2sj7dB5yhTx+5VQYBshqPuxck1n5x+ZzQGPVOKaavy8pHnK28lmV6+NruVwA==}
+    peerDependencies:
+      linkifyjs: ^4.0.0
 
   linkify-string@4.2.0:
     resolution: {integrity: sha512-LqOKk0+RlqibFkxjPAGOL7Mfssqj6/SdG9QWGvzeVDpoWXhaw9OXxseCtFanjIl7C6UyTTZizhyGr4IWLfijiw==}
@@ -4666,22 +4651,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  autolinker@4.0.1:
-    dependencies:
-      tslib: 2.8.1
-
-  autolinker@4.0.2:
-    dependencies:
-      tslib: 2.8.1
-
-  autolinker@4.1.0:
-    dependencies:
-      tslib: 2.8.1
-
-  autolinker@4.1.1:
-    dependencies:
-      tslib: 2.8.1
-
   autolinker@4.1.2:
     dependencies:
       tslib: 2.8.1
@@ -6146,6 +6115,18 @@ snapshots:
   linkify-it@5.0.0:
     dependencies:
       uc.micro: 2.1.0
+
+  linkify-plugin-hashtag@4.2.0(linkifyjs@4.2.0):
+    dependencies:
+      linkifyjs: 4.2.0
+
+  linkify-plugin-ip@4.2.0(linkifyjs@4.2.0):
+    dependencies:
+      linkifyjs: 4.2.0
+
+  linkify-plugin-mention@4.2.0(linkifyjs@4.2.0):
+    dependencies:
+      linkifyjs: 4.2.0
 
   linkify-string@4.2.0(linkifyjs@4.2.0):
     dependencies:

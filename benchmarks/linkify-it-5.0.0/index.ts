@@ -9,8 +9,8 @@ linkify
     .tlds(tlds) // Reload with full tlds list
     .set({ fuzzyIP: true }); // Enable IPs in fuzzy links (without schema)
 
-export function run() {
+export function runLinkifyIt5_0_0() {
     linkify.match(inputText);
     // NOTE: produces matches array, but doesn't link in the text (so
-    // technically it does less work than Autolinker at the moment)
+    // technically it does less work than Autolinker or linkifyjs at the moment)
 }

@@ -3,6 +3,6 @@ import { inputText } from '../input-text';
 
 const autolinker = new Autolinker();
 
-export function run() {
+export function runAutolinkerCurrent() {
     autolinker.link(inputText);
 }

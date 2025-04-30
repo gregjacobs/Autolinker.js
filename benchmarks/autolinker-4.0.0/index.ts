@@ -1,8 +1,9 @@
 import Autolinker from 'autolinker';
 import { inputText } from '../input-text';
+import { sharedAutolinkerConfig } from '../shared-autolinker-config';
 
-const autolinker = new Autolinker();
+const autolinker = new Autolinker(sharedAutolinkerConfig);
 
-export function run() {
+export function runAutolinker4_0_0() {
     autolinker.link(inputText);
 }

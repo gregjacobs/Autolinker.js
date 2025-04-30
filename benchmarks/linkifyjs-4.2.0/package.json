@@ -1,0 +1,9 @@
+{
+    "devDependencies": {
+        "linkify-html": "4.2.0",
+        "linkify-plugin-hashtag": "4.2.0",
+        "linkify-plugin-mention": "4.2.0",
+        "linkify-plugin-ip": "4.2.0",
+        "linkify-string": "4.2.0"
+    }
+}

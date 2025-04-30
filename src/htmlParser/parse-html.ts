@@ -1,5 +1,5 @@
-import { isDigitChar, isLetterChar, isQuoteChar } from '../string-utils';
-import { whitespaceRe, controlCharsRe } from '../regex-lib';
+import { isDigitChar, isLetterChar, isQuoteChar, isWhitespaceChar } from '../string-utils';
+import { controlCharsRe } from '../regex-lib';
 import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
@@ -224,7 +224,7 @@ export function parseHtml(
     // this is to continue reading the tag name
     // https://www.w3.org/TR/html51/syntax.html#tag-name-state
     function stateTagName(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             currentTag = new CurrentTag({
                 ...currentTag,
                 name: captureTagName(),
@@ -270,7 +270,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-name-state
     function stateBeforeAttributeName(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             // stay in BeforeAttributeName state - continue reading chars
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -292,7 +292,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-name-state
     function stateAttributeName(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             state = State.AfterAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -315,7 +315,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-name-state
     function stateAfterAttributeName(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             // ignore the character - continue reading
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
@@ -339,7 +339,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#before-attribute-value-state
     function stateBeforeAttributeValue(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             // ignore the character - continue reading
         } else if (char === `"`) {
             state = State.AttributeValueDoubleQuoted;
@@ -380,7 +380,7 @@ export function parseHtml(
 
     // https://www.w3.org/TR/html51/syntax.html#attribute-value-unquoted-state
     function stateAttributeValueUnquoted(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             state = State.BeforeAttributeName;
         } else if (char === '>') {
             emitTagAndPreviousTextNode();
@@ -396,7 +396,7 @@ export function parseHtml(
     // (i.e. after the closing quote character)
     // https://www.w3.org/TR/html51/syntax.html#after-attribute-value-quoted-state
     function stateAfterAttributeValueQuoted(char: string) {
-        if (whitespaceRe.test(char)) {
+        if (isWhitespaceChar(char)) {
             state = State.BeforeAttributeName;
         } else if (char === '/') {
             state = State.SelfClosingStartTag;
