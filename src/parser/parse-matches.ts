@@ -57,7 +57,6 @@ class ParseMatchesContext {
     public charIdx = 0; // Current character index being processed
 
     public readonly text: string; // The input text being parsed
-    public readonly textLen: number; // Length of the text
     private readonly _stateMachines: StateMachine[] = []; // Array of active state machines
     public readonly matches: Match[] = []; // Collection of matches found
     public readonly tagBuilder: AnchorTagBuilder; // For building anchor tags
@@ -70,7 +69,6 @@ class ParseMatchesContext {
 
     constructor(text: string, args: ParseMatchesArgs) {
         this.text = text;
-        this.textLen = text.length;
         this.tagBuilder = args.tagBuilder;
         this.stripPrefix = args.stripPrefix;
         this.stripTrailingSlash = args.stripTrailingSlash;
@@ -119,7 +117,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
     // const table = new CliTable({
     //     head: ['charIdx', 'char', 'code', 'type', 'states', 'startIdx', 'reached accept state'],
     // });
-    for (; context.charIdx < context.textLen; context.charIdx++) {
+    for (; context.charIdx < context.text.length; context.charIdx++) {
         const char = text.charAt(context.charIdx);
         const charCode = text.charCodeAt(context.charIdx);
 
