@@ -1,5 +1,7 @@
-import { whitespaceRe } from './regex-lib';
 import { hasOwnProperty } from './utils';
+
+// Regular expression to match whitespace
+export const whitespaceRe = /\s+/;
 
 /**
  * @class Autolinker.HtmlTag

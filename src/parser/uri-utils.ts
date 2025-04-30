@@ -1,12 +1,5 @@
-import { alphaNumericAndMarksRe } from '../regex-lib';
-import { Char, isDigitChar, isAsciiLetterChar } from '../char-utils';
+import { Char, isDigitChar, isAsciiLetterChar, isAlphaNumericOrMarkChar } from '../char-utils';
 import { tldRegex } from './known-tlds';
-
-/**
- * A regular expression that is simply the character class of the characters
- * that may be used in a domain name, minus the '-' or '.'
- */
-export const domainNameCharRegex = alphaNumericAndMarksRe;
 
 /**
  * The set of characters that are allowed in the URL suffix (i.e. the path,
@@ -94,9 +87,7 @@ export function isSchemeChar(charCode: number): boolean {
  *
  * A domain label is a segment of a hostname such as subdomain.google.com.
  */
-export function isDomainLabelStartChar(char: string): boolean {
-    return alphaNumericAndMarksRe.test(char);
-}
+export const isDomainLabelStartChar: (charCode: number) => boolean = isAlphaNumericOrMarkChar; // alias function
 
 /**
  * Determines if the character is part of a domain label (but not a domain label
@@ -104,8 +95,8 @@ export function isDomainLabelStartChar(char: string): boolean {
  *
  * A domain label is a segment of a hostname such as subdomain.google.com.
  */
-export function isDomainLabelChar(char: string): boolean {
-    return char === '_' || isDomainLabelStartChar(char);
+export function isDomainLabelChar(charCode: number): boolean {
+    return charCode === Char.Underscore || isDomainLabelStartChar(charCode);
 }
 
 /**
@@ -122,9 +113,11 @@ export function isDomainLabelChar(char: string): boolean {
  * Note that this implementation doesn't follow the spec exactly, but rather
  * follows URL path characters found out in the wild (spec might be out of date?)
  */
-export function isPathChar(char: string): boolean {
+export function isPathChar(charCode: number): boolean {
+    const char = String.fromCharCode(charCode); // TEMPORARY: replace other regexps below
+
     return (
-        alphaNumericAndMarksRe.test(char) ||
+        isAlphaNumericOrMarkChar(charCode) ||
         urlSuffixAllowedSpecialCharsRe.test(char) ||
         urlSuffixNotAllowedAsLastCharRe.test(char)
     );
@@ -137,7 +130,7 @@ export function isPathChar(char: string): boolean {
  *
  * See https://tools.ietf.org/html/rfc3986#appendix-A
  */
-export function isUrlSuffixStartCharCode(charCode: number): boolean {
+export function isUrlSuffixStartChar(charCode: number): boolean {
     return (
         charCode === Char.Slash || // '/'
         charCode === Char.Question || // '?'

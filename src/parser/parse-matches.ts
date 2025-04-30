@@ -1,4 +1,3 @@
-import { alphaNumericAndMarksRe } from '../regex-lib';
 import { UrlMatch, UrlMatchType } from '../match/url-match';
 import { Match } from '../match/match';
 import { removeFromArray, assertNever } from '../utils';
@@ -9,7 +8,7 @@ import {
     isPathChar,
     isSchemeChar,
     isSchemeStartChar,
-    isUrlSuffixStartCharCode,
+    isUrlSuffixStartChar,
     isValidIpV4Address,
     isValidSchemeUrl,
     isValidTldMatch,
@@ -34,7 +33,7 @@ import {
 import { PhoneMatch } from '../match/phone-match';
 import { AnchorTagBuilder } from '../anchor-tag-builder';
 import type { StripPrefixConfigObj } from '../autolinker';
-import { Char, isDigitChar } from '../char-utils';
+import { Char, isAlphaNumericOrMarkChar, isDigitChar } from '../char-utils';
 
 // For debugging: search for and uncomment other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -139,7 +138,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         stateProtocolRelativeSlash1(context, stateMachine, charCode);
                         break;
                     case State.ProtocolRelativeSlash2:
-                        stateProtocolRelativeSlash2(context, stateMachine, char);
+                        stateProtocolRelativeSlash2(context, stateMachine, charCode);
                         break;
 
                     case State.SchemeChar:
@@ -149,17 +148,17 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         stateSchemeHyphen(context, stateMachine, charCode);
                         break;
                     case State.SchemeColon:
-                        stateSchemeColon(context, stateMachine, char, charCode);
+                        stateSchemeColon(context, stateMachine, charCode);
                         break;
                     case State.SchemeSlash1:
-                        stateSchemeSlash1(context, stateMachine, char, charCode);
+                        stateSchemeSlash1(context, stateMachine, charCode);
                         break;
                     case State.SchemeSlash2:
                         stateSchemeSlash2(context, stateMachine, char, charCode);
                         break;
 
                     case State.DomainLabelChar:
-                        stateDomainLabelChar(context, stateMachine, char, charCode);
+                        stateDomainLabelChar(context, stateMachine, charCode);
                         break;
                     case State.DomainHyphen:
                         stateDomainHyphen(context, stateMachine, char, charCode);
@@ -169,12 +168,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         break;
 
                     case State.IpV4Digit:
-                        stateIpV4Digit(
-                            context,
-                            stateMachine as IpV4UrlStateMachine,
-                            char,
-                            charCode
-                        );
+                        stateIpV4Digit(context, stateMachine as IpV4UrlStateMachine, charCode);
                         break;
                     case State.IpV4Dot:
                         stateIpV4Dot(context, stateMachine as IpV4UrlStateMachine, charCode);
@@ -187,7 +181,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         statePortNumber(context, stateMachine, charCode);
                         break;
                     case State.Path:
-                        statePath(context, stateMachine, char);
+                        statePath(context, stateMachine, charCode);
                         break;
 
                     // Email States
@@ -207,36 +201,36 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         stateEmailMailto_T(context, stateMachine, char, charCode);
                         break;
                     case State.EmailMailto_O:
-                        stateEmailMailto_O(context, stateMachine, char, charCode);
+                        stateEmailMailto_O(context, stateMachine, charCode);
                         break;
                     case State.EmailMailto_Colon:
-                        stateEmailMailtoColon(context, stateMachine, char);
+                        stateEmailMailtoColon(context, stateMachine, charCode);
                         break;
                     case State.EmailLocalPart:
-                        stateEmailLocalPart(context, stateMachine, char, charCode);
+                        stateEmailLocalPart(context, stateMachine, charCode);
                         break;
                     case State.EmailLocalPartDot:
-                        stateEmailLocalPartDot(context, stateMachine, char, charCode);
+                        stateEmailLocalPartDot(context, stateMachine, charCode);
                         break;
                     case State.EmailAtSign:
-                        stateEmailAtSign(context, stateMachine, char);
+                        stateEmailAtSign(context, stateMachine, charCode);
                         break;
                     case State.EmailDomainChar:
-                        stateEmailDomainChar(context, stateMachine, char, charCode);
+                        stateEmailDomainChar(context, stateMachine, charCode);
                         break;
                     case State.EmailDomainHyphen:
-                        stateEmailDomainHyphen(context, stateMachine, char, charCode);
+                        stateEmailDomainHyphen(context, stateMachine, charCode);
                         break;
                     case State.EmailDomainDot:
-                        stateEmailDomainDot(context, stateMachine, char, charCode);
+                        stateEmailDomainDot(context, stateMachine, charCode);
                         break;
 
                     // Hashtag states
                     case State.HashtagHashChar:
-                        stateHashtagHashChar(context, stateMachine, char);
+                        stateHashtagHashChar(context, stateMachine, charCode);
                         break;
                     case State.HashtagTextChar:
-                        stateHashtagTextChar(context, stateMachine, char);
+                        stateHashtagTextChar(context, stateMachine, charCode);
                         break;
 
                     // Mention states
@@ -244,7 +238,7 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
                         stateMentionAtChar(context, stateMachine, charCode);
                         break;
                     case State.MentionTextChar:
-                        stateMentionTextChar(context, stateMachine, char, charCode);
+                        stateMentionTextChar(context, stateMachine, charCode);
                         break;
 
                     // Phone number states
@@ -374,7 +368,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string, charCode: numb
             context.addMachine(createIpV4UrlStateMachine(charIdx, State.IpV4Digit));
         }
 
-        if (isEmailLocalPartStartChar(char)) {
+        if (isEmailLocalPartStartChar(charCode)) {
             // Any email local part. An 'm' character in particular could
             // start a 'mailto:' match
             const startState =
@@ -387,7 +381,7 @@ function stateNoMatch(context: ParseMatchesContext, char: string, charCode: numb
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
 
-        if (alphaNumericAndMarksRe.test(char)) {
+        if (isAlphaNumericOrMarkChar(charCode)) {
             // A unicode alpha character or digit could start a domain name
             // label for a TLD match
             context.addMachine(createTldUrlStateMachine(charIdx, State.DomainLabelChar));
@@ -445,7 +439,6 @@ function stateSchemeHyphen(
 function stateSchemeColon(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     const { charIdx } = context;
@@ -455,7 +448,7 @@ function stateSchemeColon(
     } else if (charCode === Char.Dot /* '.' */) {
         // We've read something like 'hello:.' - don't capture
         context.removeMachine(stateMachine);
-    } else if (isDomainLabelStartChar(char)) {
+    } else if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.DomainLabelChar;
 
         // It's possible that we read an "introduction" piece of text,
@@ -475,12 +468,11 @@ function stateSchemeColon(
 function stateSchemeSlash1(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Slash /* '/' */) {
         stateMachine.state = State.SchemeSlash2;
-    } else if (isPathChar(char)) {
+    } else if (isPathChar(charCode)) {
         stateMachine.state = State.Path;
         stateMachine.acceptStateReached = true;
     } else {
@@ -500,7 +492,7 @@ function stateSchemeSlash2(
         // https://tools.ietf.org/html/rfc3986#appendix-A
         stateMachine.state = State.Path;
         stateMachine.acceptStateReached = true;
-    } else if (isDomainLabelStartChar(char)) {
+    } else if (isDomainLabelStartChar(charCode)) {
         // start of "authority" section - see https://tools.ietf.org/html/rfc3986#appendix-A
         stateMachine.state = State.DomainLabelChar;
         stateMachine.acceptStateReached = true;
@@ -529,9 +521,9 @@ function stateProtocolRelativeSlash1(
 function stateProtocolRelativeSlash2(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isDomainLabelStartChar(char)) {
+    if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.DomainLabelChar;
     } else {
         // Anything else, not a URL
@@ -543,7 +535,6 @@ function stateProtocolRelativeSlash2(
 function stateDomainLabelChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */) {
@@ -553,10 +544,10 @@ function stateDomainLabelChar(
     } else if (charCode === Char.Colon /* ':' */) {
         // Beginning of a port number, end the domain name
         stateMachine.state = State.PortColon;
-    } else if (isUrlSuffixStartCharCode(charCode)) {
+    } else if (isUrlSuffixStartChar(charCode)) {
         // '/', '?', or '#'
         stateMachine.state = State.Path;
-    } else if (isDomainLabelChar(char)) {
+    } else if (isDomainLabelChar(charCode)) {
         // Stay in the DomainLabelChar state
     } else {
         // Anything else, end the domain name
@@ -575,7 +566,7 @@ function stateDomainHyphen(
     } else if (charCode === Char.Dot /* '.' */) {
         // Not valid to have a '-.' in a domain label
         captureMatchIfValidAndRemove(context, stateMachine);
-    } else if (isDomainLabelStartChar(char)) {
+    } else if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.DomainLabelChar;
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -594,7 +585,7 @@ function stateDomainDot(
         // and that the '..' sequence just forms an ellipsis at the end
         // of a sentence
         captureMatchIfValidAndRemove(context, stateMachine);
-    } else if (isDomainLabelStartChar(char)) {
+    } else if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.DomainLabelChar;
         stateMachine.acceptStateReached = true; // after hitting a dot, and then another domain label, we've reached an accept state
     } else {
@@ -606,7 +597,6 @@ function stateDomainDot(
 function stateIpV4Digit(
     context: ParseMatchesContext,
     stateMachine: IpV4UrlStateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */) {
@@ -616,9 +606,9 @@ function stateIpV4Digit(
         stateMachine.state = State.PortColon;
     } else if (isDigitChar(charCode)) {
         // stay in the IPv4 digit state
-    } else if (isUrlSuffixStartCharCode(charCode)) {
+    } else if (isUrlSuffixStartChar(charCode)) {
         stateMachine.state = State.Path;
-    } else if (alphaNumericAndMarksRe.test(char)) {
+    } else if (isAlphaNumericOrMarkChar(charCode)) {
         // If we hit an alpha character, must not be an IPv4
         // Example of this: 1.2.3.4abc
         context.removeMachine(stateMachine);
@@ -668,7 +658,7 @@ function statePortNumber(
 ) {
     if (isDigitChar(charCode)) {
         // Stay in port number state
-    } else if (isUrlSuffixStartCharCode(charCode)) {
+    } else if (isUrlSuffixStartChar(charCode)) {
         // '/', '?', or '#'
         stateMachine.state = State.Path;
     } else {
@@ -676,8 +666,8 @@ function statePortNumber(
     }
 }
 
-function statePath(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (isPathChar(char)) {
+function statePath(context: ParseMatchesContext, stateMachine: StateMachine, charCode: number) {
+    if (isPathChar(charCode)) {
         // Stay in the path state
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -694,7 +684,7 @@ function stateEmailMailto_M(
     if (char.toLowerCase() === 'a') {
         stateMachine.state = State.EmailMailto_A;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
@@ -707,7 +697,7 @@ function stateEmailMailto_A(
     if (char.toLowerCase() === 'i') {
         stateMachine.state = State.EmailMailto_I;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
@@ -720,7 +710,7 @@ function stateEmailMailto_I(
     if (char.toLowerCase() === 'l') {
         stateMachine.state = State.EmailMailto_L;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
@@ -733,7 +723,7 @@ function stateEmailMailto_L(
     if (char.toLowerCase() === 't') {
         stateMachine.state = State.EmailMailto_T;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
@@ -746,29 +736,28 @@ function stateEmailMailto_T(
     if (char.toLowerCase() === 'o') {
         stateMachine.state = State.EmailMailto_O;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
 function stateEmailMailto_O(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Colon /* ':' */) {
         stateMachine.state = State.EmailMailto_Colon;
     } else {
-        stateEmailLocalPart(context, stateMachine, char, charCode);
+        stateEmailLocalPart(context, stateMachine, charCode);
     }
 }
 
 function stateEmailMailtoColon(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isEmailLocalPartChar(char)) {
+    if (isEmailLocalPartChar(charCode)) {
         stateMachine.state = State.EmailLocalPart;
     } else {
         context.removeMachine(stateMachine);
@@ -780,14 +769,13 @@ function stateEmailMailtoColon(
 function stateEmailLocalPart(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.EmailLocalPartDot;
     } else if (charCode === Char.AtSign /* '@' */) {
         stateMachine.state = State.EmailAtSign;
-    } else if (isEmailLocalPartChar(char)) {
+    } else if (isEmailLocalPartChar(charCode)) {
         // stay in the "local part" of the email address
         // Note: because stateEmailLocalPart() is called from the
         // 'mailto' states (when the 'mailto' prefix itself has been
@@ -804,7 +792,6 @@ function stateEmailLocalPart(
 function stateEmailLocalPartDot(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */) {
@@ -815,7 +802,7 @@ function stateEmailLocalPartDot(
         // We read the '@' character immediately after a dot ('.'), not
         // an email address
         context.removeMachine(stateMachine);
-    } else if (isEmailLocalPartChar(char)) {
+    } else if (isEmailLocalPartChar(charCode)) {
         stateMachine.state = State.EmailLocalPart;
     } else {
         // Anything else, not an email address
@@ -823,8 +810,12 @@ function stateEmailLocalPartDot(
     }
 }
 
-function stateEmailAtSign(context: ParseMatchesContext, stateMachine: StateMachine, char: string) {
-    if (isDomainLabelStartChar(char)) {
+function stateEmailAtSign(
+    context: ParseMatchesContext,
+    stateMachine: StateMachine,
+    charCode: number
+) {
+    if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.EmailDomainChar;
     } else {
         // Anything else, not an email address
@@ -835,14 +826,13 @@ function stateEmailAtSign(context: ParseMatchesContext, stateMachine: StateMachi
 function stateEmailDomainChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */) {
         stateMachine.state = State.EmailDomainDot;
     } else if (charCode === Char.Dash /* '-' */) {
         stateMachine.state = State.EmailDomainHyphen;
-    } else if (isDomainLabelChar(char)) {
+    } else if (isDomainLabelChar(charCode)) {
         // Stay in the DomainChar state
     } else {
         // Anything else, we potentially matched if the criteria has
@@ -854,13 +844,12 @@ function stateEmailDomainChar(
 function stateEmailDomainHyphen(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dash /* '-' */ || charCode === Char.Dot /* '.' */) {
         // Not valid to have two hyphens ("--") or hypen+dot ("-.")
         captureMatchIfValidAndRemove(context, stateMachine);
-    } else if (isDomainLabelChar(char)) {
+    } else if (isDomainLabelChar(charCode)) {
         stateMachine.state = State.EmailDomainChar;
     } else {
         // Anything else
@@ -871,13 +860,12 @@ function stateEmailDomainHyphen(
 function stateEmailDomainDot(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (charCode === Char.Dot /* '.' */ || charCode === Char.Dash /* '-' */) {
         // not valid to have two dots ("..") or dot+hypen (".-")
         captureMatchIfValidAndRemove(context, stateMachine);
-    } else if (isDomainLabelStartChar(char)) {
+    } else if (isDomainLabelStartChar(charCode)) {
         stateMachine.state = State.EmailDomainChar;
 
         // After having read a '.' and then a valid domain character,
@@ -895,9 +883,9 @@ function stateEmailDomainDot(
 function stateHashtagHashChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isHashtagTextChar(char)) {
+    if (isHashtagTextChar(charCode)) {
         // '#' char with valid hash text char following
         stateMachine.state = State.HashtagTextChar;
         stateMachine.acceptStateReached = true;
@@ -910,9 +898,9 @@ function stateHashtagHashChar(
 function stateHashtagTextChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string
+    charCode: number
 ) {
-    if (isHashtagTextChar(char)) {
+    if (isHashtagTextChar(charCode)) {
         // Continue reading characters in the HashtagText state
     } else {
         captureMatchIfValidAndRemove(context, stateMachine);
@@ -938,12 +926,11 @@ function stateMentionAtChar(
 function stateMentionTextChar(
     context: ParseMatchesContext,
     stateMachine: StateMachine,
-    char: string,
     charCode: number
 ) {
     if (isMentionTextChar(charCode)) {
         // Continue reading characters in the HashtagText state
-    } else if (alphaNumericAndMarksRe.test(char)) {
+    } else if (isAlphaNumericOrMarkChar(charCode)) {
         // Char is invalid for a mention text char, not a valid match.
         // Note that ascii alphanumeric chars are okay (which are tested
         // in the previous 'if' statement, but others are not)

@@ -1,16 +1,10 @@
-import { alphaNumericAndMarksCharsStr, alphaNumericAndMarksRe } from '../regex-lib';
+import { isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar } from '../char-utils';
 import { isKnownTld } from './uri-utils';
 
 /**
  * A regular expression to match a 'mailto:' prefix on an email address.
  */
 export const mailtoSchemePrefixRe = /^mailto:/i;
-
-/**
- * Regular expression for all of the valid characters of the local part of an
- * email address.
- */
-const emailLocalPartCharRegex = new RegExp(`[${alphaNumericAndMarksCharsStr}!#$%&'*+/=?^_\`{|}~-]`);
 
 /**
  * Determines if the given character may start the "local part" of an email
@@ -23,16 +17,16 @@ const emailLocalPartCharRegex = new RegExp(`[${alphaNumericAndMarksCharsStr}!#$%
  * character. This is especially important when matching the '{' character which
  * generally starts a brace that isn't part of the email address.
  */
-export function isEmailLocalPartStartChar(char: string): boolean {
-    return alphaNumericAndMarksRe.test(char);
-}
+export const isEmailLocalPartStartChar = isAlphaNumericOrMarkChar; // alias for clarity
 
 /**
  * Determines if the given character can be part of the "local part" of an email
  * address. The local part is the part to the left of the '@' sign.
+ *
+ * Checking for an email address's start char is handled with {@link #isEmailLocalPartStartChar}
  */
-export function isEmailLocalPartChar(char: string): boolean {
-    return emailLocalPartCharRegex.test(char);
+export function isEmailLocalPartChar(charCode: number): boolean {
+    return isEmailLocalPartStartChar(charCode) || isValidEmailLocalPartSpecialChar(charCode);
 }
 
 /**

@@ -1,5 +1,10 @@
-import { isDigitChar, isAsciiLetterChar, isQuoteChar, isWhitespaceChar } from '../char-utils';
-import { controlCharsRe } from '../regex-lib';
+import {
+    isDigitChar,
+    isAsciiLetterChar,
+    isQuoteChar,
+    isWhitespaceChar,
+    isControlChar,
+} from '../char-utils';
 import { assertNever } from '../utils';
 
 // For debugging: search for other "For debugging" lines
@@ -283,7 +288,11 @@ export function parseHtml(
         } else if (char === '<') {
             // start of another tag (ignore the previous, incomplete one)
             startNewTag();
-        } else if (char === `=` || isQuoteChar(char.charCodeAt(0)) || controlCharsRe.test(char)) {
+        } else if (
+            char === `=` ||
+            isQuoteChar(char.charCodeAt(0)) ||
+            isControlChar(char.charCodeAt(0))
+        ) {
             // "Parse error" characters that, according to the spec, should be
             // appended to the attribute name, but we'll treat these characters
             // as not forming a real HTML tag

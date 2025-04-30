@@ -1,11 +1,11 @@
-import { alphaNumericAndMarksRe } from '../regex-lib';
+import { Char, isAlphaNumericOrMarkChar } from '../char-utils';
 
 /**
  * Determines if the given `char` is a an allowed character in a hashtag. These
  * are underscores or any alphanumeric char.
  */
-export function isHashtagTextChar(char: string): boolean {
-    return char === '_' || alphaNumericAndMarksRe.test(char);
+export function isHashtagTextChar(charCode: number): boolean {
+    return charCode === Char.Underscore || isAlphaNumericOrMarkChar(charCode);
 }
 
 /**

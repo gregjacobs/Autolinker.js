@@ -1,6 +1,7 @@
 import dedent from 'dedent';
 import fs from 'fs';
 import path from 'path';
+import { alphaNumericAndMarksRe } from './alpha-numeric-and-marks-re';
 
 /*
  * This script generates functions which check that a single character matches
@@ -18,10 +19,13 @@ const rootPath = path.normalize(`${__dirname}/..`);
 const generateScriptName = 'generate-char-utils';
 
 const { srcFileContents, specFileContents } = generateCharUtils([
+    ['isControlChar', /[\x00-\x1F\x7F]/], // ASCII control characters (0-31), and the backspace char (127). Used to check for invalid characters in the HTML parser.
     ['isAsciiLetterChar', /[A-Za-z]/],
     ['isDigitChar', /\d/],
     ['isQuoteChar', /['"]/],
     ['isWhitespaceChar', /\s/],
+    ['isAlphaNumericOrMarkChar', alphaNumericAndMarksRe /*/[\p{Letter}\p{Mark}\p{Emoji}\p{Nd}]/u*/], // sadly the unicode regexp is not working, probably because the char codes are outside the range of 0-65535 for multi-char emojis and such, but not 100% sure. Need to investigate. Using the old regexp for now instead
+    ['isValidEmailLocalPartSpecialChar', /[!#$%&'*+/=?^_`{|}~-]/], // special characters that are valid in an email address
 ]);
 
 // console.log(srcFileContents);
@@ -159,7 +163,7 @@ function generateCharCompareFn(fnName: string, regExp: RegExp): string {
 
     return dedent`
         /**
-         * Determines if the given character \`c\` matches the regular expression /${regExp.source}/ 
+         * Determines if the given character \`c\` matches the regular expression /${regExp.source}/${regExp.flags} 
          * by checking it via character code in a binary search fashion.
          * 
          * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
@@ -288,14 +292,15 @@ function buildComparisonExpr(range: CharCodeRange): string {
     }
 }
 
-function generateCharCompareTest(fnName: string, re: RegExp): string {
+function generateCharCompareTest(fnName: string, regExp: RegExp): string {
+    const regexpInDescription = `/${regExp.source.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}/${regExp.flags}`;
     return dedent`
         describe('${fnName}()', () => {
-            it(\`should appropriately return true/false to match the regular expression /${re.source.replace(/\\/g, '\\\\')}/\`, () => {
+            it(\`should appropriately return true/false to match the regular expression ${regexpInDescription}\`, () => {
                 for (let charCode = 0; charCode < 65535; charCode++) {
                     const char = String.fromCharCode(charCode);
                     const fnResult = ${fnName}(charCode);
-                    const regExpResult = /${re.source}/.test(char);
+                    const regExpResult = /${regExp.source}/${regExp.flags}.test(char);
 
                     expect(fnResult).to.equal(regExpResult, \`Expected charCode \${charCode} (\${char}) to return \${regExpResult}, but returned \${fnResult}\`);
                 }
