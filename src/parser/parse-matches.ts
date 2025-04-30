@@ -1,6 +1,6 @@
 import { UrlMatch, UrlMatchType } from '../match/url-match';
 import { Match } from '../match/match';
-import { removeFromArray, assertNever } from '../utils';
+import { assertNever } from '../utils';
 import {
     httpSchemeRe,
     isDomainLabelChar,
@@ -59,7 +59,6 @@ class ParseMatchesContext {
     public charIdx = 0; // Current character index being processed
 
     public readonly text: string; // The input text being parsed
-    private readonly _stateMachines: StateMachine[] = []; // Array of active state machines
     public readonly matches: Match[] = []; // Collection of matches found
     public readonly tagBuilder: AnchorTagBuilder; // For building anchor tags
     public readonly stripPrefix: Required<StripPrefixConfigObj>; // Strip prefix configuration
@@ -67,6 +66,8 @@ class ParseMatchesContext {
     public readonly decodePercentEncoding: boolean; // Whether to decode percent encoding
     public readonly hashtagServiceName: HashtagService; // Service name for hashtags
     public readonly mentionServiceName: MentionService; // Service name for mentions
+
+    private _stateMachines: StateMachine[] = []; // Array of active state machines
     private schemeUrlMachinesCount = 0; // part of an optimization to remove the need to go into a slow code block when unnecessary. Since it's been so long since the initial implementation, not sure that this can ever go above 1, but keeping it as a counter to be safe
 
     constructor(text: string, args: ParseMatchesArgs) {
@@ -92,7 +93,12 @@ class ParseMatchesContext {
     }
 
     public removeMachine(stateMachine: StateMachine): void {
-        removeFromArray(this._stateMachines, stateMachine);
+        // Performance note: this was originally implemented with Array.prototype.splice()
+        // and mutated the array in place. Switching to filter added ~280ops/sec
+        // on the benchmark, although likely at the expense of GC time. Perhaps
+        // in the future, we implement a rotating array so we never need to move
+        // or clean anything up
+        this._stateMachines = this._stateMachines.filter(m => m !== stateMachine);
 
         // If we've removed the URL state machine, set the flag to false.
         // This flag is a quick test that helps us skip a slow section of
@@ -131,11 +137,6 @@ export function parseMatches(text: string, args: ParseMatchesArgs): Match[] {
             for (let stateIdx = context.stateMachines.length - 1; stateIdx >= 0; stateIdx--) {
                 const stateMachine = context.stateMachines[stateIdx];
 
-                // Performance note: tried turning this switch/case into a lookup
-                // table, but resulted in ~350 fewer ops/sec in benchmarks.
-                // Switch/case may be more efficient due to potential function
-                // inlining by the engine? Either way, run benchmarks if
-                // attempting to change again.
                 switch (stateMachine.state) {
                     // Protocol-relative URL states
                     case State.ProtocolRelativeSlash1:

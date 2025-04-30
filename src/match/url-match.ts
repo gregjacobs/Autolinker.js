@@ -5,7 +5,7 @@ import type { StripPrefixConfigObj } from '../autolinker';
 /**
  * A regular expression used to remove the 'www.' from URLs.
  */
-const wwwPrefixRegex = /^(https?:\/\/)?(www\.)?/i;
+const wwwPrefixRegex = /^(https?:\/\/)?(?:www\.)?/i;
 
 /**
  * The regular expression used to remove the protocol-relative '//' from a URL
@@ -228,7 +228,16 @@ function stripSchemePrefix(url: string): string {
  * @return {String} The `url`, with the 'www' stripped.
  */
 function stripWwwPrefix(url: string): string {
-    return url.replace(wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
+    // If the URL doesn't actually include 'www.' in it, skip running the
+    // .replace() regexp on it, which is fairly slow even just to check the
+    // string for the 'www.'s existence. Most URLs these days do not have 'www.'
+    // in it, so most of the time we skip running the .replace(). One other
+    // option in the future is to run a state machine on the `url` string
+    if (!url.includes('www.')) {
+        return url;
+    } else {
+        return url.replace(wwwPrefixRegex, '$1'); // leave any scheme ($1), it one exists
+    }
 }
 
 /**

@@ -36,23 +36,6 @@ export function ellipsis(str: string, truncateLen: number, ellipsisChars?: strin
 }
 
 /**
- * Removes array elements by value. Mutates the input array.
- *
- * Using this instead of the ES5 Array.prototype.filter() function to prevent
- * creating many new arrays in memory for removing an element.
- *
- * @param arr The array to remove elements from. This array is mutated.
- * @param fn The element to remove.
- */
-export function removeFromArray<T>(arr: T[], item: T) {
-    for (let i = arr.length - 1; i >= 0; i--) {
-        if (arr[i] === item) {
-            arr.splice(i, 1);
-        }
-    }
-}
-
-/**
  * Removes array elements based on a filtering function. Mutates the input
  * array.
  *
