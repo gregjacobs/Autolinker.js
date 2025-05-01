@@ -51,8 +51,6 @@ So, this utility attempts to handle everything. It:
 | [linkifyjs][2]@4.2.0 (linkify-html) | 1,875   | ±0.32% | 42% (1.75x) slower  |
 | [linkify-it][3]@5.0.0               | 491     | ±0.54% | 85% (6.67x) slower  |
 
-(please let me know of other comparable libraries to compare to!)
-
 Hope that this utility helps you as well!
 
 Full API Docs: [http://gregjacobs.github.io/Autolinker.js/api/](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker)<br>
@@ -605,6 +603,7 @@ Couple points on the benchmarks:
 * These benchmarks attempt to set up all libraries by configuring comparable features to Autolinker (e.g.: linking emails, hashtags, mentions, etc.) to try to get an apples-to-apples comparison.
 * While developing, recommend running the benchmarks a few times both before and after making any changes if developing.
 * See the [benchmarks](./benchmarks) folder and [benchmarks/input-text.ts](./benchmarks/input-text.ts) for how the benchmarks are set up and what input they are given.
+* Please let me know of any other libraries to compare to, or feel free to open a PR with a new benchmark
 
 #### Documentation Generator Notes
 
