@@ -32,7 +32,7 @@ So, this utility attempts to handle everything. It:
 - Will autolink **phone numbers**
 - Will autolink **@mentions** (Twitter, Instagram, Soundcloud, TikTok, Youtube)
 - Will autolink **#hashtags** (Twitter, Instagram, Facebook, TikTok, Youtube)
-- Won't clobber URLs with #hash anchors by treating them as hashtags like some other libraries do. For example: `google.com/#anchor` is properly linked.
+- Won't clobber URLs with #hash anchors by treating them as hashtags (like some other libraries do). For example: `google.com/#anchor` is properly linked.
 - **Will properly handle HTML input.** The utility will not overwrite an `href`
   attribute inside anchor (`<a>`) tags or any other tag/attribute, and will not 
   accidentally wrap the inner text of `<a>`/`<script>`/`<style>` tags with a new 
