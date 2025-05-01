@@ -165,7 +165,7 @@ describe('General URL Matching behavior (other) >', () => {
                     "Here's an example: http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3"
                 );
                 expect(result).to.equal(
-                    `Here's an example: <a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>`
+                    `Here's an example: <a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&amp;bar[]=2&amp;bar[]=3</a>`
                 );
             });
 
@@ -177,7 +177,7 @@ describe('General URL Matching behavior (other) >', () => {
                     "Here's an example: [http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3]"
                 );
                 expect(result).to.equal(
-                    `Here's an example: [<a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&bar[]=2&bar[]=3</a>]`
+                    `Here's an example: [<a href="http://example.com/foo.php?bar[]=1&bar[]=2&bar[]=3">example.com/foo.php?bar[]=1&amp;bar[]=2&amp;bar[]=3</a>]`
                 );
             });
         });
@@ -197,7 +197,7 @@ describe('General URL Matching behavior (other) >', () => {
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
                 expect(result).to.equal(
-                    `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>`
+                    `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&amp;action=edit</a>`
                 );
             });
 
@@ -207,7 +207,7 @@ describe('General URL Matching behavior (other) >', () => {
                     "Here's an example: https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit"
                 );
                 expect(result).to.equal(
-                    `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit</a>`
+                    `Here's an example: <a href="https://gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&action=edit">gohub.sharepoint.com/example/doc.aspx?sourcedoc={foobar}&amp;action=edit</a>`
                 );
             });
 
@@ -237,7 +237,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'Check out the image at http://server.com/template?fmt=jpeg&$base=700.'
             );
             expect(result).to.equal(
-                'Check out the image at <a href="http://server.com/template?fmt=jpeg&$base=700">server.com/template?fmt=jpeg&$base=700</a>.'
+                'Check out the image at <a href="http://server.com/template?fmt=jpeg&$base=700">server.com/template?fmt=jpeg&amp;$base=700</a>.'
             );
         });
 
@@ -255,7 +255,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'Twitter search for bob smith https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith'
             );
             expect(result).to.equal(
-                'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith</a>'
+                'Twitter search for bob smith <a href="https://api.twitter.com/1.1/users/search.json?count=20&q=Bob+*+Smith">api.twitter.com/1.1/users/search.json?count=20&amp;q=Bob+*+Smith</a>'
             );
         });
 
@@ -264,7 +264,7 @@ describe('General URL Matching behavior (other) >', () => {
                 'Test caret url: https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal'
             );
             expect(result).to.equal(
-                'Test caret url: <a href="https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal">sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal</a>'
+                'Test caret url: <a href="https://sourcegraph.yelpcorp.com/search?q=repo:^services&patternType=literal">sourcegraph.yelpcorp.com/search?q=repo:^services&amp;patternType=literal</a>'
             );
         });
 
@@ -284,12 +284,19 @@ describe('General URL Matching behavior (other) >', () => {
             );
         });
 
+        it('when & chars are included in the URL, they should be changed into &amp; entities for displaying the link so as to not be interpreted as starting a new HTML entity itself (https://github.com/gregjacobs/Autolinker.js/issues/392)', () => {
+            const result = autolinker.link('Check out https://tempuri.org?a=1&not=a');
+            expect(result).to.equal(
+                'Check out <a href="https://tempuri.org?a=1&not=a">tempuri.org?a=1&amp;not=a</a>'
+            );
+        });
+
         it('should include [ and ] in URLs with query strings', () => {
             const result = autolinker.link(
                 'Go to https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6 today'
             );
             expect(result).to.equal(
-                'Go to <a href="https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6">example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6</a> today'
+                'Go to <a href="https://example.com/api/export/873/?a[]=10&a[]=9&a[]=8&a[]=7&a[]=6">example.com/api/export/873/?a[]=10&amp;a[]=9&amp;a[]=8&amp;a[]=7&amp;a[]=6</a> today'
             );
         });
 
@@ -425,7 +432,7 @@ describe('General URL Matching behavior (other) >', () => {
 				Hashes too <a href="http://yahoo.com:8000/#some-link">yahoo.com:8000/#some-link</a>.
 				Sometimes you need a lot of things in the URL like <a href="https://abc123def.org/path1/2path?param1=value1#hash123z">abc123def.org/path1/2path?param1=value1#hash123z</a>
 				Do you see the need for dashes in these things too <a href="https://abc-def.org/his-path/?the-param=the-value#the-hash">abc-def.org/his-path/?the-param=the-value#the-hash</a>?
-				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z">abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z</a>
+				There's a time for lots and lots of special characters like in <a href="https://abc123def.org/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z">abc123def.org/-+&amp;@#/%=~_()|'$*[]?!:,.;/?param1=value-+&amp;@#/%=~_()|'$*[]?!:,.;#hash-+&amp;@#/%=~_()|'$*[]?!:,.;z</a>
 				Don't forget about good times with unicode <a href="https://ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица">ru.wikipedia.org/wiki/Кириллица?Кириллица=1#Кириллица</a>
 				and this unicode <a href="http://россия.рф">россия.рф</a>
 				along with punycode <a href="http://xn--d1acufc.xn--p1ai">xn--d1acufc.xn--p1ai</a>
@@ -441,7 +448,7 @@ describe('General URL Matching behavior (other) >', () => {
             );
 
             expect(result).to.equal(
-                '<a href="https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y">example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y</a>'
+                '<a href="https://example.com/api/path?apikey={API_Key}&message=Test&useridentifier=name.surname@subdomain.domain.com&department=someid123&subject=Some_Subject&recipient=other.name@address.com&is_html_message=Y">example.com/api/path?apikey={API_Key}&amp;message=Test&amp;useridentifier=name.surname@subdomain.domain.com&amp;department=someid123&amp;subject=Some_Subject&amp;recipient=other.name@address.com&amp;is_html_message=Y</a>'
             );
         });
     });

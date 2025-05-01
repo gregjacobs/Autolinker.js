@@ -186,9 +186,21 @@ export class UrlMatch extends AbstractMatch {
         if (this.stripTrailingSlash) {
             anchorText = removeTrailingSlash(anchorText); // remove trailing slash, if there is one
         }
+
+        // For any '&' char in the URL, this can be interpreted by the browser
+        // as beginning a new HTML entity, which is not the intention. For
+        // example, the '&not' in 'http://google.com/search=hi&not=1' will be
+        // replaced with the '¬' char. Hence, we HTML-escape the '&' chars to
+        // '&amp;' for display purposes
+        anchorText = anchorText.replace(/&/g, '&amp;');
+
+        // And finally, decodePercentEncoding if requested. This must happen
+        // after the above '&'->'&amp;' replacements or we'll end up double-encoding
+        // '&' chars generated from the removePercentEncoding() function itself
         if (this.decodePercentEncoding) {
             anchorText = removePercentEncoding(anchorText);
         }
+
         return anchorText;
     }
 }

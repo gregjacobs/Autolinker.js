@@ -40,12 +40,15 @@
         "pnpm": ">=10.10.0"
     },
     "keywords": [
-        "auto",
         "link",
+        "linkify",
         "autolink",
         "url",
-        "urls",
-        "anchor"
+        "anchor",
+        "email",
+        "hashtags",
+        "mentions",
+        "phone"
     ],
     "author": "Gregory Jacobs <greg@greg-jacobs.com>",
     "license": "MIT",

@@ -677,25 +677,6 @@ describe('Autolinker', function () {
                 );
             });
 
-            it('should handle HTML entities like &nbsp; within a non-autolinked part of a text node, properly appending it to the output', function () {
-                const html =
-                    'Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com';
-
-                const result = autolinker.link(html);
-                expect(result).to.equal(
-                    'Joe went to <a href="http://yahoo.com">yahoo.com</a> and used HTML&nbsp;entities like &gt; and &lt; <a href="http://google.com">google.com</a>'
-                );
-            });
-
-            it('should handle &amp; inside a url and not ignore it', function () {
-                const html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
-
-                const result = autolinker.link(html);
-                expect(result).to.equal(
-                    '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
-                );
-            });
-
             it('should handle line breaks inside an HTML tag, not accidentally autolinking a URL within the tag', function () {
                 const html =
                     '<a href="http://close.io/" style="font-family: Helvetica,\nArial">http://close.io</a>';
@@ -749,6 +730,25 @@ describe('Autolinker', function () {
             it('should handle a string with only an HTML entity', function () {
                 const result = autolinker.link('&amp;');
                 expect(result).to.equal('&amp;');
+            });
+
+            it('should handle HTML entities like &nbsp; within a non-autolinked part of a text node, properly appending it to the output', function () {
+                const html =
+                    'Joe went to yahoo.com and used HTML&nbsp;entities like &gt; and &lt; google.com';
+
+                const result = autolinker.link(html);
+                expect(result).to.equal(
+                    'Joe went to <a href="http://yahoo.com">yahoo.com</a> and used HTML&nbsp;entities like &gt; and &lt; <a href="http://google.com">google.com</a>'
+                );
+            });
+
+            it('should handle &amp; inside a url and not ignore it', function () {
+                const html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
+
+                const result = autolinker.link(html);
+                expect(result).to.equal(
+                    '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
+                );
             });
         });
 
@@ -1800,15 +1800,15 @@ describe('Autolinker', function () {
             const testCases = {
                 schemeUrl: {
                     unlinked: 'http://google.com/path?param1=value1&param2=value2#hash',
-                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&param2=value2#hash</a>',
+                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">http://google.com/path?param1=value1&amp;param2=value2#hash</a>',
                 },
                 tldUrl: {
                     unlinked: 'google.com/path?param1=value1&param2=value2#hash',
-                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">google.com/path?param1=value1&param2=value2#hash</a>',
+                    linked: '<a href="http://google.com/path?param1=value1&param2=value2#hash">google.com/path?param1=value1&amp;param2=value2#hash</a>',
                 },
                 ipV4Url: {
                     unlinked: '192.168.0.1/path?param1=value1&param2=value2#hash',
-                    linked: '<a href="http://192.168.0.1/path?param1=value1&param2=value2#hash">192.168.0.1/path?param1=value1&param2=value2#hash</a>',
+                    linked: '<a href="http://192.168.0.1/path?param1=value1&param2=value2#hash">192.168.0.1/path?param1=value1&amp;param2=value2#hash</a>',
                 },
                 email: {
                     unlinked: 'asdf@asdf.com',

@@ -174,7 +174,7 @@ describe(`Matching scheme-prefixed URLs (i.e. URLs starting with 'http://' or 's
             'https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master'
         );
         expect(result).to.equal(
-            '<a href="https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master">gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master</a>'
+            '<a href="https://gitlab.example.com/search?utf8=✓&search=mysearch&group_id=&project_id=42&search_code=true&repository_ref=master">gitlab.example.com/search?utf8=✓&amp;search=mysearch&amp;group_id=&amp;project_id=42&amp;search_code=true&amp;repository_ref=master</a>'
         );
     });
 

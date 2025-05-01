@@ -75,7 +75,7 @@ export function generateUrlCombinationTests({
                         input: `${origin}?param=1&param-2=2`,
                         description: 'long query string',
                         expectedHref: `${expectedOrigin}?param=1&param-2=2`,
-                        expectedAnchorText: `${hierPart}?param=1&param-2=2`,
+                        expectedAnchorText: `${hierPart}?param=1&amp;param-2=2`,
                         autolinker,
                     },
                     {
@@ -89,7 +89,7 @@ export function generateUrlCombinationTests({
                         input: `${origin}#param1=a&param2=b`,
                         description: 'hash params',
                         expectedHref: `${expectedOrigin}#param1=a&param2=b`,
-                        expectedAnchorText: `${hierPart}#param1=a&param2=b`,
+                        expectedAnchorText: `${hierPart}#param1=a&amp;param2=b`,
                         autolinker,
                     },
                     {
@@ -110,7 +110,7 @@ export function generateUrlCombinationTests({
                         input: `${origin}/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z`,
                         description: 'all special chars in the URL',
                         expectedHref: `${expectedOrigin}/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z`,
-                        expectedAnchorText: `${hierPart}/-+&@#/%=~_()|'$*[]?!:,.;/?param1=value-+&@#/%=~_()|'$*[]?!:,.;#hash-+&@#/%=~_()|'$*[]?!:,.;z`,
+                        expectedAnchorText: `${hierPart}/-+&amp;@#/%=~_()|'$*[]?!:,.;/?param1=value-+&amp;@#/%=~_()|'$*[]?!:,.;#hash-+&amp;@#/%=~_()|'$*[]?!:,.;z`,
                         autolinker,
                     },
                     {
