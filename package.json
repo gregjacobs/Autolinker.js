@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "benchmarks": "ts-node benchmarks/benchmarks.ts",
-        "build": "npm-run-all clean update-known-tlds generate-char-utils build:src",
+        "build": "npm-run-all clean update-known-tlds generate-char-utils build:src && npm run benchmarks",
         "build:docs": "npm-run-all build:docs-site build:live-example",
         "build:docs-site": "ts-node scripts/build-docs.ts",
         "build:src": "ts-node scripts/build.ts",
@@ -85,6 +85,7 @@
         "jsduck": "^1.1.2",
         "lint-staged": "^15.2.11",
         "lodash": "^4.17.21",
+        "markdown-table": "^3.0.4",
         "mkdirp": "^3.0.1",
         "mocha": "^11.1.0",
         "npm": "^11.0.0",

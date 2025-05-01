@@ -1,6 +1,9 @@
+import dedent from 'dedent';
 import fse from 'fs-extra';
+import path from 'path';
 import Benchmark from 'benchmark';
 import CliTable from 'cli-table';
+import { markdownTable } from 'markdown-table';
 
 // Autolinker benchmarks
 import { runAutolinkerCurrent } from './autolinker-current/index';
@@ -24,7 +27,8 @@ run().catch((error: any) => {
 });
 
 async function run() {
-    const currentVer = fse.readJsonSync(`${__dirname}/../package.json`).version;
+    const rootDir = path.normalize(`${__dirname}/..`);
+    const currentVer = fse.readJsonSync(`${rootDir}/package.json`).version;
 
     // prettier-ignore
     const benchmarkCases: BenchmarkCase[] = [
@@ -34,34 +38,69 @@ async function run() {
         { name: 'linkifyjs', version: '4.2.0', url: 'https://linkify.js.org/docs/linkify-html.html', exec: runLinkifyJsHtml4_2_0},
     ];
 
-    const results = await executeBenchmarks(benchmarkCases, {
+    // Run the benchmarks
+    const benchmarkResults = await executeBenchmarks(benchmarkCases, {
         onCycle(event: Benchmark.Event) {
             console.log(String(event.target));
         },
     });
+    const fastest = benchmarkResults[0];
 
-    // sort results in descending order of ops/sec
-    results.sort((a, b) => b.ops - a.ops);
-    const fastest = results[0];
-
-    // Report output
+    // Report output to console
+    const tableHeaders = ['Library', 'Ops/sec', 'MOE', 'Compared to Fastest'];
     const table = new CliTable({
-        head: ['Library', 'Ops/sec', 'MOE', 'Compared to Fastest'],
+        head: tableHeaders,
     });
-    results.forEach(result => {
-        const resultPctSlower = pctSlower(result.ops, fastest.ops);
-        const resultTimesSlower = timesSlower(result.ops, fastest.ops);
-
+    benchmarkResults.forEach(result => {
         table.push([
-            result.name,
+            `${result.name}@${result.version}`,
             Benchmark.formatNumber(Math.floor(result.ops)),
             result.margin,
             result === fastest
                 ? 'Fastest ✅'
-                : `${resultPctSlower}% (${resultTimesSlower}x) slower`,
+                : `${result.pctSlowerThanFastest}% (${result.timesSlowerThanFastest}x) slower`,
         ]);
     });
-    console.log(table.toString());
+    const tableStr = table.toString();
+    console.log(tableStr);
+
+    // Write output to README.md
+    const markdownTableContents = markdownTable([
+        tableHeaders,
+        ...benchmarkResults.map(result => {
+            return [
+                result.url
+                    ? `[${result.name}](${result.url})@${result.version}`
+                    : `**${result.name}**@${result.version}`,
+                Benchmark.formatNumber(Math.floor(result.ops)),
+                result.margin,
+                result === fastest
+                    ? 'Fastest ✅'
+                    : `${result.pctSlowerThanFastest}% (${result.timesSlowerThanFastest}x) slower`,
+            ];
+        }),
+    ]);
+    const readmePath = `${rootDir}/README.md`;
+    const readmeContents = fse.readFileSync(readmePath, 'utf-8');
+    const newReadmeContents = readmeContents.replace(
+        /<!-- BENCHMARKS_TABLE_START -->[\s\S]*?<!-- BENCHMARKS_TABLE_END -->/g,
+        () => {
+            return dedent`
+            <!-- BENCHMARKS_TABLE_START -->
+            ${markdownTableContents}
+            <!-- Last update: ${new Date().toISOString()} -->
+            <!-- BENCHMARKS_TABLE_END -->
+        `;
+        }
+    );
+    if (readmeContents === newReadmeContents) {
+        throw new Error(
+            `README.md file update was unsuccessful. Do the replacement tokens still exist? Check replace call in this script`
+        );
+    }
+    // console.log(newReadmeContents);
+    fse.writeFileSync(readmePath, newReadmeContents, 'utf-8');
+    console.log('Wrote README.md with new benchmarks table');
 }
 
 /**
@@ -88,17 +127,28 @@ async function executeBenchmarks(
         }
 
         suite.on('complete', () => {
+            const highestOps = suite.reduce((highestOps: number, benchmark: Benchmark) => {
+                return Math.max(highestOps, benchmark.hz);
+            }, 0);
+
             const results: BenchmarkResult[] = suite.map((bench: Benchmark, i: number) => {
                 const benchmarkCase = benchmarkCases[i]; // the order of the results are the same order as benchmarks were added, so we can look up the benchmarkCase against the input array
+                const ops = bench.hz; // ops/sec
+                const resultPctSlower = pctSlower(ops, highestOps);
+                const resultTimesSlower = timesSlower(ops, highestOps);
 
                 return {
-                    name: bench.name,
+                    name: benchmarkCase.name,
                     version: benchmarkCase.version,
                     url: benchmarkCase.url,
-                    ops: bench.hz, // ops/sec
+                    ops,
+                    pctSlowerThanFastest: resultPctSlower, // will be 0 for fastest
+                    timesSlowerThanFastest: resultTimesSlower, // will be 0 for fastest
                     margin: '±' + bench.stats.rme.toFixed(2) + '%',
                 };
             });
+            results.sort((a, b) => b.ops - a.ops); // sort results in descending order of ops/sec
+
             resolve(results);
         });
         suite.on('error', reject);
@@ -107,11 +157,11 @@ async function executeBenchmarks(
     });
 }
 
-function pctSlower(currentOpsSec: number, fastestOpsSec: number) {
+function pctSlower(currentOpsSec: number, fastestOpsSec: number): number {
     return Math.floor((1 - currentOpsSec / fastestOpsSec) * 100);
 }
 
-function timesSlower(currentOpsSec: number, fastestOpsSec: number) {
+function timesSlower(currentOpsSec: number, fastestOpsSec: number): string {
     return (fastestOpsSec / currentOpsSec).toFixed(2);
 }
 
@@ -125,6 +175,10 @@ interface BenchmarkCase {
 
 interface BenchmarkResult {
     name: string;
+    version: string;
+    url: string | null;
     ops: number; // operations per second
+    pctSlowerThanFastest: number; // will be 0 for fastest
+    timesSlowerThanFastest: string; // will be '1.00' for fastest
     margin: string;
 }
