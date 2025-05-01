@@ -25,22 +25,19 @@ or was just limited in one way or another.
 
 So, this utility attempts to handle everything. It:
 
-- Autolinks URLs, whether or not they start with the protocol (i.e. 'http://').
+- Autolinks **URLs**, whether or not they start with the protocol (i.e. 'http://').
   In other words, it will automatically link the text "google.com", as well as
-  "http://google.com". Will also autolink IPv4 addresses.
-- Will properly handle URLs with query params, anchors,
-  and special characters, and not include chars like a trailing `.` at the end
-  of a sentence, or a `)` char if the URL is inside parenenthesis.
-- Will autolink email addresses
-- Will autolink phone numbers
-- Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok, Youtube)
-- Will autolink hashtags (Twitter, Instagram, Facebook, TikTok, Youtube)
-- Won't clobber URLs with hash anchors by treating them as hashtags (like some other libraries do). For example: `google.com/#anchor` is properly linked.
+  "http://google.com". Will also autolink **IPv4 addresses**.
+- Will autolink **email addresses**
+- Will autolink **phone numbers**
+- Will autolink **@mentions** (Twitter, Instagram, Soundcloud, TikTok, Youtube)
+- Will autolink **#hashtags** (Twitter, Instagram, Facebook, TikTok, Youtube)
+- Won't clobber URLs with #hash anchors by treating them as hashtags like some other libraries do. For example: `google.com/#anchor` is properly linked.
 - **Will properly handle HTML input.** The utility will not overwrite an `href`
-  attribute inside anchor (`<a>`) tags (or any other tag/attribute), and will not 
+  attribute inside anchor (`<a>`) tags or any other tag/attribute, and will not 
   accidentally wrap the inner text of `<a>`/`<script>`/`<style>` tags with a new 
-  one (which cause doubly-nested anchor tags, or mess with scripts)
-- Will do all of this in `O(n)` (linear) time with low constant factors and without the possibility of RegExp [Catastrophic Backtracking](https://www.regular-expressions.info/catastrophic.html), making it extremely fast and unsusceptible to pathological inputs.
+  one (which would cause doubly-nested anchor tags, or mess with scripts)
+- Will do all of this in `O(n)` (linear) time with low constant factors and without the possibility of RegExp [Catastrophic Backtracking](https://www.regular-expressions.info/catastrophic.html), making it extremely fast and unsusceptible to [DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) inputs.
 
 <a name="benchmarks-table"></a>Quick [benchmarks](#benchmarks) comparison:
 
