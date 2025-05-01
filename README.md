@@ -28,8 +28,11 @@ So, this utility attempts to handle everything. It:
 - Autolinks **URLs**, whether or not they start with the protocol (i.e. 'http://').
   In other words, it will automatically link the text "google.com", as well as
   "http://google.com". Will also autolink **IPv4 addresses**.
-- Will autolink **email addresses**, **phone numbers**, **@mentions**, and **#hashtags**
-- Won't clobber URLs with #hash anchors by treating them as hashtags (like some other libraries do). For example: `google.com/#anchor` is properly linked.
+- Will autolink **email addresses**
+- Will autolink **phone numbers**
+- Will autolink **@mentions** (Twitter, Instagram, Soundcloud, TikTok, Youtube)
+- Will autolink **#hashtags** (Twitter, Instagram, Facebook, TikTok, Youtube)
+- Won't clobber URLs with #hash anchors by treating them as hashtags like some other libraries do. For example: `google.com/#anchor` is properly linked.
 - **Will properly handle HTML input.** The utility will not overwrite an `href`
   attribute inside anchor (`<a>`) tags or any other tag/attribute, and will not 
   accidentally wrap the inner text of `<a>`/`<script>`/`<style>` tags with a new 
