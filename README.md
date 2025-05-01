@@ -29,18 +29,29 @@ So, this utility attempts to handle everything. It:
   In other words, it will automatically link the text "google.com", as well as
   "http://google.com". Will also autolink IPv4 addresses.
 - Will properly handle URLs with query params, anchors,
-  and special characters, and not include things like a trailing `.` at the end
+  and special characters, and not include chars like a trailing `.` at the end
   of a sentence, or a `)` char if the URL is inside parenenthesis.
 - Will autolink email addresses
 - Will autolink phone numbers
 - Will autolink mentions (Twitter, Instagram, Soundcloud, TikTok, Youtube)
 - Will autolink hashtags (Twitter, Instagram, Facebook, TikTok, Youtube)
+- Won't clobber URLs with hash anchors by treating them as hashtags (like some other libraries do). For example: `google.com/#anchor` is properly linked.
 - **Will properly handle HTML input.** The utility will not overwrite an `href`
   attribute inside anchor (`<a>`) tags (or any other tag/attribute), and will not 
   accidentally wrap the inner text of `<a>`/`<script>`/`<style>` tags with a new 
   one (which cause doubly-nested anchor tags, or mess with scripts)
-- Will do all of this in `O(n)` (linear) time with low constant factors and
-  without the possibility of RegExp backtracking, making it extremely fast.
+- Will do all of this in `O(n)` (linear) time with low constant factors and without the possibility of RegExp [Catastrophic Backtracking](https://www.regular-expressions.info/catastrophic.html), making it extremely fast and unsusceptible to pathological inputs.
+
+<a name="benchmarks-table"></a>Quick [benchmarks](#benchmarks) comparison:
+
+| Library                             | Ops/Sec | MOE    | Compared to Fastest |
+| ----------------------------------- | ------- | ------ | --------------------|
+| **Autolinker**@4.1.5                | 3,278   | ±0.40% | Fastest ✅          |
+| [anchorme][1]@3.0.8                 | 2,393   | ±0.35% | 26% (1.37x) slower  |
+| [linkifyjs][2]@4.2.0 (linkify-html) | 1,875   | ±0.32% | 42% (1.75x) slower  |
+| [linkify-it][3]@5.0.0               | 491     | ±0.54% | 85% (6.67x) slower  |
+
+(please let me know of other comparable libraries to compare to!)
 
 Hope that this utility helps you as well!
 
@@ -130,7 +141,7 @@ const autolinker = new Autolinker([ options ]);
 const linkedText = autolinker.link(textToAutoLink);
 ```
 
-Note: if using the same options to autolink multiple pieces of html/text, it is
+Note: if using the same options to autolink multiple pieces of html/text, it's
 slightly more efficient to create a single Autolinker instance, and run the
 [link()](http://gregjacobs.github.io/Autolinker.js/api/#!/api/Autolinker-method-link)
 method repeatedly (i.e. use the "class" form above).
@@ -580,13 +591,20 @@ Then open your browser to: http://localhost:8080/docs/examples/index.html
 You should be able to make a change to source files, and refresh the page to see
 the changes.
 
-#### Running the benchmarks
+#### Running the benchmarks <a name="benchmarks"></a>
 
 Run:
 
 ```sh
 pnpm run benchmarks
 ```
+
+> Note: See the [Benchmarks Table](#benchmarks-table) above for current results.
+
+Couple points on the benchmarks:
+* These benchmarks attempt to set up all libraries by configuring comparable features to Autolinker (e.g.: linking emails, hashtags, mentions, etc.) to try to get an apples-to-apples comparison.
+* While developing, recommend running the benchmarks a few times both before and after making any changes if developing.
+* See the [benchmarks](./benchmarks) folder and [benchmarks/input-text.ts](./benchmarks/input-text.ts) for how the benchmarks are set up and what input they are given.
 
 #### Documentation Generator Notes
 
@@ -636,3 +654,9 @@ instructions on Windows/Mac/Linux.
 ## Changelog
 
 See [Releases](https://github.com/gregjacobs/Autolinker.js/releases)
+
+<!-- Reference Links -->
+
+[1]: https://github.com/alexcorvi/anchorme.js "anchorme.js"
+[2]: https://linkify.js.org/docs/linkify-html.html "linkify-html"
+[3]: https://github.com/markdown-it/linkify-it "linkify-it"

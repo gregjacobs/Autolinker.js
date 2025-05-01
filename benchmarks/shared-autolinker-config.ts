@@ -5,5 +5,5 @@ export const sharedAutolinkerConfig = {
     email: true,
     mention: 'twitter',
     hashtag: 'twitter',
-    // phone: true,  -- linkifyjs is the closest in performance to autolinker but doesn't support phone numbers
+    // phone: true,  -- anchorme.js and linkifyjs are the closest in performance to Autolinker, but neither support phone numbers
 } as const; // as const to make this config object compatible between the most versions rather than using a specific version's AutolinkerConfig type
