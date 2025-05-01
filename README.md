@@ -596,7 +596,7 @@ pnpm run benchmarks
 
 > Note: See the [Benchmarks Table](#benchmarks-table) above for current results.
 
-Couple points on the benchmarks:
+Few points on the benchmarks:
 * These benchmarks attempt to set up all libraries by configuring comparable features to Autolinker (e.g.: linking emails, hashtags, mentions, etc.) to try to get an apples-to-apples comparison.
 * While developing, recommend running the benchmarks a few times both before and after making any changes if developing.
 * See the [benchmarks](./benchmarks) folder and [benchmarks/input-text.ts](./benchmarks/input-text.ts) for how the benchmarks are set up and what input they are given.
