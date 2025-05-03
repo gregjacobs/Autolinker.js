@@ -28,7 +28,7 @@ npm_package(
 
 js_library(
     name = "library",
-    visibility = ["//visiblity:public"],
+    visibility = ["//visibility:public"],
     deps = [
         ":src_esm",
         ":src_cjs",

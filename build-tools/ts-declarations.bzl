@@ -67,6 +67,7 @@ def ts_declarations(
                     "sourceMap": true,
                     "declarationMap": true,
                     "emitDeclarationOnly": true,
+                    "noEmit": false,
                 }
             }
         """ % (tsconfig_file_path, target, module)]
