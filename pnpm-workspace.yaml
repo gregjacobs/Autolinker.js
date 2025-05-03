@@ -1,7 +1,3 @@
 packages:
   - benchmarks
   - benchmarks/*
-ignoredBuiltDependencies:
-  - spawn-sync
-onlyBuiltDependencies:
-  - puppeteer

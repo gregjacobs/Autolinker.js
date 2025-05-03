@@ -12,6 +12,9 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
     devDependencies:
+      '@bazel/bazelisk':
+        specifier: ^1.26.0
+        version: 1.26.0
       '@eslint/js':
         specifier: ^9.25.1
         version: 9.25.1
@@ -129,6 +132,9 @@ importers:
       rollup:
         specifier: ^4.29.1
         version: 4.40.0
+      rollup-plugin-dts:
+        specifier: ^6.2.1
+        version: 6.2.1(rollup@4.40.0)(typescript@5.8.3)
       sinon:
         specifier: ^20.0.0
         version: 20.0.0
@@ -145,7 +151,7 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.15.2)(typescript@5.8.3)
       typescript:
-        specifier: ^5.8.3
+        specifier: 5.8.3
         version: 5.8.3
       typescript-eslint:
         specifier: ^8.31.0
@@ -192,18 +198,6 @@ importers:
       autolinker:
         specifier: 3.16.2
         version: 3.16.2
-
-  benchmarks/autolinker-4.0.0:
-    devDependencies:
-      autolinker:
-        specifier: 4.0.0
-        version: 4.0.0
-
-  benchmarks/autolinker-4.1.2:
-    devDependencies:
-      autolinker:
-        specifier: 4.1.2
-        version: 4.1.2
 
   benchmarks/autolinker-4.1.3:
     devDependencies:
@@ -309,6 +303,10 @@ packages:
   '@babel/types@7.27.0':
     resolution: {integrity: sha512-H45s8fVLYjbhFH62dIJ3WtmJ6RSPt/3DRO0ZcT2SUiYiQyz3BLVb9ADEnLl91m74aQPS3AzzeajZHYOalWe3bg==}
     engines: {node: '>=6.9.0'}
+
+  '@bazel/bazelisk@1.26.0':
+    resolution: {integrity: sha512-bTNcHdGyEQ9r7SczEYUa0gkEQhJo1ld2BjXI8fWBvsUeoHi03QpUs2HZgDbjjrpQFQqG2ZbO7ihZvH8MjhUTHw==}
+    hasBin: true
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -1005,13 +1003,6 @@ packages:
 
   autolinker@3.16.2:
     resolution: {integrity: sha512-JiYl7j2Z19F9NdTmirENSUUIIL/9MytEWtmzhfmsKPCp9E+G35Y0UNCMoM9tFigxT59qSc8Ml2dlZXOCVTYwuA==}
-
-  autolinker@4.0.0:
-    resolution: {integrity: sha512-fl5Kh6BmEEZx+IWBfEirnRUU5+cOiV0OK7PEt0RBKvJMJ8GaRseIOeDU3FKf4j3CE5HVefcjHmhYPOcaVt0bZw==}
-
-  autolinker@4.1.2:
-    resolution: {integrity: sha512-tetWcncPmVvmzTpD85Jy4H5nw5PdDN7EBWQrOoJNEJ4VaQ5IE0Lv8k44iY1OlBMbA9O7BDRErozGfI/4L6iKCw==}
-    engines: {pnpm: '>=10.10.0'}
 
   autolinker@4.1.3:
     resolution: {integrity: sha512-prj97Ba5uW1wQrWqXDB4JkRXHeHqxdlVbjkIxfUZGEpEhdccuhWpcRTXr+GpLoMKNsQfmi1lFRro5ghlwoGwzQ==}
@@ -3117,6 +3108,13 @@ packages:
     engines: {node: 20 || >=22}
     hasBin: true
 
+  rollup-plugin-dts@6.2.1:
+    resolution: {integrity: sha512-sR3CxYUl7i2CHa0O7bA45mCrgADyAQ0tVtGSqi3yvH28M+eg1+g5d7kQ9hLvEz5dorK3XVsH5L2jwHLQf72DzA==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      rollup: ^3.29.4 || ^4
+      typescript: ^4.5 || ^5.0
+
   rollup@4.40.0:
     resolution: {integrity: sha512-Noe455xmA96nnqH5piFtLobsGbCij7Tu+tb3c1vYjNbTkfzGqXqQXG3wJaYXkRZuQ0vEYN4bhwg7QnIrqB5B+w==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
@@ -3932,6 +3930,8 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
+  '@bazel/bazelisk@1.26.0': {}
+
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -4661,14 +4661,6 @@ snapshots:
       tslib: 1.14.1
 
   autolinker@3.16.2:
-    dependencies:
-      tslib: 2.8.1
-
-  autolinker@4.0.0:
-    dependencies:
-      tslib: 2.8.1
-
-  autolinker@4.1.2:
     dependencies:
       tslib: 2.8.1
 
@@ -6854,6 +6846,14 @@ snapshots:
     dependencies:
       glob: 11.0.2
       package-json-from-dist: 1.0.1
+
+  rollup-plugin-dts@6.2.1(rollup@4.40.0)(typescript@5.8.3):
+    dependencies:
+      magic-string: 0.30.17
+      rollup: 4.40.0
+      typescript: 5.8.3
+    optionalDependencies:
+      '@babel/code-frame': 7.26.2
 
   rollup@4.40.0:
     dependencies:

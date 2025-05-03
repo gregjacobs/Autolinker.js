@@ -1,0 +1,66 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("//build-tools:ts-bundle.bzl", "ts_bundle")
+
+load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project", "ts_config")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
+npm_link_all_packages(name = "node_modules")
+
+src_files = glob(["src/**/*.ts"])
+
+npm_package(
+    name = "package",
+    package = "autolinker",
+    srcs = [
+        ":library"
+    ] + src_files, # include the src files for source maps to reference
+)
+
+js_library(
+    name = "library",
+    deps = [
+        ":src_esm",
+        ":src_cjs",
+    ]
+)
+
+# Create ESM bundle
+ts_bundle(
+    name = "src_esm",
+    entry_point = "src/index.ts",
+    root_dir = "src",
+    srcs = src_files,
+    tsconfig_target = ":tsconfig",
+    tsconfig_file_path = "tsconfig.json",
+    out_js = "esm/index.mjs",
+    out_js_map = "esm/index.mjs.map",
+    out_dts = "esm/index.d.ts",
+    format = "esm",
+    target = "es2022",
+    platform = "node",
+)
+
+# Create CommonJS bundle
+ts_bundle(
+    name = "src_cjs",
+    entry_point = "src/index.ts",
+    root_dir = "src",
+    srcs = src_files,
+    tsconfig_target = ":tsconfig",
+    tsconfig_file_path = "tsconfig.json",
+    out_js = "cjs/index.js",
+    out_js_map = "cjs/index.js.map",
+    out_dts = "cjs/index.d.ts",
+    format = "cjs",
+    target = "es2022",
+    platform = "node",
+)
+
+ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+    visibility = [":__subpackages__"],
+)
