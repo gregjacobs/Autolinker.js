@@ -17,6 +17,7 @@ def ts_bundle(
     deps = [],
     target = "esnext",
     platform = "node",
+    visibility = None,
 ):
     """
     Compiles TypeScript and bundles the output into a single .js / .d.ts files.
@@ -43,6 +44,7 @@ def ts_bundle(
         See https://esbuild.github.io/api/#target for reference.
       platform: The platform ('browser', 'node', or 'neutral') to build for. 
         See: https://esbuild.github.io/api/#platform
+      visibility: The visibility for the generated target.
     """
     js_bundle_target = name + "_bundle"
     declarations_bundle_target = name + "_declarations_bundle"
@@ -51,6 +53,7 @@ def ts_bundle(
 
     js_library(
         name = name,
+        visibility = visibility,
         srcs = [
             ":" + js_bundle_target,
             ":" + declarations_bundle_target

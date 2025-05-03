@@ -144,6 +144,9 @@ importers:
       terser:
         specifier: ^5.37.0
         version: 5.39.0
+      tlds:
+        specifier: ^1.258.0
+        version: 1.258.0
       ts-loader:
         specifier: ^9.5.1
         version: 9.5.2(typescript@5.8.3)(webpack@5.99.7)
@@ -3472,6 +3475,10 @@ packages:
 
   tlds@1.257.0:
     resolution: {integrity: sha512-TZEScdurAjJDULiKMkr8Gvj+GqwcRQ1zPkbEFoo4Y6N5EgsyC6eEKe6xwbFtsrJPxAk8l/o5IPKzAqnrKD6tWg==}
+    hasBin: true
+
+  tlds@1.258.0:
+    resolution: {integrity: sha512-XGhStWuOlBA5D8QnyN2xtgB2cUOdJ3ztisne1DYVWMcVH29qh8eQIpRmP3HnuJLdgyzG0HpdGzRMu1lm/Oictw==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -7310,6 +7317,8 @@ snapshots:
   thunky@1.1.0: {}
 
   tlds@1.257.0: {}
+
+  tlds@1.258.0: {}
 
   to-regex-range@5.0.1:
     dependencies:

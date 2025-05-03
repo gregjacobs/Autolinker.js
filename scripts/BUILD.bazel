@@ -1,0 +1,48 @@
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_config", "ts_project")
+
+# Script to generate the 'src/char-utils.ts' and 'tests/char-utils.spec.ts' files
+js_binary(
+    name = "generate_char_utils",
+    visibility = ["//visibility:public"],
+    entry_point = "generate-char-utils.mjs",
+    data = [
+        ":tsc",
+    ],
+)
+
+# Script to generate the 'parser/known-tlds.ts' file
+js_binary(
+    name = "generate_known_tlds",
+    visibility = ["//visibility:public"],
+    entry_point = "generate-known-tlds.mjs",
+    data = [
+        ":tsc",
+    ],
+)
+
+# Compile the scripts/ folder's TypeScript into JavaScript for execution
+ts_project(
+    name = "tsc",
+    tsconfig = ":tsconfig",
+    srcs = glob(["**/*.ts", "**/*.mts"]),
+    deps = [
+        "//:node_modules/@types/fs-extra",
+        "//:node_modules/@types/node",
+        "//:node_modules/dedent",
+        "//:node_modules/fast-glob",
+        "//:node_modules/fs-extra",
+        "//:node_modules/html-webpack-plugin",
+        "//:node_modules/tlds",
+        "//:node_modules/webpack",
+    ],
+    source_map = True,
+    declaration = True,
+    declaration_map = True,
+)
+
+ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+    deps = ["//:tsconfig"]
+)

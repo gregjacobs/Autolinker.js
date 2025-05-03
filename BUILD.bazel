@@ -1,5 +1,5 @@
 load("@npm//:defs.bzl", "npm_link_all_packages")
-load("@aspect_rules_js//js:defs.bzl", "js_library")
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_run_binary")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("//build-tools:ts-bundle.bzl", "ts_bundle")
 
@@ -9,7 +9,14 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 
 npm_link_all_packages(name = "node_modules")
 
-src_files = glob(["src/**/*.ts"])
+src_files = glob(["src/**/*.ts"]) + [
+    "src/char-utils.ts", # Generated file
+    "src/parser/known-tlds.ts", # Generated file
+]
+
+test_files = glob(["tests/**/*.ts"]) + [
+    "tests/char-utils.spec.ts", # Generated file
+]
 
 npm_package(
     name = "package",
@@ -21,6 +28,7 @@ npm_package(
 
 js_library(
     name = "library",
+    visibility = ["//visiblity:public"],
     deps = [
         ":src_esm",
         ":src_cjs",
@@ -30,6 +38,7 @@ js_library(
 # Create ESM bundle
 ts_bundle(
     name = "src_esm",
+    visibility = ["//visibility:private"],
     entry_point = "src/index.ts",
     root_dir = "src",
     srcs = src_files,
@@ -46,6 +55,7 @@ ts_bundle(
 # Create CommonJS bundle
 ts_bundle(
     name = "src_cjs",
+    visibility = ["//visibility:private"],
     entry_point = "src/index.ts",
     root_dir = "src",
     srcs = src_files,
@@ -61,6 +71,25 @@ ts_bundle(
 
 ts_config(
     name = "tsconfig",
-    src = "tsconfig.json",
     visibility = [":__subpackages__"],
+    src = "tsconfig.json",
+)
+
+# Generate the 'src/char-utils.ts' and 'tests/char-utils.spec.ts' files
+js_run_binary(
+    name = "generate_char_utils",
+    tool = "//scripts:generate_char_utils",
+    outs = [
+        "src/char-utils.ts", 
+        "tests/char-utils.spec.ts"
+    ],
+)
+
+# Generate the 'parser/known-tlds.ts' file
+js_run_binary(
+    name = "generate_known_tlds",
+    tool = "//scripts:generate_known_tlds",
+    outs = [
+        "src/parser/known-tlds.ts",
+    ],
 )

@@ -1,7 +1,7 @@
 import dedent from 'dedent';
-import fs from 'fs';
+import fse from 'fs-extra';
 import path from 'path';
-import { alphaNumericAndMarksRe } from './alpha-numeric-and-marks-re';
+import { alphaNumericAndMarksRe } from './alpha-numeric-and-marks-re.mjs';
 
 /*
  * This script generates functions which check that a single character matches
@@ -15,7 +15,7 @@ import { alphaNumericAndMarksRe } from './alpha-numeric-and-marks-re';
  * as fast as possible.
  */
 
-const rootPath = path.normalize(`${__dirname}/..`);
+const rootPath = path.normalize(`${import.meta.dirname}/..`);
 const generateScriptName = 'generate-char-utils';
 
 const { srcFileContents, specFileContents } = generateCharUtils([
@@ -32,15 +32,15 @@ const { srcFileContents, specFileContents } = generateCharUtils([
     ['isCloseBraceChar', /[)}\]]/],
 ]);
 
-// console.log(srcFileContents);
-// console.log(specFileContents);
+console.log(srcFileContents);
+console.log(specFileContents);
 
 const srcFilePath = `src/char-utils.ts`;
-fs.writeFileSync(`${rootPath}/${srcFilePath}`, srcFileContents, 'utf-8');
+fse.outputFileSync(`${rootPath}/${srcFilePath}`, srcFileContents, 'utf-8');
 console.log(`Wrote ${srcFilePath}`);
 
 const specFilePath = `tests/char-utils.spec.ts`;
-fs.writeFileSync(`${rootPath}/${specFilePath}`, specFileContents, 'utf-8');
+fse.outputFileSync(`${rootPath}/${specFilePath}`, specFileContents, 'utf-8');
 console.log(`Wrote ${specFilePath}`);
 
 // -------------------------------------------------------------
