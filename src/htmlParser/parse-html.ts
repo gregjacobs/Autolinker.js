@@ -64,7 +64,7 @@ class ParseHtmlContext {
     public readonly callbacks: ParseHtmlCallbacks;
     public state: State = State.Data; // begin in the Data state
     public currentDataIdx = 0; // where the current data start index is
-    public currentTag: CurrentTag = new CurrentTag(); // describes the current tag that is being read
+    public currentTag: CurrentTag | null = null; // describes the current tag that is being read
     // public currentEntity: CurrentEntity = new CurrentEntity(); // describes the current HTML entity (ex: '&amp;') that is being read
 
     constructor(html: string, callbacks: ParseHtmlCallbacks) {
@@ -268,18 +268,18 @@ function stateTagOpen(context: ParseHtmlContext, char: string, charCode: number)
         context.state = State.MarkupDeclarationOpenState;
     } else if (char === '/') {
         context.state = State.EndTagOpen;
-        context.currentTag.isClosing = true;
+        context.currentTag!.isClosing = true;
     } else if (char === '<') {
         // start of another tag (ignore the previous, incomplete one)
         startNewTag(context);
     } else if (isAsciiLetterChar(charCode)) {
         // tag name start (and no '/' read)
         context.state = State.TagName;
-        context.currentTag.isOpening = true;
+        context.currentTag!.isOpening = true;
     } else {
         // Any other
         context.state = State.Data;
-        context.currentTag = new CurrentTag();
+        context.currentTag = null;
     }
 }
 
@@ -288,16 +288,16 @@ function stateTagOpen(context: ParseHtmlContext, char: string, charCode: number)
 // https://www.w3.org/TR/html51/syntax.html#tag-name-state
 function stateTagName(context: ParseHtmlContext, char: string, charCode: number) {
     if (isWhitespaceChar(charCode)) {
-        context.currentTag.name = captureTagName(context);
+        context.currentTag!.name = captureTagName(context);
         context.state = State.BeforeAttributeName;
     } else if (char === '<') {
         // start of another tag (ignore the previous, incomplete one)
         startNewTag(context);
     } else if (char === '/') {
-        context.currentTag.name = captureTagName(context);
+        context.currentTag!.name = captureTagName(context);
         context.state = State.SelfClosingStartTag;
     } else if (char === '>') {
-        context.currentTag.name = captureTagName(context);
+        context.currentTag!.name = captureTagName(context);
         emitTagAndPreviousTextNode(context); // resets to Data state as well
     } else if (!isAsciiLetterChar(charCode) && !isDigitChar(charCode) && char !== ':') {
         // Anything else that does not form an html tag. Note: the colon
@@ -473,7 +473,7 @@ function stateAfterAttributeValueQuoted(context: ParseHtmlContext, char: string,
 // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
 function stateSelfClosingStartTag(context: ParseHtmlContext, char: string) {
     if (char === '>') {
-        context.currentTag.isClosing = true;
+        context.currentTag!.isClosing = true;
         emitTagAndPreviousTextNode(context); // resets to Data state as well
     } else {
         // Note: the spec calls for a character after a '/' within a start
@@ -495,11 +495,11 @@ function stateMarkupDeclarationOpen(context: ParseHtmlContext) {
     if (html.slice(charIdx, charIdx + 2) === '--') {
         // html comment
         context.charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
-        context.currentTag.type = CurrentTagType.Comment;
+        context.currentTag!.type = CurrentTagType.Comment;
         context.state = State.CommentStart;
     } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
         context.charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
-        context.currentTag.type = CurrentTagType.Doctype;
+        context.currentTag!.type = CurrentTagType.Doctype;
         context.state = State.Doctype;
     } else {
         // At this point, the spec specifies that the state machine should
@@ -631,7 +631,7 @@ function stateDoctype(context: ParseHtmlContext, char: string) {
  */
 function resetToDataState(context: ParseHtmlContext) {
     context.state = State.Data;
-    context.currentTag = new CurrentTag();
+    context.currentTag = null;
 }
 
 /**
@@ -652,7 +652,10 @@ function startNewTag(context: ParseHtmlContext) {
  * text node before it.
  */
 function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
-    const textBeforeTag = context.html.slice(context.currentDataIdx, context.currentTag.idx);
+    const currentTag = context.currentTag!;
+    const { idx: currentTagIdx, type: currentTagType, name: currentTagName } = currentTag;
+
+    const textBeforeTag = context.html.slice(context.currentDataIdx, currentTagIdx);
     if (textBeforeTag) {
         // the html tag was the first element in the html string, or two
         // tags next to each other, in which case we should not emit a text
@@ -660,19 +663,31 @@ function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
         context.callbacks.onText(textBeforeTag, context.currentDataIdx);
     }
 
-    const currentTag = context.currentTag;
-    if (currentTag.type === CurrentTagType.Comment) {
-        context.callbacks.onComment(currentTag.idx);
-    } else if (currentTag.type === CurrentTagType.Doctype) {
-        context.callbacks.onDoctype(currentTag.idx);
-    } else {
-        if (currentTag.isOpening) {
-            context.callbacks.onOpenTag(currentTag.name, currentTag.idx);
+    switch (currentTagType) {
+        case CurrentTagType.Comment:
+            context.callbacks.onComment(currentTagIdx);
+            break;
+
+        case CurrentTagType.Doctype:
+            context.callbacks.onDoctype(currentTagIdx);
+            break;
+
+        case CurrentTagType.Tag: {
+            const { isOpening, isClosing } = currentTag;
+
+            if (isOpening) {
+                context.callbacks.onOpenTag(currentTagName, currentTagIdx);
+            }
+            if (isClosing) {
+                // note: self-closing tags will emit both opening and closing
+                context.callbacks.onCloseTag(currentTagName, currentTagIdx);
+            }
+            break;
         }
-        if (currentTag.isClosing) {
-            // note: self-closing tags will emit both opening and closing
-            context.callbacks.onCloseTag(currentTag.name, currentTag.idx);
-        }
+
+        /* istanbul ignore next */
+        default:
+            assertNever(currentTagType);
     }
 
     // Since we just emitted a tag, reset to the data state for the next char
@@ -692,7 +707,7 @@ function emitText(context: ParseHtmlContext) {
  * index, and converts it to lower case
  */
 function captureTagName(context: ParseHtmlContext) {
-    const startIdx = context.currentTag.idx + (context.currentTag.isClosing ? 2 : 1);
+    const startIdx = context.currentTag!.idx + (context.currentTag!.isClosing ? 2 : 1);
     return context.html.slice(startIdx, context.charIdx).toLowerCase();
 }
 
