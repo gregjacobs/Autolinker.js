@@ -11,11 +11,11 @@ import { assertNever } from '../utils';
 // import CliTable from 'cli-table';
 
 class CurrentTag {
-    readonly idx: number; // the index of the '<' in the html string
-    readonly type: 'tag' | 'comment' | 'doctype';
-    readonly name: string;
-    readonly isOpening: boolean; // true if it's an opening tag, OR a self-closing open tag
-    readonly isClosing: boolean; // true if it's a closing tag, OR a self-closing open tag
+    public idx: number; // the index of the '<' in the html string
+    public type: 'tag' | 'comment' | 'doctype';
+    public name: string;
+    public isOpening: boolean; // true if it's an opening tag, OR a self-closing open tag
+    public isClosing: boolean; // true if it's a closing tag, OR a self-closing open tag
 
     constructor(cfg: Partial<CurrentTag> = {}) {
         this.idx = cfg.idx !== undefined ? cfg.idx : -1;
@@ -26,7 +26,18 @@ class CurrentTag {
     }
 }
 
-const noCurrentTag = new CurrentTag(); // shared reference for when there is no current tag currently being read
+// // Represents the current HTML entity (ex: '&amp;') being read
+// class CurrentEntity {
+//     readonly idx: number; // the index of the '&' in the html string
+//     readonly type: 'decimal' | 'hex' | 'named' | undefined;
+//     readonly content: string;
+
+//     constructor(cfg: Partial<CurrentEntity> = {}) {
+//         this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+//         this.type = cfg.type;
+//         this.content = cfg.content || '';
+//     }
+// }
 
 /**
  * Context object containing all the state needed by the HTML parsing state
@@ -46,7 +57,8 @@ class ParseHtmlContext {
     public readonly callbacks: ParseHtmlCallbacks;
     public state: State = State.Data; // begin in the Data state
     public currentDataIdx = 0; // where the current data start index is
-    public currentTag: CurrentTag = noCurrentTag; // describes the current tag that is being read
+    public currentTag: CurrentTag = new CurrentTag(); // describes the current tag that is being read
+    // public currentEntity: CurrentEntity = new CurrentEntity(); // describes the current HTML entity (ex: '&amp;') that is being read
 
     constructor(html: string, callbacks: ParseHtmlCallbacks) {
         this.html = html;
@@ -237,7 +249,9 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
 function stateData(context: ParseHtmlContext, char: string) {
     if (char === '<') {
         startNewTag(context);
-    }
+    } /*else if (char === '&') {
+        startNewEntity(context);
+    }*/
 }
 
 // Called after a '<' is read from the Data state
@@ -247,18 +261,18 @@ function stateTagOpen(context: ParseHtmlContext, char: string, charCode: number)
         context.state = State.MarkupDeclarationOpenState;
     } else if (char === '/') {
         context.state = State.EndTagOpen;
-        context.currentTag = new CurrentTag({ ...context.currentTag, isClosing: true });
+        context.currentTag.isClosing = true;
     } else if (char === '<') {
         // start of another tag (ignore the previous, incomplete one)
         startNewTag(context);
     } else if (isAsciiLetterChar(charCode)) {
         // tag name start (and no '/' read)
         context.state = State.TagName;
-        context.currentTag = new CurrentTag({ ...context.currentTag, isOpening: true });
+        context.currentTag.isOpening = true;
     } else {
         // Any other
         context.state = State.Data;
-        context.currentTag = noCurrentTag;
+        context.currentTag = new CurrentTag();
     }
 }
 
@@ -267,25 +281,16 @@ function stateTagOpen(context: ParseHtmlContext, char: string, charCode: number)
 // https://www.w3.org/TR/html51/syntax.html#tag-name-state
 function stateTagName(context: ParseHtmlContext, char: string, charCode: number) {
     if (isWhitespaceChar(charCode)) {
-        context.currentTag = new CurrentTag({
-            ...context.currentTag,
-            name: captureTagName(context),
-        });
+        context.currentTag.name = captureTagName(context);
         context.state = State.BeforeAttributeName;
     } else if (char === '<') {
         // start of another tag (ignore the previous, incomplete one)
         startNewTag(context);
     } else if (char === '/') {
-        context.currentTag = new CurrentTag({
-            ...context.currentTag,
-            name: captureTagName(context),
-        });
+        context.currentTag.name = captureTagName(context);
         context.state = State.SelfClosingStartTag;
     } else if (char === '>') {
-        context.currentTag = new CurrentTag({
-            ...context.currentTag,
-            name: captureTagName(context),
-        });
+        context.currentTag.name = captureTagName(context);
         emitTagAndPreviousTextNode(context); // resets to Data state as well
     } else if (!isAsciiLetterChar(charCode) && !isDigitChar(charCode) && char !== ':') {
         // Anything else that does not form an html tag. Note: the colon
@@ -461,7 +466,7 @@ function stateAfterAttributeValueQuoted(context: ParseHtmlContext, char: string,
 // https://www.w3.org/TR/html51/syntax.html#self-closing-start-tag-state
 function stateSelfClosingStartTag(context: ParseHtmlContext, char: string) {
     if (char === '>') {
-        context.currentTag = new CurrentTag({ ...context.currentTag, isClosing: true });
+        context.currentTag.isClosing = true;
         emitTagAndPreviousTextNode(context); // resets to Data state as well
     } else {
         // Note: the spec calls for a character after a '/' within a start
@@ -483,11 +488,11 @@ function stateMarkupDeclarationOpen(context: ParseHtmlContext) {
     if (html.slice(charIdx, charIdx + 2) === '--') {
         // html comment
         context.charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
-        context.currentTag = new CurrentTag({ ...context.currentTag, type: 'comment' });
+        context.currentTag.type = 'comment';
         context.state = State.CommentStart;
     } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
         context.charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
-        context.currentTag = new CurrentTag({ ...context.currentTag, type: 'doctype' });
+        context.currentTag.type = 'doctype';
         context.state = State.Doctype;
     } else {
         // At this point, the spec specifies that the state machine should
@@ -619,7 +624,7 @@ function stateDoctype(context: ParseHtmlContext, char: string) {
  */
 function resetToDataState(context: ParseHtmlContext) {
     context.state = State.Data;
-    context.currentTag = noCurrentTag;
+    context.currentTag = new CurrentTag();
 }
 
 /**
@@ -720,4 +725,8 @@ export const enum State {
     CommentEnd,
     CommentEndBang,
     Doctype,
+    // CharacterReference, // beginning with a '&' char
+    // CharacterReferenceNamed,  // example: '&amp;'
+    // CharacterReferenceNumeric, // example: '&#60;'
+    // CharacterReferenceHexadecimal, // example: '&#x3C;'
 }
