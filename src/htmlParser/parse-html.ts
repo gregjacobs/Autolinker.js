@@ -12,18 +12,25 @@ import { assertNever } from '../utils';
 
 class CurrentTag {
     public idx: number; // the index of the '<' in the html string
-    public type: 'tag' | 'comment' | 'doctype';
+    public type: CurrentTagType;
     public name: string;
     public isOpening: boolean; // true if it's an opening tag, OR a self-closing open tag
     public isClosing: boolean; // true if it's a closing tag, OR a self-closing open tag
 
     constructor(cfg: Partial<CurrentTag> = {}) {
         this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-        this.type = cfg.type || 'tag';
+        this.type = cfg.type || CurrentTagType.Tag;
         this.name = cfg.name || '';
         this.isOpening = !!cfg.isOpening;
         this.isClosing = !!cfg.isClosing;
     }
+}
+
+// For debugging: temporarily remove 'const'
+const enum CurrentTagType {
+    Tag = 0,
+    Comment,
+    Doctype,
 }
 
 // // Represents the current HTML entity (ex: '&amp;') being read
@@ -149,7 +156,7 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
         //     State[state],
         //     String(currentDataIdx),
         //     String(currentTag.idx),
-        //     currentTag.idx === -1 ? '' : currentTag.type
+        //     currentTag.idx === -1 ? '' : CurrentTagType[currentTag.type]
         // ]);
 
         switch (context.state) {
@@ -230,7 +237,7 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
         //     State[context.state],
         //     String(context.currentDataIdx),
         //     String(context.currentTag.idx),
-        //     context.currentTag.idx === -1 ? '' : context.currentTag.type
+        //     context.currentTag.idx === -1 ? '' : CurrentTagType[context.currentTag.type]
         // ]);
 
         context.charIdx++;
@@ -488,11 +495,11 @@ function stateMarkupDeclarationOpen(context: ParseHtmlContext) {
     if (html.slice(charIdx, charIdx + 2) === '--') {
         // html comment
         context.charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
-        context.currentTag.type = 'comment';
+        context.currentTag.type = CurrentTagType.Comment;
         context.state = State.CommentStart;
     } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
         context.charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
-        context.currentTag.type = 'doctype';
+        context.currentTag.type = CurrentTagType.Doctype;
         context.state = State.Doctype;
     } else {
         // At this point, the spec specifies that the state machine should
@@ -654,9 +661,9 @@ function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
     }
 
     const currentTag = context.currentTag;
-    if (currentTag.type === 'comment') {
+    if (currentTag.type === CurrentTagType.Comment) {
         context.callbacks.onComment(currentTag.idx);
-    } else if (currentTag.type === 'doctype') {
+    } else if (currentTag.type === CurrentTagType.Doctype) {
         context.callbacks.onDoctype(currentTag.idx);
     } else {
         if (currentTag.isOpening) {
