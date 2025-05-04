@@ -1,6 +1,6 @@
 import { Char } from '../char';
 import {
-    isDigitChar,
+    isAsciiDigitChar,
     isAsciiLetterChar,
     isAlphaNumericOrMarkChar,
     isUrlSuffixAllowedSpecialChar,
@@ -57,7 +57,7 @@ export const isSchemeStartChar: (code: number) => boolean = isAsciiLetterChar; /
 export function isSchemeChar(charCode: number): boolean {
     return (
         isAsciiLetterChar(charCode) ||
-        isDigitChar(charCode) ||
+        isAsciiDigitChar(charCode) ||
         charCode === Char.Plus || // '+'
         charCode === Char.Dash || // '-'
         charCode === Char.Dot // '.'

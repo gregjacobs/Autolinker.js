@@ -742,12 +742,42 @@ describe('Autolinker', function () {
                 );
             });
 
-            it('should handle &amp; inside a url and not ignore it', function () {
+            it('should handle &amp; inside a url by decoding it for the href itself and re-encoding it for the displayed anchor text', function () {
                 const html = '<p>Joe went to example.com?arg=1&amp;arg=2&amp;arg=3</p>';
 
                 const result = autolinker.link(html);
                 expect(result).to.equal(
                     '<p>Joe went to <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
+                );
+            });
+
+            it(`when the non-autolinked part of the string has &lt; and &gt; entities, these should end up html-encoded for the output so they don't accidentally form HTML tags`, () => {
+                const html =
+                    '<p>Joe went to &lt;A great place&gt;: example.com?arg=1&amp;arg=2&amp;arg=3</p>';
+
+                const result = autolinker.link(html);
+                expect(result).to.equal(
+                    '<p>Joe went to &lt;A great place&gt;: <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
+                );
+            });
+
+            it(`when the non-autolinked part of the string has &#60; ('<') and &#62; ('>') entities, these should end up html-encoded for the output so they don't accidentally form HTML tags`, () => {
+                const html =
+                    '<p>Joe went to &#60;A great place&#62;: example.com?arg=1&amp;arg=2&amp;arg=3</p>';
+
+                const result = autolinker.link(html);
+                expect(result).to.equal(
+                    '<p>Joe went to &lt;A great place&gt;: <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
+                );
+            });
+
+            it(`when the non-autolinked part of the string has &#x3C; ('<') and &#x3E; ('>') entities, these should end up html-encoded for the output so they don't accidentally form HTML tags`, () => {
+                const html =
+                    '<p>Joe went to &#x3C;A great place&#x3E;: example.com?arg=1&amp;arg=2&amp;arg=3</p>';
+
+                const result = autolinker.link(html);
+                expect(result).to.equal(
+                    '<p>Joe went to &lt;A great place&gt;: <a href="http://example.com?arg=1&arg=2&arg=3">example.com?arg=1&amp;arg=2&amp;arg=3</a></p>'
                 );
             });
         });

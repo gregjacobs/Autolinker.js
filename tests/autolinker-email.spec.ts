@@ -140,4 +140,23 @@ describe('Autolinker Email Matching >', () => {
 
         expect(result).to.equal('Hi <a href="mailto:bob@bobs-stuff.com">bob@bobs-stuff.com</a>');
     });
+
+    it(`when given an email address with hex-encoded HTML entities, should decode them to make them part of the email address (https://github.com/gregjacobs/Autolinker.js/issues/393)`, () => {
+        const result = autolinker.link('Hi fredbl&#xF6;ggs&#XF6;@testaccount.com');
+        //                                         ^ lowercase 'x'
+        //                                                  ^ uppercase 'X'
+        //                               (to test both casings of the same hexadecimal code)
+
+        expect(result).to.equal(
+            'Hi <a href="mailto:fredblöggsö@testaccount.com">fredblöggsö@testaccount.com</a>'
+        );
+    });
+
+    it(`when given an email address with decimal-encoded HTML entities, should decode them to make them part of the email address (https://github.com/gregjacobs/Autolinker.js/issues/393)`, () => {
+        const result = autolinker.link('Hi fredbl&#246;ggs&#246;@testaccount.com');
+
+        expect(result).to.equal(
+            'Hi <a href="mailto:fredblöggsö@testaccount.com">fredblöggsö@testaccount.com</a>'
+        );
+    });
 });

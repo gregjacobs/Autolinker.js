@@ -21,7 +21,9 @@ const generateScriptName = 'generate-char-utils';
 const { srcFileContents, specFileContents } = generateCharUtils([
     ['isControlChar', /[\x00-\x1F\x7F]/], // ASCII control characters (0-31), and the backspace char (127). Used to check for invalid characters in the HTML parser.
     ['isAsciiLetterChar', /[A-Za-z]/],
-    ['isDigitChar', /\d/],
+    ['isAsciiAlphaNumericChar', /[A-Za-z0-9]/], // Used for parsing named HTML entities like '&amp';
+    ['isAsciiDigitChar', /[0-9]/], // Used for parsing decimal HTML entities like '&#60;'
+    ['isHexChar', /[A-Fa-f0-9]/], // Used for parsing hexadecimal HTML entities like '&#x3C;'
     ['isQuoteChar', /['"]/],
     ['isWhitespaceChar', /\s/],
     ['isAlphaNumericOrMarkChar', alphaNumericAndMarksRe /*/[\p{Letter}\p{Mark}\p{Emoji}\p{Nd}]/u*/], // sadly the unicode regexp is not working, probably because the char codes are outside the range of 0-65535 for multi-char emojis and such, but not 100% sure. Need to investigate. Using the old regexp for now instead

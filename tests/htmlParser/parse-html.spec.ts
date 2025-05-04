@@ -546,6 +546,19 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
         });
     });
 
+    describe('HTML entity handling', () => {
+        it(`when provided a string with decimal HTML encoded entities, should return their character equivalents`, () => {
+            const nodes = parseHtmlAndCapture('Hello &#60;someone&#62; &#40;&39;person&#39;&#41;');
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: `Hello <someone> ('person')`, offset: 0 },
+            ]);
+        });
+
+        // TODO: add cases for invalid '&' combinations, stuff like '&&', '&a&b', '&#60&#61;' (no semicolon in the middle)
+        // TODO: add cases for '&' inside HTML tags
+    });
+
     describe('combination examples', () => {
         it('should match multiple tags of both upper and lower case with comments and doctype', function () {
             const inputStr = [

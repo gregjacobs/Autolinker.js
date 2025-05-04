@@ -1,9 +1,11 @@
+import { Char } from '../char';
 import {
-    isDigitChar,
+    isAsciiDigitChar,
     isAsciiLetterChar,
     isQuoteChar,
     isWhitespaceChar,
     isControlChar,
+    isAsciiAlphaNumericChar,
 } from '../char-utils';
 import { assertNever } from '../utils';
 
@@ -12,14 +14,14 @@ import { assertNever } from '../utils';
 
 class CurrentTag {
     public idx: number; // the index of the '<' in the html string
-    public type: CurrentTagType;
+    public type: HtmlTagType;
     public name: string;
     public isOpening: boolean; // true if it's an opening tag, OR a self-closing open tag
     public isClosing: boolean; // true if it's a closing tag, OR a self-closing open tag
 
     constructor(cfg: Partial<CurrentTag> = {}) {
         this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-        this.type = cfg.type || CurrentTagType.Tag;
+        this.type = cfg.type || HtmlTagType.Tag;
         this.name = cfg.name || '';
         this.isOpening = !!cfg.isOpening;
         this.isClosing = !!cfg.isClosing;
@@ -27,24 +29,32 @@ class CurrentTag {
 }
 
 // For debugging: temporarily remove 'const'
-const enum CurrentTagType {
-    Tag = 0,
-    Comment,
-    Doctype,
+const enum HtmlTagType {
+    Tag = 0, // normal html tag, like <div>
+    Comment, // <!-- html comment tag -->
+    Doctype, // <!DOCTYPE> tag
 }
 
-// // Represents the current HTML entity (ex: '&amp;') being read
-// class CurrentEntity {
-//     readonly idx: number; // the index of the '&' in the html string
-//     readonly type: 'decimal' | 'hex' | 'named' | undefined;
-//     readonly content: string;
+// Represents the current HTML entity (ex: '&amp;') being read
+class CurrentEntity {
+    public readonly idx: number; // the index of the '&' in the html string
+    public type: HtmlEntityType;
+    public content: string;
 
-//     constructor(cfg: Partial<CurrentEntity> = {}) {
-//         this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-//         this.type = cfg.type;
-//         this.content = cfg.content || '';
-//     }
-// }
+    constructor(cfg: Partial<CurrentEntity> = {}) {
+        this.idx = cfg.idx !== undefined ? cfg.idx : -1;
+        this.type = cfg.type || HtmlEntityType.Unknown;
+        this.content = cfg.content || '';
+    }
+}
+
+// For debugging: temporarily remove 'const'
+const enum HtmlEntityType {
+    Unknown = 0, // not yet known (we need to read more characters)
+    Named, // ex: '&amp;'
+    DecimalNumeric, // ex: '&#60;'
+    HexNumeric, // ex: '&#x3C;'
+}
 
 /**
  * Context object containing all the state needed by the HTML parsing state
@@ -65,7 +75,7 @@ class ParseHtmlContext {
     public state: State = State.Data; // begin in the Data state
     public currentDataIdx = 0; // where the current data start index is
     public currentTag: CurrentTag | null = null; // describes the current tag that is being read
-    // public currentEntity: CurrentEntity = new CurrentEntity(); // describes the current HTML entity (ex: '&amp;') that is being read
+    public currentEntity: CurrentEntity | null = null; // describes the current HTML entity (ex: '&amp;') that is being read
 
     constructor(html: string, callbacks: ParseHtmlCallbacks) {
         this.html = html;
@@ -223,6 +233,24 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
             case State.Doctype:
                 stateDoctype(context, char);
                 break;
+            case State.CharacterReference:
+                stateCharacterReference(context, charCode);
+                break;
+            case State.CharacterReferenceNamed:
+                stateCharacterReferenceNamed(context, charCode);
+                break;
+            case State.CharacterReferenceNumeric:
+                stateCharacterReferenceNumeric(context, charCode);
+                break;
+            case State.CharacterReferenceHexadecimal:
+                stateCharacterReferenceHexadecimal(context, charCode);
+                break;
+            case State.CharacterReferenceDecimal:
+                stateCharacterReferenceDecimal(context, charCode);
+                break;
+            case State.CharacterReferenceNumericEnd:
+                stateCharacterReferenceNumericEnd(context, charCode);
+                break;
 
             /* istanbul ignore next */
             default:
@@ -256,9 +284,9 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
 function stateData(context: ParseHtmlContext, char: string) {
     if (char === '<') {
         startNewTag(context);
-    } /*else if (char === '&') {
+    } else if (char === '&') {
         startNewEntity(context);
-    }*/
+    }
 }
 
 // Called after a '<' is read from the Data state
@@ -299,7 +327,7 @@ function stateTagName(context: ParseHtmlContext, char: string, charCode: number)
     } else if (char === '>') {
         context.currentTag!.name = captureTagName(context);
         emitTagAndPreviousTextNode(context); // resets to Data state as well
-    } else if (!isAsciiLetterChar(charCode) && !isDigitChar(charCode) && char !== ':') {
+    } else if (!isAsciiLetterChar(charCode) && !isAsciiDigitChar(charCode) && char !== ':') {
         // Anything else that does not form an html tag. Note: the colon
         // character is accepted for XML namespaced tags
         resetToDataState(context);
@@ -495,11 +523,11 @@ function stateMarkupDeclarationOpen(context: ParseHtmlContext) {
     if (html.slice(charIdx, charIdx + 2) === '--') {
         // html comment
         context.charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
-        context.currentTag!.type = CurrentTagType.Comment;
+        context.currentTag!.type = HtmlTagType.Comment;
         context.state = State.CommentStart;
     } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
         context.charIdx += 6; // "consume" the characters "OCTYPE" (the current loop iteraction consumed the 'D'). Next loop iteration will consume the character after the '<!DOCTYPE' sequence
-        context.currentTag!.type = CurrentTagType.Doctype;
+        context.currentTag!.type = HtmlTagType.Doctype;
         context.state = State.Doctype;
     } else {
         // At this point, the spec specifies that the state machine should
@@ -622,6 +650,52 @@ function stateDoctype(context: ParseHtmlContext, char: string) {
     }
 }
 
+// We've read a '&' character
+// https://html.spec.whatwg.org/multipage/parsing.html#character-reference-state
+function stateCharacterReference(context: ParseHtmlContext, charCode: number) {
+    if (charCode === Char.NumberSign /* '#' */) {
+        context.state = State.CharacterReferenceNumeric;
+    } else if (isAsciiAlphaNumericChar(charCode)) {
+        context.currentEntity!.type = HtmlEntityType.Named;
+        context.state = State.CharacterReferenceNamed;
+    } else {
+        // TODO: Can we be inside a tag when we get here? If so, don't reset the
+        //       currentTag
+        resetToDataState(context);
+    }
+}
+
+// We've read an ASCII alpha-numeric character after a '&' char, such as reading
+// the 'a' character in '&amp;'
+// https://html.spec.whatwg.org/multipage/parsing.html#named-character-reference-state
+function stateCharacterReferenceNamed(context: ParseHtmlContext, charCode: number) {
+    if (charCode === Char.SemiColon /* ';' */) {
+        const currentEntity = context.currentEntity!;
+        currentEntity.content = context.html.slice(currentEntity.idx + 1, context.charIdx);
+    } else if (isAsciiAlphaNumericChar(charCode)) {
+        // stay in the CharacterReferenceNamed state
+    } else {
+    }
+}
+
+// We've read a '#' char after '&' which begins a numeric character reference.
+// For example, we could be reading the sequence '&#60;' or '&#x3C;'
+// https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-state
+function stateCharacterReferenceNumeric(context: ParseHtmlContext, charCode: number) {}
+
+// We've read an 'x' or 'X' char after a '&#' sequence, which begins a hexadecimal
+// character reference. For example, we could be reading the sequence '&#x3C;'
+// https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-start-state
+function stateCharacterReferenceHexadecimal(context: ParseHtmlContext, charCode: number) {}
+
+// We've read an ASCII digit a '&#' sequence, which begins a decimal (base 10)
+// character reference. For example, we could be reading the sequence '&#60;'
+// https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-start-state
+function stateCharacterReferenceDecimal(context: ParseHtmlContext, charCode: number) {}
+
+// We've read a ';' character to end a numeric character reference such as '&#60;'
+function stateCharacterReferenceNumericEnd(context: ParseHtmlContext, charCode: number) {}
+
 /**
  * Resets the state back to the Data state, and removes the current tag.
  *
@@ -632,6 +706,7 @@ function stateDoctype(context: ParseHtmlContext, char: string) {
 function resetToDataState(context: ParseHtmlContext) {
     context.state = State.Data;
     context.currentTag = null;
+    context.currentEntity = null;
 }
 
 /**
@@ -645,6 +720,17 @@ function resetToDataState(context: ParseHtmlContext) {
 function startNewTag(context: ParseHtmlContext) {
     context.state = State.TagOpen;
     context.currentTag = new CurrentTag({ idx: context.charIdx });
+}
+
+/**
+ * Starts a new HTML entity at the current index, ignoring any previous HTML
+ * entity that was being read.
+ *
+ * We'll generally run this function whenever we read a new '&' character.
+ */
+function startNewEntity(context: ParseHtmlContext) {
+    context.state = State.CharacterReference;
+    context.currentEntity = new CurrentEntity({ idx: context.charIdx });
 }
 
 /**
@@ -664,15 +750,15 @@ function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
     }
 
     switch (currentTagType) {
-        case CurrentTagType.Comment:
+        case HtmlTagType.Comment:
             context.callbacks.onComment(currentTagIdx);
             break;
 
-        case CurrentTagType.Doctype:
+        case HtmlTagType.Doctype:
             context.callbacks.onDoctype(currentTagIdx);
             break;
 
-        case CurrentTagType.Tag: {
+        case HtmlTagType.Tag: {
             const { isOpening, isClosing } = currentTag;
 
             if (isOpening) {
@@ -747,8 +833,10 @@ export const enum State {
     CommentEnd,
     CommentEndBang,
     Doctype,
-    // CharacterReference, // beginning with a '&' char
-    // CharacterReferenceNamed,  // example: '&amp;'
-    // CharacterReferenceNumeric, // example: '&#60;'
-    // CharacterReferenceHexadecimal, // example: '&#x3C;'
+    CharacterReference, // beginning with a '&' char
+    CharacterReferenceNamed, // example: '&amp;'
+    CharacterReferenceNumeric, // when we've read the '#' in '&#60;' or '&#x3C;'
+    CharacterReferenceHexadecimal, // example: '&#x3C;'
+    CharacterReferenceDecimal, // example: '&#60;'
+    CharacterReferenceNumericEnd, // when we read the ';' char in a numeric character reference
 }

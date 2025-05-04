@@ -3,7 +3,7 @@
 // INSTEAD, RUN: npm run generate-char-utils
 
 import { expect } from 'chai';
-import { isControlChar, isAsciiLetterChar, isDigitChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar, isOpenBraceChar, isCloseBraceChar } from '../src/char-utils';
+import { isControlChar, isAsciiLetterChar, isAsciiAlphaNumericChar, isAsciiDigitChar, isHexChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar, isOpenBraceChar, isCloseBraceChar } from '../src/char-utils';
 
 describe('isControlChar()', () => {
     it(`should appropriately return true/false to match the regular expression /[\\x00-\\x1F\\x7F]/`, () => {
@@ -29,12 +29,36 @@ describe('isAsciiLetterChar()', () => {
     });
 });
 
-describe('isDigitChar()', () => {
-    it(`should appropriately return true/false to match the regular expression /\\d/`, () => {
+describe('isAsciiAlphaNumericChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[A-Za-z0-9]/`, () => {
         for (let charCode = 0; charCode < 65535; charCode++) {
             const char = String.fromCharCode(charCode);
-            const fnResult = isDigitChar(charCode);
-            const regExpResult = /\d/.test(char);
+            const fnResult = isAsciiAlphaNumericChar(charCode);
+            const regExpResult = /[A-Za-z0-9]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isAsciiDigitChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[0-9]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isAsciiDigitChar(charCode);
+            const regExpResult = /[0-9]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isHexChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[A-Fa-f0-9]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isHexChar(charCode);
+            const regExpResult = /[A-Fa-f0-9]/.test(char);
 
             expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
         }

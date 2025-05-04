@@ -33,7 +33,7 @@ export function isAsciiLetterChar(c: number): boolean {
 }
 
 /**
- * Determines if the given character `c` matches the regular expression /\d/ 
+ * Determines if the given character `c` matches the regular expression /[A-Za-z0-9]/ 
  * by checking it via character code in a binary search fashion.
  * 
  * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
@@ -43,8 +43,38 @@ export function isAsciiLetterChar(c: number): boolean {
  * 
  *     npm run generate-char-utils
  */
-export function isDigitChar(c: number): boolean {
+export function isAsciiAlphaNumericChar(c: number): boolean {
+    return (c < 65 ? (c >= 48 && c <= 57) : ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)));
+}
+
+/**
+ * Determines if the given character `c` matches the regular expression /[0-9]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isAsciiDigitChar(c: number): boolean {
     return (c >= 48 && c <= 57);
+}
+
+/**
+ * Determines if the given character `c` matches the regular expression /[A-Fa-f0-9]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isHexChar(c: number): boolean {
+    return (c < 65 ? (c >= 48 && c <= 57) : ((c >= 65 && c <= 70) || (c >= 97 && c <= 102)));
 }
 
 /**
