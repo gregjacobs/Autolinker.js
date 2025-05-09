@@ -6,8 +6,12 @@ import {
     isWhitespaceChar,
     isControlChar,
     isAsciiAlphaNumericChar,
+    isHexChar,
+    isSurrogateChar,
+    isAsciiUpperHexDigitChar,
 } from '../char-utils';
 import { assertNever } from '../utils';
+import { c1ControlCharReplacements } from './c1-control-chars';
 
 // For debugging: search for other "For debugging" lines
 // import CliTable from 'cli-table';
@@ -35,21 +39,20 @@ const enum HtmlTagType {
     Doctype, // <!DOCTYPE> tag
 }
 
-// Represents the current HTML entity (ex: '&amp;') being read
-class CurrentEntity {
+// Represents the current HTML character reference (ex: '&amp;') being read
+class CurrentCharReference {
     public readonly idx: number; // the index of the '&' in the html string
-    public type: HtmlEntityType;
-    public content: string;
+    public type: CharReferenceType;
+    public charRefCode = 0; // for numeric character references like '&#60;' or '&#x3C', we'll use this to calculate the character code as we read digits
 
-    constructor(cfg: Partial<CurrentEntity> = {}) {
-        this.idx = cfg.idx !== undefined ? cfg.idx : -1;
-        this.type = cfg.type || HtmlEntityType.Unknown;
-        this.content = cfg.content || '';
+    constructor(idx: number) {
+        this.idx = idx;
+        this.type = CharReferenceType.Unknown;
     }
 }
 
 // For debugging: temporarily remove 'const'
-const enum HtmlEntityType {
+const enum CharReferenceType {
     Unknown = 0, // not yet known (we need to read more characters)
     Named, // ex: '&amp;'
     DecimalNumeric, // ex: '&#60;'
@@ -69,13 +72,15 @@ const enum HtmlEntityType {
  * them, which allows the functions to be JIT compiled once and reused.
  */
 class ParseHtmlContext {
-    public charIdx = 0; // Current character index being processed
     public readonly html: string; // The input html being parsed
     public readonly callbacks: ParseHtmlCallbacks;
-    public state: State = State.Data; // begin in the Data state
-    public currentDataIdx = 0; // where the current data start index is
+    public charIdx = 0; // Current character index being processed
+    public state: State = State.Data; // begin in the Data (i.e. non-tag) state
+    public currentDataStartIdx = 0; // where the current Data (non-tag) section has started
+    public currentDataSliceIdx = 0; // where the current Data (non-tag) slice index is. If we are reading multiple slices of data (text), such as in the string "hello &amp; world", we will have a slice for 'hello ', '&', and ' world'
+    public currentDataSlices: string[] = []; // an array of strings for the current data (i.e. non-tag) string that is being read. If we need to decode an HTML entity like '&#60;' into a '<' char, it will end up in this array (with all the text before it) before we emit
     public currentTag: CurrentTag | null = null; // describes the current tag that is being read
-    public currentEntity: CurrentEntity | null = null; // describes the current HTML entity (ex: '&amp;') that is being read
+    public currentCharRef: CurrentCharReference | null = null; // describes the current HTML character reference / entity (ex: '&amp;') that is being read
 
     constructor(html: string, callbacks: ParseHtmlCallbacks) {
         this.html = html;
@@ -242,14 +247,14 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
             case State.CharacterReferenceNumeric:
                 stateCharacterReferenceNumeric(context, charCode);
                 break;
+            case State.CharacterReferenceHexadecimalStart:
+                stateCharacterReferenceHexadecimalStart(context, charCode);
+                break;
             case State.CharacterReferenceHexadecimal:
                 stateCharacterReferenceHexadecimal(context, charCode);
                 break;
             case State.CharacterReferenceDecimal:
                 stateCharacterReferenceDecimal(context, charCode);
-                break;
-            case State.CharacterReferenceNumericEnd:
-                stateCharacterReferenceNumericEnd(context, charCode);
                 break;
 
             /* istanbul ignore next */
@@ -271,8 +276,8 @@ export function parseHtml(html: string, callbacks: ParseHtmlCallbacks) {
         context.charIdx++;
     }
 
-    if (context.currentDataIdx < context.charIdx) {
-        emitText(context);
+    if (context.currentDataSliceIdx < context.charIdx) {
+        captureCurrentDataAndEmit(context, context.charIdx);
     }
 
     // For debugging: search for other "For debugging" lines
@@ -522,7 +527,7 @@ function stateMarkupDeclarationOpen(context: ParseHtmlContext) {
 
     if (html.slice(charIdx, charIdx + 2) === '--') {
         // html comment
-        context.charIdx++; // "consume" the second '-' character. Next loop iteration will consume the character after the '<!--' sequence
+        context.charIdx++; // "consume" the second '-' character (the current loop iteration consumed the first). Next loop iteration will consume the character after the '<!--' sequence
         context.currentTag!.type = HtmlTagType.Comment;
         context.state = State.CommentStart;
     } else if (html.slice(charIdx, charIdx + 7).toUpperCase() === 'DOCTYPE') {
@@ -656,7 +661,7 @@ function stateCharacterReference(context: ParseHtmlContext, charCode: number) {
     if (charCode === Char.NumberSign /* '#' */) {
         context.state = State.CharacterReferenceNumeric;
     } else if (isAsciiAlphaNumericChar(charCode)) {
-        context.currentEntity!.type = HtmlEntityType.Named;
+        context.currentCharRef!.type = CharReferenceType.Named;
         context.state = State.CharacterReferenceNamed;
     } else {
         // TODO: Can we be inside a tag when we get here? If so, don't reset the
@@ -670,31 +675,182 @@ function stateCharacterReference(context: ParseHtmlContext, charCode: number) {
 // https://html.spec.whatwg.org/multipage/parsing.html#named-character-reference-state
 function stateCharacterReferenceNamed(context: ParseHtmlContext, charCode: number) {
     if (charCode === Char.SemiColon /* ';' */) {
-        const currentEntity = context.currentEntity!;
-        currentEntity.content = context.html.slice(currentEntity.idx + 1, context.charIdx);
+        const currentEntity = context.currentCharRef!;
+        const entityText = context.html.slice(currentEntity.idx, context.charIdx);
+
+        const mappedChar = decodeNamedCharacterReference(entityText);
+        if (mappedChar) {
+            // Store the data (text) that came before the character reference
+            context.currentDataSlices.push(
+                context.html.slice(context.currentDataSliceIdx, currentEntity.idx)
+            );
+            context.currentDataSliceIdx = currentEntity.idx + entityText.length;
+
+            // Then store the decoded character reference
+            context.currentDataSlices.push(mappedChar);
+        } else {
+            // We don't have a mapping for the named character reference, so
+            // simply leave it as-is in the data stream. The unaltered character
+            // reference will simply be captured as-is when the next string
+            // slice of the html is taken.
+        }
     } else if (isAsciiAlphaNumericChar(charCode)) {
         // stay in the CharacterReferenceNamed state
     } else {
+        // Some other char, just reset to data state - not a named character reference sequence
+        resetToDataState(context);
     }
 }
 
 // We've read a '#' char after '&' which begins a numeric character reference.
 // For example, we could be reading the sequence '&#60;' or '&#x3C;'
 // https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-state
-function stateCharacterReferenceNumeric(context: ParseHtmlContext, charCode: number) {}
+function stateCharacterReferenceNumeric(context: ParseHtmlContext, charCode: number) {
+    if (charCode === Char.X || charCode === Char.x) {
+        context.state = State.CharacterReferenceHexadecimalStart;
+    } else if (isAsciiDigitChar(charCode)) {
+        context.state = State.CharacterReferenceDecimal;
+        reconsumeCurrentChar(context);
+    } else {
+        // Not a numeric character reference, back to data state
+        // https://html.spec.whatwg.org/multipage/parsing.html#parse-error-absence-of-digits-in-numeric-character-reference
+        resetToDataState(context);
+    }
+}
 
 // We've read an 'x' or 'X' char after a '&#' sequence, which begins a hexadecimal
 // character reference. For example, we could be reading the sequence '&#x3C;'
 // https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-start-state
-function stateCharacterReferenceHexadecimal(context: ParseHtmlContext, charCode: number) {}
+function stateCharacterReferenceHexadecimalStart(context: ParseHtmlContext, charCode: number) {
+    if (isHexChar(charCode)) {
+        context.state = State.CharacterReferenceHexadecimal;
+        reconsumeCurrentChar(context);
+    } else {
+        // Not a hexadecimal character reference, back to data state - not a
+        // valid character reference (HTML entity) sequence
+        resetToDataState(context);
+    }
+}
 
-// We've read an ASCII digit a '&#' sequence, which begins a decimal (base 10)
+// We've read a hexadecimal (0-9, A-F) char after a '&#x' sequence, which begins a hexadecimal
+// character reference. For example, we could be reading the sequence '&#x3C;'
+// https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-state
+function stateCharacterReferenceHexadecimal(context: ParseHtmlContext, charCode: number) {
+    if (/*charCode === Char.SemiColon ||*/ !isHexChar(charCode)) {
+        // Either a ';' char to end the character reference, or some other character
+        // which is a "missing-semicolon-after-character-reference" error:
+        //     https://html.spec.whatwg.org/multipage/parsing.html#parse-error-missing-semicolon-after-character-reference
+        // Either way, capture the current reference according to the spec
+        captureCurrentCharacterRef(context);
+    } else {
+        const currentEntity = context.currentCharRef!;
+        const charRefCode = currentEntity.charRefCode;
+
+        if (isAsciiDigitChar(charCode)) {
+            // stay in the CharacterReferenceHexadecimal state
+            currentEntity.charRefCode = charRefCode * 16 + (charCode - 0x30); // 0x30 (in the spec) is 48 decimal. Char "0" == 48 decimal, hence 48 - 48 = 0
+        } else if (isAsciiUpperHexDigitChar(charCode)) {
+            // stay in the CharacterReferenceHexadecimal state
+            currentEntity.charRefCode = charRefCode * 16 + (charCode - 0x37); // 0x37 (in the spec) is 55 decimal. Char "A" == 65 decimal, but it's +10 for Hex so 65 - 55 = 10
+        } /*if (isAsciiLowerHexDigitChar(charCode))*/ else {
+            // stay in the CharacterReferenceHexadecimal state
+            currentEntity.charRefCode = charRefCode * 16 + (charCode - 0x57); // 0x57 (in the spec) is 87 decimal. Char "a" == 97 decimal, but it's +10 for Hex so 97 - 87 = 10
+        }
+    }
+}
+
+// We've read an ASCII digit after a '&#' sequence, which begins a decimal (base 10)
 // character reference. For example, we could be reading the sequence '&#60;'
 // https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-start-state
-function stateCharacterReferenceDecimal(context: ParseHtmlContext, charCode: number) {}
+function stateCharacterReferenceDecimal(context: ParseHtmlContext, charCode: number) {
+    if (!isAsciiDigitChar(charCode)) {
+        // Either a ';' char to end the character reference, or some other character
+        // which is a "missing-semicolon-after-character-reference" error:
+        //     https://html.spec.whatwg.org/multipage/parsing.html#parse-error-missing-semicolon-after-character-reference
+        // Either way, capture the current reference according to the spec
+        captureCurrentCharacterRef(context);
+    } else {
+        // ASCII digit, stay in the CharacterReferenceDecimal state
+        const currentEntity = context.currentCharRef!;
+        currentEntity.charRefCode = currentEntity.charRefCode * 10 + (charCode - 0x30); // 0x30 (in the spec) is 48 decimal. Char "0" == 48 decimal, hence 48 - 48 = 0. Char "1" would give us the value 1, etc.
+    }
+}
 
-// We've read a ';' character to end a numeric character reference such as '&#60;'
-function stateCharacterReferenceNumericEnd(context: ParseHtmlContext, charCode: number) {}
+// We've read a ';' character to end a numeric character reference such as '&#60;',
+// OR there was an invalid char after a valid sequence such as '&#60Hello' where
+// we'll still decode the '&#60' part
+// https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state
+function captureCurrentCharacterRef(context: ParseHtmlContext) {
+    const { currentCharRef: currentEntity, currentDataSlices } = context;
+    const { charRefCode } = currentEntity!;
+
+    let replacementCharCode: number;
+
+    if (charRefCode === 0 || charRefCode > 0x10ffff || isSurrogateChar(charRefCode)) {
+        // 0: "null-reference-char" parse error: https://html.spec.whatwg.org/multipage/parsing.html#parse-error-null-character-reference
+        // >0x10FFFF: "character-reference-outside-unicode-range" parse error: https://html.spec.whatwg.org/multipage/parsing.html#parse-error-character-reference-outside-unicode-range
+        // U+D800 to U+DFFF (Unicode surrogate chars): "surrogate-character-reference": https://html.spec.whatwg.org/multipage/parsing.html#parse-error-surrogate-character-reference
+        replacementCharCode = 0xfffd; // use '�' char according to the spec
+    } else {
+        const c1ControlCharReplacement = c1ControlCharReplacements.get(charRefCode);
+
+        if (c1ControlCharReplacement) {
+            // The value was a control character in the replacements table described
+            // here: https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state
+            replacementCharCode = c1ControlCharReplacement;
+        } else {
+            // Otherwise we'll use the character code as-is
+            replacementCharCode = charRefCode;
+        }
+    }
+
+    // TODO! Need to capture the 'data' string behind the character reference first
+
+    currentDataSlices.push(String.fromCharCode(replacementCharCode));
+    resetToDataState(context);
+}
+
+/**
+ * Attempts to decode a named HTML character reference (e.g. '&amp;') based on
+ * the mappings that we have.
+ *
+ * If we have a mapping for the character reference, we'll return the mapped
+ * character (e.g. '&'), or otherwise return `null`.
+ */
+function decodeNamedCharacterReference(entityText: string): string | null {
+    // For now, just map '&amp';
+    // TODO: map more common character entities that are important
+    switch (entityText) {
+        case '&amp':
+            return '&';
+
+        default:
+            return null;
+    }
+
+    // Old code in autolinker.ts
+    // // "Walk around" common HTML entities. An '&nbsp;' (for example)
+    // // could be at the end of a URL, but we don't want to
+    // // include the trailing '&' in the URL. See issue #76
+    // // TODO: Handle HTML entities separately in parseHtml() and
+    // // don't emit them as "text" except for &amp; entities
+    // const htmlCharacterEntitiesRegex =
+    //     /(&nbsp;|&#160;|&lt;|&#60;|&gt;|&#62;|&quot;|&#34;|&#39;)/gi; // NOTE: capturing group is significant to include the split characters in the .split() call below
+    // const textSplit = text.split(htmlCharacterEntitiesRegex);
+
+    // let currentOffset = offset;
+    // textSplit.forEach((splitText, i) => {
+    //     // even number matches are text, odd numbers are html entities
+    //     if (i % 2 === 0) {
+    //         const textNodeMatches = this.parseText(splitText, currentOffset);
+    //         matches.push(...textNodeMatches);
+    //     }
+    //     currentOffset += splitText.length;
+    // });
+}
+
+// -----------------------------------------------------
+// Utility functions
 
 /**
  * Resets the state back to the Data state, and removes the current tag.
@@ -706,7 +862,8 @@ function stateCharacterReferenceNumericEnd(context: ParseHtmlContext, charCode: 
 function resetToDataState(context: ParseHtmlContext) {
     context.state = State.Data;
     context.currentTag = null;
-    context.currentEntity = null;
+    context.currentCharRef = null;
+    context.currentDataSlices = []; // TODO: Use null value to avoid extra garbage collection
 }
 
 /**
@@ -730,24 +887,19 @@ function startNewTag(context: ParseHtmlContext) {
  */
 function startNewEntity(context: ParseHtmlContext) {
     context.state = State.CharacterReference;
-    context.currentEntity = new CurrentEntity({ idx: context.charIdx });
+    context.currentCharRef = new CurrentCharReference(context.charIdx);
 }
 
 /**
- * Once we've decided to emit an open tag, that means we can also emit the
- * text node before it.
+ * Once we've decided to emit a tag, that means we can also emit the text node
+ * before it.
  */
 function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
-    const currentTag = context.currentTag!;
-    const { idx: currentTagIdx, type: currentTagType, name: currentTagName } = currentTag;
+    const { currentTag } = context;
+    const { idx: currentTagIdx, type: currentTagType, name: currentTagName } = currentTag!;
 
-    const textBeforeTag = context.html.slice(context.currentDataIdx, currentTagIdx);
-    if (textBeforeTag) {
-        // the html tag was the first element in the html string, or two
-        // tags next to each other, in which case we should not emit a text
-        // node
-        context.callbacks.onText(textBeforeTag, context.currentDataIdx);
-    }
+    // Emit the data slice before the tag
+    captureCurrentDataAndEmit(context, currentTagIdx);
 
     switch (currentTagType) {
         case HtmlTagType.Comment:
@@ -759,7 +911,7 @@ function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
             break;
 
         case HtmlTagType.Tag: {
-            const { isOpening, isClosing } = currentTag;
+            const { isOpening, isClosing } = currentTag!;
 
             if (isOpening) {
                 context.callbacks.onOpenTag(currentTagName, currentTagIdx);
@@ -778,14 +930,28 @@ function emitTagAndPreviousTextNode(context: ParseHtmlContext) {
 
     // Since we just emitted a tag, reset to the data state for the next char
     resetToDataState(context);
-    context.currentDataIdx = context.charIdx + 1;
+    context.currentDataStartIdx = context.currentDataSliceIdx = context.charIdx + 1;
 }
 
-function emitText(context: ParseHtmlContext) {
-    const text = context.html.slice(context.currentDataIdx, context.charIdx);
-    context.callbacks.onText(text, context.currentDataIdx);
+/**
+ *
+ *
+ * @param context
+ * @param upToCharIdx
+ */
+function captureCurrentDataAndEmit(context: ParseHtmlContext, upToCharIdx: number) {
+    const { currentDataStartIdx, currentDataSliceIdx, currentDataSlices, html } = context;
 
-    context.currentDataIdx = context.charIdx + 1;
+    const dataSliceBeforeCharIdx = html.slice(currentDataSliceIdx, upToCharIdx);
+    if (dataSliceBeforeCharIdx.length > 0) {
+        currentDataSlices.push(dataSliceBeforeCharIdx);
+    }
+    if (currentDataSlices.length > 0) {
+        // if the html tag was the first element in the html string, or two
+        // tags were next to each other, we won't have `textBeforeTag` (in which
+        // case we should not emit a text node)
+        context.callbacks.onText(currentDataSlices.join(''), currentDataStartIdx);
+    }
 }
 
 /**
@@ -836,7 +1002,7 @@ export const enum State {
     CharacterReference, // beginning with a '&' char
     CharacterReferenceNamed, // example: '&amp;'
     CharacterReferenceNumeric, // when we've read the '#' in '&#60;' or '&#x3C;'
-    CharacterReferenceHexadecimal, // example: '&#x3C;'
-    CharacterReferenceDecimal, // example: '&#60;'
-    CharacterReferenceNumericEnd, // when we read the ';' char in a numeric character reference
+    CharacterReferenceHexadecimalStart, // when we've read the 'x' char in '&#x3C;'
+    CharacterReferenceHexadecimal, // when we've read the first hexadecimal digit in '&#x3C;'
+    CharacterReferenceDecimal, // when we've read the first decimal digit in '&#60;'
 }

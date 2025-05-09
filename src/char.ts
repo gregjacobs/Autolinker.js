@@ -8,8 +8,10 @@
 export const enum Char {
     // Letter chars (usually used for scheme testing)
     A = 65,
+    X = 88,
     Z = 90,
     a = 97,
+    x = 120,
     z = 122,
 
     // Quote chars (used for HTML parsing)

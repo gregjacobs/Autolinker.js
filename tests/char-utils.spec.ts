@@ -3,7 +3,7 @@
 // INSTEAD, RUN: npm run generate-char-utils
 
 import { expect } from 'chai';
-import { isControlChar, isAsciiLetterChar, isAsciiAlphaNumericChar, isAsciiDigitChar, isHexChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar, isOpenBraceChar, isCloseBraceChar } from '../src/char-utils';
+import { isControlChar, isAsciiLetterChar, isAsciiAlphaNumericChar, isAsciiDigitChar, isAsciiUpperHexDigitChar, isHexChar, isQuoteChar, isWhitespaceChar, isAlphaNumericOrMarkChar, isValidEmailLocalPartSpecialChar, isUrlSuffixAllowedSpecialChar, isUrlSuffixNotAllowedAsFinalChar, isOpenBraceChar, isCloseBraceChar, isSurrogateChar } from '../src/char-utils';
 
 describe('isControlChar()', () => {
     it(`should appropriately return true/false to match the regular expression /[\\x00-\\x1F\\x7F]/`, () => {
@@ -47,6 +47,18 @@ describe('isAsciiDigitChar()', () => {
             const char = String.fromCharCode(charCode);
             const fnResult = isAsciiDigitChar(charCode);
             const regExpResult = /[0-9]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isAsciiUpperHexDigitChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[A-F]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isAsciiUpperHexDigitChar(charCode);
+            const regExpResult = /[A-F]/.test(char);
 
             expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
         }
@@ -155,6 +167,18 @@ describe('isCloseBraceChar()', () => {
             const char = String.fromCharCode(charCode);
             const fnResult = isCloseBraceChar(charCode);
             const regExpResult = /[)}\]]/.test(char);
+
+            expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
+        }
+    });
+});
+
+describe('isSurrogateChar()', () => {
+    it(`should appropriately return true/false to match the regular expression /[\\uD800-\\uDBFF\\uDC00-\\uDFFF]/`, () => {
+        for (let charCode = 0; charCode < 65535; charCode++) {
+            const char = String.fromCharCode(charCode);
+            const fnResult = isSurrogateChar(charCode);
+            const regExpResult = /[\uD800-\uDBFF\uDC00-\uDFFF]/.test(char);
 
             expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
         }

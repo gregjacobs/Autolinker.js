@@ -546,8 +546,8 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
         });
     });
 
-    describe('HTML entity handling', () => {
-        it(`when provided a string with decimal HTML encoded entities, should return their character equivalents`, () => {
+    describe('HTML character reference (entity) handling', () => {
+        it.only(`when provided a string with decimal HTML encoded entities in a data section, should return their character equivalents`, () => {
             const nodes = parseHtmlAndCapture('Hello &#60;someone&#62; &#40;&39;person&#39;&#41;');
 
             expect(nodes).to.deep.equal([
@@ -555,8 +555,26 @@ describe('Autolinker.htmlParser.HtmlParser', () => {
             ]);
         });
 
+        it(`when provided a string with decimal HTML encoded entities within tags, should ignore and continue on - we don't need to decode entities in tags for this HTML parser as its purpose is to simply "walk around" HTML tags for autolinking purposes`, () => {
+            const nodes = parseHtmlAndCapture(
+                'Hello <div data-text="&#60;someone&#62;">&#40;&39;person&#39;&#41;</div>'
+            );
+
+            expect(nodes).to.deep.equal([
+                { type: 'text', text: `Hello ('person')`, offset: 0 },
+                { type: 'openTag', text: '<div data-text="&#60;someone&#62;">', offset: 6 },
+                { type: 'text', text: `('person')`, offset: 41 },
+                { type: 'closeTag', text: '</div>', offset: 56 },
+            ]);
+        });
+
         // TODO: add cases for invalid '&' combinations, stuff like '&&', '&a&b', '&#60&#61;' (no semicolon in the middle)
         // TODO: add cases for '&' inside HTML tags
+        // TODO: Some bad sequences like '&#x asdf', '&# asdf', '&#x;', '&#;'
+        // TODO: Some missing-semicolon cases that should be interpreted: '&#60hello' '&#x3CHi', '&#60&#62'
+        // TODO: character references at the beginning of a string, end of a string
+        // TODO: character references right before a tag, right after a tag
+        // TODO: character references in the middle of a data section then a tag, tag then middle of a data section
     });
 
     describe('combination examples', () => {

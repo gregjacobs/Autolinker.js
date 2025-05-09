@@ -23,6 +23,8 @@ const { srcFileContents, specFileContents } = generateCharUtils([
     ['isAsciiLetterChar', /[A-Za-z]/],
     ['isAsciiAlphaNumericChar', /[A-Za-z0-9]/], // Used for parsing named HTML entities like '&amp';
     ['isAsciiDigitChar', /[0-9]/], // Used for parsing decimal HTML entities like '&#60;'
+    ['isAsciiUpperHexDigitChar', /[A-F]/],
+    //['isAsciiLowerHexDigitChar', /[a-f]/], -- not actually needed at the moment
     ['isHexChar', /[A-Fa-f0-9]/], // Used for parsing hexadecimal HTML entities like '&#x3C;'
     ['isQuoteChar', /['"]/],
     ['isWhitespaceChar', /\s/],
@@ -32,6 +34,7 @@ const { srcFileContents, specFileContents } = generateCharUtils([
     ['isUrlSuffixNotAllowedAsFinalChar', /[?!:,.;^]/], // URL suffix characters (i.e. path, query, and has part of the URL) that are not allowed as the *last character* in the URL suffix as they would normally form the end of a sentence. The isUrlSuffixAllowedSpecialChar() function contains additional allowed URL suffix characters which are allowed as the last character.
     ['isOpenBraceChar', /[({[]/],
     ['isCloseBraceChar', /[)}\]]/],
+    ['isSurrogateChar', /[\uD800-\uDBFF\uDC00-\uDFFF]/], // Leading surrogate chars are in the range U+D800 to U+DBFF. Trailing surrogate chars are in the range U+DC00 to U+DFFF. Essentially, all surrogate chars are in the range U+D800 to U+DFFF. See: https://infra.spec.whatwg.org/#surrogate
 ]);
 
 // console.log(srcFileContents);

@@ -63,6 +63,21 @@ export function isAsciiDigitChar(c: number): boolean {
 }
 
 /**
+ * Determines if the given character `c` matches the regular expression /[A-F]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isAsciiUpperHexDigitChar(c: number): boolean {
+    return (c >= 65 && c <= 70);
+}
+
+/**
  * Determines if the given character `c` matches the regular expression /[A-Fa-f0-9]/ 
  * by checking it via character code in a binary search fashion.
  * 
@@ -195,4 +210,19 @@ export function isOpenBraceChar(c: number): boolean {
  */
 export function isCloseBraceChar(c: number): boolean {
     return (c < 93 ? c == 41 : (c == 93 || c == 125));
+}
+
+/**
+ * Determines if the given character `c` matches the regular expression /[\uD800-\uDBFF\uDC00-\uDFFF]/ 
+ * by checking it via character code in a binary search fashion.
+ * 
+ * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
+ * on the character itself.
+ * 
+ * NOTE: This function is generated. Do not edit manually. To regenerate, run: 
+ * 
+ *     npm run generate-char-utils
+ */
+export function isSurrogateChar(c: number): boolean {
+    return (c >= 55296 && c <= 57343);
 }
