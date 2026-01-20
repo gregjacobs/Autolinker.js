@@ -96,7 +96,7 @@
         "puppeteer": "^24.7.2",
         "rimraf": "^6.0.1",
         "rollup": "^4.29.1",
-        "sinon": "^20.0.0",
+        "sinon": "^21.0.1",
         "style-loader": "^4.0.0",
         "terser": "^5.37.0",
         "ts-loader": "^9.5.1",
