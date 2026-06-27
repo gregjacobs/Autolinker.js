@@ -111,6 +111,32 @@ class ParseMatchesContext {
     public hasSchemeUrlMachine(): boolean {
         return this.schemeUrlMachinesCount > 0;
     }
+
+    /**
+     * Returns true if any TLD URL state machine is currently being processed
+     * with a `startIdx` strictly before the current character position. Used
+     * by `stateNoMatch` to avoid spawning a duplicate TLD machine that would
+     * race with an existing one across its first '.', producing a duplicated
+     * partial match (issue #425: linking "123.example.com" produced both
+     * "123.example.com" and "example.com" matches).
+     *
+     * Scheme and IPv4 machines are intentionally not checked here: the
+     * existing checks for them (hasSchemeUrlMachine and the digit-prefixed
+     * IPv4 state) already prevent duplicate creation in the relevant paths.
+     */
+    public hasActiveTldUrlStateMachine(currentCharIdx: number): boolean {
+        for (const machine of this._stateMachines) {
+            if (
+                machine.type === StateMachineType.Url &&
+                'matchType' in machine &&
+                machine.matchType === UrlStateMachineMatchType.Tld &&
+                machine.startIdx < currentCharIdx
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /**
@@ -386,9 +412,15 @@ function stateNoMatch(context: ParseMatchesContext, char: string, charCode: numb
             context.addMachine(createSchemeUrlStateMachine(charIdx, State.SchemeChar));
         }
 
-        if (isAlphaNumericOrMarkChar(charCode)) {
+        if (isAlphaNumericOrMarkChar(charCode) && !context.hasActiveTldUrlStateMachine(charIdx)) {
             // A unicode alpha character or digit could start a domain name
-            // label for a TLD match
+            // label for a TLD match. Don't start a new one if a TLD URL
+            // state machine is already running past its first character —
+            // that machine will consume this character itself. Starting a
+            // second TLD machine here caused #425: a digit-start TLD machine
+            // that had already crossed its first '.' would run alongside a
+            // fresh TLD machine added by stateNoMatch, producing a duplicated
+            // partial match.
             context.addMachine(createTldUrlStateMachine(charIdx, State.DomainLabelChar));
         }
     }

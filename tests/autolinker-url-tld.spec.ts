@@ -197,4 +197,25 @@ describe(`Matching top-level domain (TLD) URLs with no scheme prefix (e.g. 'goog
         const result = autolinker.link('Joe went to mañana.com today.');
         expect(result).to.equal('Joe went to <a href="http://mañana.com">mañana.com</a> today.');
     });
+
+    // Regression test for issue #425: linking a scheme-less URL with a
+    // numerical subdomain (e.g. "123.example.com") previously produced a
+    // duplicate match of "example.com" alongside the full URL, because the
+    // digit-started TLD state machine had Phone+IPv4 sibling machines that
+    // captured at the first alpha character and re-spawned a fresh TLD
+    // machine via stateNoMatch().
+    it('should link a numerical subdomain without producing a duplicate subdomain match (#425)', () => {
+        const result1 = autolinker.link('123.example.com');
+        expect(result1).to.equal('<a href="http://123.example.com">123.example.com</a>');
+
+        const result2 = autolinker.link('Visit 456.example.com today');
+        expect(result2).to.equal(
+            'Visit <a href="http://456.example.com">456.example.com</a> today'
+        );
+
+        const result3 = autolinker.link('999.subdomain.example.com');
+        expect(result3).to.equal(
+            '<a href="http://999.subdomain.example.com">999.subdomain.example.com</a>'
+        );
+    });
 });
