@@ -93,7 +93,7 @@ export function isAlphaNumericOrMarkChar(c: number): boolean {
 }
 
 /**
- * Determines if the given character `c` matches the regular expression /[!#$%&'*+/=?^_`{|}~-]/ 
+ * Determines if the given character `c` matches the regular expression /[!#$%&'*+/=?^_`{|}~;-]/ 
  * by checking it via character code in a binary search fashion.
  * 
  * This technique speeds this function up by a factor of ~10x vs. running RegExp.prototype.test() 
@@ -104,7 +104,7 @@ export function isAlphaNumericOrMarkChar(c: number): boolean {
  *     npm run generate-char-utils
  */
 export function isValidEmailLocalPartSpecialChar(c: number): boolean {
-    return (c < 47 ? (c < 42 ? (c == 33 || (c >= 35 && c <= 39)) : ((c >= 42 && c <= 43) || c == 45)) : (c < 63 ? (c == 47 || c == 61) : (c < 94 ? c == 63 : ((c >= 94 && c <= 96) || (c >= 123 && c <= 126)))));
+    return (c < 59 ? (c < 42 ? (c == 33 || (c >= 35 && c <= 39)) : (c < 45 ? (c >= 42 && c <= 43) : (c == 45 || c == 47))) : (c < 63 ? (c == 59 || c == 61) : (c < 94 ? c == 63 : ((c >= 94 && c <= 96) || (c >= 123 && c <= 126)))));
 }
 
 /**

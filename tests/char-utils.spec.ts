@@ -78,11 +78,11 @@ describe('isAlphaNumericOrMarkChar()', () => {
 });
 
 describe('isValidEmailLocalPartSpecialChar()', () => {
-    it(`should appropriately return true/false to match the regular expression /[!#$%&'*+/=?^_\`{|}~-]/`, () => {
+    it(`should appropriately return true/false to match the regular expression /[!#$%&'*+/=?^_\`{|}~;-]/`, () => {
         for (let charCode = 0; charCode < 65535; charCode++) {
             const char = String.fromCharCode(charCode);
             const fnResult = isValidEmailLocalPartSpecialChar(charCode);
-            const regExpResult = /[!#$%&'*+/=?^_`{|}~-]/.test(char);
+            const regExpResult = /[!#$%&'*+/=?^_`{|}~;-]/.test(char);
 
             expect(fnResult).to.equal(regExpResult, `Expected charCode ${charCode} (${char}) to return ${regExpResult}, but returned ${fnResult}`);
         }
