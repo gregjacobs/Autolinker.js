@@ -12,7 +12,7 @@ describe('Autolinker.js UMD file in browser', function () {
 
         // Print errors from the page
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-        page.on('pageerror', (err: Error) => console.error(err));
+        page.on('pageerror', (err: unknown) => console.error(err));
 
         const pathToHtmlFile = `${__dirname}/test-browser-umd.html`;
         if (!fs.existsSync(pathToHtmlFile)) {
