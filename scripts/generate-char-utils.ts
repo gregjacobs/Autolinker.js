@@ -94,7 +94,13 @@ function generateCharCompareFn(fnName: string, regExp: RegExp): string {
     const charCodes = charCodesFromRe(regExp);
     const charCodeRanges = toCharCodeRanges(charCodes);
 
-    return dedent`
+    // NOTE: A plain (untagged) template string is passed to dedent() rather
+    // than using the tagged-template form. `regExp.source` contains literal
+    // "\xNN" / "\uNNNN" escape *text* which must be preserved as-is in the
+    // generated file, but dedent's tagged-template form re-interprets such
+    // escape sequences (dedent >= 1.7), converting them to raw control /
+    // unicode characters and corrupting the generated output.
+    return dedent(`
         /**
          * Determines if the given character \`c\` matches the regular expression /${regExp.source}/${regExp.flags} 
          * by checking it via character code in a binary search fashion.
@@ -109,7 +115,7 @@ function generateCharCompareFn(fnName: string, regExp: RegExp): string {
         export function ${fnName}(c: number): boolean {
             return ${buildBinarySearchExpr(charCodeRanges)};
         }
-    `;
+    `);
 }
 
 /**
@@ -227,7 +233,13 @@ function buildComparisonExpr(range: CharCodeRange): string {
 
 function generateCharCompareTest(fnName: string, regExp: RegExp): string {
     const regexpInDescription = `/${regExp.source.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}/${regExp.flags}`;
-    return dedent`
+    // NOTE: A plain (untagged) template string is passed to dedent() rather
+    // than using the tagged-template form. `regExp.source` contains literal
+    // "\xNN" / "\uNNNN" escape *text* which must be preserved as-is in the
+    // generated file, but dedent's tagged-template form re-interprets such
+    // escape sequences (dedent >= 1.7), converting them to raw control /
+    // unicode characters and corrupting the generated output.
+    return dedent(`
         describe('${fnName}()', () => {
             it(\`should appropriately return true/false to match the regular expression ${regexpInDescription}\`, () => {
                 for (let charCode = 0; charCode < 65535; charCode++) {
@@ -239,5 +251,5 @@ function generateCharCompareTest(fnName: string, regExp: RegExp): string {
                 }
             });
         });
-    `;
+    `);
 }

@@ -13,7 +13,7 @@ describe('Live example page -', function () {
 
         // Print errors from the page
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-        page.on('pageerror', (err: Error) => console.error(err));
+        page.on('pageerror', (err: unknown) => console.error(err));
     });
 
     after(async () => {

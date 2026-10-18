@@ -11,7 +11,7 @@ describe('Webpack build with TypeScript in a browser', function () {
 
         // Print errors from the page
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-        page.on('pageerror', (err: Error) => console.error(err));
+        page.on('pageerror', (err: unknown) => console.error(err));
 
         await page.goto(`file://${__dirname}/webpack-output/index.html`, {
             waitUntil: 'load',
