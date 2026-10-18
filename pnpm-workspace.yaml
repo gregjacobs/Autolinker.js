@@ -1,7 +1,13 @@
 packages:
   - benchmarks
   - benchmarks/*
-ignoredBuiltDependencies:
-  - spawn-sync
+allowBuilds:
+  autolinker: false
+  puppeteer: true
+  spawn-sync: false
+# pnpm 10 compatibility (pnpm 11+ ignores these and uses allowBuilds above)
 onlyBuiltDependencies:
   - puppeteer
+ignoredBuiltDependencies:
+  - spawn-sync
+  - autolinker
